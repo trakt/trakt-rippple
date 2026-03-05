@@ -1,0 +1,12 @@
+{
+    "Simulator Target Bundle": "tv.trakt.rippple",
+    "aps": {
+        "alert": {
+            "title": "Weekly Tracker",
+            "body": "Your Weekly Tracker is ready with..."
+        },
+        "mutable-content": 1
+    },
+    "link": "https://ripppleapp.writeas.com/rippples-weekly-tracker-apr-22-2024-apr-28-2024",
+    "image": "https://i.snap.as/oeo1m268.png"
+}

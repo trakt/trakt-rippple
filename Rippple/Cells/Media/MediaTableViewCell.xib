@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <accessibilityOverrides dynamicTypePreference="10"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
+        <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="media" rowHeight="192" id="53m-ST-ukI" customClass="MediaTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="476" height="192"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="53m-ST-ukI" id="1ig-VS-old">
+                <rect key="frame" x="0.0" y="0.0" width="476" height="192"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zqo-fY-uu6" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="452" height="184"/>
+                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                    </view>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dJU-2N-kxv">
+                        <rect key="frame" x="22" y="14" width="437" height="164"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="pQI-eq-EFi">
+                                <rect key="frame" x="0.0" y="0.0" width="437" height="164"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="q67-m9-fq8" customClass="PosterButton" customModule="Rippple" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="66.5" height="100"/>
+                                        <color key="backgroundColor" systemColor="tertiarySystemFillColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" secondItem="q67-m9-fq8" secondAttribute="height" multiplier="1:1.5" id="CJG-fm-b0X"/>
+                                            <constraint firstAttribute="height" constant="100" id="hNo-zg-gMP"/>
+                                        </constraints>
+                                        <connections>
+                                            <action selector="posterAction:" destination="53m-ST-ukI" eventType="touchUpInside" id="FH0-N2-HIJ"/>
+                                        </connections>
+                                    </button>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="1U6-Za-IYT">
+                                        <rect key="frame" x="76.5" y="0.0" width="360.5" height="130.5"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="uGh-Ez-Nr5">
+                                                <rect key="frame" x="0.0" y="0.0" width="360.5" height="87.5"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="hdB-40-f68">
+                                                        <rect key="frame" x="0.0" y="0.0" width="314.5" height="87.5"/>
+                                                        <subviews>
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rm9-L3-eMe">
+                                                                <rect key="frame" x="0.0" y="0.0" width="314.5" height="2"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="2" id="pgM-zD-di7"/>
+                                                                </constraints>
+                                                            </view>
+                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iyj-Q4-XJ0">
+                                                                <rect key="frame" x="0.0" y="5" width="43.5" height="20.5"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cRg-Le-J30">
+                                                                <rect key="frame" x="0.0" y="28.5" width="37.5" height="18"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DTX-9a-vbB" customClass="LinkEnabledLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="49.5" width="33" height="16"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                                <nil key="textColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" distribution="fillEqually" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="LYQ-Hh-DCo">
+                                                                <rect key="frame" x="0.0" y="68.5" width="229" height="19"/>
+                                                                <subviews>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Km2-Zi-8og" customClass="PinnedImageView" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="-0.5" width="19" height="19"/>
+                                                                        <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                                        <imageReference key="image" image="pin.circle" catalog="system" renderingMode="template"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="light">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="psG-zP-2as" customClass="RatingImageView" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="21" y="-0.5" width="19" height="19"/>
+                                                                        <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                                        <imageReference key="image" image="10.circle" catalog="system" renderingMode="template"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="light">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Frp-FB-3qV" customClass="CommentedImageView" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="42" y="-0.5" width="19" height="19"/>
+                                                                        <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                                        <imageReference key="image" image="pencil.circle" catalog="system" renderingMode="template"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="light">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KkK-RZ-x1c" customClass="WatchedImageView" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="63" y="-0.5" width="19" height="19"/>
+                                                                        <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                                        <imageReference key="image" image="checkmark.circle" catalog="system" renderingMode="template"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="light">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bkv-lB-4g7" customClass="ToWatchImageView" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="84" y="-0.5" width="19" height="19"/>
+                                                                        <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                                        <imageReference key="image" image="chevron.right.circle" catalog="system" renderingMode="template"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="light">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yfU-Rk-iiL" customClass="WatchlistImageView" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="105" y="-0.5" width="19" height="19"/>
+                                                                        <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                                        <imageReference key="image" image="bookmark.circle" catalog="system" renderingMode="template"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="light">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iAF-E4-ayV" customClass="RecommendedImageView" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="126" y="-0.5" width="19" height="19"/>
+                                                                        <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                                        <imageReference key="image" image="star.circle" catalog="system" renderingMode="template"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="light">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DZ3-cn-12m" customClass="CollectedImageView" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="147" y="-0.5" width="19" height="19"/>
+                                                                        <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                                        <imageReference key="image" image="book.circle" catalog="system" renderingMode="template"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="light">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Qnc-e6-JM2" customClass="HiddenImageView" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="168" y="-0.5" width="19" height="19"/>
+                                                                        <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                                        <imageReference key="image" image="eye.slash.circle" catalog="system" renderingMode="template"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="light">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9ru-Ma-fH0" customClass="DroppedImageView" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="189" y="-0.5" width="19" height="19"/>
+                                                                        <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                                        <imageReference key="image" image="minus.circle" catalog="system" renderingMode="template"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="light">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PEb-78-zvF" customClass="ListedImageView" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="210" y="-0.5" width="19" height="19"/>
+                                                                        <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                                        <imageReference key="image" image="plus.circle" catalog="system" renderingMode="template"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="light">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                </subviews>
+                                                            </stackView>
+                                                        </subviews>
+                                                        <constraints>
+                                                            <constraint firstItem="Rm9-L3-eMe" firstAttribute="leading" secondItem="hdB-40-f68" secondAttribute="leading" id="UZQ-d1-KdQ"/>
+                                                            <constraint firstItem="Rm9-L3-eMe" firstAttribute="top" secondItem="hdB-40-f68" secondAttribute="top" id="dh0-kh-yO1"/>
+                                                            <constraint firstAttribute="trailing" secondItem="Rm9-L3-eMe" secondAttribute="trailing" id="keo-Qa-Iyx"/>
+                                                        </constraints>
+                                                    </stackView>
+                                                    <view contentMode="right" translatesAutoresizingMaskIntoConstraints="NO" id="j5u-ZR-p6l">
+                                                        <rect key="frame" x="316.5" y="0.0" width="44" height="34"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="34" id="5pV-Km-ctq"/>
+                                                            <constraint firstAttribute="width" constant="44" id="bmI-gg-XeC"/>
+                                                        </constraints>
+                                                    </view>
+                                                </subviews>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="duo-gU-7lD">
+                                                <rect key="frame" x="0.0" y="93.5" width="360.5" height="37"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="sap-2b-Pon">
+                                                        <rect key="frame" x="0.0" y="0.0" width="350.5" height="37"/>
+                                                        <subviews>
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wc0-5z-1UG">
+                                                                <rect key="frame" x="0.0" y="0.0" width="350.5" height="10"/>
+                                                                <subviews>
+                                                                    <view contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="bMi-9p-nUO" customClass="ShowProgressBar" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="5" width="350.5" height="3"/>
+                                                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="height" constant="3" id="6PF-KP-udV"/>
+                                                                        </constraints>
+                                                                    </view>
+                                                                </subviews>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="bottom" secondItem="bMi-9p-nUO" secondAttribute="bottom" constant="2" id="Naf-wK-OzR"/>
+                                                                    <constraint firstItem="bMi-9p-nUO" firstAttribute="top" secondItem="wc0-5z-1UG" secondAttribute="top" constant="5" id="OA8-GW-vPk"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="bMi-9p-nUO" secondAttribute="trailing" id="Rxf-4S-JF3"/>
+                                                                    <constraint firstItem="bMi-9p-nUO" firstAttribute="leading" secondItem="wc0-5z-1UG" secondAttribute="leading" id="xVf-hJ-ENr"/>
+                                                                </constraints>
+                                                            </view>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="gqG-3G-ur8">
+                                                                <rect key="frame" x="0.0" y="13" width="350.5" height="24"/>
+                                                                <subviews>
+                                                                    <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ksN-fF-ZPC" customClass="CommentCountLabel" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="0.0" height="24"/>
+                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qf5-OE-f86">
+                                                                        <rect key="frame" x="281" y="0.0" width="69.5" height="24"/>
+                                                                        <subviews>
+                                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" preferredBehavioralStyle="pad" translatesAutoresizingMaskIntoConstraints="NO" id="jR5-JU-OfX">
+                                                                                <rect key="frame" x="0.0" y="0.0" width="45.5" height="24"/>
+                                                                                <state key="normal" title="Button"/>
+                                                                                <buttonConfiguration key="configuration" style="tinted" image="heart" catalog="system">
+                                                                                    <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="font" scale="medium" weight="bold">
+                                                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                                                    </preferredSymbolConfiguration>
+                                                                                </buttonConfiguration>
+                                                                            </button>
+                                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="YMI-Za-psC" customClass="WhereToWatchImageView" customModule="Rippple" customModuleProvider="target">
+                                                                                <rect key="frame" x="45.5" y="0.0" width="24" height="24"/>
+                                                                                <constraints>
+                                                                                    <constraint firstAttribute="width" constant="24" id="WVN-Bp-40S"/>
+                                                                                    <constraint firstAttribute="height" constant="24" id="YoI-LK-kF5"/>
+                                                                                </constraints>
+                                                                            </imageView>
+                                                                        </subviews>
+                                                                    </stackView>
+                                                                </subviews>
+                                                            </stackView>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <view contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="cmI-PZ-VSX">
+                                                        <rect key="frame" x="350.5" y="0.0" width="10" height="37"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="10" id="zPx-ZQ-RsM"/>
+                                                        </constraints>
+                                                    </view>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="100" id="wSg-Sf-X7N"/>
+                                        </constraints>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="pQI-eq-EFi" secondAttribute="bottom" id="CNb-5w-Cab"/>
+                            <constraint firstItem="pQI-eq-EFi" firstAttribute="leading" secondItem="dJU-2N-kxv" secondAttribute="leading" id="TG1-t3-Uvh"/>
+                            <constraint firstAttribute="trailing" secondItem="pQI-eq-EFi" secondAttribute="trailing" id="Yc8-uJ-BiM"/>
+                            <constraint firstItem="pQI-eq-EFi" firstAttribute="top" secondItem="dJU-2N-kxv" secondAttribute="top" id="pMg-OO-0GE"/>
+                        </constraints>
+                    </view>
+                    <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bkt-CD-A8u">
+                        <rect key="frame" x="98.5" y="63.5" width="33" height="16"/>
+                        <state key="normal" title="Button"/>
+                        <buttonConfiguration key="configuration" style="plain"/>
+                    </button>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="bottom" secondItem="zqo-fY-uu6" secondAttribute="bottom" constant="4" id="0xk-nj-UAH"/>
+                    <constraint firstAttribute="trailing" secondItem="zqo-fY-uu6" secondAttribute="trailing" constant="12" id="6k9-p8-NlB"/>
+                    <constraint firstItem="zqo-fY-uu6" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leading" constant="12" id="9dJ-s0-zhn"/>
+                    <constraint firstItem="bkt-CD-A8u" firstAttribute="top" secondItem="DTX-9a-vbB" secondAttribute="top" id="Yca-2e-yZu"/>
+                    <constraint firstItem="bkt-CD-A8u" firstAttribute="leading" secondItem="DTX-9a-vbB" secondAttribute="leading" id="bbr-tM-14L"/>
+                    <constraint firstItem="bkt-CD-A8u" firstAttribute="trailing" secondItem="DTX-9a-vbB" secondAttribute="trailing" id="mIi-rp-4F2"/>
+                    <constraint firstItem="zqo-fY-uu6" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="top" constant="4" id="pOE-zB-DvN"/>
+                    <constraint firstItem="dJU-2N-kxv" firstAttribute="top" secondItem="zqo-fY-uu6" secondAttribute="top" constant="10" id="q4t-6g-kof"/>
+                    <constraint firstItem="bkt-CD-A8u" firstAttribute="bottom" secondItem="DTX-9a-vbB" secondAttribute="bottom" id="q7G-7b-GGG"/>
+                    <constraint firstItem="dJU-2N-kxv" firstAttribute="leading" secondItem="zqo-fY-uu6" secondAttribute="leading" constant="10" id="qdF-oF-pLW"/>
+                    <constraint firstItem="dJU-2N-kxv" firstAttribute="trailing" secondItem="zqo-fY-uu6" secondAttribute="trailing" constant="-5" id="rQW-Dg-ZOg"/>
+                    <constraint firstItem="dJU-2N-kxv" firstAttribute="bottom" secondItem="zqo-fY-uu6" secondAttribute="bottom" constant="-10" id="rnQ-VA-prz"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="collectedStatus" destination="DZ3-cn-12m" id="Oi6-GY-OZh"/>
+                <outlet property="commentedStatus" destination="Frp-FB-3qV" id="e3D-aD-Ldu"/>
+                <outlet property="droppedStatus" destination="9ru-Ma-fH0" id="MT6-tZ-pvq"/>
+                <outlet property="hiddenStatus" destination="Qnc-e6-JM2" id="QRq-HE-nkh"/>
+                <outlet property="listedStatus" destination="PEb-78-zvF" id="sLl-j4-ZVx"/>
+                <outlet property="menuButtonContainter" destination="j5u-ZR-p6l" id="6cV-41-Etz"/>
+                <outlet property="meta" destination="ksN-fF-ZPC" id="0PU-pW-IiK"/>
+                <outlet property="notesButton" destination="bkt-CD-A8u" id="uUT-QZ-VQE"/>
+                <outlet property="pinnedStatus" destination="Km2-Zi-8og" id="iNZ-Vr-MdX"/>
+                <outlet property="poster" destination="q67-m9-fq8" id="scX-Nx-ZMD"/>
+                <outlet property="progress" destination="bMi-9p-nUO" id="SFF-gp-tKg"/>
+                <outlet property="rateButton" destination="jR5-JU-OfX" id="74g-U8-4g5"/>
+                <outlet property="ratedStatus" destination="psG-zP-2as" id="agA-IV-EdO"/>
+                <outlet property="recommendedStatus" destination="iAF-E4-ayV" id="c3J-mS-q7u"/>
+                <outlet property="submeta" destination="DTX-9a-vbB" id="ss6-tx-vsE"/>
+                <outlet property="subtitle" destination="cRg-Le-J30" id="gBh-1v-ene"/>
+                <outlet property="title" destination="iyj-Q4-XJ0" id="BMz-Ku-H6b"/>
+                <outlet property="toWatchStatus" destination="bkv-lB-4g7" id="znc-j1-ER8"/>
+                <outlet property="watchedStatus" destination="KkK-RZ-x1c" id="gzc-Dn-Hlo"/>
+                <outlet property="watchlistedStatus" destination="yfU-Rk-iiL" id="3uy-MV-wE4"/>
+                <outlet property="whereToWatchImageView" destination="YMI-Za-psC" id="svv-kq-7oi"/>
+            </connections>
+            <point key="canvasLocation" x="3.2000000000000002" y="95.352323838080963"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="10.circle" catalog="system" width="128" height="123"/>
+        <image name="book.circle" catalog="system" width="128" height="123"/>
+        <image name="bookmark.circle" catalog="system" width="128" height="123"/>
+        <image name="checkmark.circle" catalog="system" width="128" height="123"/>
+        <image name="chevron.right.circle" catalog="system" width="128" height="123"/>
+        <image name="eye.slash.circle" catalog="system" width="128" height="123"/>
+        <image name="heart" catalog="system" width="128" height="107"/>
+        <image name="minus.circle" catalog="system" width="128" height="123"/>
+        <image name="pencil.circle" catalog="system" width="128" height="123"/>
+        <image name="pin.circle" catalog="system" width="128" height="123"/>
+        <image name="plus.circle" catalog="system" width="128" height="123"/>
+        <image name="star.circle" catalog="system" width="128" height="123"/>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="secondarySystemBackgroundColor">
+            <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="tertiarySystemFillColor">
+            <color red="0.46274509800000002" green="0.46274509800000002" blue="0.50196078430000002" alpha="0.12" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

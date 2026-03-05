@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="stories" rowHeight="159" id="cKC-Hj-gu1" customClass="ToWatchStoriesTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="476" height="160"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="cKC-Hj-gu1" id="ViO-D3-d9E">
+                <rect key="frame" x="0.0" y="0.0" width="476" height="160"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zQg-fN-AcM" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="452" height="152"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="a2g-6J-OIE" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="452" height="152"/>
+                        <subviews>
+                            <collectionView multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="ukO-N3-FdH">
+                                <rect key="frame" x="0.0" y="8" width="452" height="144"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="8" id="Zzk-ZS-5cX">
+                                    <size key="itemSize" width="70" height="114"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="10" minY="0.0" maxX="12" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <connections>
+                                    <outlet property="dataSource" destination="cKC-Hj-gu1" id="6cc-H7-DU3"/>
+                                    <outlet property="delegate" destination="cKC-Hj-gu1" id="J78-Wj-pto"/>
+                                </connections>
+                            </collectionView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="ukO-N3-FdH" secondAttribute="trailing" id="5Oj-Dy-rFw"/>
+                            <constraint firstAttribute="bottom" secondItem="ukO-N3-FdH" secondAttribute="bottom" id="R3v-Im-3u1"/>
+                            <constraint firstItem="ukO-N3-FdH" firstAttribute="top" secondItem="a2g-6J-OIE" secondAttribute="top" constant="8" id="fzg-ri-KCF"/>
+                            <constraint firstItem="ukO-N3-FdH" firstAttribute="leading" secondItem="a2g-6J-OIE" secondAttribute="leading" id="wF3-Gf-08e"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="a2g-6J-OIE" firstAttribute="top" secondItem="ViO-D3-d9E" secondAttribute="top" constant="4" id="5Qv-N5-dLW"/>
+                    <constraint firstItem="zQg-fN-AcM" firstAttribute="bottom" secondItem="a2g-6J-OIE" secondAttribute="bottom" id="IXQ-ou-edg"/>
+                    <constraint firstItem="a2g-6J-OIE" firstAttribute="leading" secondItem="ViO-D3-d9E" secondAttribute="leading" constant="12" id="LqG-Jf-aGK"/>
+                    <constraint firstItem="zQg-fN-AcM" firstAttribute="leading" secondItem="a2g-6J-OIE" secondAttribute="leading" id="YA3-HK-QM5"/>
+                    <constraint firstItem="zQg-fN-AcM" firstAttribute="top" secondItem="a2g-6J-OIE" secondAttribute="top" id="Zos-8n-AGg"/>
+                    <constraint firstItem="zQg-fN-AcM" firstAttribute="trailing" secondItem="a2g-6J-OIE" secondAttribute="trailing" id="aR2-f9-P9a"/>
+                    <constraint firstAttribute="bottom" secondItem="a2g-6J-OIE" secondAttribute="bottom" constant="4" id="fVl-N2-xPb"/>
+                    <constraint firstAttribute="trailing" secondItem="a2g-6J-OIE" secondAttribute="trailing" constant="12" id="jAq-7U-r6D"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="collectionView" destination="ukO-N3-FdH" id="8TT-XV-OcF"/>
+            </connections>
+            <point key="canvasLocation" x="-352.17391304347831" y="124.55357142857142"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

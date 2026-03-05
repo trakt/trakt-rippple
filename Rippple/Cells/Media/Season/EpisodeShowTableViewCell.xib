@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24411" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24404.1"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="episode" rowHeight="97" id="53m-ST-ukI" customClass="EpisodeShowTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="97"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="53m-ST-ukI" id="1ig-VS-old">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="97"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yrd-p2-Ewb" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="0.0" width="351" height="97"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kNG-z9-QWn">
+                                <rect key="frame" x="0.0" y="0.0" width="3" height="97"/>
+                                <color key="backgroundColor" name="Global Tint"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="3" id="QIo-Vt-Rpn"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dJU-2N-kxv">
+                                <rect key="frame" x="13" y="10" width="333" height="77"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="pQI-eq-EFi">
+                                        <rect key="frame" x="0.0" y="0.0" width="333" height="77"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalCentering" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="1U6-Za-IYT">
+                                                <rect key="frame" x="0.0" y="20" width="283" height="37"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="zR4-DK-Vzr">
+                                                        <rect key="frame" x="0.0" y="0.0" width="283" height="20.5"/>
+                                                        <subviews>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="DKb-N4-oZb">
+                                                                <rect key="frame" x="0.0" y="0.0" width="283" height="20.5"/>
+                                                                <subviews>
+                                                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="uYH-bZ-RfC">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="169" height="20.5"/>
+                                                                        <subviews>
+                                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Next to Watch" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Msb-Wp-VO8">
+                                                                                <rect key="frame" x="0.0" y="0.0" width="108" height="20.5"/>
+                                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                                                <color key="textColor" name="Global Tint"/>
+                                                                                <nil key="highlightedColor"/>
+                                                                            </label>
+                                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="999" verticalCompressionResistancePriority="999" text="S01E01" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iyj-Q4-XJ0">
+                                                                                <rect key="frame" x="113" y="0.0" width="56" height="20.5"/>
+                                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                                                <nil key="highlightedColor"/>
+                                                                            </label>
+                                                                        </subviews>
+                                                                    </stackView>
+                                                                </subviews>
+                                                            </stackView>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="In 3 days on 13 Oct. 2010" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ksN-fF-ZPC">
+                                                        <rect key="frame" x="0.0" y="22.5" width="283" height="14.5"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ja9-sr-EYp">
+                                                <rect key="frame" x="293" y="21" width="40" height="35.5"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="40" id="EY3-Us-O7J"/>
+                                                </constraints>
+                                                <state key="normal" image="ellipsis" catalog="system">
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="18"/>
+                                                </state>
+                                                <buttonConfiguration key="configuration" style="plain">
+                                                    <imageReference key="image" image="ellipsis" catalog="system" symbolScale="large"/>
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="18"/>
+                                                </buttonConfiguration>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="pQI-eq-EFi" secondAttribute="bottom" id="EYx-wd-gHW"/>
+                                    <constraint firstItem="pQI-eq-EFi" firstAttribute="leading" secondItem="dJU-2N-kxv" secondAttribute="leading" id="TG1-t3-Uvh"/>
+                                    <constraint firstAttribute="trailing" secondItem="pQI-eq-EFi" secondAttribute="trailing" id="Yc8-uJ-BiM"/>
+                                    <constraint firstItem="pQI-eq-EFi" firstAttribute="top" secondItem="dJU-2N-kxv" secondAttribute="top" id="aNK-MM-5qh"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="kNG-z9-QWn" firstAttribute="top" secondItem="yrd-p2-Ewb" secondAttribute="top" id="58k-GD-N79"/>
+                            <constraint firstItem="dJU-2N-kxv" firstAttribute="leading" secondItem="kNG-z9-QWn" secondAttribute="trailing" constant="10" id="63L-Gb-zwz"/>
+                            <constraint firstAttribute="bottom" secondItem="dJU-2N-kxv" secondAttribute="bottom" constant="10" id="Qed-jT-zrD"/>
+                            <constraint firstItem="kNG-z9-QWn" firstAttribute="leading" secondItem="yrd-p2-Ewb" secondAttribute="leading" id="TFE-R8-di9"/>
+                            <constraint firstItem="dJU-2N-kxv" firstAttribute="top" secondItem="yrd-p2-Ewb" secondAttribute="top" constant="10" id="UQI-ZJ-yNr"/>
+                            <constraint firstAttribute="trailing" secondItem="dJU-2N-kxv" secondAttribute="trailing" constant="5" id="naC-OX-S4x"/>
+                            <constraint firstAttribute="bottom" secondItem="kNG-z9-QWn" secondAttribute="bottom" id="y0N-GJ-TTk"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="bottom" secondItem="yrd-p2-Ewb" secondAttribute="bottom" id="FMm-3v-SNy"/>
+                    <constraint firstItem="yrd-p2-Ewb" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="top" id="bLm-qc-q1h"/>
+                    <constraint firstItem="yrd-p2-Ewb" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leading" constant="12" id="fwC-kj-3An"/>
+                    <constraint firstAttribute="trailing" secondItem="yrd-p2-Ewb" secondAttribute="trailing" constant="12" id="w0c-ou-JP1"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="additionalInfo" destination="Msb-Wp-VO8" id="Coe-96-VaY"/>
+                <outlet property="card" destination="yrd-p2-Ewb" id="zQ7-IW-sRN"/>
+                <outlet property="menuButton" destination="Ja9-sr-EYp" id="rWG-R2-jZc"/>
+                <outlet property="subtitle" destination="ksN-fF-ZPC" id="0PU-pW-IiK"/>
+                <outlet property="title" destination="iyj-Q4-XJ0" id="BMz-Ku-H6b"/>
+                <outlet property="watched" destination="kNG-z9-QWn" id="GMg-XT-bLj"/>
+            </connections>
+            <point key="canvasLocation" x="-77.599999999999994" y="51.724137931034484"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="ellipsis" catalog="system" width="128" height="37"/>
+        <namedColor name="Global Tint">
+            <color red="0.68235294117647061" green="0.32156862745098042" blue="0.87058823529411766" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="secondarySystemBackgroundColor">
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

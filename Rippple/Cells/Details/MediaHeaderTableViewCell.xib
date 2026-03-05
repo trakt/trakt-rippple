@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24118.1" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24059"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="YeO-AO-gTn" customClass="MediaHeaderTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="393" height="44"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="YeO-AO-gTn" id="NDK-GX-OxH">
+                <rect key="frame" x="0.0" y="0.0" width="393" height="44"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="FnD-zE-vOc">
+                        <rect key="frame" x="18" y="4" width="357" height="38"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="center" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="FZ7-eu-rju">
+                                <rect key="frame" x="0.0" y="0.0" width="357" height="38"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="The Matrix" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8po-87-NOu">
+                                        <rect key="frame" x="0.0" y="12" width="60.333333333333336" height="14.333333333333336"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="jC5-M0-3xo">
+                                        <rect key="frame" x="263.33333333333331" y="2.3333333333333321" width="93.666666666666686" height="33.333333333333343"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5eV-Eb-wni">
+                                                <rect key="frame" x="0.0" y="0.0" width="44" height="33.333333333333336"/>
+                                                <state key="normal" title="Button"/>
+                                                <buttonConfiguration key="configuration" style="tinted">
+                                                    <imageReference key="image" image="document.on.document" catalog="system" symbolScale="default"/>
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="font" scale="default">
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                    </preferredSymbolConfiguration>
+                                                </buttonConfiguration>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="j6Q-yw-uMv">
+                                                <rect key="frame" x="48" y="0.0" width="45.666666666666657" height="33.333333333333336"/>
+                                                <state key="normal" title="Button"/>
+                                                <buttonConfiguration key="configuration" style="tinted">
+                                                    <imageReference key="image" image="checklist" catalog="system" symbolScale="default"/>
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="font" scale="default">
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                    </preferredSymbolConfiguration>
+                                                </buttonConfiguration>
+                                                <connections>
+                                                    <action selector="listButtonTouchedUpInside:" destination="YeO-AO-gTn" eventType="touchUpInside" id="aLm-Aa-bWc"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                    </stackView>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="FnD-zE-vOc" firstAttribute="top" secondItem="NDK-GX-OxH" secondAttribute="top" constant="4" id="CUc-DC-UJO"/>
+                    <constraint firstAttribute="bottom" secondItem="FnD-zE-vOc" secondAttribute="bottom" constant="2" id="gAc-fO-lDp"/>
+                    <constraint firstItem="FnD-zE-vOc" firstAttribute="leading" secondItem="NDK-GX-OxH" secondAttribute="leading" constant="18" id="mnF-mj-DnT"/>
+                    <constraint firstAttribute="trailing" secondItem="FnD-zE-vOc" secondAttribute="trailing" constant="18" id="tqh-P3-itO"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="copyButton" destination="5eV-Eb-wni" id="Lz5-mi-cNy"/>
+                <outlet property="listButton" destination="j6Q-yw-uMv" id="3o8-Fm-BBJ"/>
+                <outlet property="title" destination="8po-87-NOu" id="nN1-D8-Q7K"/>
+            </connections>
+            <point key="canvasLocation" x="-150.38167938931298" y="-51.408450704225352"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="checklist" catalog="system" width="128" height="107"/>
+        <image name="document.on.document" catalog="system" width="116" height="128"/>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

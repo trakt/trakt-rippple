@@ -1,0 +1,760 @@
+//
+//  MediaTableViewCell.swift
+//  Rippple
+//
+//  Created by Kevin Cador on 12/11/2017.
+//  Copyright © 2017 Trakt. All rights reserved.
+//
+
+import UIKit
+
+import Receiver
+
+protocol MediaTableViewCellDelegate: AnyObject {
+    func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action)
+}
+
+final class MediaTableViewCell: UITableViewCell {
+
+    enum Action {
+        case details
+        case close
+    }
+
+    weak var delegate: MediaTableViewCellDelegate? {
+        didSet {
+            cellContextMenu.controller = delegate as? UIViewController
+            menuButtonContextMenu.controller = delegate as? UIViewController
+        }
+    }
+
+    @IBOutlet weak var title: UILabel!
+    @IBOutlet weak var subtitle: UILabel!
+    @IBOutlet weak var meta: CommentCountLabel?
+    @IBOutlet weak var submeta: LinkEnabledLabel?
+
+    @IBOutlet var progress: ShowProgressBar?
+
+    @IBOutlet weak var poster: PosterButton!
+
+    @IBOutlet weak var recommendedStatus: RecommendedImageView?
+    @IBOutlet weak var watchlistedStatus: WatchlistImageView?
+    @IBOutlet weak var watchedStatus: WatchedImageView?
+    @IBOutlet weak var toWatchStatus: ToWatchImageView?
+    @IBOutlet weak var collectedStatus: CollectedImageView?
+    @IBOutlet weak var commentedStatus: CommentedImageView?
+    @IBOutlet weak var ratedStatus: RatingImageView?
+    @IBOutlet weak var hiddenStatus: HiddenImageView?
+    @IBOutlet weak var droppedStatus: DroppedImageView?
+    @IBOutlet weak var pinnedStatus: PinnedImageView?
+    @IBOutlet weak var listedStatus: ListedImageView?
+
+    @IBOutlet weak var whereToWatchImageView: WhereToWatchImageView?
+
+    @IBOutlet weak var menuButtonContainter: UIView?
+    @IBOutlet weak var closeButton: UIButton?
+
+    @IBOutlet weak var notesButton: UIButton?
+
+    @IBOutlet weak var rateButton: UIButton?
+
+    private let disposeBag = DisposeBag()
+
+    var ratedItem: RatedItem? {
+        didSet {
+            if let ratedItem = ratedItem {
+                media = MediaModel(item: ratedItem)
+            }
+        }
+    }
+
+    var calendarMode = false
+    var toWatchMode = false
+    var dimmedIfWatched = true
+    var media: MediaModel! {
+        didSet {
+            switch media! {
+            case .movie(let movie):
+                cellContextMenu.media = media
+                menuButtonContextMenu.media = media
+                progress?.media = nil
+                progress?.superview?.isHidden = true
+                whereToWatchImageView?.isHidden = true
+                setupMovie(movie: movie)
+            case .show(let show):
+                cellContextMenu.media = media
+                menuButtonContextMenu.media = media
+                progress?.hideIfNoProgress = true
+                progress?.media = media
+                whereToWatchImageView?.isHidden = true
+                setupShow(show: show)
+            case .episode(let episode, let show):
+                cellContextMenu.media = show.mediaModel
+                menuButtonContextMenu.media = media
+                progress?.media = nil
+                progress?.superview?.isHidden = true
+                whereToWatchImageView?.isHidden = true
+                setupEpisode(episode: episode, show: show)
+            case .season(let season, let show):
+                cellContextMenu.media = show.mediaModel
+                menuButtonContextMenu.media = media
+                progress?.media = nil
+                progress?.superview?.isHidden = true
+                whereToWatchImageView?.isHidden = true
+                setupSeason(season: season, show: show)
+            case .list:
+                fatalError()
+            case .showProgress(let show, let showProgress):
+                if media.toRewatchCount > 0 {
+                    cellContextMenu.media = show.mediaModel
+                    menuButtonContextMenu.media = show.mediaModel
+                } else if let episode = showProgress.nextEpisodeToWatch {
+                    cellContextMenu.media = show.mediaModel
+                    menuButtonContextMenu.media = episode.mediaModel(given: show)
+                } else {
+                    cellContextMenu.media = show.mediaModel
+                    menuButtonContextMenu.media = show.mediaModel
+                }
+                progress?.media = nil
+                progress?.superview?.isHidden = true
+                whereToWatchImageView?.isHidden = true // will be set after if needed
+                setupShowProgress(episode: showProgress.nextEpisodeToWatch, show: show, progress: showProgress)
+            }
+
+            if rateButton?.isHidden == false {
+                var configuration = rateButton?.configuration
+                configuration?.indicator = .popup
+                configuration?.baseBackgroundColor = UIColor.init { trait in
+                    return trait.userInterfaceStyle == .dark ? UIColor(asset: .globalTint).withAlphaComponent(0.2) : UIColor(asset: .globalTint).lighter(amount: 0.1).withAlphaComponent(0.2)
+                }
+                configuration?.title = ""
+                configuration?.contentInsets = NSDirectionalEdgeInsets(top: 2,
+                                                                       leading: 4,
+                                                                       bottom: 2,
+                                                                       trailing: 4)
+                configuration?.imagePadding = .zero
+                if let rating = media.userRating {
+                    configuration?.image = UIImage(systemName: "\(rating).circle")
+                } else {
+                    configuration?.image = UIImage(systemName: "heart")
+                }
+                rateButton?.configuration = configuration
+
+                rateButton?.menu = media.rateMenu
+                rateButton?.showsMenuAsPrimaryAction = true
+            }
+
+            if let menuButtonContainter = menuButtonContainter {
+                for subviews in menuButtonContainter.subviews {
+                    subviews.removeFromSuperview()
+                }
+
+                let menuButton = UIButton(frame: menuButtonContainter.bounds)
+                menuButton.translatesAutoresizingMaskIntoConstraints = false
+                menuButtonContainter.addSubview(menuButton)
+                NSLayoutConstraint.activate([
+                    menuButton.topAnchor.constraint(equalTo: menuButtonContainter.topAnchor),
+                    menuButton.bottomAnchor.constraint(equalTo: menuButtonContainter.bottomAnchor),
+                    menuButton.leadingAnchor.constraint(equalTo: menuButtonContainter.leadingAnchor),
+                    menuButton.trailingAnchor.constraint(equalTo: menuButtonContainter.trailingAnchor)
+                ])
+
+                menuButton.menu = menuButtonContextMenu.menu
+                menuButton.showsMenuAsPrimaryAction = true
+                menuButton.isPointerInteractionEnabled = true
+
+                var configuration = UIButton.Configuration.plain()
+                configuration.buttonSize = .large
+                configuration.image = UIImage(systemName: "ellipsis")
+                menuButton.configuration = configuration
+                menuButton.preferredBehavioralStyle = .pad
+
+                if media.toRewatchCount > 0 {
+                    menuButton.addAction(UIAction { [weak self] _ in
+                        guard let self = self else { return }
+                        let dynamicAction = UIDeferredMenuElement.uncached({ completion in
+                            TraktAPIProvider.noChacheProvider.request(TraktAPIService.showProgress(id: self.media.show!.identifiers.trakt!, includesSpecials: false),
+                                                              callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
+                                                                guard let self = self else { return }
+                                                                switch result {
+                                                                case let .success(moyaResponse):
+                                                                    do {
+                                                                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+
+                                                                        print("Show progress successful \(response)")
+
+                                                                        let showProgress = try response.map(ShowProgress.self, using: TraktAPIProvider.decoder)
+
+                                                                        if let nextToRewatch = showProgress.nextToRewatch {
+                                                                            TraktAPIProvider.provider.request(TraktAPIService.episode(id: String(self.media.show!.identifiers.trakt!), season: nextToRewatch.0.number, episode: nextToRewatch.1.number),
+                                                                                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                                                                                guard let self = self else { return }
+                                                                                switch result {
+                                                                                case let .success(moyaResponse):
+                                                                                    do {
+                                                                                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+
+                                                                                        let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
+
+                                                                                        DispatchQueue.main.async {
+                                                                                            self.menuButtonContextMenu.media = episode.mediaModel(given: self.media.show!)
+                                                                                            completion(self.menuButtonContextMenu.toWatchMenu.children)
+                                                                                        }
+                                                                                    } catch {
+                                                                                        print("Error fetching episode \(error)")
+                                                                                    }
+                                                                                case let .failure(error):
+                                                                                    print("Failed fetching episode \(error)")
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    } catch {
+                                                                        print("Error Show progress \(error)")
+                                                                    }
+                                                                case let .failure(error):
+                                                                    print("Error Show progress \(error)")
+                                                                }
+                            }
+                        })
+                        menuButton.menu = UIMenu(title: "Next Episode To Rewatch", image: nil, children: [dynamicAction])
+
+                        UISelectionFeedbackGenerator().selectionChanged()
+                        menuButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
+                     }, for: .menuActionTriggered)
+                } else if media.showProgressShow != nil {
+                    menuButton.addAction(UIAction { [weak self] _ in
+                        guard let self = self else { return }
+                        menuButton.menu = self.menuButtonContextMenu.toWatchMenu
+                        UISelectionFeedbackGenerator().selectionChanged()
+                        menuButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
+                     }, for: .menuActionTriggered)
+                } else {
+                    menuButton.addAction(UIAction { [weak self] _ in
+                        guard let self = self else { return }
+                        menuButton.menu = self.menuButtonContextMenu.menu
+                        UISelectionFeedbackGenerator().selectionChanged()
+                        menuButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
+                     }, for: .menuActionTriggered)
+                }
+            }
+            invalidateIntrinsicContentSize()
+        }
+    }
+
+    var note: String? {
+        didSet {
+            submeta?.isHidden = false
+            if let note = note, note.isEmpty == false {
+                submeta?.attributedText = attributedString()
+                notesButton?.isUserInteractionEnabled = true
+            } else {
+                submeta?.attributedText = nil
+                submeta?.isHidden = true
+                notesButton?.isUserInteractionEnabled = false
+            }
+            invalidateIntrinsicContentSize()
+        }
+    }
+    private var markdownParser = SpoilerMarkdownParser(font: UIFont.preferredFont(forTextStyle: .footnote, compatibleWith: UITraitCollection(preferredContentSizeCategory: min(UIApplication.shared.preferredContentSizeCategory, .extraExtraExtraLarge))),
+                                                automaticLinkDetectionEnabled: true)
+    private func attributedString() -> NSAttributedString? {
+        guard let note = note else { return nil }
+
+        markdownParser.color = .label
+        markdownParser.strike.strikeColor = .label
+        markdownParser.strike.color = .label
+        markdownParser.highlight.color = .label
+        markdownParser.highlight.highlightColor = UIColor(asset: .globalTint).withAlphaComponent(0.4)
+        markdownParser.spoiler.color = .label
+        markdownParser.allSpoiler.color = .label
+        markdownParser.displaySpoiler.color = .label
+        markdownParser.mention.color = .label
+        markdownParser.highlight.font = UIFont.preferredFont(forTextStyle: .footnote, compatibleWith: UITraitCollection(preferredContentSizeCategory: min(UIApplication.shared.preferredContentSizeCategory, .extraExtraExtraLarge)))
+
+        markdownParser.spoilerStrategy = .showAllSpoilers
+
+        return markdownParser.parse(note.htmlDecoded.emojiUnescapedString)
+    }
+
+    private let cellContextMenu = MediaContextMenuInteractionDelegate()
+    private let menuButtonContextMenu = MediaContextMenuInteractionDelegate()
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+
+        contentView.autoresizingMask = .flexibleHeight
+
+        submeta?.isHidden = true
+        rateButton?.isHidden = true
+
+        rateButton?.backgroundColor = UIColor(asset: .globalTint).withAlphaComponent(0.1)
+
+        poster.layer.cornerRadius = ViewRadius.medium.rawValue
+        poster.layer.cornerCurve = .continuous
+        poster.layer.masksToBounds = true
+        poster.layer.borderWidth = 1
+        poster.layer.borderColor = UIColor.tertiarySystemFill.cgColor
+
+        poster.backgroundColor = UIColor.tertiarySystemFill
+
+        let interaction = UIContextMenuInteraction(delegate: cellContextMenu)
+        poster.addInteraction(interaction)
+
+        onShowsHiddenFromProgressMediaChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self else { return }
+            switch self.media {
+            case .showProgress(let show, _):
+                if show.isHiddenFromProgress {
+                    self.contentView.alpha = 0.6
+                } else {
+                    self.contentView.alpha = 1.0
+                }
+            default:
+                self.contentView.alpha = 1.0
+            }
+        }.disposed(by: disposeBag)
+
+        onCommentsCountDisplayReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            if case .showProgress = self.media { return }
+            self.meta?.media = nil
+            self.meta?.media = self.media
+        }.disposed(by: disposeBag)
+
+        meta?.maximumContentSizeCategory = .extraExtraExtraLarge
+        recommendedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        watchlistedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        watchedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        toWatchStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        collectedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        commentedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        ratedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        hiddenStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        droppedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        pinnedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        rateButton?.maximumContentSizeCategory = .accessibilityExtraExtraLarge
+        listedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+
+        onCompletedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self else { return }
+            if dimmedIfWatched == false { return }
+            if case let .show(show) = self.media {
+                DispatchQueue.main.async {
+                    if show.isCompleted && self.closeButton == nil {
+                        self.contentView.alpha = 0.6
+                    } else {
+                        self.contentView.alpha = 1.0
+                    }
+                }
+            }
+        }.disposed(by: disposeBag)
+
+        onWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self else { return }
+            if dimmedIfWatched == false { return }
+            if case let .movie(movie) = self.media {
+                if movie.isWatched && self.closeButton == nil {
+                    contentView.alpha = 0.6
+                } else {
+                    contentView.alpha = 1.0
+                }
+            }
+        }.disposed(by: disposeBag)
+
+        onShowsHiddenFromProgressMediaChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self else { return }
+            if dimmedIfWatched == false { return }
+            if case let .showProgress(show, _) = self.media {
+                if show.isHiddenFromProgress && closeButton == nil {
+                    contentView.alpha = 0.6
+                } else {
+                    contentView.alpha = 1.0
+                }
+            }
+        }.disposed(by: disposeBag)
+
+        RatingsManager.shared.onRatedItemsChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let rateButton = self?.rateButton else { return }
+            if rateButton.isHidden == false {
+                var configuration = rateButton.configuration
+                if let rating = self?.media.userRating {
+                    configuration?.image = UIImage(systemName: "\(rating).circle")
+                } else {
+                    configuration?.image = UIImage(systemName: "heart")
+                }
+                rateButton.configuration = configuration
+
+                rateButton.menu = self?.media.rateMenu
+            }
+        }.disposed(by: disposeBag)
+
+        notesButton?.isUserInteractionEnabled = false
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+
+        notesButton?.isUserInteractionEnabled = false
+
+        submeta?.isHidden = true
+    }
+
+    private func setupMovie(movie: Movie) {
+        title.text = movie.title
+
+        if calendarMode == true {
+            var info = [String]()
+            if let release = movie.releaseYear {
+                info.append("\(release)")
+            }
+            if let status = movie.status, status != "released" {
+                info.append(status)
+            }
+            subtitle.text = info.joined(separator: " · ")
+            submeta?.isHidden = false
+
+            let media: MediaModel = .movie(movie)
+
+            recommendedStatus?.media = media
+            collectedStatus?.media = media
+            watchlistedStatus?.media = media
+            watchedStatus?.media = media
+            toWatchStatus?.isHidden = true
+            commentedStatus?.media = media
+            if let ratedItem = ratedItem {
+                ratedStatus?.ratedItem = ratedItem
+            } else {
+                ratedStatus?.media = media
+            }
+            hiddenStatus?.isHidden = true
+            pinnedStatus?.isHidden = true
+            droppedStatus?.isHidden = true
+            listedStatus?.isHidden = true
+
+            poster.movie = movie
+
+            whereToWatchImageView?.media = media
+
+            return
+        }
+
+        var info = [String]()
+        if let release = movie.releaseYear {
+            info.append("\(release)")
+        }
+        if let status = movie.status, status != "released" {
+            info.append(status)
+        }
+        subtitle.text = info.joined(separator: " · ")
+
+        let media: MediaModel = .movie(movie)
+        meta?.media = media
+
+        if toWatchMode {
+            recommendedStatus?.isHidden = true
+            collectedStatus?.isHidden = true
+            watchlistedStatus?.isHidden = true
+            watchedStatus?.isHidden = true
+            toWatchStatus?.isHidden = true
+            commentedStatus?.isHidden = true
+            ratedStatus?.isHidden = true
+            hiddenStatus?.isHidden = true
+            droppedStatus?.isHidden = true
+            pinnedStatus?.isHidden = true
+            whereToWatchImageView?.media = media
+            listedStatus?.isHidden = true
+        } else {
+            recommendedStatus?.media = media
+            collectedStatus?.media = media
+            watchlistedStatus?.media = media
+            watchedStatus?.media = media
+            toWatchStatus?.isHidden = true
+            commentedStatus?.media = media
+            if let ratedItem = ratedItem {
+                ratedStatus?.ratedItem = ratedItem
+            } else {
+                ratedStatus?.media = media
+            }
+            hiddenStatus?.isHidden = true
+            droppedStatus?.isHidden = true
+            pinnedStatus?.media = media
+            whereToWatchImageView?.media = media
+            listedStatus?.media = media
+        }
+
+        poster.movie = movie
+
+        if dimmedIfWatched == false {
+            contentView.alpha = 1.0
+        } else {
+            if movie.isWatched && closeButton == nil {
+                contentView.alpha = 0.6
+            } else {
+                contentView.alpha = 1.0
+            }
+        }
+    }
+
+    private func setupEpisode(episode: Episode, show: Show) {
+        title.text = show.title
+
+        if calendarMode == true {
+            let media: MediaModel = .episode(episode, show)
+            watchlistedStatus?.media = media
+            watchedStatus?.media = media
+            recommendedStatus?.isHidden = true
+            collectedStatus?.media = media
+            toWatchStatus?.isHidden = true
+            commentedStatus?.media = media
+
+            if episode.isRecentlyWatched, let title = episode.title {
+                subtitle.text = episode.localizedEpisodeNumber + " · \(title)"
+            } else {
+                if let episode = media.episode, episode.season == 1, episode.number == 1 {
+                    subtitle.text = episode.localizedEpisodeNumber + " · Series Premiere"
+                } else if let episode = media.episode, episode.number == 1 {
+                    subtitle.text = episode.localizedEpisodeNumber + " · Season Premiere"
+                } else {
+                    subtitle.text = episode.localizedEpisodeNumber
+                }
+            }
+
+            submeta?.isHidden = false
+
+            if let ratedItem = ratedItem {
+                ratedStatus?.ratedItem = ratedItem
+            } else {
+                ratedStatus?.media = media
+            }
+            hiddenStatus?.isHidden = true
+            pinnedStatus?.isHidden = true
+            droppedStatus?.isHidden = true
+            listedStatus?.isHidden = true
+
+            poster.show = show
+
+            whereToWatchImageView?.media = media
+
+            return
+        }
+
+        if let title = episode.title {
+            subtitle.text = episode.localizedEpisodeNumber + " · \(title)"
+        } else {
+            subtitle.text = episode.localizedEpisodeNumber
+        }
+
+        let media: MediaModel = .episode(episode, show)
+        meta?.media = media
+
+        watchlistedStatus?.media = media
+        watchedStatus?.media = media
+        recommendedStatus?.isHidden = true
+        collectedStatus?.media = media
+        toWatchStatus?.isHidden = true
+        commentedStatus?.media = media
+        if let ratedItem = ratedItem {
+            ratedStatus?.ratedItem = ratedItem
+        } else {
+            ratedStatus?.media = media
+        }
+        hiddenStatus?.isHidden = true
+        pinnedStatus?.isHidden = true
+        droppedStatus?.isHidden = true
+        whereToWatchImageView?.media = media
+        listedStatus?.media = media
+
+        poster.show = show
+
+        contentView.alpha = 1.0
+    }
+
+    private func setupShowProgress(episode: Episode?, show: Show, progress: ShowProgress) {
+        submeta?.isHidden = false
+        submeta?.text = ""
+        if progress.toRewatchCount > 0 {
+
+            title.text = show.title
+
+            subtitle.text = "\(progress.toRewatchCount) to rewatch"
+
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .none
+            if let resetDate = progress.resetAt {
+                meta?.text = "Rewatching since \(formatter.string(from: resetDate))"
+            } else {
+                meta?.text = "Rewatching..."
+            }
+
+            recommendedStatus?.isHidden = true
+            collectedStatus?.isHidden = true
+            watchlistedStatus?.isHidden = true
+            watchedStatus?.isHidden = true
+            toWatchStatus?.isHidden = true
+            commentedStatus?.isHidden = true
+            ratedStatus?.isHidden = true
+            hiddenStatus?.isHidden = true
+            pinnedStatus?.isHidden = true
+            droppedStatus?.isHidden = true
+            whereToWatchImageView?.media = media
+            listedStatus?.isHidden = true
+
+            poster.show = show
+        } else if let episode = episode {
+            title.text = show.title
+
+            subtitle.text = "\(episode.localizedEpisodeNumber)"
+            if let runtime = episode.runtime {
+                subtitle.text = "\(subtitle.text!) · \(runtime)′"
+            } else if let runtime = show.runtime {
+                subtitle.text = "\(subtitle.text!) · \(runtime)′"
+            }
+            if let episodeType = episode.episodeType {
+                switch episodeType {
+                case .standard:
+                    break
+                case .seriesPremiere:
+                    subtitle.text = "\(subtitle.text!) · Series Premiere"
+                case .seasonPremiere:
+                    subtitle.text = "\(subtitle.text!) · Season Premiere"
+                case .midSeasonFinale:
+                    subtitle.text = "\(subtitle.text!) · Mid Season Finale"
+                case .midSeasonPremiere:
+                    subtitle.text = "\(subtitle.text!) · Mid Season Premiere"
+                case .seasonFinale:
+                    subtitle.text = "\(subtitle.text!) · Season Finale"
+                case .seriesFinale:
+                    subtitle.text = "\(subtitle.text!) · Series Finale"
+                case .unknown:
+                    break
+                }
+            }
+
+            if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = episode.title {
+                submeta?.text = title
+            }
+
+            let behind = progress.behind
+            if behind > 0 {
+                meta?.text = "\(behind) behind"
+            } else {
+                meta?.text = "At least one behind"
+            }
+            recommendedStatus?.isHidden = true
+            collectedStatus?.isHidden = true
+            watchlistedStatus?.isHidden = true
+            watchedStatus?.isHidden = true
+            toWatchStatus?.isHidden = true
+            commentedStatus?.isHidden = true
+            ratedStatus?.isHidden = true
+            hiddenStatus?.isHidden = true
+            pinnedStatus?.isHidden = true
+            droppedStatus?.isHidden = true
+            whereToWatchImageView?.media = media
+            listedStatus?.isHidden = true
+
+            poster.show = show
+        }
+
+        if dimmedIfWatched == false {
+            contentView.alpha = 1.0
+        } else {
+            if show.isHiddenFromProgress && closeButton == nil {
+                contentView.alpha = 0.6
+            } else {
+                contentView.alpha = 1.0
+            }
+        }
+    }
+
+    private func setupSeason(season: Season, show: Show) {
+        title.text = show.title
+        if let seasonTitle = season.title {
+            subtitle.text = seasonTitle
+        } else if season.number > 0 {
+            subtitle.text = "Season \(season.number)"
+        } else {
+            subtitle.text = "A Season"
+        }
+
+        meta?.media = media
+
+        recommendedStatus?.isHidden = true
+        collectedStatus?.isHidden = true
+        watchlistedStatus?.media = media
+        watchedStatus?.isHidden = true
+        toWatchStatus?.isHidden = true
+        commentedStatus?.isHidden = true
+        if let ratedItem = ratedItem {
+            ratedStatus?.ratedItem = ratedItem
+        } else {
+            ratedStatus?.media = media
+        }
+        hiddenStatus?.media = media
+        pinnedStatus?.isHidden = true
+        droppedStatus?.isHidden = true
+        whereToWatchImageView?.media = media
+        listedStatus?.media = media
+
+        poster.season = (show, season)
+
+        contentView.alpha = 1.0
+    }
+
+    private func setupShow(show: Show) {
+        title.text = show.title
+
+        var info = [String]()
+        if let airedEpisodes = show.airedEpisodes, airedEpisodes != 0 {
+            info.append("\(airedEpisodes) episode\((airedEpisodes > 1 ? "s" : ""))")
+        } else if let release = show.releaseYear {
+            info.append("\(release)")
+        }
+        if let status = show.status, status != "returning series" {
+            info.append(status.capitalized)
+        }
+        subtitle.text = info.joined(separator: " · ")
+
+        meta?.media = media
+
+        recommendedStatus?.media = media
+        watchlistedStatus?.media = media
+        watchedStatus?.media = media
+        toWatchStatus?.media = media
+        collectedStatus?.media = media
+        commentedStatus?.isHidden = true
+        if let ratedItem = ratedItem {
+            ratedStatus?.ratedItem = ratedItem
+        } else {
+            ratedStatus?.media = media
+        }
+        hiddenStatus?.media = media
+        droppedStatus?.media = media
+        pinnedStatus?.media = media
+        whereToWatchImageView?.media = media
+        listedStatus?.media = media
+
+        poster.show = show
+
+        if dimmedIfWatched == false {
+            contentView.alpha = 1.0
+        } else {
+            if show.isCompleted && closeButton == nil {
+                contentView.alpha = 0.6
+            } else {
+                contentView.alpha = 1.0
+            }
+        }
+    }
+
+    @IBAction func posterAction(_ sender: Any) {
+        guard let delegate = delegate else { return }
+        delegate.cell(self, action: .details)
+    }
+
+    @IBAction func closeAction(_ sender: Any) {
+        guard let delegate = delegate else { return }
+        delegate.cell(self, action: .close)
+    }
+}

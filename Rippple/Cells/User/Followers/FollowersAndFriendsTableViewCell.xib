@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="follow and friends" id="gYx-E8-cQv" customClass="FollowersAndFriendsTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="464" height="139"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="gYx-E8-cQv" id="dIS-ps-QF6">
+                <rect key="frame" x="0.0" y="0.0" width="464" height="139"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ft9-od-kzt" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="440" height="131"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="xdE-Ra-O9R">
+                                <rect key="frame" x="0.0" y="0.0" width="440" height="131"/>
+                                <subviews>
+                                    <view alpha="0.0" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ejx-1J-fBe">
+                                        <rect key="frame" x="0.0" y="0.0" width="1" height="131"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="1" id="6l1-hy-bGR"/>
+                                        </constraints>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="0ma-sa-pbv">
+                                        <rect key="frame" x="28.5" y="15" width="53.5" height="101"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="2.0k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ydd-4v-mju" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                <rect key="frame" x="8" y="0.0" width="38" height="86.5"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Following" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MGV-VA-fb6">
+                                                <rect key="frame" x="0.0" y="86.5" width="53.5" height="14.5"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <view alpha="0.40000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uHR-4H-wM0">
+                                        <rect key="frame" x="110" y="0.0" width="1" height="131"/>
+                                        <color key="backgroundColor" name="Card Separator"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="1" id="oMT-xJ-5oM"/>
+                                        </constraints>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Puj-Fi-ooK">
+                                        <rect key="frame" x="138" y="46.5" width="54" height="38.5"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="2.7k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KlU-d1-f6d" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                <rect key="frame" x="8.5" y="0.0" width="37" height="24"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Followers" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AD5-2N-bCN">
+                                                <rect key="frame" x="0.0" y="24" width="54" height="14.5"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <view alpha="0.40000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="j6t-Mz-dBJ">
+                                        <rect key="frame" x="219.5" y="0.0" width="1" height="131"/>
+                                        <color key="backgroundColor" name="Card Separator"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="1" id="HkF-yo-PHE"/>
+                                        </constraints>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="c5L-mt-1Yw">
+                                        <rect key="frame" x="254" y="46.5" width="42" height="38.5"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="3.1k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DZT-p5-6TK" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                <rect key="frame" x="3.5" y="0.0" width="35" height="24"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Friends" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bra-Mm-gWt">
+                                                <rect key="frame" x="0.0" y="24" width="42" height="14.5"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <view alpha="0.40000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="84r-xm-WpL">
+                                        <rect key="frame" x="329.5" y="0.0" width="1" height="131"/>
+                                        <color key="backgroundColor" name="Card Separator"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="1" id="PJr-hc-bOe"/>
+                                        </constraints>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="oSU-fe-xzd">
+                                        <rect key="frame" x="362" y="46.5" width="45.5" height="38.5"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="3.1k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IOF-aQ-lib" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                <rect key="frame" x="5" y="0.0" width="35" height="24"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Blocked" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dX7-3w-fvv">
+                                                <rect key="frame" x="0.0" y="24" width="45.5" height="14.5"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <view alpha="0.0" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="flm-sN-GkC">
+                                        <rect key="frame" x="439" y="0.0" width="1" height="131"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="1" id="RjH-lk-dL8"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="uHR-4H-wM0" secondAttribute="bottom" id="18E-dy-kTX"/>
+                                    <constraint firstItem="uHR-4H-wM0" firstAttribute="top" secondItem="xdE-Ra-O9R" secondAttribute="top" id="8aN-oz-ema"/>
+                                    <constraint firstItem="84r-xm-WpL" firstAttribute="top" secondItem="xdE-Ra-O9R" secondAttribute="top" id="JHr-FW-jYy"/>
+                                    <constraint firstItem="0ma-sa-pbv" firstAttribute="top" secondItem="xdE-Ra-O9R" secondAttribute="top" constant="15" id="RGV-Co-itr"/>
+                                    <constraint firstItem="j6t-Mz-dBJ" firstAttribute="top" secondItem="xdE-Ra-O9R" secondAttribute="top" id="U3F-0k-toq"/>
+                                    <constraint firstAttribute="bottom" secondItem="84r-xm-WpL" secondAttribute="bottom" id="f1E-bu-ySq"/>
+                                    <constraint firstAttribute="bottom" secondItem="j6t-Mz-dBJ" secondAttribute="bottom" id="kNt-Hb-SxY"/>
+                                    <constraint firstAttribute="bottom" secondItem="0ma-sa-pbv" secondAttribute="bottom" constant="15" id="ogk-oX-PGa"/>
+                                </constraints>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="xdE-Ra-O9R" firstAttribute="top" secondItem="ft9-od-kzt" secondAttribute="top" id="Zcv-0V-SJR"/>
+                            <constraint firstItem="xdE-Ra-O9R" firstAttribute="leading" secondItem="ft9-od-kzt" secondAttribute="leading" id="cKB-Ps-HHX"/>
+                            <constraint firstAttribute="bottom" secondItem="xdE-Ra-O9R" secondAttribute="bottom" id="nv1-my-HRg"/>
+                            <constraint firstAttribute="trailing" secondItem="xdE-Ra-O9R" secondAttribute="trailing" id="xwZ-Cu-clm"/>
+                        </constraints>
+                    </view>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Sa2-6U-VqO" userLabel="Following">
+                        <rect key="frame" x="40.5" y="4" width="53.5" height="131"/>
+                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                        <connections>
+                            <action selector="following:" destination="gYx-E8-cQv" eventType="touchUpInside" id="Kg4-UQ-yNb"/>
+                        </connections>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ox2-ON-wKR" userLabel="Followers">
+                        <rect key="frame" x="150" y="4" width="54" height="131"/>
+                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                        <connections>
+                            <action selector="followers:" destination="gYx-E8-cQv" eventType="touchUpInside" id="abm-Ml-DoS"/>
+                        </connections>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="f7m-Yc-Qy0" userLabel="Friends">
+                        <rect key="frame" x="266" y="4" width="42" height="131"/>
+                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                        <connections>
+                            <action selector="friends:" destination="gYx-E8-cQv" eventType="touchUpInside" id="YKh-Sy-c4z"/>
+                        </connections>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ahE-o7-SAu" userLabel="Blocked">
+                        <rect key="frame" x="374" y="4" width="45.5" height="131"/>
+                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                        <connections>
+                            <action selector="blocked:" destination="gYx-E8-cQv" eventType="touchUpInside" id="ie0-1j-aCf"/>
+                        </connections>
+                    </button>
+                </subviews>
+                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                <constraints>
+                    <constraint firstItem="f7m-Yc-Qy0" firstAttribute="bottom" secondItem="xdE-Ra-O9R" secondAttribute="bottom" id="0y6-07-dK8"/>
+                    <constraint firstItem="ahE-o7-SAu" firstAttribute="leading" secondItem="oSU-fe-xzd" secondAttribute="leading" id="2nL-Tc-HXW"/>
+                    <constraint firstItem="Sa2-6U-VqO" firstAttribute="trailing" secondItem="0ma-sa-pbv" secondAttribute="trailing" id="3bS-SK-a8S"/>
+                    <constraint firstItem="ahE-o7-SAu" firstAttribute="trailing" secondItem="oSU-fe-xzd" secondAttribute="trailing" id="59b-kJ-T2s"/>
+                    <constraint firstItem="ft9-od-kzt" firstAttribute="leading" secondItem="dIS-ps-QF6" secondAttribute="leading" constant="12" id="5vL-uA-3xM"/>
+                    <constraint firstItem="f7m-Yc-Qy0" firstAttribute="leading" secondItem="c5L-mt-1Yw" secondAttribute="leading" id="6Xb-pl-SYA"/>
+                    <constraint firstItem="Ox2-ON-wKR" firstAttribute="bottom" secondItem="xdE-Ra-O9R" secondAttribute="bottom" id="94D-ne-SFp"/>
+                    <constraint firstItem="Sa2-6U-VqO" firstAttribute="leading" secondItem="0ma-sa-pbv" secondAttribute="leading" id="BxR-Zo-okC"/>
+                    <constraint firstItem="f7m-Yc-Qy0" firstAttribute="trailing" secondItem="c5L-mt-1Yw" secondAttribute="trailing" id="OkO-bK-2bN"/>
+                    <constraint firstItem="f7m-Yc-Qy0" firstAttribute="top" secondItem="xdE-Ra-O9R" secondAttribute="top" id="Ptr-a3-cJB"/>
+                    <constraint firstItem="Sa2-6U-VqO" firstAttribute="bottom" secondItem="xdE-Ra-O9R" secondAttribute="bottom" id="QSR-Mb-d9R"/>
+                    <constraint firstItem="Ox2-ON-wKR" firstAttribute="leading" secondItem="Puj-Fi-ooK" secondAttribute="leading" id="Ser-RY-vdS"/>
+                    <constraint firstAttribute="trailing" secondItem="ft9-od-kzt" secondAttribute="trailing" constant="12" id="UYU-zI-IuG"/>
+                    <constraint firstItem="ahE-o7-SAu" firstAttribute="top" secondItem="xdE-Ra-O9R" secondAttribute="top" id="WAf-UH-j4a"/>
+                    <constraint firstItem="Ox2-ON-wKR" firstAttribute="top" secondItem="xdE-Ra-O9R" secondAttribute="top" id="aG6-5a-QuF"/>
+                    <constraint firstAttribute="bottom" secondItem="ft9-od-kzt" secondAttribute="bottom" constant="4" id="cTi-qF-1hB"/>
+                    <constraint firstItem="Ox2-ON-wKR" firstAttribute="trailing" secondItem="Puj-Fi-ooK" secondAttribute="trailing" id="dmw-8H-vKX"/>
+                    <constraint firstItem="ahE-o7-SAu" firstAttribute="bottom" secondItem="xdE-Ra-O9R" secondAttribute="bottom" id="ek8-Ko-Zqd"/>
+                    <constraint firstItem="ft9-od-kzt" firstAttribute="top" secondItem="dIS-ps-QF6" secondAttribute="top" constant="4" id="fX8-6L-jJt"/>
+                    <constraint firstItem="Sa2-6U-VqO" firstAttribute="top" secondItem="xdE-Ra-O9R" secondAttribute="top" id="g4I-xA-OYe"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="blockedCount" destination="IOF-aQ-lib" id="2u7-sc-God"/>
+                <outlet property="blockedSeparator" destination="84r-xm-WpL" id="dqn-WJ-dAe"/>
+                <outlet property="followersCount" destination="KlU-d1-f6d" id="jOA-pi-3B7"/>
+                <outlet property="followingCount" destination="Ydd-4v-mju" id="4bb-S8-tQV"/>
+                <outlet property="friendsCount" destination="DZT-p5-6TK" id="5BE-fn-1DD"/>
+            </connections>
+            <point key="canvasLocation" x="-128.98550724637681" y="-16.40625"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <namedColor name="Card Separator">
+            <color red="0.73725490196078436" green="0.73725490196078436" blue="0.73725490196078436" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

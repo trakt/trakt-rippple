@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="dark"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="stats" rowHeight="139" id="uqR-kW-ESU" customClass="StatsTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="464" height="139"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="uqR-kW-ESU" id="7qK-lE-rga">
+                <rect key="frame" x="0.0" y="0.0" width="464" height="139"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JUe-xR-9dU" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="440" height="131"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1Zd-VU-Xuk">
+                                <rect key="frame" x="1" y="0.0" width="438" height="131"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="h17-q2-NSS">
+                                        <rect key="frame" x="0.0" y="0.0" width="376" height="131"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="center" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="Yz8-Ns-pqg">
+                                                <rect key="frame" x="18" y="12" width="346" height="107"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="c31-al-Xpz">
+                                                        <rect key="frame" x="0.0" y="34.5" width="51.5" height="38.5"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="2.0k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sw5-2B-z0Q" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="38" height="24"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="watchers" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aKa-3h-Nu7">
+                                                                <rect key="frame" x="0.0" y="24" width="51.5" height="14.5"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="deb-Vh-MF7">
+                                                        <rect key="frame" x="81.5" y="34.5" width="37" height="38.5"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="2.7k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FiM-Qe-vDi" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="37" height="24"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="plays" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vRU-BN-PLd">
+                                                                <rect key="frame" x="0.0" y="24" width="29.5" height="14.5"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="bQU-DY-otE">
+                                                        <rect key="frame" x="148.5" y="34.5" width="35" height="38.5"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="3.1k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VxX-f6-3jQ" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="35" height="24"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="listed" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NXe-MR-L7J">
+                                                                <rect key="frame" x="0.0" y="24" width="31" height="14.5"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="O3l-eW-nWO">
+                                                        <rect key="frame" x="213.5" y="34.5" width="52.5" height="38.5"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="1k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Q6K-go-WJL" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="19" height="24"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="collected" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tiQ-Wv-EaX">
+                                                                <rect key="frame" x="0.0" y="24" width="52.5" height="14.5"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="RI8-c7-mik">
+                                                        <rect key="frame" x="296" y="34.5" width="50" height="38.5"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="1k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FNp-CH-fhu" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="19" height="24"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="favorited" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GVe-rX-XnT">
+                                                                <rect key="frame" x="0.0" y="24" width="50" height="14.5"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="bottom" secondItem="Yz8-Ns-pqg" secondAttribute="bottom" constant="12" id="QRW-4O-eFa"/>
+                                            <constraint firstItem="Yz8-Ns-pqg" firstAttribute="top" secondItem="h17-q2-NSS" secondAttribute="top" constant="12" id="Y4g-0u-6cD"/>
+                                            <constraint firstAttribute="trailing" secondItem="Yz8-Ns-pqg" secondAttribute="trailing" constant="12" id="ZND-qP-nBY"/>
+                                            <constraint firstItem="Yz8-Ns-pqg" firstAttribute="leading" secondItem="h17-q2-NSS" secondAttribute="leadingMargin" constant="10" id="cYM-vF-k9L"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="h17-q2-NSS" firstAttribute="leading" secondItem="1Zd-VU-Xuk" secondAttribute="leading" id="CQd-xe-hXU"/>
+                                    <constraint firstAttribute="trailing" secondItem="h17-q2-NSS" secondAttribute="trailing" id="HI8-Te-9Uo"/>
+                                    <constraint firstAttribute="bottom" secondItem="h17-q2-NSS" secondAttribute="bottom" id="ID6-O8-v3D"/>
+                                    <constraint firstItem="h17-q2-NSS" firstAttribute="top" secondItem="1Zd-VU-Xuk" secondAttribute="top" id="ZIe-SR-oFs"/>
+                                    <constraint firstItem="4Ls-dm-WAH" firstAttribute="width" secondItem="h17-q2-NSS" secondAttribute="width" id="eEY-ww-N67"/>
+                                    <constraint firstItem="4Ls-dm-WAH" firstAttribute="height" secondItem="h17-q2-NSS" secondAttribute="height" id="jJs-Fh-s3a"/>
+                                    <constraint firstItem="jQi-wb-5Ow" firstAttribute="height" secondItem="h17-q2-NSS" secondAttribute="height" id="qPe-jC-JrO"/>
+                                </constraints>
+                                <viewLayoutGuide key="contentLayoutGuide" id="4Ls-dm-WAH"/>
+                                <viewLayoutGuide key="frameLayoutGuide" id="jQi-wb-5Ow"/>
+                            </scrollView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="1Zd-VU-Xuk" firstAttribute="leading" secondItem="JUe-xR-9dU" secondAttribute="leading" constant="1" id="5L6-ez-R8F"/>
+                            <constraint firstItem="1Zd-VU-Xuk" firstAttribute="top" secondItem="JUe-xR-9dU" secondAttribute="top" id="c7w-1l-7rf"/>
+                            <constraint firstAttribute="bottom" secondItem="1Zd-VU-Xuk" secondAttribute="bottom" id="m8R-BJ-EA6"/>
+                            <constraint firstAttribute="trailing" secondItem="1Zd-VU-Xuk" secondAttribute="trailing" constant="1" id="qaj-xi-q1v"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                <constraints>
+                    <constraint firstItem="JUe-xR-9dU" firstAttribute="top" secondItem="7qK-lE-rga" secondAttribute="top" constant="4" id="Mqm-iG-b5y"/>
+                    <constraint firstItem="JUe-xR-9dU" firstAttribute="leading" secondItem="7qK-lE-rga" secondAttribute="leading" constant="12" id="XZL-yc-XNE"/>
+                    <constraint firstAttribute="bottom" secondItem="JUe-xR-9dU" secondAttribute="bottom" constant="4" id="noD-FY-TQM"/>
+                    <constraint firstAttribute="trailing" secondItem="JUe-xR-9dU" secondAttribute="trailing" constant="12" id="xuY-xj-uby"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="collected" destination="Q6K-go-WJL" id="Qrh-Hx-Jvl"/>
+                <outlet property="lists" destination="VxX-f6-3jQ" id="sX1-Wm-AdZ"/>
+                <outlet property="plays" destination="FiM-Qe-vDi" id="2ND-fQ-k5v"/>
+                <outlet property="recommended" destination="FNp-CH-fhu" id="H4y-ih-Lsi"/>
+                <outlet property="recommendedStack" destination="RI8-c7-mik" id="rBS-xk-tVe"/>
+                <outlet property="watchers" destination="sw5-2B-z0Q" id="ct8-iw-F98"/>
+            </connections>
+            <point key="canvasLocation" x="-129.59999999999999" y="152.47376311844079"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

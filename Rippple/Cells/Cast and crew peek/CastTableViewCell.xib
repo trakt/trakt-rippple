@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="cast" rowHeight="208" id="DbM-Cj-eRr" customClass="CastTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="380" height="201"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="DbM-Cj-eRr" id="TZX-SI-ALZ">
+                <rect key="frame" x="0.0" y="0.0" width="380" height="201"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pIG-nC-F5E" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="356" height="193"/>
+                        <subviews>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" dataMode="none" prefetchingEnabled="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TeP-Jq-ith">
+                                <rect key="frame" x="0.0" y="38.5" width="356" height="148.5"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="148" id="9H2-j3-D2i"/>
+                                </constraints>
+                                <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="DTd-vP-grm">
+                                    <size key="itemSize" width="98" height="125"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="14" minY="0.0" maxX="14" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <connections>
+                                    <outlet property="dataSource" destination="DbM-Cj-eRr" id="TMe-ae-wGb"/>
+                                    <outlet property="delegate" destination="DbM-Cj-eRr" id="8MA-DV-mr7"/>
+                                </connections>
+                            </collectionView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cast &amp; Crew" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7SI-FQ-KJa">
+                                <rect key="frame" x="13" y="10" width="98.5" height="20.5"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xAY-yE-kt7" customClass="TitleOnlyButton" customModule="Rippple" customModuleProvider="target">
+                                <rect key="frame" x="306" y="7" width="38" height="27"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                <state key="normal" title="See all"/>
+                                <connections>
+                                    <action selector="showAll:" destination="DbM-Cj-eRr" eventType="touchUpInside" id="6DU-ND-xRH"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="TeP-Jq-ith" secondAttribute="bottom" constant="6" id="8Pm-oX-R8M"/>
+                            <constraint firstAttribute="trailing" secondItem="TeP-Jq-ith" secondAttribute="trailing" id="MD9-3k-bIe"/>
+                            <constraint firstItem="xAY-yE-kt7" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="7SI-FQ-KJa" secondAttribute="trailing" constant="2" id="VER-2R-5u8"/>
+                            <constraint firstAttribute="trailing" secondItem="xAY-yE-kt7" secondAttribute="trailing" constant="12" id="ZnQ-fY-zS5"/>
+                            <constraint firstItem="7SI-FQ-KJa" firstAttribute="leading" secondItem="pIG-nC-F5E" secondAttribute="leading" constant="13" id="cbH-oC-enM"/>
+                            <constraint firstItem="TeP-Jq-ith" firstAttribute="top" secondItem="7SI-FQ-KJa" secondAttribute="bottom" constant="8" id="eSX-vL-hzY"/>
+                            <constraint firstItem="TeP-Jq-ith" firstAttribute="leading" secondItem="pIG-nC-F5E" secondAttribute="leading" id="ilB-Le-5Mh"/>
+                            <constraint firstItem="xAY-yE-kt7" firstAttribute="centerY" secondItem="7SI-FQ-KJa" secondAttribute="centerY" id="nxn-Ao-fTK"/>
+                            <constraint firstItem="7SI-FQ-KJa" firstAttribute="top" secondItem="pIG-nC-F5E" secondAttribute="top" constant="10" id="oDN-du-tPT"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                <constraints>
+                    <constraint firstAttribute="bottom" secondItem="pIG-nC-F5E" secondAttribute="bottom" constant="4" id="PaL-EO-IUe"/>
+                    <constraint firstAttribute="trailing" secondItem="pIG-nC-F5E" secondAttribute="trailing" constant="12" id="UBU-sH-yqU"/>
+                    <constraint firstItem="pIG-nC-F5E" firstAttribute="top" secondItem="TZX-SI-ALZ" secondAttribute="top" constant="4" id="WH0-uC-5yo"/>
+                    <constraint firstItem="pIG-nC-F5E" firstAttribute="leading" secondItem="TZX-SI-ALZ" secondAttribute="leading" constant="12" id="r57-rm-fJu"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="collectionView" destination="TeP-Jq-ith" id="v1l-jH-p8N"/>
+                <outlet property="moreAction" destination="xAY-yE-kt7" id="RVB-OC-ibj"/>
+                <outlet property="titleLabel" destination="7SI-FQ-KJa" id="Vfa-vs-6tz"/>
+            </connections>
+            <point key="canvasLocation" x="69.565217391304358" y="78.683035714285708"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

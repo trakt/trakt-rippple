@@ -1,0 +1,16 @@
+//
+//  AppIconContainerController.swift
+//  Rippple
+//
+//  Created by Kevin Cador on 20/09/2024.
+//  Copyright © 2024 Trakt. All rights reserved.
+//
+
+import UIKit
+import SwiftUI
+
+final class AppIconContainerController: UIHostingController<AppIconChooserView> {
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder, rootView: AppIconChooserView())
+    }
+}

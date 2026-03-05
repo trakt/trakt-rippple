@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24093.9" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="QX9-08-nBH">
+    <device id="ipad12_9rounded" orientation="landscape" layout="fullscreen" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24057"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Compose Navigation Controller-->
+        <scene sceneID="uJg-Rx-NJa">
+            <objects>
+                <navigationController id="QX9-08-nBH" customClass="ComposeNavigationController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Vph-2m-H2n">
+                        <rect key="frame" x="0.0" y="24" width="1366" height="54"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="VR6-Bn-8xk" kind="relationship" relationship="rootViewController" id="WlM-eJ-YKR"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="JkN-CC-8cQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2982" y="1503"/>
+        </scene>
+        <!--Compose-->
+        <scene sceneID="iT2-FG-QaV">
+            <objects>
+                <viewController id="VR6-Bn-8xk" customClass="CommentComposerViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="3E6-aB-vaf">
+                        <rect key="frame" x="0.0" y="0.0" width="1366" height="1024"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="ysi-Yt-col">
+                                <rect key="frame" x="15" y="78" width="1336" height="956"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <inset key="scrollIndicatorInsets" minX="0.0" minY="0.0" maxX="-15" maxY="0.0"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                <connections>
+                                    <outlet property="delegate" destination="VR6-Bn-8xk" id="OUz-iV-kef"/>
+                                </connections>
+                            </textView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="CT2-gc-eBV"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="CT2-gc-eBV" firstAttribute="trailing" secondItem="ysi-Yt-col" secondAttribute="trailing" constant="15" id="765-Gm-VGo"/>
+                            <constraint firstItem="CT2-gc-eBV" firstAttribute="bottom" secondItem="ysi-Yt-col" secondAttribute="bottom" constant="-60" id="CAF-Qc-YXj"/>
+                            <constraint firstItem="ysi-Yt-col" firstAttribute="leading" secondItem="CT2-gc-eBV" secondAttribute="leading" constant="15" id="i6R-Wk-7nY"/>
+                            <constraint firstItem="ysi-Yt-col" firstAttribute="top" secondItem="CT2-gc-eBV" secondAttribute="top" id="nMf-3v-sUS"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Compose" style="browser" id="7AJ-Jg-EzR">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="K3W-hc-XXj">
+                            <connections>
+                                <action selector="cancel:" destination="VR6-Bn-8xk" id="Hux-db-VmK"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="Preview" id="Zqe-jB-bux">
+                            <connections>
+                                <action selector="preview:" destination="VR6-Bn-8xk" id="eHe-KJ-ObF"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
+                    <connections>
+                        <outlet property="commentTextView" destination="ysi-Yt-col" id="d1i-52-0kT"/>
+                        <outlet property="customToolbar" destination="3q7-R7-rWO" id="XI6-M6-zXX"/>
+                        <outlet property="previewBarButtonItem" destination="Zqe-jB-bux" id="c1m-k2-ax0"/>
+                        <segue destination="rgq-5c-m16" kind="show" identifier="preview" id="WZc-Ui-DG0"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="vdM-yE-gkv" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="3q7-R7-rWO">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                    <items>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="MIw-qH-m9U"/>
+                        <barButtonItem image="bold" catalog="system" width="55" id="pW7-SV-B0h">
+                            <connections>
+                                <action selector="bold:" destination="VR6-Bn-8xk" id="u6H-gj-mVw"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="g9y-uG-WRi"/>
+                        <barButtonItem image="italic" catalog="system" width="55" id="Y8F-mU-gYx">
+                            <connections>
+                                <action selector="italic:" destination="VR6-Bn-8xk" id="SzE-Rr-OHY"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="qnh-N3-ELV"/>
+                        <barButtonItem image="strikethrough" catalog="system" width="55" id="53O-d8-7j0">
+                            <connections>
+                                <action selector="strike:" destination="VR6-Bn-8xk" id="fxv-Gh-GyU"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="y3L-SL-ITq"/>
+                        <barButtonItem image="h.square.fill" catalog="system" width="55" id="eqC-Rf-nFA">
+                            <connections>
+                                <action selector="highlight:" destination="VR6-Bn-8xk" id="SSX-0B-uXo"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="pln-SZ-5dw"/>
+                        <barButtonItem image="text.redaction" catalog="system" width="55" id="Fn1-Or-VJC">
+                            <connections>
+                                <action selector="spoiler:" destination="VR6-Bn-8xk" id="BUo-zO-TO7"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="aN7-aZ-6ZO"/>
+                    </items>
+                    <color key="barTintColor" systemColor="systemBackgroundColor"/>
+                </toolbar>
+            </objects>
+            <point key="canvasLocation" x="3847" y="1503"/>
+        </scene>
+        <!--Preview-->
+        <scene sceneID="nHk-Nn-Ymn">
+            <objects>
+                <viewController id="rgq-5c-m16" customClass="PreviewViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="EmJ-Uy-lvh">
+                        <rect key="frame" x="0.0" y="0.0" width="1366" height="1024"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="b4W-XZ-pUE">
+                                <rect key="frame" x="0.0" y="0.0" width="1366" height="1024"/>
+                                <connections>
+                                    <segue destination="dEJ-n4-adY" kind="embed" id="OSF-CT-FYL"/>
+                                </connections>
+                            </containerView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="4gd-z2-HkA"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="b4W-XZ-pUE" firstAttribute="top" secondItem="EmJ-Uy-lvh" secondAttribute="top" id="54I-vj-nLD"/>
+                            <constraint firstItem="b4W-XZ-pUE" firstAttribute="bottom" secondItem="EmJ-Uy-lvh" secondAttribute="bottom" id="k7G-mH-HFT"/>
+                            <constraint firstAttribute="trailing" secondItem="b4W-XZ-pUE" secondAttribute="trailing" id="kF6-on-Imz"/>
+                            <constraint firstItem="b4W-XZ-pUE" firstAttribute="leading" secondItem="EmJ-Uy-lvh" secondAttribute="leading" id="nsv-7y-OGu"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Preview" id="dcm-OE-2N8">
+                        <barButtonItem key="rightBarButtonItem" title="Send" id="VXY-C7-sew">
+                            <connections>
+                                <action selector="send:" destination="rgq-5c-m16" id="RDx-oy-bY9"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="sendButton" destination="VXY-C7-sew" id="WGR-jk-Sxf"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="HJm-Cm-wen" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="5730" y="1503"/>
+        </scene>
+        <!--CommentsViewController-->
+        <scene sceneID="kD1-N3-192">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Main" referencedIdentifier="CommentsViewController" id="dEJ-n4-adY" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="CoB-pF-7yz" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6662" y="1503"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="bold" catalog="system" width="128" height="128"/>
+        <image name="h.square.fill" catalog="system" width="128" height="114"/>
+        <image name="italic" catalog="system" width="115" height="128"/>
+        <image name="strikethrough" catalog="system" width="128" height="101"/>
+        <image name="text.redaction" catalog="system" width="128" height="101"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

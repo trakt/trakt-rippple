@@ -1,0 +1,43 @@
+{
+  "applinks": {
+      "details": [
+           {
+             "appIDs": [ "GZG6JGPM44.tv.trakt.rippple", "9FFHQH95BG.com.linitix.rippple" ],
+             "components": [
+               {
+                  "/": "/shows/*",
+                  "comment": "Matches any URL with a path that starts with /shows/."
+               },
+               {
+                  "/": "/movies/*",
+                  "comment": "Matches any URL with a path that starts with /movies/."
+               },
+               {
+                  "/": "/comments/*",
+                  "comment": "Matches any URL with a path that starts with /comments/."
+               },
+               {
+                  "/": "/users/*",
+                  "comment": "Matches any URL with a path that starts with /users/."
+               },
+               {
+                  "/": "/people/*",
+                  "comment": "Matches any URL with a path that starts with /people/."
+               },
+               {
+                  "/": "/search/*",
+                  "comment": "Matches any URL with a path that starts with /search/[query]."
+               },
+               {
+                  "/": "/tmdb/*",
+                  "comment": "Matches any URL with a path that starts with /tmdb/."
+               },
+               {
+                  "/": "/whatsnew",
+                  "comment": "Matches any URL with a path that starts with /whatsnew."
+               }
+             ]
+           }
+       ]
+   }
+}

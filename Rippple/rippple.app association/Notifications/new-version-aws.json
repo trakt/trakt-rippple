@@ -1,0 +1,4 @@
+{
+  "default": ".",
+  "APNS": "{\"aps\":{\"alert\":{\"title\":\"New Beta Available\",\"body\":\"A new beta version of Rippple is now available on TestFlight. Check it out 👀\"},\"mutable-content\":1},\"version-check\":2000}"
+}

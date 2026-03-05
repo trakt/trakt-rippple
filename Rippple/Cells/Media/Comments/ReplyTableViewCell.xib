@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24123.1" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="dark"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24062"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="reply" rowHeight="166" id="GW1-BX-P8v" customClass="CommentTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="388" height="166"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="GW1-BX-P8v" id="oSu-0b-vo8">
+                <rect key="frame" x="0.0" y="0.0" width="388" height="166"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bg_bubble_grey" translatesAutoresizingMaskIntoConstraints="NO" id="lsy-Ix-Vvi">
+                        <rect key="frame" x="23" y="37" width="317" height="91"/>
+                    </imageView>
+                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="m0u-PI-4c9">
+                        <rect key="frame" x="11" y="10" width="341" height="141"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="elO-97-1Za">
+                                <rect key="frame" x="0.0" y="0.0" width="341" height="28"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="4Cn-oH-5rb">
+                                        <rect key="frame" x="12" y="0.0" width="208" height="28"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Reply about" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RW9-a0-2r7">
+                                                <rect key="frame" x="0.0" y="0.0" width="72" height="28"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="K50-y2-eXO" customClass="TitleOnlyButton" customModule="Rippple" customModuleProvider="target">
+                                                <rect key="frame" x="77" y="0.0" width="131" height="28"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                <state key="normal" title="The Game of Thrones"/>
+                                                <connections>
+                                                    <action selector="presentParent:" destination="GW1-BX-P8v" eventType="touchUpInside" id="bwp-8P-kim"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <edgeInsets key="layoutMargins" top="0.0" left="12" bottom="0.0" right="0.0"/>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xhd-hp-KgB">
+                                <rect key="frame" x="0.0" y="42" width="341" height="65"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="Klh-7T-HJ7">
+                                        <rect key="frame" x="25" y="-5" width="291" height="63"/>
+                                        <subviews>
+                                            <label contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xVx-dt-P4K">
+                                                <rect key="frame" x="0.0" y="0.0" width="291" height="16"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="d98-hb-7Rt" customClass="LinkEnabledLabel" customModule="Rippple" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="21" width="291" height="20.5"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="6MX-Hp-kce">
+                                                <rect key="frame" x="0.0" y="46.5" width="291" height="16.5"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0Ud-k1-pBK">
+                                                        <rect key="frame" x="0.0" y="0.0" width="291" height="6"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="6" id="dUQ-3Y-ws8"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="2pG-yX-pIn">
+                                                        <rect key="frame" x="0.0" y="6" width="91.5" height="10.5"/>
+                                                        <subviews>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="m7K-Qk-yr6" customClass="CommentReactionButton" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="91.5" height="10.5"/>
+                                                                <color key="tintColor" systemColor="labelColor"/>
+                                                                <state key="normal" title="Button"/>
+                                                                <buttonConfiguration key="configuration" style="gray" title="🤣❤️👏 12" cornerStyle="capsule">
+                                                                    <fontDescription key="titleFontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                </buttonConfiguration>
+                                                                <connections>
+                                                                    <action selector="presentLikes:" destination="GW1-BX-P8v" eventType="touchUpInside" id="LA4-bF-Pbl"/>
+                                                                </connections>
+                                                            </button>
+                                                            <button hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0Sw-GM-dVG" customClass="ReplyCountButton" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="0.0" height="10.5"/>
+                                                                <color key="tintColor" systemColor="labelColor"/>
+                                                                <state key="normal" title="Button"/>
+                                                                <buttonConfiguration key="configuration" style="gray" title="💬 5" cornerStyle="capsule">
+                                                                    <fontDescription key="titleFontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                </buttonConfiguration>
+                                                            </button>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <edgeInsets key="layoutMargins" top="-5" left="25" bottom="7" right="25"/>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="L6w-Y0-3ZG">
+                                <rect key="frame" x="0.0" y="121" width="341" height="20"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="dhD-wc-299">
+                                        <rect key="frame" x="0.0" y="0.0" width="257.5" height="20"/>
+                                        <subviews>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bg_placeholder_avatar_tiny" translatesAutoresizingMaskIntoConstraints="NO" id="J2F-XQ-kPc">
+                                                <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" secondItem="J2F-XQ-kPc" secondAttribute="height" multiplier="1:1" id="Daw-yJ-0Gk"/>
+                                                    <constraint firstAttribute="width" constant="20" id="mSb-d6-2Y6"/>
+                                                </constraints>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ffC-c3-xO7">
+                                                <rect key="frame" x="24" y="0.0" width="33" height="20"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="music.microphone" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="pop-oa-tEn">
+                                                <rect key="frame" x="61" y="1" width="17.5" height="17"/>
+                                                <color key="tintColor" systemColor="secondaryLabelColor"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="small" weight="black"/>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0dn-71-4d7">
+                                                <rect key="frame" x="82.5" y="0.0" width="33" height="20"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="llF-fL-oQX">
+                                                <rect key="frame" x="119.5" y="0.0" width="138" height="20"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V9x-7D-800" customClass="ReactButton" customModule="Rippple" customModuleProvider="target">
+                                                        <rect key="frame" x="8" y="0.0" width="30" height="20"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                        <color key="tintColor" name="Global Tint"/>
+                                                        <state key="normal" title="Like"/>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Y1c-mg-L18" customClass="TitleOnlyButton" customModule="Rippple" customModuleProvider="target">
+                                                        <rect key="frame" x="50" y="0.0" width="34" height="20"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                        <color key="tintColor" name="Global Tint"/>
+                                                        <state key="normal" title="Reply"/>
+                                                        <connections>
+                                                            <action selector="reply:" destination="GW1-BX-P8v" eventType="touchUpInside" id="dz0-Ly-2xQ"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rb3-Ew-CGt" customClass="TitleOnlyButton" customModule="Rippple" customModuleProvider="target">
+                                                        <rect key="frame" x="96" y="0.0" width="34" height="20"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                        <state key="normal" title="Block"/>
+                                                        <connections>
+                                                            <action selector="edit:" destination="GW1-BX-P8v" eventType="touchUpInside" id="Wpu-MK-QZs"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
+                                                <edgeInsets key="layoutMargins" top="0.0" left="8" bottom="0.0" right="8"/>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                    </stackView>
+                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="L5h-MZ-iUI">
+                        <rect key="frame" x="23" y="37" width="317" height="91"/>
+                        <connections>
+                            <action selector="edit:" destination="GW1-BX-P8v" eventType="touchUpInside" id="FAX-QG-hJy"/>
+                        </connections>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hVc-lG-PMN" userLabel="Present Author">
+                        <rect key="frame" x="11" y="131" width="57" height="20"/>
+                        <connections>
+                            <action selector="presentUser:" destination="GW1-BX-P8v" eventType="touchUpInside" id="EaE-JI-W3U"/>
+                        </connections>
+                    </button>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="lsy-Ix-Vvi" firstAttribute="leading" secondItem="Klh-7T-HJ7" secondAttribute="leading" constant="-13" id="9pk-at-ZCe"/>
+                    <constraint firstItem="lsy-Ix-Vvi" firstAttribute="bottom" secondItem="Klh-7T-HJ7" secondAttribute="bottom" constant="18" id="BWa-cl-Xqy"/>
+                    <constraint firstItem="m0u-PI-4c9" firstAttribute="bottom" secondItem="oSu-0b-vo8" secondAttribute="bottomMargin" id="P3l-yY-AE0"/>
+                    <constraint firstItem="m0u-PI-4c9" firstAttribute="leading" secondItem="oSu-0b-vo8" secondAttribute="leadingMargin" constant="-5" id="QbN-uR-yOK"/>
+                    <constraint firstItem="hVc-lG-PMN" firstAttribute="leading" secondItem="J2F-XQ-kPc" secondAttribute="leading" id="SUV-EB-eTd"/>
+                    <constraint firstItem="L5h-MZ-iUI" firstAttribute="trailing" secondItem="lsy-Ix-Vvi" secondAttribute="trailing" id="W07-VC-gYl"/>
+                    <constraint firstItem="lsy-Ix-Vvi" firstAttribute="top" secondItem="Klh-7T-HJ7" secondAttribute="top" constant="-10" id="WLR-lY-pjK"/>
+                    <constraint firstItem="L5h-MZ-iUI" firstAttribute="bottom" secondItem="lsy-Ix-Vvi" secondAttribute="bottom" id="Yug-KB-2A2"/>
+                    <constraint firstItem="m0u-PI-4c9" firstAttribute="top" secondItem="oSu-0b-vo8" secondAttribute="topMargin" constant="-5" id="ZSb-i2-VXH"/>
+                    <constraint firstItem="lsy-Ix-Vvi" firstAttribute="trailing" secondItem="Klh-7T-HJ7" secondAttribute="trailing" constant="13" id="jB7-1o-lmT"/>
+                    <constraint firstItem="hVc-lG-PMN" firstAttribute="top" secondItem="J2F-XQ-kPc" secondAttribute="top" id="jLH-gk-WAp"/>
+                    <constraint firstItem="hVc-lG-PMN" firstAttribute="trailing" secondItem="ffC-c3-xO7" secondAttribute="trailing" id="kCD-lu-Y21"/>
+                    <constraint firstItem="m0u-PI-4c9" firstAttribute="trailing" secondItem="oSu-0b-vo8" secondAttribute="trailingMargin" constant="-20" id="mSO-Yw-A3Q"/>
+                    <constraint firstItem="L5h-MZ-iUI" firstAttribute="top" secondItem="lsy-Ix-Vvi" secondAttribute="top" id="xd5-L8-I9q"/>
+                    <constraint firstItem="L5h-MZ-iUI" firstAttribute="leading" secondItem="lsy-Ix-Vvi" secondAttribute="leading" id="y8b-dA-fHM"/>
+                    <constraint firstItem="hVc-lG-PMN" firstAttribute="bottom" secondItem="J2F-XQ-kPc" secondAttribute="bottom" id="z2T-PO-eKn"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+            <connections>
+                <outlet property="avatarImageView" destination="J2F-XQ-kPc" id="z7b-Nm-yOL"/>
+                <outlet property="byLabel" destination="ffC-c3-xO7" id="IGU-FY-DbI"/>
+                <outlet property="chatBubbleBackgroundImage" destination="lsy-Ix-Vvi" id="UOM-WH-mR8"/>
+                <outlet property="commentLabel" destination="d98-hb-7Rt" id="3E9-OO-wPf"/>
+                <outlet property="commentReactionButton" destination="m7K-Qk-yr6" id="1hz-eI-1G6"/>
+                <outlet property="editButton" destination="L5h-MZ-iUI" id="ZpW-jj-jH7"/>
+                <outlet property="likeButton" destination="V9x-7D-800" id="4aY-aH-uq5"/>
+                <outlet property="ratingAndSpoilerLabel" destination="xVx-dt-P4K" id="qxC-Nu-bN1"/>
+                <outlet property="replyCountButton" destination="0Sw-GM-dVG" id="zRW-Se-4Gi"/>
+                <outlet property="replyMicImageView" destination="pop-oa-tEn" id="PtN-gF-HSi"/>
+                <outlet property="replyParentLabel" destination="RW9-a0-2r7" id="xoL-Xy-dPg"/>
+                <outlet property="replyParentLink" destination="K50-y2-eXO" id="aZj-gp-HPO"/>
+                <outlet property="timeLabel" destination="0dn-71-4d7" id="syR-jb-OKd"/>
+                <outletCollection property="actionViews" destination="V9x-7D-800" collectionClass="NSMutableArray" id="gzV-6S-XLK"/>
+                <outletCollection property="actionViews" destination="Y1c-mg-L18" collectionClass="NSMutableArray" id="eh1-kg-p31"/>
+                <outletCollection property="actionViews" destination="L5h-MZ-iUI" collectionClass="NSMutableArray" id="TSA-p6-qcI"/>
+                <outletCollection property="actionViews" destination="rb3-Ew-CGt" collectionClass="NSMutableArray" id="Khe-i1-CpY"/>
+            </connections>
+            <point key="canvasLocation" x="44.799999999999997" y="43.178410794602705"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="bg_bubble_grey" width="47" height="41"/>
+        <image name="bg_placeholder_avatar_tiny" width="30" height="30"/>
+        <image name="music.microphone" catalog="system" width="128" height="119"/>
+        <namedColor name="Global Tint">
+            <color red="0.68235294117647061" green="0.32156862745098042" blue="0.87058823529411766" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

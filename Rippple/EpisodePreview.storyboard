@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="3cJ-bp-xSA">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Episode Preview View Controller-->
+        <scene sceneID="UjJ-ae-LvP">
+            <objects>
+                <viewController id="3cJ-bp-xSA" customClass="EpisodePreviewViewController" customModule="Rippple" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="gaw-3v-lmA">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Dra-98-Vgp" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
+                                <rect key="frame" x="167" y="415" width="80" height="80"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="80" id="Wk9-9S-eVj"/>
+                                    <constraint firstAttribute="width" secondItem="Dra-98-Vgp" secondAttribute="height" multiplier="1:1" id="meL-fD-k6X"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="typeName" value="ballScaleMultiple"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="6Ag-Vz-3EC" customClass="BackdropImageView" customModule="Rippple" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="-8" width="414" height="870"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ZmG-dN-BaO" customClass="BackdropImageView" customModule="Rippple" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="862"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="e2c-oO-eVJ" customClass="BackdropImageView" customModule="Rippple" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="862"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="q57-RS-krB" customClass="BackdropImageView" customModule="Rippple" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="862"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="OvA-Ds-4UH"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="OvA-Ds-4UH" firstAttribute="bottom" secondItem="q57-RS-krB" secondAttribute="bottom" id="3I6-IE-grm"/>
+                            <constraint firstItem="6Ag-Vz-3EC" firstAttribute="leading" secondItem="OvA-Ds-4UH" secondAttribute="leading" id="9Sl-7m-OWy"/>
+                            <constraint firstItem="e2c-oO-eVJ" firstAttribute="leading" secondItem="OvA-Ds-4UH" secondAttribute="leading" id="AzD-ld-jPS"/>
+                            <constraint firstItem="6Ag-Vz-3EC" firstAttribute="topMargin" secondItem="gaw-3v-lmA" secondAttribute="topMargin" id="JI8-vF-a83"/>
+                            <constraint firstItem="Dra-98-Vgp" firstAttribute="centerY" secondItem="OvA-Ds-4UH" secondAttribute="centerY" id="MBt-PI-hSx"/>
+                            <constraint firstItem="e2c-oO-eVJ" firstAttribute="top" secondItem="gaw-3v-lmA" secondAttribute="top" id="PR7-gA-WHH"/>
+                            <constraint firstItem="ZmG-dN-BaO" firstAttribute="top" secondItem="gaw-3v-lmA" secondAttribute="top" id="PpO-vb-8Dl"/>
+                            <constraint firstItem="e2c-oO-eVJ" firstAttribute="trailing" secondItem="OvA-Ds-4UH" secondAttribute="trailing" id="PtV-V7-7dY"/>
+                            <constraint firstItem="OvA-Ds-4UH" firstAttribute="bottom" secondItem="ZmG-dN-BaO" secondAttribute="bottom" id="REx-UA-87O"/>
+                            <constraint firstItem="Dra-98-Vgp" firstAttribute="centerX" secondItem="OvA-Ds-4UH" secondAttribute="centerX" id="blE-XQ-fCL"/>
+                            <constraint firstItem="OvA-Ds-4UH" firstAttribute="bottom" secondItem="6Ag-Vz-3EC" secondAttribute="bottom" id="fBf-WO-bmS"/>
+                            <constraint firstItem="ZmG-dN-BaO" firstAttribute="leading" secondItem="OvA-Ds-4UH" secondAttribute="leading" id="iNc-di-WES"/>
+                            <constraint firstItem="q57-RS-krB" firstAttribute="leading" secondItem="OvA-Ds-4UH" secondAttribute="leading" id="m7c-zM-x6X"/>
+                            <constraint firstItem="ZmG-dN-BaO" firstAttribute="trailing" secondItem="OvA-Ds-4UH" secondAttribute="trailing" id="mgT-yO-YHp"/>
+                            <constraint firstItem="6Ag-Vz-3EC" firstAttribute="trailing" secondItem="OvA-Ds-4UH" secondAttribute="trailing" id="njP-gO-1ii"/>
+                            <constraint firstItem="q57-RS-krB" firstAttribute="trailing" secondItem="OvA-Ds-4UH" secondAttribute="trailing" id="r3X-gW-29h"/>
+                            <constraint firstItem="OvA-Ds-4UH" firstAttribute="bottom" secondItem="e2c-oO-eVJ" secondAttribute="bottom" id="rIw-HZ-Aaj"/>
+                            <constraint firstItem="q57-RS-krB" firstAttribute="top" secondItem="gaw-3v-lmA" secondAttribute="top" id="vhp-WK-j0K"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="backBackdropImageView" destination="ZmG-dN-BaO" id="2Ry-vE-jZE"/>
+                        <outlet property="backPreviewBackdropImageView" destination="6Ag-Vz-3EC" id="Mdn-mw-wxc"/>
+                        <outlet property="frontBackdropImageView" destination="q57-RS-krB" id="KiQ-me-CGx"/>
+                        <outlet property="frontPreviewBackdropImageView" destination="e2c-oO-eVJ" id="Iul-So-WBy"/>
+                        <outlet property="loadingIndicator" destination="Dra-98-Vgp" id="A1j-aX-NeE"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="edl-dX-INW" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="15.942028985507248" y="83.705357142857139"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

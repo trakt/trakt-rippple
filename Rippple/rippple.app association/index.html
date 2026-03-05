@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Rippple</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="description" content="Rippple Links">
+        <meta name="robots" content="noindex, nofollow">
+        <link rel="stylesheet" href="/style.css">
+        <link rel="icon" type="image/png" sizes="32x32" href="https://ripppleapp.com/images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="https://ripppleapp.com/images/favicon/favicon-16x16.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="https://ripppleapp.com/images/favicon/apple-touch-icon.png">
+        <script>
+        function inject() {
+            const path = window.location.pathname.substring(1);
+            const body = document.body;
+            
+            const apiUrl = "https://fxx4yg5xriaad3fkymitmjzria0pgloi.lambda-url.us-east-1.on.aws/" + path;
+
+            fetch(apiUrl)
+              .then(response => {
+                  if (!response.ok) {
+                      throw new Error('Network response was not ok');
+                  }
+                  return response.json();
+              })
+              .then(data => {
+                  body.innerHTML = data + "<footer>Powered by <a href=\"https://ripppleapp.com\" target=\"_blank\">Rippple</a> with 💜</footer>";
+                  
+                  const container = document.body;
+                  const poster = document.getElementById('poster');
+                  
+                  container.addEventListener('mousemove', (e) => {
+                      const xRatio = (e.clientX - container.getBoundingClientRect().left) / container.offsetWidth - 0.5;
+                      const yRatio = (e.clientY - container.getBoundingClientRect().top) / container.offsetHeight - 0.5;
+                      const maxAngle = 15;
+                      const maxTranslation = 15;
+                      
+                      const angleX = -yRatio * maxAngle;
+                      const angleY = xRatio * maxAngle;
+                      const translationX = -yRatio * maxTranslation;
+                      const translationY = xRatio * maxTranslation;
+                      
+                      poster.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) translateX(${translationX}px) translateY(${translationY}px)`;
+                      poster.style.transition = 'none';
+                  });
+                  
+                  container.addEventListener('mouseleave', () => {
+                      poster.style.transform = 'none';
+                      poster.style.transition = `transform 0.3s ease`;
+                  });
+              })
+              .catch(error => {
+                  body.innerHTML = "<div id=\"background\" style=\"background-image: url(\'https://rippple.app/static.gif\');\"></div><div id=\"notfound\"><h1>Oops! We can't find what you're looking for...</h1><p>You tried to access something that doesn't exist. If you believe this is an error, <a href=\"https://github.com/trakt/trakt-rippple/issues/new/choose\" target=\"_blank\">let me know.</a></p></div><footer>Powered by <a href=\"https://ripppleapp.com\" target=\"_blank\">Rippple</a> with 💜</footer>";
+              });
+        }
+        window.onload = inject;
+        </script>
+        <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        #background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(30px);
+            z-index: -1;
+        }
+        #background:before {
+            content: "";
+            position: absolute;
+            left: 0; right: 0;
+            top: 0; bottom: 0;
+            background: rgba(0,0,0,.4);
+            background-blend-mode: darken;
+        }
+        #content {
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 30px;
+            padding-bottom: 150px;
+            text-align: center;
+        }
+        #poster {
+            height: 40vh;
+            min-height: 150px;
+            aspect-ratio: 1/1.5;
+        }
+        h1 {
+            font-size: 19px;
+            text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+            margin: 30px 50px 20px;
+        }
+        p {
+            font-size: 16px;
+            text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+            margin: 20px 50px;
+        }
+        #notfound {
+            text-align: left;
+            padding-bottom: 150px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .button {
+            width: 30px;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-right: 5px;
+            margin-left: 5px;
+            box-shadow: 0px 0px 30px rgba(0, 0, 0, 0.5);
+            transition: all .2s ease-in-out;
+            background-clip: padding-box;
+        }
+        .button:hover {
+            transform: scale(1.1);
+        }
+        .button img {
+            width: 100%;
+            height: auto;
+        }
+        a {
+            color: #b05df2;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #BF5AF2;
+            text-decoration: none;
+        }
+        img {
+            border-radius: 25px;
+            box-shadow: 0px 0px 30px rgba(0, 0, 0, 0.5);
+        }
+        footer {
+            background-color: rgba(0, 0, 0, 0);
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        footer:hover {
+            opacity: 1.0;
+        }
+        .ripple-container {
+            position: relative;
+            width: 200px;
+            aspect-ratio: 1;
+            overflow: hidden;
+            border-radius: 50%;
+            background-color: transparent;
+        }
+
+        .ripple {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(238,133,245,0.46262254901960786) 0%, rgba(174,90,242,1) 85%);
+            border-radius: 50%;
+            animation: ripple-animation 2s infinite;
+            opacity: 0;
+        }
+
+        .ripple:nth-child(2) {
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+
+        .ripple:nth-child(3) {
+            animation-delay: 0.4s;
+            opacity: 0;
+        }
+
+        @keyframes ripple-animation {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0.05;
+            }
+        }
+        </style>
+    </head>
+    <body>
+        <div class="ripple-container">
+          <div class="ripple"></div>
+          <div class="ripple"></div>
+          <div class="ripple"></div>
+        </div>
+        <footer>
+          Powered by <a href="https://ripppleapp.com" target=\"_blank\">Rippple</a> with 💜
+        </footer>
+    </body>
+</html>

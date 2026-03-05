@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24123.1" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="dark"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24062"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="overview" rowHeight="249" id="gAx-yk-ygZ" customClass="MediaOverviewTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="478" height="249"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="gAx-yk-ygZ" id="sUs-qn-Yfb">
+                <rect key="frame" x="0.0" y="0.0" width="478" height="249"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dIu-9q-MMf" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="454" height="241"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="Ose-v0-zlF">
+                        <rect key="frame" x="24" y="18" width="430" height="213"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="999" verticalCompressionResistancePriority="1000" text="An epic saga of war, passion, and power set in Feudal Japan." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hHe-6E-8A0">
+                                <rect key="frame" x="0.0" y="0.0" width="430" height="57.5"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IUJ-BR-BD0">
+                                <rect key="frame" x="0.0" y="63.5" width="430" height="149.5"/>
+                                <string key="text">In Japan in the year 1600, at the dawn of a century-defining civil war, Lord Yoshii Toranaga is fighting for his life as his enemies on the Council of Regents unite against him, when a mysterious European ship is found marooned in a nearby fishing village.</string>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                    </stackView>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="Ose-v0-zlF" firstAttribute="trailing" secondItem="dIu-9q-MMf" secondAttribute="trailing" constant="-12" id="2FT-eL-UQ5"/>
+                    <constraint firstAttribute="trailing" secondItem="dIu-9q-MMf" secondAttribute="trailing" constant="12" id="8k4-pO-qvT"/>
+                    <constraint firstItem="Ose-v0-zlF" firstAttribute="bottom" secondItem="dIu-9q-MMf" secondAttribute="bottom" constant="-14" id="A0k-na-b23"/>
+                    <constraint firstAttribute="bottom" secondItem="dIu-9q-MMf" secondAttribute="bottom" constant="4" id="CcD-fB-jCY"/>
+                    <constraint firstItem="dIu-9q-MMf" firstAttribute="leading" secondItem="sUs-qn-Yfb" secondAttribute="leading" constant="12" id="Ra3-oR-haG"/>
+                    <constraint firstItem="Ose-v0-zlF" firstAttribute="leading" secondItem="dIu-9q-MMf" secondAttribute="leading" constant="12" id="Z6i-BM-PfW"/>
+                    <constraint firstItem="dIu-9q-MMf" firstAttribute="top" secondItem="sUs-qn-Yfb" secondAttribute="top" constant="4" id="f4o-eD-DuU"/>
+                    <constraint firstItem="Ose-v0-zlF" firstAttribute="top" secondItem="dIu-9q-MMf" secondAttribute="top" constant="14" id="l5C-mJ-MbI"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="overviewLabel" destination="IUJ-BR-BD0" id="X2o-kC-2Cu"/>
+                <outlet property="taglineLabel" destination="hHe-6E-8A0" id="TTF-OY-F0r"/>
+            </connections>
+            <point key="canvasLocation" x="219.19999999999999" y="220.83958020989508"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

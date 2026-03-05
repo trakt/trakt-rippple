@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24093.7" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24053.1"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="poster" rowHeight="301" id="4p6-39-ZDf" customClass="MediaPosterTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="301"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="4p6-39-ZDf" id="ltQ-pp-Sa6">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="301"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VDF-IX-NUw" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="351" height="293"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yzu-HI-iDb" customClass="InsideCardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="351" height="293"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7sR-2A-9iH" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
+                                <rect key="frame" x="135.5" y="106.5" width="80" height="80"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="80" id="CEJ-Ww-Fpo"/>
+                                    <constraint firstAttribute="width" secondItem="7sR-2A-9iH" secondAttribute="height" multiplier="1:1" id="Lyo-l9-u4q"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="typeName" value="ballScaleMultiple"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wN5-C6-Q3o">
+                                <rect key="frame" x="0.0" y="0.0" width="351" height="293"/>
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="lHT-6h-wzo" customClass="PosterImageView" customModule="Rippple" customModuleProvider="target">
+                                        <rect key="frame" x="-100" y="-267" width="551" height="827"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" secondItem="lHT-6h-wzo" secondAttribute="height" multiplier="2:3" id="Hfn-kO-anR"/>
+                                        </constraints>
+                                    </imageView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="lHT-6h-wzo" firstAttribute="centerY" secondItem="wN5-C6-Q3o" secondAttribute="centerY" id="2kU-HF-6pU"/>
+                                    <constraint firstItem="lHT-6h-wzo" firstAttribute="leading" secondItem="wN5-C6-Q3o" secondAttribute="leading" constant="-100" id="Cho-TY-QGw"/>
+                                    <constraint firstAttribute="trailing" secondItem="lHT-6h-wzo" secondAttribute="trailing" constant="-100" id="Iv4-P0-IYG"/>
+                                    <constraint firstItem="lHT-6h-wzo" firstAttribute="centerX" secondItem="wN5-C6-Q3o" secondAttribute="centerX" id="M9f-2N-H1s"/>
+                                </constraints>
+                            </view>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kcb-u9-iaJ" customClass="PosterImageView" customModule="Rippple" customModuleProvider="target">
+                                <rect key="frame" x="78" y="0.0" width="195" height="293"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="l1l-br-d0M" customClass="PosterImageView" customModule="Rippple" customModuleProvider="target">
+                                <rect key="frame" x="78" y="0.0" width="195" height="293"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="l1l-br-d0M" secondAttribute="height" multiplier="2:3" id="UyO-lf-EQ4"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="l1l-br-d0M" secondAttribute="bottom" id="1eK-QQ-cre"/>
+                            <constraint firstItem="l1l-br-d0M" firstAttribute="centerX" secondItem="yzu-HI-iDb" secondAttribute="centerX" id="Cmt-Jt-dTc"/>
+                            <constraint firstItem="7sR-2A-9iH" firstAttribute="centerY" secondItem="yzu-HI-iDb" secondAttribute="centerY" id="Fjd-yd-T4X"/>
+                            <constraint firstItem="kcb-u9-iaJ" firstAttribute="trailing" secondItem="l1l-br-d0M" secondAttribute="trailing" id="Naw-6e-tMV"/>
+                            <constraint firstItem="l1l-br-d0M" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="yzu-HI-iDb" secondAttribute="leading" id="PBE-ao-CVX"/>
+                            <constraint firstAttribute="bottom" secondItem="wN5-C6-Q3o" secondAttribute="bottom" id="Rkd-62-q6x"/>
+                            <constraint firstItem="kcb-u9-iaJ" firstAttribute="bottom" secondItem="l1l-br-d0M" secondAttribute="bottom" id="nMC-Sa-5Dc"/>
+                            <constraint firstItem="wN5-C6-Q3o" firstAttribute="leading" secondItem="yzu-HI-iDb" secondAttribute="leading" id="oAZ-0D-EpX"/>
+                            <constraint firstItem="7sR-2A-9iH" firstAttribute="centerX" secondItem="yzu-HI-iDb" secondAttribute="centerX" id="ouM-vy-1Ic"/>
+                            <constraint firstItem="kcb-u9-iaJ" firstAttribute="leading" secondItem="l1l-br-d0M" secondAttribute="leading" id="paS-mr-jav"/>
+                            <constraint firstAttribute="trailing" secondItem="wN5-C6-Q3o" secondAttribute="trailing" id="quD-bj-GiV"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="l1l-br-d0M" secondAttribute="trailing" id="sT7-tp-cdh"/>
+                            <constraint firstItem="wN5-C6-Q3o" firstAttribute="top" secondItem="yzu-HI-iDb" secondAttribute="top" id="ttr-tz-sAr"/>
+                            <constraint firstItem="kcb-u9-iaJ" firstAttribute="top" secondItem="l1l-br-d0M" secondAttribute="top" id="vRM-lf-WdX"/>
+                            <constraint firstItem="l1l-br-d0M" firstAttribute="top" secondItem="yzu-HI-iDb" secondAttribute="top" id="x1b-Xn-QUC"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="yzu-HI-iDb" firstAttribute="top" secondItem="ltQ-pp-Sa6" secondAttribute="top" constant="4" id="BtX-mO-6nB"/>
+                    <constraint firstItem="VDF-IX-NUw" firstAttribute="top" secondItem="yzu-HI-iDb" secondAttribute="top" id="SDL-gs-UDi"/>
+                    <constraint firstAttribute="trailing" secondItem="yzu-HI-iDb" secondAttribute="trailing" constant="12" id="VDf-RQ-sKP"/>
+                    <constraint firstItem="yzu-HI-iDb" firstAttribute="leading" secondItem="ltQ-pp-Sa6" secondAttribute="leading" constant="12" id="Vau-js-bQ8"/>
+                    <constraint firstItem="VDF-IX-NUw" firstAttribute="bottom" secondItem="yzu-HI-iDb" secondAttribute="bottom" id="ZXu-OE-GYr"/>
+                    <constraint firstItem="VDF-IX-NUw" firstAttribute="trailing" secondItem="yzu-HI-iDb" secondAttribute="trailing" id="h75-KO-VdK"/>
+                    <constraint firstAttribute="bottom" secondItem="yzu-HI-iDb" secondAttribute="bottom" constant="4" id="kAA-AF-cbf"/>
+                    <constraint firstItem="VDF-IX-NUw" firstAttribute="leading" secondItem="yzu-HI-iDb" secondAttribute="leading" id="qma-YV-rrA"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="blurryPosterImageView" destination="lHT-6h-wzo" id="lpA-wI-7EQ"/>
+                <outlet property="cardView" destination="yzu-HI-iDb" id="ByS-dT-1DL"/>
+                <outlet property="loadingIndicator" destination="7sR-2A-9iH" id="eAd-hO-687"/>
+                <outlet property="posterImageView" destination="l1l-br-d0M" id="nno-ub-Ek9"/>
+                <outlet property="previewPosterImageView" destination="kcb-u9-iaJ" id="9bu-qZ-emr"/>
+            </connections>
+            <point key="canvasLocation" x="-78.985507246376812" y="114.17410714285714"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

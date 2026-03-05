@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24112" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="dark"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24057"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="list action" rowHeight="66" id="aDx-TT-PND" customClass="ListActionTableViewCell" customModule="Rippple">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="66"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="aDx-TT-PND" id="nGw-cq-TUi">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="66"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="D4o-sg-jae" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="0.0" width="351" height="66"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="bSX-t2-W4U">
+                                <rect key="frame" x="12" y="12" width="327" height="42"/>
+                                <subviews>
+                                    <label userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="foG-Gy-fZf">
+                                        <rect key="frame" x="0.0" y="11" width="273.5" height="20.5"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" image="lock.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="mhy-WC-NDT">
+                                        <rect key="frame" x="281.5" y="14.5" width="11" height="13"/>
+                                        <color key="tintColor" systemColor="tertiaryLabelColor"/>
+                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="bold">
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                                        </preferredSymbolConfiguration>
+                                    </imageView>
+                                    <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" image="circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="NFw-4L-tsi">
+                                        <rect key="frame" x="300.5" y="7.5" width="26.5" height="26.5"/>
+                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large" weight="semibold"/>
+                                    </imageView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="bSX-t2-W4U" secondAttribute="bottom" constant="12" id="52v-0f-b9p"/>
+                            <constraint firstItem="bSX-t2-W4U" firstAttribute="leading" secondItem="D4o-sg-jae" secondAttribute="leading" constant="12" id="Nox-ah-6fa"/>
+                            <constraint firstAttribute="trailing" secondItem="bSX-t2-W4U" secondAttribute="trailing" constant="12" id="kl9-QP-V1O"/>
+                            <constraint firstItem="bSX-t2-W4U" firstAttribute="top" secondItem="D4o-sg-jae" secondAttribute="top" constant="12" id="tOu-KT-imj"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="D4o-sg-jae" firstAttribute="leading" secondItem="nGw-cq-TUi" secondAttribute="leading" constant="12" id="2eh-9T-yfq"/>
+                    <constraint firstAttribute="bottom" secondItem="D4o-sg-jae" secondAttribute="bottom" id="86G-px-qFq"/>
+                    <constraint firstItem="D4o-sg-jae" firstAttribute="top" secondItem="nGw-cq-TUi" secondAttribute="top" id="YaE-mx-Af7"/>
+                    <constraint firstAttribute="trailing" secondItem="D4o-sg-jae" secondAttribute="trailing" constant="12" id="f5P-T9-490"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="accessoryIndicator" destination="NFw-4L-tsi" id="OFA-rj-o38"/>
+                <outlet property="card" destination="D4o-sg-jae" id="Fii-rX-yGB"/>
+                <outlet property="privacyImageView" destination="mhy-WC-NDT" id="Wcl-Hw-WyL"/>
+                <outlet property="titleLabel" destination="foG-Gy-fZf" id="zri-J7-epN"/>
+            </connections>
+            <point key="canvasLocation" x="-77.599999999999994" y="35.982008995502248"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="circle" catalog="system" width="128" height="123"/>
+        <image name="lock.fill" catalog="system" width="111" height="128"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="tertiaryLabelColor">
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

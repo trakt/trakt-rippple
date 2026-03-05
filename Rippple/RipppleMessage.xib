@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="mGT-Jp-zjF" customClass="RipppleBannerMessage" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="70"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Z5i-aL-1wJ">
+                    <rect key="frame" x="236" y="10" width="128" height="50"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                </view>
+                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="fQd-R8-LA7">
+                    <rect key="frame" x="252" y="20" width="96" height="30"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="[Message Body]" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Jtv-Px-mvN" userLabel="Body Label">
+                            <rect key="frame" x="0.0" y="0.0" width="96" height="14.5"/>
+                            <accessibility key="accessibilityConfiguration">
+                                <bool key="isElement" value="NO"/>
+                            </accessibility>
+                            <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="[Message Body]" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2z4-wK-DpX" userLabel="Body Label">
+                            <rect key="frame" x="5.5" y="16.5" width="85.5" height="13.5"/>
+                            <accessibility key="accessibilityConfiguration">
+                                <bool key="isElement" value="NO"/>
+                            </accessibility>
+                            <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                            <color key="textColor" systemColor="secondaryLabelColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <constraints>
+                        <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="rB2-BR-UH0"/>
+                    </constraints>
+                </stackView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="Z5i-aL-1wJ" firstAttribute="trailing" secondItem="fQd-R8-LA7" secondAttribute="trailing" constant="16" id="8D0-3J-se8"/>
+                <constraint firstItem="Z5i-aL-1wJ" firstAttribute="top" secondItem="fQd-R8-LA7" secondAttribute="top" constant="-10" id="RiM-58-3fm"/>
+                <constraint firstItem="Z5i-aL-1wJ" firstAttribute="bottom" secondItem="fQd-R8-LA7" secondAttribute="bottom" constant="10" id="SY9-XK-wBy"/>
+                <constraint firstItem="fQd-R8-LA7" firstAttribute="centerX" secondItem="mGT-Jp-zjF" secondAttribute="centerX" id="YQ9-J6-HRJ"/>
+                <constraint firstItem="Z5i-aL-1wJ" firstAttribute="leading" secondItem="fQd-R8-LA7" secondAttribute="leading" constant="-16" id="cIL-FB-JpT"/>
+                <constraint firstItem="fQd-R8-LA7" firstAttribute="centerY" secondItem="mGT-Jp-zjF" secondAttribute="centerY" id="dNg-qd-AkC"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="message" destination="Jtv-Px-mvN" id="q1l-oQ-Gfg"/>
+                <outlet property="pillView" destination="Z5i-aL-1wJ" id="vqk-6w-YNa"/>
+                <outlet property="subtext" destination="2z4-wK-DpX" id="g1l-Zz-y1Z"/>
+            </connections>
+            <point key="canvasLocation" x="496" y="382.3088455772114"/>
+        </view>
+    </objects>
+    <resources>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

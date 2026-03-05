@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22113.1" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="3cJ-bp-xSA">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22089"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Media Preview View Controller-->
+        <scene sceneID="UjJ-ae-LvP">
+            <objects>
+                <viewController id="3cJ-bp-xSA" customClass="MediaPreviewViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="gaw-3v-lmA">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Dra-98-Vgp" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
+                                <rect key="frame" x="167" y="415" width="80" height="80"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="80" id="Wk9-9S-eVj"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="typeName" value="ballScaleMultiple"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Czs-xF-YCE" customClass="PosterImageView" customModule="Rippple" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="48" width="414" height="815"/>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ykN-Tl-FVd" customClass="PosterImageView" customModule="Rippple" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="48" width="414" height="814"/>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="OvA-Ds-4UH"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="OvA-Ds-4UH" firstAttribute="top" secondItem="ykN-Tl-FVd" secondAttribute="top" id="6Xi-xk-33p"/>
+                            <constraint firstItem="Czs-xF-YCE" firstAttribute="trailing" secondItem="ykN-Tl-FVd" secondAttribute="trailing" id="CeU-lL-1WW"/>
+                            <constraint firstItem="Dra-98-Vgp" firstAttribute="centerY" secondItem="OvA-Ds-4UH" secondAttribute="centerY" id="MBt-PI-hSx"/>
+                            <constraint firstItem="Czs-xF-YCE" firstAttribute="leading" secondItem="ykN-Tl-FVd" secondAttribute="leading" id="N0o-8K-vsZ"/>
+                            <constraint firstItem="ykN-Tl-FVd" firstAttribute="leading" secondItem="OvA-Ds-4UH" secondAttribute="leading" id="Q2R-qk-eCb"/>
+                            <constraint firstItem="Czs-xF-YCE" firstAttribute="top" secondItem="ykN-Tl-FVd" secondAttribute="top" id="TCF-8b-xLH"/>
+                            <constraint firstItem="Dra-98-Vgp" firstAttribute="centerX" secondItem="OvA-Ds-4UH" secondAttribute="centerX" id="blE-XQ-fCL"/>
+                            <constraint firstItem="Czs-xF-YCE" firstAttribute="bottom" secondItem="ykN-Tl-FVd" secondAttribute="bottom" constant="1" id="fjY-Sl-0GT"/>
+                            <constraint firstItem="Dra-98-Vgp" firstAttribute="width" secondItem="Dra-98-Vgp" secondAttribute="height" multiplier="1:1" id="meL-fD-k6X"/>
+                            <constraint firstItem="OvA-Ds-4UH" firstAttribute="trailing" secondItem="ykN-Tl-FVd" secondAttribute="trailing" id="qxB-OB-qTD"/>
+                            <constraint firstItem="OvA-Ds-4UH" firstAttribute="bottom" secondItem="ykN-Tl-FVd" secondAttribute="bottom" id="yyc-JJ-3UT"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="loadingIndicator" destination="Dra-98-Vgp" id="A1j-aX-NeE"/>
+                        <outlet property="posterImageView" destination="ykN-Tl-FVd" id="XoL-3K-rxJ"/>
+                        <outlet property="tinyPosterImageView" destination="Czs-xF-YCE" id="zfq-eF-3N6"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="edl-dX-INW" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="15.942028985507248" y="83.705357142857139"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionReusableView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="header" translatesAutoresizingMaskIntoConstraints="NO" id="5gI-t5-rvA" customClass="WhereToWatchHeaderCollectionViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="362" height="180"/>
+            <subviews>
+                <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Lh1-3p-GPX">
+                    <rect key="frame" x="13" y="53" width="329" height="88"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="Gkl-VA-Fkq">
+                            <rect key="frame" x="0.0" y="25" width="329" height="38.5"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Where to Watch?" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rIb-ju-Lps">
+                                    <rect key="frame" x="0.0" y="0.0" width="329" height="20.5"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Provided by JustWatch via TMDb" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m2t-2N-rcb">
+                                    <rect key="frame" x="0.0" y="22.5" width="329" height="16"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                    <color key="textColor" systemColor="secondaryLabelColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                    <constraints>
+                        <constraint firstItem="Gkl-VA-Fkq" firstAttribute="top" secondItem="Lh1-3p-GPX" secondAttribute="top" constant="12" id="S8r-O7-116"/>
+                    </constraints>
+                </stackView>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lQc-f2-c5w">
+                    <rect key="frame" x="13" y="53" width="329" height="88"/>
+                </button>
+            </subviews>
+            <viewLayoutGuide key="safeArea" id="THZ-Oq-C8y"/>
+            <constraints>
+                <constraint firstItem="lQc-f2-c5w" firstAttribute="leading" secondItem="Lh1-3p-GPX" secondAttribute="leading" id="0IN-FN-5Ff"/>
+                <constraint firstItem="lQc-f2-c5w" firstAttribute="bottom" secondItem="Lh1-3p-GPX" secondAttribute="bottom" id="2Zx-oP-8lg"/>
+                <constraint firstItem="THZ-Oq-C8y" firstAttribute="trailing" secondItem="Lh1-3p-GPX" secondAttribute="trailing" constant="20" id="KPc-FB-iIJ"/>
+                <constraint firstItem="Lh1-3p-GPX" firstAttribute="leading" secondItem="THZ-Oq-C8y" secondAttribute="leading" constant="13" id="aL6-jI-kKx"/>
+                <constraint firstItem="lQc-f2-c5w" firstAttribute="trailing" secondItem="Lh1-3p-GPX" secondAttribute="trailing" id="bPm-iQ-KaB"/>
+                <constraint firstItem="THZ-Oq-C8y" firstAttribute="bottom" secondItem="Lh1-3p-GPX" secondAttribute="bottom" constant="5" id="rgR-pA-aa8"/>
+                <constraint firstItem="lQc-f2-c5w" firstAttribute="top" secondItem="Lh1-3p-GPX" secondAttribute="top" id="uYK-dB-HGt"/>
+                <constraint firstItem="Lh1-3p-GPX" firstAttribute="top" secondItem="THZ-Oq-C8y" secondAttribute="top" constant="5" id="uiw-KQ-3MY"/>
+            </constraints>
+            <connections>
+                <outlet property="button" destination="lQc-f2-c5w" id="zkY-1g-iGY"/>
+                <outlet property="info" destination="m2t-2N-rcb" id="Ihu-QU-Jjn"/>
+            </connections>
+            <point key="canvasLocation" x="100.00000000000001" y="110.49107142857143"/>
+        </collectionReusableView>
+    </objects>
+    <resources>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

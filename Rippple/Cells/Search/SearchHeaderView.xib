@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24093.7" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24053.1"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view opaque="NO" contentMode="scaleToFill" id="1pT-dN-DJR" customClass="SearchHeaderView" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <stackView opaque="NO" contentMode="scaleToFill" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="3Of-1E-p2B">
+                    <rect key="frame" x="16" y="22" width="353" height="639"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" horizontalCompressionResistancePriority="749" text="📺 TV Shows" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3ST-g1-5ay">
+                            <rect key="frame" x="0.0" y="0.0" width="198.5" height="639"/>
+                            <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                            <color key="textColor" systemColor="secondaryLabelColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" preferredBehavioralStyle="pad" translatesAutoresizingMaskIntoConstraints="NO" id="asc-Hu-mvK" customClass="TitleOnlyButton" customModule="Rippple" customModuleProvider="target">
+                            <rect key="frame" x="204.5" y="0.0" width="148.5" height="639"/>
+                            <state key="normal" title="Button"/>
+                            <buttonConfiguration key="configuration" style="plain" title="Add Smart Search">
+                                <fontDescription key="titleFontDescription" style="UICTFontTextStyleSubhead"/>
+                            </buttonConfiguration>
+                        </button>
+                    </subviews>
+                    <constraints>
+                        <constraint firstItem="asc-Hu-mvK" firstAttribute="leading" secondItem="3ST-g1-5ay" secondAttribute="trailing" constant="6" id="c4c-Pd-uFs"/>
+                    </constraints>
+                </stackView>
+            </subviews>
+            <viewLayoutGuide key="safeArea" id="QtK-NO-R7p"/>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="3Of-1E-p2B" firstAttribute="leading" secondItem="QtK-NO-R7p" secondAttribute="leading" constant="16" id="DML-dZ-63S"/>
+                <constraint firstItem="QtK-NO-R7p" firstAttribute="bottom" secondItem="3Of-1E-p2B" secondAttribute="bottom" constant="6" id="YZ9-qg-7Fo"/>
+                <constraint firstItem="QtK-NO-R7p" firstAttribute="trailing" secondItem="3Of-1E-p2B" secondAttribute="trailing" constant="6" id="cWE-Al-87K"/>
+                <constraint firstItem="3Of-1E-p2B" firstAttribute="top" secondItem="QtK-NO-R7p" secondAttribute="top" constant="2" id="dfm-ig-d2M"/>
+            </constraints>
+            <connections>
+                <outlet property="button" destination="asc-Hu-mvK" id="6ob-Lf-iEB"/>
+                <outlet property="title" destination="3ST-g1-5ay" id="KAS-Zd-Odf"/>
+            </connections>
+            <point key="canvasLocation" x="-372" y="-342"/>
+        </view>
+    </objects>
+    <resources>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

@@ -1,0 +1,11 @@
+{
+    "Simulator Target Bundle": "tv.trakt.rippple",
+    "aps": {
+        "alert": {
+            "title": "New Version",
+            "body": "A new version of Rippple is now available on the App Store. Check it out 👀"
+        },
+        "mutable-content": 1
+    },
+    "version-check": 2187
+}

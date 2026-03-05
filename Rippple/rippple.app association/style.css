@@ -1,0 +1,15 @@
+grid-container {
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    gap: 20px;
+    grid-auto-flow: column;
+
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}

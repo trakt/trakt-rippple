@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="dark"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="smartsearch" rowHeight="66" id="53m-ST-ukI" customClass="SmartSearchTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="66"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="53m-ST-ukI" id="1ig-VS-old">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="66"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fPh-11-ATa" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="351" height="58"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="0L1-FP-MPx">
+                        <rect key="frame" x="26" y="17.5" width="323" height="31"/>
+                        <subviews>
+                            <label userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iyj-Q4-XJ0">
+                                <rect key="frame" x="0.0" y="7" width="276.5" height="17"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RpH-QX-lHm">
+                                <rect key="frame" x="280.5" y="0.0" width="42.5" height="31"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" image="ellipsis" catalog="system"/>
+                            </button>
+                        </subviews>
+                    </stackView>
+                    <view alpha="0.5" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mMa-C3-tac" userLabel="Separator">
+                        <rect key="frame" x="26" y="65" width="337" height="1"/>
+                        <color key="backgroundColor" name="Card Separator"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="1" id="6ej-hc-Ial"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="0L1-FP-MPx" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leadingMargin" constant="10" id="19S-lD-8hd"/>
+                    <constraint firstItem="fPh-11-ATa" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="top" constant="4" id="Fq3-bY-70B"/>
+                    <constraint firstItem="mMa-C3-tac" firstAttribute="leading" secondItem="iyj-Q4-XJ0" secondAttribute="leading" id="HvW-R5-zNa"/>
+                    <constraint firstItem="mMa-C3-tac" firstAttribute="trailing" secondItem="fPh-11-ATa" secondAttribute="trailing" id="TTp-JQ-U3o"/>
+                    <constraint firstItem="0L1-FP-MPx" firstAttribute="centerY" secondItem="1ig-VS-old" secondAttribute="centerY" id="XYe-p1-dck"/>
+                    <constraint firstAttribute="trailing" secondItem="fPh-11-ATa" secondAttribute="trailing" constant="12" id="dBA-UK-fg3"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="0L1-FP-MPx" secondAttribute="trailing" constant="10" id="eFd-Fm-tg8"/>
+                    <constraint firstAttribute="bottom" secondItem="fPh-11-ATa" secondAttribute="bottom" constant="4" id="jCM-AA-3U2"/>
+                    <constraint firstItem="fPh-11-ATa" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leading" constant="12" id="jLy-EO-eqW"/>
+                    <constraint firstAttribute="bottom" secondItem="mMa-C3-tac" secondAttribute="bottom" id="miF-qW-VBX"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="bottomConstraint" destination="jCM-AA-3U2" id="5dW-kQ-uR8"/>
+                <outlet property="card" destination="fPh-11-ATa" id="zQe-Rs-bPA"/>
+                <outlet property="separator" destination="mMa-C3-tac" id="gK7-ZK-oWx"/>
+                <outlet property="title" destination="iyj-Q4-XJ0" id="BMz-Ku-H6b"/>
+                <outlet property="titleConstraint" destination="XYe-p1-dck" id="cPx-0w-UJb"/>
+                <outlet property="topConstraint" destination="Fq3-bY-70B" id="Nvq-tl-gy8"/>
+            </connections>
+            <point key="canvasLocation" x="-77.599999999999994" y="35.082458770614693"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="ellipsis" catalog="system" width="128" height="37"/>
+        <namedColor name="Card Separator">
+            <color red="0.73725490196078436" green="0.73725490196078436" blue="0.73725490196078436" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

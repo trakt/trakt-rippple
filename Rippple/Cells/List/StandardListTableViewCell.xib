@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24093.9" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="dark"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24057"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="standard list" rowHeight="66" id="oQi-RP-ab7" customClass="StandardListTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="66"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="oQi-RP-ab7" id="euH-SH-igO">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="66"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Kpa-KL-FOs" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="0.0" width="351" height="66"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="qF6-Rv-gr8">
+                                <rect key="frame" x="12" y="14" width="327" height="38"/>
+                                <subviews>
+                                    <label userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dYO-Fb-RCv">
+                                        <rect key="frame" x="0.0" y="6" width="310.5" height="26.5"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="UaZ-hS-XcS">
+                                        <rect key="frame" x="314.5" y="10.5" width="12.5" height="16.5"/>
+                                        <color key="tintColor" name="Card Separator"/>
+                                    </imageView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="qF6-Rv-gr8" secondAttribute="bottom" constant="14" id="CjR-Lh-0mD"/>
+                            <constraint firstItem="qF6-Rv-gr8" firstAttribute="leading" secondItem="Kpa-KL-FOs" secondAttribute="leading" constant="12" id="I59-I5-85y"/>
+                            <constraint firstAttribute="trailing" secondItem="qF6-Rv-gr8" secondAttribute="trailing" constant="12" id="Lf3-QI-8eu"/>
+                            <constraint firstItem="qF6-Rv-gr8" firstAttribute="top" secondItem="Kpa-KL-FOs" secondAttribute="top" constant="14" id="M8i-l1-d9n"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="bottom" secondItem="Kpa-KL-FOs" secondAttribute="bottom" id="2zS-EC-N9b"/>
+                    <constraint firstAttribute="trailing" secondItem="Kpa-KL-FOs" secondAttribute="trailing" constant="12" id="aSQ-SI-7oM"/>
+                    <constraint firstItem="Kpa-KL-FOs" firstAttribute="top" secondItem="euH-SH-igO" secondAttribute="top" id="bA1-D1-czr"/>
+                    <constraint firstItem="Kpa-KL-FOs" firstAttribute="leading" secondItem="euH-SH-igO" secondAttribute="leading" constant="12" id="uwZ-IY-Rm7"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="card" destination="Kpa-KL-FOs" id="6oU-Jh-WEa"/>
+                <outlet property="chevron" destination="UaZ-hS-XcS" id="S09-qA-XyS"/>
+                <outlet property="title" destination="dYO-Fb-RCv" id="1Xw-fH-XER"/>
+            </connections>
+            <point key="canvasLocation" x="-77.599999999999994" y="35.082458770614693"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="chevron.right" catalog="system" width="97" height="128"/>
+        <namedColor name="Card Separator">
+            <color red="0.73725490196078436" green="0.73725490196078436" blue="0.73725490196078436" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

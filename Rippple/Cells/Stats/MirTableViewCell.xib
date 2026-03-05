@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="mir" rowHeight="139" id="PJO-Aa-y30" customClass="MirTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="464" height="139"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="PJO-Aa-y30" id="HmQ-J3-uge">
+                <rect key="frame" x="0.0" y="0.0" width="464" height="139"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ghj-Et-FyN" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="440" height="131"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1sq-w8-Ap1">
+                                <rect key="frame" x="1" y="0.0" width="438" height="131"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="T5E-WY-EOi">
+                                        <rect key="frame" x="0.0" y="0.0" width="417.66666666666669" height="131"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="center" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="wUp-gK-TuA">
+                                                <rect key="frame" x="18" y="12" width="384.66666666666669" height="107"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" alignment="bottom" translatesAutoresizingMaskIntoConstraints="NO" id="8nd-tB-Kjh">
+                                                        <rect key="frame" x="0.0" y="33.333333333333343" width="76.666666666666671" height="40.666666666666657"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Month In" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dCg-Tc-uKH" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="6.6666666666666643" y="0.0" width="70" height="20.333333333333332"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="firstBaseline" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="cSA-zu-CiR">
+                                                                <rect key="frame" x="0.0" y="20.333333333333336" width="76.666666666666671" height="20.333333333333336"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Review" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RCB-Oc-KNZ">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="56.666666666666664" height="20.333333333333332"/>
+                                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="mIc-Iw-zfJ">
+                                                                        <rect key="frame" x="59.666666666666671" y="2.3333333333333321" width="17" height="15.666666666666668"/>
+                                                                        <imageReference key="image" image="arrow.up.right" catalog="system" symbolScale="default"/>
+                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font">
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                                        </preferredSymbolConfiguration>
+                                                                    </imageView>
+                                                                </subviews>
+                                                            </stackView>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="MY4-gp-seH">
+                                                        <rect key="frame" x="106.66666666666666" y="34.333333333333329" width="38" height="38.333333333333329"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="2.0k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AGV-BS-0Mf" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="38" height="24"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="plays" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YLA-p7-Zgr">
+                                                                <rect key="frame" x="0.0" y="23.999999999999993" width="29.666666666666668" height="14.333333333333336"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="ENO-25-4cW">
+                                                        <rect key="frame" x="174.66666666666666" y="34.333333333333329" width="51.333333333333343" height="38.333333333333329"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="3.1k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gak-OK-jtI" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="35" height="24"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="watching" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WWs-1U-6ZK">
+                                                                <rect key="frame" x="0.0" y="23.999999999999993" width="51.333333333333336" height="14.333333333333336"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="2fC-ia-20z">
+                                                        <rect key="frame" x="256" y="34.333333333333329" width="39.333333333333314" height="38.333333333333329"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="1k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pCZ-At-XvD" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="19" height="24"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ratings" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oRA-tl-Utp">
+                                                                <rect key="frame" x="0.0" y="23.999999999999993" width="39.333333333333336" height="14.333333333333336"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="x5O-Nq-2tJ">
+                                                        <rect key="frame" x="325.33333333333331" y="34.333333333333329" width="59.333333333333314" height="38.333333333333329"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="1k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C8w-MQ-G2J" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="19" height="24"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="comments" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jCo-X8-bCt">
+                                                                <rect key="frame" x="0.0" y="23.999999999999993" width="59.333333333333336" height="14.333333333333336"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                            </stackView>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" preferredBehavioralStyle="pad" translatesAutoresizingMaskIntoConstraints="NO" id="Wh7-s1-w8e">
+                                                <rect key="frame" x="18" y="45.333333333333343" width="76.666666666666671" height="40.666666666666657"/>
+                                                <state key="normal" title="Button"/>
+                                                <buttonConfiguration key="configuration" style="plain"/>
+                                                <connections>
+                                                    <action selector="more:" destination="PJO-Aa-y30" eventType="touchUpInside" id="H47-2W-rL4"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="bottom" secondItem="wUp-gK-TuA" secondAttribute="bottom" constant="12" id="3br-9f-h08"/>
+                                            <constraint firstItem="Wh7-s1-w8e" firstAttribute="leading" secondItem="8nd-tB-Kjh" secondAttribute="leading" id="7wk-Qh-Znc"/>
+                                            <constraint firstItem="Wh7-s1-w8e" firstAttribute="top" secondItem="8nd-tB-Kjh" secondAttribute="top" id="BM9-Ty-Np4"/>
+                                            <constraint firstItem="wUp-gK-TuA" firstAttribute="top" secondItem="T5E-WY-EOi" secondAttribute="top" constant="12" id="Y0M-x0-J1H"/>
+                                            <constraint firstItem="Wh7-s1-w8e" firstAttribute="bottom" secondItem="8nd-tB-Kjh" secondAttribute="bottom" id="YHI-4M-a97"/>
+                                            <constraint firstAttribute="trailing" secondItem="wUp-gK-TuA" secondAttribute="trailing" constant="15" id="onN-Jy-m6E"/>
+                                            <constraint firstItem="wUp-gK-TuA" firstAttribute="leading" secondItem="T5E-WY-EOi" secondAttribute="leadingMargin" constant="10" id="vN5-ls-hbg"/>
+                                            <constraint firstItem="Wh7-s1-w8e" firstAttribute="trailing" secondItem="8nd-tB-Kjh" secondAttribute="trailing" id="xGP-1n-1If"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="T5E-WY-EOi" secondAttribute="trailing" id="3mC-4g-HZ4"/>
+                                    <constraint firstItem="T5E-WY-EOi" firstAttribute="leading" secondItem="1sq-w8-Ap1" secondAttribute="leading" id="Rab-3C-rFt"/>
+                                    <constraint firstItem="v0H-W9-W6i" firstAttribute="height" secondItem="T5E-WY-EOi" secondAttribute="height" id="Svd-5l-BQG"/>
+                                    <constraint firstAttribute="bottom" secondItem="T5E-WY-EOi" secondAttribute="bottom" id="e3a-dR-sHS"/>
+                                    <constraint firstItem="swI-RC-dNy" firstAttribute="height" secondItem="T5E-WY-EOi" secondAttribute="height" id="wgS-Ia-Ouo"/>
+                                    <constraint firstItem="swI-RC-dNy" firstAttribute="width" secondItem="T5E-WY-EOi" secondAttribute="width" id="xXv-v6-LuW"/>
+                                </constraints>
+                                <viewLayoutGuide key="contentLayoutGuide" id="swI-RC-dNy"/>
+                                <viewLayoutGuide key="frameLayoutGuide" id="v0H-W9-W6i"/>
+                            </scrollView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="1sq-w8-Ap1" secondAttribute="trailing" constant="1" id="Eoj-yt-r91"/>
+                            <constraint firstAttribute="bottom" secondItem="1sq-w8-Ap1" secondAttribute="bottom" id="WVw-nD-dXh"/>
+                            <constraint firstItem="1sq-w8-Ap1" firstAttribute="leading" secondItem="Ghj-Et-FyN" secondAttribute="leading" constant="1" id="h15-2Z-z8d"/>
+                            <constraint firstItem="1sq-w8-Ap1" firstAttribute="top" secondItem="Ghj-Et-FyN" secondAttribute="top" id="xDI-tL-hLb"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                <constraints>
+                    <constraint firstAttribute="bottom" secondItem="Ghj-Et-FyN" secondAttribute="bottom" constant="4" id="BrA-hK-RpJ"/>
+                    <constraint firstItem="Ghj-Et-FyN" firstAttribute="top" secondItem="HmQ-J3-uge" secondAttribute="top" constant="4" id="SsG-XB-63k"/>
+                    <constraint firstAttribute="trailing" secondItem="Ghj-Et-FyN" secondAttribute="trailing" constant="12" id="UDj-zL-piz"/>
+                    <constraint firstItem="Ghj-Et-FyN" firstAttribute="leading" secondItem="HmQ-J3-uge" secondAttribute="leading" constant="12" id="wfp-il-08U"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="comments" destination="C8w-MQ-G2J" id="uDs-ya-YcA"/>
+                <outlet property="minutes" destination="Gak-OK-jtI" id="f2Y-Ee-oEX"/>
+                <outlet property="monthIn" destination="dCg-Tc-uKH" id="h8e-LZ-RQA"/>
+                <outlet property="moreButton" destination="Wh7-s1-w8e" id="zdh-6s-HhV"/>
+                <outlet property="plays" destination="AGV-BS-0Mf" id="KhZ-cL-M8E"/>
+                <outlet property="ratings" destination="pCZ-At-XvD" id="172-ny-NjQ"/>
+            </connections>
+            <point key="canvasLocation" x="-129.7709923664122" y="152.46478873239437"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="arrow.up.right" catalog="system" width="128" height="110"/>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

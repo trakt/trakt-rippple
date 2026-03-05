@@ -1,0 +1,27 @@
+//
+//  GenreBrowseCollectionViewCell.swift
+//  Rippple
+//
+//  Created by Kevin Cador on 04/07/2023.
+//  Copyright © 2023 Trakt. All rights reserved.
+//
+
+import UIKit
+
+final class GenreBrowseCollectionViewCell: UICollectionViewCell {
+    @IBOutlet weak var backgroundContainer: UIView!
+    @IBOutlet weak var label: UILabel?
+    @IBOutlet weak var emoji: UILabel?
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+
+        backgroundContainer.layer.cornerRadius = backgroundContainer.bounds.height/2.0
+        backgroundContainer.layer.masksToBounds = true
+        backgroundContainer.backgroundColor = UIColor.secondarySystemBackground
+        backgroundContainer.layer.borderWidth = 1
+        backgroundContainer.layer.borderColor = UIColor.tertiarySystemFill.cgColor
+
+        maximumContentSizeCategory = .extraExtraLarge
+    }
+}

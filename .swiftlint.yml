@@ -1,0 +1,13 @@
+# SwiftLint configuration for Rippple
+# Full list of rules: https://realm.github.io/SwiftLint/rule-directory.html
+
+disabled_rules:
+  - line_length
+  - force_cast
+  - cyclomatic_complexity
+  - function_body_length
+  - file_length
+  - identifier_name
+  - type_body_length
+excluded:
+  - Pods

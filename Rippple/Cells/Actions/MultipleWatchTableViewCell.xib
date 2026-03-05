@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17503.1" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17502"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="multiple watch" rowHeight="85" id="yoS-SA-3OJ" customClass="MultipleWatchTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="85"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="yoS-SA-3OJ" id="Era-ux-kCy">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="85"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fBQ-fk-n8h" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="351" height="77"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" alignment="top" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="JBn-ou-Vfj">
+                                <rect key="frame" x="12" y="12" width="327" height="53"/>
+                                <subviews>
+                                    <label userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="1000" text="Watched 61 of 84 episodes" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Van-gg-hFh">
+                                        <rect key="frame" x="0.0" y="0.0" width="208.5" height="26"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="1000" text="23 episodes left to watch" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RsN-EC-ltA">
+                                        <rect key="frame" x="0.0" y="28" width="183" height="25"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="JBn-ou-Vfj" secondAttribute="trailing" constant="12" id="2xk-Uz-HUP"/>
+                            <constraint firstItem="JBn-ou-Vfj" firstAttribute="top" secondItem="fBQ-fk-n8h" secondAttribute="top" constant="12" id="7fK-9J-QoD"/>
+                            <constraint firstAttribute="bottom" secondItem="JBn-ou-Vfj" secondAttribute="bottom" constant="12" id="b9A-Ff-7Ue"/>
+                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="44" id="dbm-VZ-sK4"/>
+                            <constraint firstItem="JBn-ou-Vfj" firstAttribute="leading" secondItem="fBQ-fk-n8h" secondAttribute="leading" constant="12" id="yhD-Rs-bog"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="fBQ-fk-n8h" secondAttribute="trailing" constant="12" id="Rzd-Er-T5R"/>
+                    <constraint firstAttribute="bottom" secondItem="fBQ-fk-n8h" secondAttribute="bottom" constant="4" id="ZxD-PO-puQ"/>
+                    <constraint firstItem="fBQ-fk-n8h" firstAttribute="top" secondItem="Era-ux-kCy" secondAttribute="top" constant="4" id="bUC-RT-L8N"/>
+                    <constraint firstItem="fBQ-fk-n8h" firstAttribute="leading" secondItem="Era-ux-kCy" secondAttribute="leading" constant="12" id="m7J-1n-kpC"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="mainLabel" destination="Van-gg-hFh" id="J2b-Pl-l0e"/>
+                <outlet property="secondaryLabel" destination="RsN-EC-ltA" id="2W9-bS-gBv"/>
+            </connections>
+            <point key="canvasLocation" x="-70.28985507246378" y="73.325892857142847"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>
