@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 90;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -495,23 +495,27 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		3A3EA9502DA949D5004D55A8 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolder = Frameworks;
+			dstSubfolderSpec = 10;
 			files = (
 				3A3EA94F2DA949D5004D55A8 /* TinyStorage in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3A90314E287B032700FA27D4 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolder = PlugIns;
+			dstSubfolderSpec = 13;
 			files = (
 				3AD15CFB287C245A00FD0B2F /* WidgetIntent.appex in Embed Foundation Extensions */,
 				3A77A85029FC18050006177D /* NotificationService.appex in Embed Foundation Extensions */,
 				3A903149287B032700FA27D4 /* WidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -995,20 +999,25 @@
 /* Begin PBXFrameworksBuildPhase section */
 		3A77A84629FC18050006177D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3A903136287B032600FA27D4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				09B898F52F1CE2EB00DC202D /* AppIntents.framework in Frameworks */,
 				3A9DC0EE28D49349009C2C27 /* ActivityKit.framework in Frameworks */,
 				3A90313D287B032600FA27D4 /* SwiftUI.framework in Frameworks */,
 				3A90313B287B032600FA27D4 /* WidgetKit.framework in Frameworks */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3A9119C11FADC7EB00457D28 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				3A8E8B412DBBB8DD00D89756 /* Toast in Frameworks */,
 				09F275D02E055A670059D7CD /* LRUCache in Frameworks */,
@@ -1021,12 +1030,15 @@
 				0970258D2EBE48B3005E91B4 /* Kingfisher in Frameworks */,
 				3A3EA94C2DA91BE9004D55A8 /* TinyStorage in Frameworks */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3AD15CDD287C245A00FD0B2F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				3AD15CE2287C245A00FD0B2F /* Intents.framework in Frameworks */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -2581,7 +2593,11 @@
 			);
 			buildRules = (
 			);
+			dependencies = (
+			);
 			name = NotificationService;
+			packageProductDependencies = (
+			);
 			productName = NotificationService;
 			productReference = 3A77A84929FC18050006177D /* NotificationService.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -2596,7 +2612,11 @@
 			);
 			buildRules = (
 			);
+			dependencies = (
+			);
 			name = WidgetExtension;
+			packageProductDependencies = (
+			);
 			productName = SingleWidgetExtension;
 			productReference = 3A903139287B032600FA27D4 /* WidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -2624,6 +2644,8 @@
 				3A77A84F29FC18050006177D /* PBXTargetDependency */,
 			);
 			name = Rippple;
+			packageProductDependencies = (
+			);
 			productName = Ripple;
 			productReference = 3A9119C41FADC7EB00457D28 /* Rippple.app */;
 			productType = "com.apple.product-type.application";
@@ -2638,7 +2660,11 @@
 			);
 			buildRules = (
 			);
+			dependencies = (
+			);
 			name = WidgetIntent;
+			packageProductDependencies = (
+			);
 			productName = WidgetIntent;
 			productReference = 3AD15CE0287C245A00FD0B2F /* WidgetIntent.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -2696,7 +2722,7 @@
 				0960BCBA2E52591400A93556 /* XCRemoteSwiftPackageReference "YouTubePlayerKit" */,
 				0970258B2EBE48B3005E91B4 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
-			preferredProjectObjectVersion = 90;
+			preferredProjectObjectVersion = 77;
 			productRefGroup = 3A9119C51FADC7EB00457D28 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -2712,19 +2738,24 @@
 /* Begin PBXResourcesBuildPhase section */
 		3A77A84729FC18050006177D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				3AE3FB2A2BB465FB0017CA13 /* PrivacyInfo.xcprivacy in Resources */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3A903137287B032600FA27D4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				3AE3FB282BB465FB0017CA13 /* PrivacyInfo.xcprivacy in Resources */,
 				3A903143287B032700FA27D4 /* Assets.xcassets in Resources */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3A9119C21FADC7EB00457D28 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				3A7FF65429F3108300E2E08E /* EmptyTableViewCell.xib in Resources */,
 				3AECA32D2432462F00A863CC /* ListMediaCollectionViewCell.xib in Resources */,
@@ -2843,12 +2874,15 @@
 				3A43DF2F2182F311009AF3A4 /* RatingsTableViewCell.xib in Resources */,
 				3A7B6DB8234641F20014A0D8 /* MediaCollectionViewCell.xib in Resources */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3AD15CDE287C245A00FD0B2F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				3AE3FB292BB465FB0017CA13 /* PrivacyInfo.xcprivacy in Resources */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
@@ -2856,107 +2890,104 @@
 		3A59D98321D62AF800305819 /* Run Script (SwiftLint) */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
-			name = "Run Script (SwiftLint)";
-			shellPath = /bin/sh;
-			shellScript = (
-				"if which \"${PODS_ROOT}/SwiftLint/swiftlint\" >/dev/null;",
-				"then",
-				"    \"${PODS_ROOT}/SwiftLint/swiftlint\" --fix && \"${PODS_ROOT}/SwiftLint/swiftlint\"",
-				"else",
-				"    echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"",
-				"fi",
-				"",
+			buildActionMask = 2147483647;
+			files = (
 			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script (SwiftLint)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which \"${PODS_ROOT}/SwiftLint/swiftlint\" >/dev/null;\nthen\n    \"${PODS_ROOT}/SwiftLint/swiftlint\" --fix && \"${PODS_ROOT}/SwiftLint/swiftlint\"\nelse\n    echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		3A6908432A3AFD8F00501A19 /* Run Script (version) */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
 			name = "Run Script (version)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
 			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = /bin/sh;
-			shellScript = (
-				"git=`sh /etc/profile; which git`",
-				"",
-				"appVersion=26.5",
-				"",
-				"baseBuild=2864",
-				"commitCount=`\"$git\" rev-list --all |wc -l`",
-				"appBuild=$((baseBuild + commitCount))",
-				"",
-				"#xcrun agvtool new-marketing-version $appVersion",
-				"#xcrun agvtool new-version -all $appBuild",
-				"",
-			);
+			shellScript = "git=`sh /etc/profile; which git`\n\nappVersion=26.5\n\nbaseBuild=2864\ncommitCount=`\"$git\" rev-list --all |wc -l`\nappBuild=$((baseBuild + commitCount))\n\n#xcrun agvtool new-marketing-version $appVersion\n#xcrun agvtool new-version -all $appBuild\n";
 		};
 		3AFD13AD2F6F2B4C00D1E2F6 /* Run Script (Secrets Check) */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
 			inputPaths = (
 				"${SRCROOT}/Rippple/Secrets.swift",
 			);
 			name = "Run Script (Secrets Check)";
-			shellPath = /bin/sh;
-			shellScript = (
-				"SECRETS_FILE=\"${SRCROOT}/Rippple/Secrets.swift\"",
-				"",
-				"if [ ! -f \"$SECRETS_FILE\" ]; then",
-				"  echo \"error: Missing Secrets.swift file. Copy Secrets-Template.swift to Secrets.swift, fill in the required values, and include the file in all needed targets.\" >&2",
-				"  exit 1",
-				"fi",
-				"",
-				"FILTERED=$(grep -v '^[[:space:]]*//' \"$SECRETS_FILE\")",
-				"if echo \"$FILTERED\" | grep -q '<#'; then",
-				"  echo \"error: Secrets.swift contains template placeholders. Fill in all the required values.\" >&2",
-				"  exit 1",
-				"fi",
-				"",
-				"if echo \"$FILTERED\" | grep -E -q '=[[:space:]]*\"\"'; then",
-				"  echo \"error: Secrets.swift contains empty string values. Fill in all the required values.\" >&2",
-				"  exit 1",
-				"fi",
-				"",
+			outputFileListPaths = (
 			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "SECRETS_FILE=\"${SRCROOT}/Rippple/Secrets.swift\"\n\nif [ ! -f \"$SECRETS_FILE\" ]; then\n  echo \"error: Missing Secrets.swift file. Copy Secrets-Template.swift to Secrets.swift, fill in the required values, and include the file in all needed targets.\" >&2\n  exit 1\nfi\n\nFILTERED=$(grep -v '^[[:space:]]*//' \"$SECRETS_FILE\")\nif echo \"$FILTERED\" | grep -q '<#'; then\n  echo \"error: Secrets.swift contains template placeholders. Fill in all the required values.\" >&2\n  exit 1\nfi\n\nif echo \"$FILTERED\" | grep -E -q '=[[:space:]]*\"\"'; then\n  echo \"error: Secrets.swift contains empty string values. Fill in all the required values.\" >&2\n  exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		446431FD91F095F90D3214F6 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
 			inputPaths = (
 				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
 				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-Rippple-checkManifestLockResult.txt",
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = (
-				"diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null",
-				"if [ $? != 0 ] ; then",
-				"    # print error to STDERR",
-				"    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2",
-				"    exit 1",
-				"fi",
-				"# This output is used by Xcode 'outputs' to avoid re-running this script phase.",
-				"echo \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"",
-				"",
-			);
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		ADC8C476DD4CB8039BD89986 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Rippple/Pods-Rippple-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Rippple/Pods-Rippple-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			shellPath = /bin/sh;
-			shellScript = (
-				"\"${PODS_ROOT}/Target Support Files/Pods-Rippple/Pods-Rippple-frameworks.sh\"",
-				"",
+			outputPaths = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Rippple/Pods-Rippple-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -2964,13 +2995,16 @@
 /* Begin PBXSourcesBuildPhase section */
 		3A77A84529FC18050006177D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				3AC7C6F32AB225150092F871 /* NotificationModel.swift in Sources */,
 				3A77A84C29FC18050006177D /* NotificationService.swift in Sources */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3A903135287B032600FA27D4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				3AD15D0C287D9A3300FD0B2F /* WidgetModel.swift in Sources */,
 				3A903145287B032700FA27D4 /* Widget.intentdefinition in Sources */,
@@ -2988,9 +3022,11 @@
 				3A171BA528857A45005EEDA9 /* LockWidget.swift in Sources */,
 				3A775F282887EAD200F9A95D /* LastWatchedLockWidget.swift in Sources */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3A9119C01FADC7EB00457D28 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				3A7AB4D72BF38DEF00116149 /* PulseTableViewCell.swift in Sources */,
 				3AA7522B2473011900723A87 /* MovieToWatchManager.swift in Sources */,
@@ -3292,15 +3328,18 @@
 				3A939B901FD2A87000799552 /* Markdown+Highlight.swift in Sources */,
 				3A50BA3D2A5193F100973862 /* ToWatchBrowseCollectionViewCell.swift in Sources */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3AD15CDC287C245A00FD0B2F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				3ADC5E35287EABFB00D68EF1 /* WidgetModel.swift in Sources */,
 				09060B982F2F9A320069502F /* Secrets.swift in Sources */,
 				3AD15D03287C24A500FD0B2F /* Widget.intentdefinition in Sources */,
 				3AD15CE5287C245A00FD0B2F /* IntentHandler.swift in Sources */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -3342,7 +3381,7 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		3A77A85229FC18050006177D /* Debug configuration for PBXNativeTarget "NotificationService" */ = {
+		3A77A85229FC18050006177D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -3380,7 +3419,7 @@
 			};
 			name = Debug;
 		};
-		3A77A85329FC18050006177D /* Release configuration for PBXNativeTarget "NotificationService" */ = {
+		3A77A85329FC18050006177D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -3417,7 +3456,7 @@
 			};
 			name = Release;
 		};
-		3A90314C287B032700FA27D4 /* Debug configuration for PBXNativeTarget "WidgetExtension" */ = {
+		3A90314C287B032700FA27D4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -3457,7 +3496,7 @@
 			};
 			name = Debug;
 		};
-		3A90314D287B032700FA27D4 /* Release configuration for PBXNativeTarget "WidgetExtension" */ = {
+		3A90314D287B032700FA27D4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -3496,7 +3535,7 @@
 			};
 			name = Release;
 		};
-		3A9119D41FADC7EB00457D28 /* Debug configuration for PBXProject "Rippple" */ = {
+		3A9119D41FADC7EB00457D28 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -3583,7 +3622,7 @@
 			};
 			name = Debug;
 		};
-		3A9119D51FADC7EB00457D28 /* Release configuration for PBXProject "Rippple" */ = {
+		3A9119D51FADC7EB00457D28 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -3663,7 +3702,7 @@
 			};
 			name = Release;
 		};
-		3A9119D71FADC7EB00457D28 /* Debug configuration for PBXNativeTarget "Rippple" */ = {
+		3A9119D71FADC7EB00457D28 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 98D01CF4A683AA71A82D335B /* Pods-Rippple.debug.xcconfig */;
 			buildSettings = {
@@ -3708,7 +3747,7 @@
 			};
 			name = Debug;
 		};
-		3A9119D81FADC7EB00457D28 /* Release configuration for PBXNativeTarget "Rippple" */ = {
+		3A9119D81FADC7EB00457D28 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 854253A1107BE8BB9B5949D6 /* Pods-Rippple.release.xcconfig */;
 			buildSettings = {
@@ -3752,7 +3791,7 @@
 			};
 			name = Release;
 		};
-		3AD15D01287C245A00FD0B2F /* Debug configuration for PBXNativeTarget "WidgetIntent" */ = {
+		3AD15D01287C245A00FD0B2F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
@@ -3789,7 +3828,7 @@
 			};
 			name = Debug;
 		};
-		3AD15D02287C245A00FD0B2F /* Release configuration for PBXNativeTarget "WidgetIntent" */ = {
+		3AD15D02287C245A00FD0B2F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
@@ -3831,41 +3870,46 @@
 		3A77A85429FC18050006177D /* Build configuration list for PBXNativeTarget "NotificationService" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				3A77A85229FC18050006177D /* Debug configuration for PBXNativeTarget "NotificationService" */,
-				3A77A85329FC18050006177D /* Release configuration for PBXNativeTarget "NotificationService" */,
+				3A77A85229FC18050006177D /* Debug */,
+				3A77A85329FC18050006177D /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		3A90314B287B032700FA27D4 /* Build configuration list for PBXNativeTarget "WidgetExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				3A90314C287B032700FA27D4 /* Debug configuration for PBXNativeTarget "WidgetExtension" */,
-				3A90314D287B032700FA27D4 /* Release configuration for PBXNativeTarget "WidgetExtension" */,
+				3A90314C287B032700FA27D4 /* Debug */,
+				3A90314D287B032700FA27D4 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		3A9119BF1FADC7EB00457D28 /* Build configuration list for PBXProject "Rippple" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				3A9119D41FADC7EB00457D28 /* Debug configuration for PBXProject "Rippple" */,
-				3A9119D51FADC7EB00457D28 /* Release configuration for PBXProject "Rippple" */,
+				3A9119D41FADC7EB00457D28 /* Debug */,
+				3A9119D51FADC7EB00457D28 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		3A9119D61FADC7EB00457D28 /* Build configuration list for PBXNativeTarget "Rippple" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				3A9119D71FADC7EB00457D28 /* Debug configuration for PBXNativeTarget "Rippple" */,
-				3A9119D81FADC7EB00457D28 /* Release configuration for PBXNativeTarget "Rippple" */,
+				3A9119D71FADC7EB00457D28 /* Debug */,
+				3A9119D81FADC7EB00457D28 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		3AD15D00287C245A00FD0B2F /* Build configuration list for PBXNativeTarget "WidgetIntent" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				3AD15D01287C245A00FD0B2F /* Debug configuration for PBXNativeTarget "WidgetIntent" */,
-				3AD15D02287C245A00FD0B2F /* Release configuration for PBXNativeTarget "WidgetIntent" */,
+				3AD15D01287C245A00FD0B2F /* Debug */,
+				3AD15D02287C245A00FD0B2F /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */

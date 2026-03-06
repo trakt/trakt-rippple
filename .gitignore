@@ -18,17 +18,19 @@ profile
 timeline.xctimeline
 playground.xcworkspace
 
+# Swift Package Manager (inside this repo)
+.build/
+.swiftpm/
+
 # CocoaPods
 Pods/
 
 # Carthage
 Carthage/
 
-*.xcodeproj/xcshareddata/
-
 # Secrets
 Rippple/Secrets.swift
 
-# Assistants
+# Assistants / editor settings
 .cursor
 .vscode
