@@ -76,25 +76,17 @@ Everywhere__*__
     }
 
     @IBAction func privacyAndTerms(_ sender: Any) {
-        let config = SFSafariViewController.Configuration()
-        config.entersReaderIfAvailable = true
-
-        present(SFSafariViewController(url: URL(string: "https://github.com/trakt/trakt-rippple/blob/main/PRIVACY.md")!,
-                                       configuration: config),
-        animated: true,
-        completion: nil)
+        if let url = URL(string: "https://github.com/trakt/trakt-rippple/blob/main/PRIVACY.md"),
+           UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url)
+        }
     }
 
     @IBAction func help(_ sender: Any) {
-        let config = SFSafariViewController.Configuration()
-        config.entersReaderIfAvailable = true
-
-        let controller = SFSafariViewController(url: URL(string: "https://github.com/trakt/trakt-rippple/blob/main/docs/RIPPPLE_101.md")!,
-                                                configuration: config)
-
-        present(controller,
-                animated: true,
-                completion: nil)
+        if let url = URL(string: "https://github.com/trakt/trakt-rippple/blob/main/docs/RIPPPLE_101.md"),
+           UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url)
+        }
     }
 
     @IBAction func loginToTrakt(_ sender: UIButton) {

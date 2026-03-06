@@ -93,23 +93,17 @@ VIP supports Trakt, unlocks powerful features, and higher limits for people who 
     }
 
     @IBAction func terms(_ sender: Any) {
-        let config = SFSafariViewController.Configuration()
-        config.entersReaderIfAvailable = true
-
-        present(SFSafariViewController(url: URL(string: "https://github.com/trakt/trakt-rippple/blob/main/TERMS.md")!,
-                                      configuration: config),
-        animated: true,
-        completion: nil)
+        if let url = URL(string: "https://github.com/trakt/trakt-rippple/blob/main/TERMS.md"),
+           UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url)
+        }
     }
 
     @IBAction func privacy(_ sender: Any) {
-        let config = SFSafariViewController.Configuration()
-        config.entersReaderIfAvailable = true
-
-        present(SFSafariViewController(url: URL(string: "https://github.com/trakt/trakt-rippple/blob/main/PRIVACY.md")!,
-                                       configuration: config),
-        animated: true,
-        completion: nil)
+        if let url = URL(string: "https://github.com/trakt/trakt-rippple/blob/main/PRIVACY.md"),
+           UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url)
+        }
     }
 
     @IBAction func subscribe(_ sender: Any) {

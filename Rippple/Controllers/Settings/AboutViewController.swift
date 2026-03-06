@@ -269,22 +269,16 @@ final class AboutViewController: UITableViewController {
             tableView.deselectRow(at: indexPath, animated: true)
         case .about:
             if indexPath.row == 0 {
-                let config = SFSafariViewController.Configuration()
-                config.entersReaderIfAvailable = true
-
-                present(SFSafariViewController(url: URL(string: "https://github.com/trakt/trakt-rippple/blob/main/PRIVACY.md")!,
-                                               configuration: config),
-                        animated: true,
-                        completion: nil)
+                if let url = URL(string: "https://github.com/trakt/trakt-rippple/blob/main/PRIVACY.md"),
+                   UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url)
+                }
                 tableView.deselectRow(at: indexPath, animated: true)
             } else if indexPath.row == 1 {
-                let config = SFSafariViewController.Configuration()
-                config.entersReaderIfAvailable = true
-
-                present(SFSafariViewController(url: URL(string: "https://github.com/trakt/trakt-rippple/blob/main/TERMS.md")!,
-                                              configuration: config),
-                        animated: true,
-                        completion: nil)
+                if let url = URL(string: "https://github.com/trakt/trakt-rippple/blob/main/TERMS.md"),
+                   UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url)
+                }
                 tableView.deselectRow(at: indexPath, animated: true)
             } else if indexPath.row == 2 {
                 if let url = URL(string: "https://github.com/trakt/trakt-rippple"), UIApplication.shared.canOpenURL(url) {
@@ -294,12 +288,10 @@ final class AboutViewController: UITableViewController {
             }
         case .knowledge:
             if indexPath.row == 0 {
-                let config = SFSafariViewController.Configuration()
-                config.entersReaderIfAvailable = true
-                present(SFSafariViewController(url: URL(string: "https://github.com/trakt/trakt-rippple/blob/main/docs/RIPPPLE_101.md")!,
-                                               configuration: config),
-                        animated: true,
-                        completion: nil)
+                if let url = URL(string: "https://github.com/trakt/trakt-rippple/blob/main/docs/RIPPPLE_101.md"),
+                   UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url)
+                }
                 tableView.deselectRow(at: indexPath, animated: true)
             } else if indexPath.row == 1 {
                 present(SFSafariViewController(url: URL(string: "https://headwayapp.co/rippple-updates")!),
@@ -307,32 +299,30 @@ final class AboutViewController: UITableViewController {
                         completion: nil)
                 tableView.deselectRow(at: indexPath, animated: true)
             } else if indexPath.row == 2 {
-                let config = SFSafariViewController.Configuration()
-                config.entersReaderIfAvailable = true
-                present(SFSafariViewController(url: URL(string: "https://github.com/trakt/trakt-rippple/blob/main/docs/GET_HELP.md")!,
-                                               configuration: config),
-                        animated: true,
-                        completion: nil)
+                if let url = URL(string: "https://github.com/trakt/trakt-rippple/blob/main/docs/GET_HELP.md"),
+                   UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url)
+                }
                 tableView.deselectRow(at: indexPath, animated: true)
             }
         case .touch:
             if indexPath.row == 0 {
-                present(SFSafariViewController(url: URL(string: "https://github.com/trakt/trakt-rippple/issues/new/choose")!),
-                animated: true,
-                completion: nil)
+                if let url = URL(string: "https://github.com/trakt/trakt-rippple/issues/new/choose"),
+                   UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url)
+                }
                 tableView.deselectRow(at: indexPath, animated: true)
             } else if indexPath.row == 1 {
-                present(SFSafariViewController(url: URL(string: "https://github.com/trakt/trakt-rippple/issues/new/choose")!),
-                animated: true,
-                completion: nil)
+                if let url = URL(string: "https://github.com/trakt/trakt-rippple/issues/new/choose"),
+                   UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url)
+                }
                 tableView.deselectRow(at: indexPath, animated: true)
             } else if indexPath.row == 2 {
-                let config = SFSafariViewController.Configuration()
-                config.entersReaderIfAvailable = true
-                present(SFSafariViewController(url: URL(string: "https://github.com/trakt/trakt-rippple/blob/main/docs/GET_HELP.md")!,
-                                               configuration: config),
-                        animated: true,
-                        completion: nil)
+                if let url = URL(string: "https://github.com/trakt/trakt-rippple/blob/main/docs/GET_HELP.md"),
+                   UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url)
+                }
                 tableView.deselectRow(at: indexPath, animated: true)
             }
         case .data:
