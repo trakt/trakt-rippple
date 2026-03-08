@@ -1,0 +1,30 @@
+name: ⭐ Submit a Feature Request
+description: Suggest a feature or problem that you think should be solved
+labels: ["enhancement"]
+body:
+  - type: textarea
+    attributes:
+      label: Problem or use case
+      description: What problem does this solve, or what use case does it support?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Proposed solution
+      description: Describe the feature or change you’d like.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Alternatives considered
+      description: Any other approaches or existing apps that do something similar.
+      required: false
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Screenshots, mockups, or links that help explain the idea.
+    validations:
+      required: false

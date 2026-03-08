@@ -526,6 +526,9 @@
 		090676E32F5838390076ECA8 /* THIRD_PARTY_NOTICES.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = THIRD_PARTY_NOTICES.md; sourceTree = "<group>"; };
 		090851C52E3CC24200D71E48 /* MediaHeaderTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaHeaderTableViewCell.swift; sourceTree = "<group>"; };
 		090851C72E3CC25000D71E48 /* MediaHeaderTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaHeaderTableViewCell.xib; sourceTree = "<group>"; };
+		0917E8952F5DE5AE00339338 /* bug_report.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = bug_report.yml; sourceTree = "<group>"; };
+		0917E8962F5DE5AE00339338 /* config.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = config.yml; sourceTree = "<group>"; };
+		0917E8972F5DE5AE00339338 /* feature_request.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = feature_request.yml; sourceTree = "<group>"; };
 		0929C5AD2ECCE40A00172E74 /* PinnedMoviesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedMoviesManager.swift; sourceTree = "<group>"; };
 		092A51462E0A7FC000DD0C15 /* CheckinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinView.swift; sourceTree = "<group>"; };
 		09570F922ED5B34C00EB91CE /* WallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallViewController.swift; sourceTree = "<group>"; };
@@ -546,8 +549,6 @@
 		09DA10562F4C990200DD80F5 /* CONTRIBUTING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CONTRIBUTING.md; sourceTree = "<group>"; };
 		09DA10572F4C990F00DD80F5 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		09DA10582F4C990F00DD80F5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		09DA10592F4C997B00DD80F5 /* bug_report.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = bug_report.md; sourceTree = "<group>"; };
-		09DA105A2F4C997B00DD80F5 /* feature_request.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = feature_request.md; sourceTree = "<group>"; };
 		09DA105C2F4C997B00DD80F5 /* CODE_OF_CONDUCT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CODE_OF_CONDUCT.md; sourceTree = "<group>"; };
 		09DA105D2F4C997B00DD80F5 /* PULL_REQUEST_TEMPLATE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PULL_REQUEST_TEMPLATE.md; sourceTree = "<group>"; };
 		09DA10762F4DB82D00DD80F5 /* GET_HELP.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = GET_HELP.md; sourceTree = "<group>"; };
@@ -1071,8 +1072,9 @@
 		09DA105B2F4C997B00DD80F5 /* ISSUE_TEMPLATE */ = {
 			isa = PBXGroup;
 			children = (
-				09DA10592F4C997B00DD80F5 /* bug_report.md */,
-				09DA105A2F4C997B00DD80F5 /* feature_request.md */,
+				0917E8962F5DE5AE00339338 /* config.yml */,
+				0917E8952F5DE5AE00339338 /* bug_report.yml */,
+				0917E8972F5DE5AE00339338 /* feature_request.yml */,
 			);
 			path = ISSUE_TEMPLATE;
 			sourceTree = "<group>";

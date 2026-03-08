@@ -1,0 +1,58 @@
+name: 🐞 Report a Bug
+description: Found a bug you'd like us to squash? Let us know here.
+labels:
+  - bug
+body:
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: A clear, short description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: |
+        - Give as much detail as you can to help us reproduce the bug.
+        - Give a clear list of steps to follow that result in the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Expected behavior
+      description: What you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Actual behavior
+      description: What actually happened.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Environment
+      description: |
+        - **iOS/macOS version:** (e.g. 26.1)
+        - **Device/Simulator:** (e.g. iPhone 17 Pro, Simulator)
+        - **App version:** (if known)
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: Screenshots or logs
+      description: If applicable, add screenshots or paste relevant log output.
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Any other details that might help (e.g. Trakt account type, specific content, network conditions).
+    validations:
+      required: false

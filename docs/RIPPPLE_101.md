@@ -8,13 +8,13 @@ The project started in 2017. The first version came out in early 2018 with an iP
 
 Today, you can use Rippple to **track**, **share**, **discover** and **organize** your TV time, in sync with Trakt, all with one app made for iPhone, iPad and Mac.
 
-Rippple is a passion project. It’s built by one person with the help of friends for [design](https://x.com/Kerroudjm) and [backend](https://github.com/igorissen) work, and with support from a growing [community](https://discord.gg/wZZqhMWSVS).
+Rippple is a passion project. It’s built by one person with early contributions from friends for [design](https://x.com/Kerroudjm) and [backend](https://github.com/igorissen) work, and with support from a growing [community](https://discord.gg/wZZqhMWSVS).
 
 ## What is Trakt?
 
 [Trakt](https://trakt.tv/) is a platform and community that helps you keep track of the TV shows and movies you watch. It helps you stay on top of trending and popular content thanks to community-driven lists, ratings and comments. You can link a media center for automatic scrobbling or manually check in when you’re watching something.
 
-Trakt provides a public API for [third-party apps](https://trakt.tv/apps) (like Rippple) to interact with your data and the community.
+Trakt provides a public API for [third-party apps](https://trakt.tv/apps) or scripts to interact with your own data and the community.
 
 ## Need more?
 

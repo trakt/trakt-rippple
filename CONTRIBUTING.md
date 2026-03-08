@@ -23,6 +23,16 @@ Use the [Feature request](.github/ISSUE_TEMPLATE/feature_request.md) template fo
 
 **Not sure if it’s a good fit?** If you’re unsure whether a feature fits the project or would like to discuss it before opening an issue, start a [Discussion](https://github.com/trakt/trakt-rippple/discussions) on GitHub instead. That keeps the issue tracker for concrete proposals and bugs.
 
+### GitHub Discussions
+
+[GitHub Discussions](https://github.com/trakt/trakt-rippple/discussions) is the place for questions, brainstorming, and community conversation. Use it when you want to:
+
+- Ask how something works or how to achieve something in Rippple
+- Share an idea and get feedback before filing a feature request
+- Discuss design, workflows, or future directions
+
+Use **Issues** for bugs (with steps to reproduce) and for well-defined feature requests. Use **Discussions** for everything else—it keeps the issue tracker focused and makes it easier to find and join ongoing conversations.
+
 ### Pull Requests
 
 1. **Fork** the repository and create a branch from `main` (or the current default branch).

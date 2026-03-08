@@ -6,9 +6,9 @@ Frequently Asked Questions and answers, how to stay in touch and get updates, an
 
 ### What is the To Watch and how is it built?
 
-Rippple’s To Watch is like the “up next” or “continue watching” you find on streaming platforms, but more powerful and customizable.
+Rippple’s To Watch is like the “up next” or “continue watching” you can find out there, but more powerful and customizable.
 
-You can think of it as your to-do list of movies and/or episodes to watch, from any source, organized by you. You can tell Rippple to use your Watchlist (or any other custom list) to build this list, hide and pin items, and more... making it very flexible.
+You can think of it as your to-do list of movies or episodes to watch, from any source, organized by you. You can tell Rippple to use your Watchlist (or any other custom list) to build this list, hide, pin items, and more... making it very flexible.
 
 ### Why do some actions take a long time to complete?
 
@@ -18,11 +18,11 @@ Sometimes we still need to make many requests (e.g. to build “To Watch” or r
 
 ### Why are Watchlist TV shows removed from my “To Watch”?
 
-[That’s how Trakt works](https://support.trakt.tv/support/solutions/articles/70000264945-why-do-things-get-removed-from-my-watchlist-after-watching-them-). We’ve made the “To Watch” configurable to work around this behaviour, and we’re looking at further improvements.
+That's by design on Trakt, Watchlisted items are automatically removed from your Watchlist as soon as you start watching them. We’ve made the “To Watch” configurable enough to work around this behaviour.
 
-### I can’t log in to Trakt on my Mac
+### I can’t log in to Trakt
 
-If nothing happens when you tap the Trakt login button in Rippple, try restarting your Mac and try again. Restarting Safari can also help.
+If nothing happens when you tap the Trakt login button in Rippple, try restarting your device and try again. Restarting Safari (on Mac) can also help.
 
 ### How long will a feature take? Why don’t you have X or Y?
 
@@ -30,9 +30,11 @@ Rippple is community-driven: we take your feedback into account. That doesn’t 
 
 We’re a very small team, so bugs can slip through. We focus on fixing bugs first, then on features by community priority and our long-term plan.
 
-**The best way to ask for something or report a problem is on GitHub:** open a [Discussion](https://github.com/trakt/trakt-rippple/discussions) to suggest or discuss a feature, or an [Issue](https://github.com/trakt/trakt-rippple/issues) for bugs and concrete feature requests. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+**The best way to ask for something or report a problem is on GitHub:** use [Discussions](https://github.com/trakt/trakt-rippple/discussions) to ask questions, suggest or discuss a feature, or [Issues](https://github.com/trakt/trakt-rippple/issues) for bugs and concrete feature requests. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Stay in touch & contact
+
+**GitHub Discussions** — [Join the discussion](https://github.com/trakt/trakt-rippple/discussions) to ask questions, share ideas, suggest features, or chat with the community. Use Discussions when you want to brainstorm, get advice, or talk about Rippple in general. For bugs and concrete feature requests, use [Issues](https://github.com/trakt/trakt-rippple/issues) instead.
 
 You can also reach me (Kevin) about Rippple here:
 
@@ -42,4 +44,4 @@ You can also reach me (Kevin) about Rippple here:
 
 In the app, use **Profile → Settings → Contact** for quick links to report a bug or request a feature.
 
-Please try to keep Rippple feedback on Rippple channels and Trakt support requests in Trakt's support channels.
+Note: please try to keep Rippple feedback on Rippple channels and Trakt support requests in Trakt's support channels.

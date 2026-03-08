@@ -1,19 +1,23 @@
 # Security Policy
 
-We take security and privacy seriously. If you discover a vulnerability in Rippple, please [report it privately](/docs/GET_HELP.md) so we can address it before public disclosure.
+We take security and privacy seriously. If you discover a vulnerability in Rippple, please **report it privately first** so we can investigate and address the issue before any public disclosure.
 
-## Reporting a vulnerability publically
-
-Preferred: GitHub Discussions (private details redacted). Start a new Discussion and mark it clearly as a security report.
+You can contact us here: [Get Help](/docs/GET_HELP.md)
 
 Please include:
-- A clear description of the issue and impact
-- Steps to reproduce
-- Any relevant logs or screenshots (redact sensitive data)
+- A clear description of the issue and its potential impact
+- Steps to reproduce the issue
+- Any relevant logs or screenshots (**redact sensitive data**)
 - Your suggested fix, if you have one
 
-We will acknowledge receipt as soon as possible and provide updates as we investigate.
+We will acknowledge receipt as soon as possible and keep you informed as we investigate.
+
+## Public disclosure
+
+After the issue has been confirmed and resolved, you are welcome to discuss it publicly.
+
+The preferred place for public discussions is **GitHub Discussions**. When posting, please avoid sharing sensitive details or exploit information that could put users at risk.
 
 ## Supported versions
 
-Only the latest release is supported with security fixes.
+Security fixes are only provided for the **latest release** of Rippple.
