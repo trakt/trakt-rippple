@@ -20,6 +20,7 @@ body:
     attributes:
       label: Alternatives considered
       description: Any other approaches or existing apps that do something similar.
+    validations:
       required: false
 
   - type: textarea
