@@ -100,14 +100,11 @@ final class WidgetManager {
                         behindText = "\(behind) behind"
                     }
                     if progress.toRewatchCount > 0 {
-                        behindText = nil
+                        behindText = "\(progress.toRewatchCount) to rewatch"
                     }
                     var subtitle: String?
                     if let episodeToWatch = progress.nextEpisodeToWatch {
                         subtitle = episodeToWatch.localizedEpisodeNumber
-                    }
-                    if progress.toRewatchCount > 0 {
-                        subtitle = "\(progress.toRewatchCount) to rewatch"
                     }
                     let progress = WidgetModel(label: "Next Episode",
                                                      title: show.title,

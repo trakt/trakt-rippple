@@ -105,10 +105,7 @@ final class MediaTableViewCell: UITableViewCell {
             case .list:
                 fatalError()
             case .showProgress(let show, let showProgress):
-                if media.toRewatchCount > 0 {
-                    cellContextMenu.media = show.mediaModel
-                    menuButtonContextMenu.media = show.mediaModel
-                } else if let episode = showProgress.nextEpisodeToWatch {
+                if let episode = showProgress.nextEpisodeToWatch {
                     cellContextMenu.media = show.mediaModel
                     menuButtonContextMenu.media = episode.mediaModel(given: show)
                 } else {
@@ -169,59 +166,7 @@ final class MediaTableViewCell: UITableViewCell {
                 menuButton.configuration = configuration
                 menuButton.preferredBehavioralStyle = .pad
 
-                if media.toRewatchCount > 0 {
-                    menuButton.addAction(UIAction { [weak self] _ in
-                        guard let self = self else { return }
-                        let dynamicAction = UIDeferredMenuElement.uncached({ completion in
-                            TraktAPIProvider.noChacheProvider.request(TraktAPIService.showProgress(id: self.media.show!.identifiers.trakt!, includesSpecials: false),
-                                                              callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
-                                                                guard let self = self else { return }
-                                                                switch result {
-                                                                case let .success(moyaResponse):
-                                                                    do {
-                                                                        let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                                                                        print("Show progress successful \(response)")
-
-                                                                        let showProgress = try response.map(ShowProgress.self, using: TraktAPIProvider.decoder)
-
-                                                                        if let nextToRewatch = showProgress.nextToRewatch {
-                                                                            TraktAPIProvider.provider.request(TraktAPIService.episode(id: String(self.media.show!.identifiers.trakt!), season: nextToRewatch.0.number, episode: nextToRewatch.1.number),
-                                                                                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                                                                guard let self = self else { return }
-                                                                                switch result {
-                                                                                case let .success(moyaResponse):
-                                                                                    do {
-                                                                                        let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                                                                                        let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
-
-                                                                                        DispatchQueue.main.async {
-                                                                                            self.menuButtonContextMenu.media = episode.mediaModel(given: self.media.show!)
-                                                                                            completion(self.menuButtonContextMenu.toWatchMenu.children)
-                                                                                        }
-                                                                                    } catch {
-                                                                                        print("Error fetching episode \(error)")
-                                                                                    }
-                                                                                case let .failure(error):
-                                                                                    print("Failed fetching episode \(error)")
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    } catch {
-                                                                        print("Error Show progress \(error)")
-                                                                    }
-                                                                case let .failure(error):
-                                                                    print("Error Show progress \(error)")
-                                                                }
-                            }
-                        })
-                        menuButton.menu = UIMenu(title: "Next Episode To Rewatch", image: nil, children: [dynamicAction])
-
-                        UISelectionFeedbackGenerator().selectionChanged()
-                        menuButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                     }, for: .menuActionTriggered)
-                } else if media.showProgressShow != nil {
+                if media.showProgressShow != nil {
                     menuButton.addAction(UIAction { [weak self] _ in
                         guard let self = self else { return }
                         menuButton.menu = self.menuButtonContextMenu.toWatchMenu
@@ -572,36 +517,7 @@ final class MediaTableViewCell: UITableViewCell {
     private func setupShowProgress(episode: Episode?, show: Show, progress: ShowProgress) {
         submeta?.isHidden = false
         submeta?.text = ""
-        if progress.toRewatchCount > 0 {
-
-            title.text = show.title
-
-            subtitle.text = "\(progress.toRewatchCount) to rewatch"
-
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .none
-            if let resetDate = progress.resetAt {
-                meta?.text = "Rewatching since \(formatter.string(from: resetDate))"
-            } else {
-                meta?.text = "Rewatching..."
-            }
-
-            recommendedStatus?.isHidden = true
-            collectedStatus?.isHidden = true
-            watchlistedStatus?.isHidden = true
-            watchedStatus?.isHidden = true
-            toWatchStatus?.isHidden = true
-            commentedStatus?.isHidden = true
-            ratedStatus?.isHidden = true
-            hiddenStatus?.isHidden = true
-            pinnedStatus?.isHidden = true
-            droppedStatus?.isHidden = true
-            whereToWatchImageView?.media = media
-            listedStatus?.isHidden = true
-
-            poster.show = show
-        } else if let episode = episode {
+        if let episode = episode {
             title.text = show.title
 
             subtitle.text = "\(episode.localizedEpisodeNumber)"
@@ -635,12 +551,17 @@ final class MediaTableViewCell: UITableViewCell {
                 submeta?.text = title
             }
 
-            let behind = progress.behind
-            if behind > 0 {
-                meta?.text = "\(behind) behind"
+            if progress.toRewatchCount > 0 {
+                meta?.text = "\(progress.toRewatchCount) to rewatch"
             } else {
-                meta?.text = "At least one behind"
+                let behind = progress.behind
+                if behind > 0 {
+                    meta?.text = "\(behind) behind"
+                } else {
+                    meta?.text = "At least one behind"
+                }
             }
+
             recommendedStatus?.isHidden = true
             collectedStatus?.isHidden = true
             watchlistedStatus?.isHidden = true

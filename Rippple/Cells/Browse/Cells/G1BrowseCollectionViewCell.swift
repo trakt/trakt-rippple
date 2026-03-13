@@ -73,33 +73,22 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
             case .showProgress(let show, let progress):
                 backdrop.showEpisodeSpoilers = UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle")
                 title.text = show.title
-                // pinned?.isHidden = !show.isPinned
 
-                if progress.toRewatchCount > 0 {
-                    backdrop.media = show.mediaModel
-                } else if let episode = progress.nextEpisodeToWatch {
+                if let episode = progress.nextEpisodeToWatch {
                     backdrop.media = episode.mediaModel(given: show)
                 } else {
                     backdrop.media = show.mediaModel
                 }
-                if progress.toRewatchCount > 0 {
-                    subtitle.text = "\(progress.toRewatchCount) to rewatch"
 
-                    let formatter = DateFormatter()
-                    formatter.dateStyle = .medium
-                    formatter.timeStyle = .none
-                    if let resetDate = progress.resetAt {
-                        meta?.text = "Rewatching since \(formatter.string(from: resetDate))"
-                    } else {
-                        meta?.text = "Rewatching..."
-                    }
+                if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = progress.nextEpisodeToWatch!.title {
+                    subtitle.text = "\(progress.nextEpisodeToWatch!.localizedEpisodeNumber) - \(title)"
                 } else {
-                    if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = progress.nextEpisodeToWatch!.title {
-                        subtitle.text = "\(progress.nextEpisodeToWatch!.localizedEpisodeNumber) - \(title)"
-                    } else {
-                        subtitle.text = progress.nextEpisodeToWatch!.localizedEpisodeNumber
-                    }
+                    subtitle.text = progress.nextEpisodeToWatch!.localizedEpisodeNumber
+                }
 
+                if progress.toRewatchCount > 0 {
+                    meta.text = "\(progress.toRewatchCount) to rewatch"
+                } else {
                     let behind = progress.behind
                     if behind > 0 {
                         meta?.text = "\(behind) behind"

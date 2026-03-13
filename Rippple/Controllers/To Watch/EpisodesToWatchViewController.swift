@@ -339,17 +339,6 @@ extension EpisodesToWatchViewController {
         case .content(let media, _):
             guard let show = media.showProgressShow else { return }
 
-            if media.toRewatchCount > 0 {
-                let nextEpisodeToWatchNavigationController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "next episode") as! UINavigationController
-
-                if let nextEpisodeViewController = nextEpisodeToWatchNavigationController.topViewController as? MediaShowNextLoadingViewController {
-                    nextEpisodeViewController.media = MediaModel.show(show)
-                }
-
-                UIApplication.shared.present(nextEpisodeToWatchNavigationController)
-                return
-            }
-
             guard let episode = media.showProgressEpisode else {
                 performSegue(withIdentifier: ViewControllerSegue.seasons.rawValue, sender: show)
                 return
@@ -409,10 +398,6 @@ extension EpisodesToWatchViewController {
             alertController.popoverPresentationController?.sourceView = tableView.cellForRow(at: indexPath)
 
             present(alertController, animated: true)
-            /*
-        case .link(_, _, let segue):
-            performSegue(withIdentifier: segue, sender: nil)
-             */
         default:
             break
         }
@@ -470,24 +455,6 @@ extension EpisodesToWatchViewController {
         switch wrapper {
         case .content(let media, _):
             guard let show = media.showProgressShow else { return nil }
-
-            if media.toRewatchCount > 0 {
-                let next = UIContextualAction(style: .normal,
-                                                 title: "Next") { _, _, boolValue in
-                    let nextEpisodeToWatchNavigationController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "next episode") as! UINavigationController
-
-                    if let nextEpisodeViewController = nextEpisodeToWatchNavigationController.topViewController as? MediaShowNextLoadingViewController {
-                        nextEpisodeViewController.media = MediaModel.show(show)
-                    }
-
-                    UIApplication.shared.present(nextEpisodeToWatchNavigationController)
-                    boolValue(true)
-                }
-                next.image = UIImage(systemName: "chevron.right.circle.fill")
-                next.backgroundColor = UIColor(resource: .ripppleGray)
-
-                return UISwipeActionsConfiguration(actions: [next])
-            }
 
             guard let episode = media.showProgressEpisode else {
                 return UISwipeActionsConfiguration(actions: [])

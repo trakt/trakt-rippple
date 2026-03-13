@@ -79,6 +79,46 @@ final class ProgressManager {
         guard let key = show.identifiers.trakt else { return }
         cache.removeValue(forKey: key)
     }
+
+    func processAndCacheProgress(for show: Show,
+                                 showId: Int64,
+                                 progress: ShowProgress,
+                                 completion: @escaping (ShowProgress) -> Void) {
+        let cacheAndComplete: (ShowProgress) -> Void = { [weak self] finalProgress in
+            guard let self = self else { return }
+            let showShowProgress = ShowShowProgress(show: show,
+                                                    showProgress: finalProgress)
+            self.cache.setValue(showShowProgress, forKey: showId)
+            onProgressCacheChangedTransmitter.broadcast(showShowProgress)
+            completion(finalProgress)
+        }
+
+        guard let nextToRewatch = progress.nextToRewatch else {
+            cacheAndComplete(progress)
+            return
+        }
+
+        TraktAPIProvider.provider.request(.episode(id: String(showId),
+                                                   season: nextToRewatch.0.number,
+                                                   episode: nextToRewatch.1.number),
+                                          callbackQueue: .global(qos: .utility)) { result in
+            switch result {
+            case let .success(moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+                    let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
+                    let updatedProgress = progress.with(nextEpisode: episode)
+                    cacheAndComplete(updatedProgress)
+                } catch {
+                    print("Error fetching episode for next to rewatch \(error)")
+                    cacheAndComplete(progress)
+                }
+            case let .failure(error):
+                print("Failed fetching episode for next to rewatch \(error)")
+                cacheAndComplete(progress)
+            }
+        }
+    }
 }
 
 extension MediaModel {
@@ -107,11 +147,11 @@ extension MediaModel {
 
                     let showProgress = try response.map(ShowProgress.self, using: TraktAPIProvider.decoder)
 
-                    let showShowProgress = ShowShowProgress(show: show,
-                                                            showProgress: showProgress)
-                    ProgressManager.shared.cache.setValue(showShowProgress, forKey: showId)
-                    onProgressCacheChangedTransmitter.broadcast(showShowProgress)
-                    completion(showProgress)
+                    ProgressManager.shared.processAndCacheProgress(for: show,
+                                                                   showId: showId,
+                                                                   progress: showProgress) { finalProgress in
+                        completion(finalProgress)
+                    }
                 } catch {
                     print("Error Fetching Show progress \(error)")
                     completion(nil)
@@ -154,11 +194,11 @@ extension MediaModel {
 
                         let showProgress = try response.map(ShowProgress.self, using: TraktAPIProvider.decoder)
 
-                        let showShowProgress = ShowShowProgress(show: show,
-                                                                showProgress: showProgress)
-                        ProgressManager.shared.cache.setValue(showShowProgress, forKey: showId)
-                        onProgressCacheChangedTransmitter.broadcast(showShowProgress)
-                        completion(showProgress)
+                        ProgressManager.shared.processAndCacheProgress(for: show,
+                                                                       showId: showId,
+                                                                       progress: showProgress) { finalProgress in
+                            completion(finalProgress)
+                        }
                     } catch {
                         print("Error Fetching Show progress \(error)")
                         completion(nil)
@@ -200,11 +240,11 @@ extension MediaModel {
 
                                 let showProgress = try response.map(ShowProgress.self, using: TraktAPIProvider.decoder)
 
-                                let showShowProgress = ShowShowProgress(show: show,
-                                                                        showProgress: showProgress)
-                                ProgressManager.shared.cache.setValue(showShowProgress, forKey: showId)
-                                onProgressCacheChangedTransmitter.broadcast(showShowProgress)
-                                continuation.resume(returning: showProgress)
+                                ProgressManager.shared.processAndCacheProgress(for: show,
+                                                                               showId: showId,
+                                                                               progress: showProgress) { finalProgress in
+                                    continuation.resume(returning: finalProgress)
+                                }
                             } catch {
                                 print("Error Fetching Show progress \(error)")
                                 continuation.resume(throwing: error)
@@ -220,5 +260,17 @@ extension MediaModel {
                 return nil
             }
         }
+    }
+}
+
+extension ShowProgress {
+    func with(nextEpisode: Episode?) -> ShowProgress {
+        ShowProgress(aired: aired,
+                     completed: completed,
+                     lastWatchedAt: lastWatchedAt,
+                     nextEpisodeToWatch: nextEpisode,
+                     resetAt: resetAt,
+                     seasons: seasons,
+                     lastEpisode: lastEpisode)
     }
 }
