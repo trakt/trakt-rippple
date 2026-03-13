@@ -189,7 +189,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
     }
 
     var sortedSorts: [MovieToWatchSettings.Sort] {
-        MovieToWatchSettings.Sort.allCases.sorted { $0.rawValue < $1.rawValue }
+        MovieToWatchSettings.Sort.allCases
     }
 
     func setWatchlist(_ newValue: Bool) {

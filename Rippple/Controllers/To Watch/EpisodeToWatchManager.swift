@@ -1027,6 +1027,8 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
                     self.mediaModels = self.filteredProgress.sortByUserShowRating()
                 case .title:
                     self.mediaModels = self.filteredProgress.sortByTitle()
+                case .timeLeft:
+                    self.mediaModels = self.filteredProgress.sortByTimeLeft()
                 }
 
                 if EpisodeToWatchSettings.shared.reverse {
@@ -1160,6 +1162,8 @@ private class UpdateShowProgressOperation: Operation, @unchecked Sendable {
                 self.mediaModels = self.filteredProgress.sortByUserShowRating()
             case .title:
                 self.mediaModels = self.filteredProgress.sortByTitle()
+            case .timeLeft:
+                self.mediaModels = self.filteredProgress.sortByTimeLeft()
             }
 
             if EpisodeToWatchSettings.shared.reverse {
@@ -1299,6 +1303,22 @@ extension Dictionary where Key == Show, Value == ShowProgress {
             let count1 = $0.value.toRewatchCount > 0 ? $0.value.toRewatchCount : $0.value.behind
             let count2 = $1.value.toRewatchCount > 0 ? $1.value.toRewatchCount : $1.value.behind
             return (count1, $1.key.sortableTitle) > (count2, $0.key.sortableTitle)
+        }.compactMap { MediaModel.showProgress($0.key, $0.value) }
+    }
+
+    fileprivate func sortByTimeLeft() -> [MediaModel] {
+        return sorted {
+            let defaultRuntime = 45
+
+            let remainingEpisodes1 = $0.value.toRewatchCount > 0 ? $0.value.toRewatchCount : Swift.max(1, $0.value.behind)
+            let runtime1 = $0.key.runtime ?? $0.value.nextEpisodeToWatch?.runtime ?? defaultRuntime
+            let timeLeft1 = remainingEpisodes1 * runtime1
+
+            let remainingEpisodes2 = $1.value.toRewatchCount > 0 ? $1.value.toRewatchCount : Swift.max(1, $1.value.behind)
+            let runtime2 = $1.key.runtime ?? $1.value.nextEpisodeToWatch?.runtime ?? defaultRuntime
+            let timeLeft2 = remainingEpisodes2 * runtime2
+
+            return (timeLeft1, $0.key.sortableTitle) < (timeLeft2, $1.key.sortableTitle)
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
