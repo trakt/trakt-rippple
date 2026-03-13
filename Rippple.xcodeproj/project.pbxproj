@@ -20,6 +20,7 @@
 		09570F932ED5B34C00EB91CE /* WallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09570F922ED5B34C00EB91CE /* WallViewController.swift */; };
 		09570F952ED738E200EB91CE /* EmptyCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09570F942ED738E200EB91CE /* EmptyCollectionViewCell.swift */; };
 		0960BCBC2E52591400A93556 /* YouTubePlayerKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0960BCBB2E52591400A93556 /* YouTubePlayerKit */; };
+		09632CBC2F640BA8006780BC /* ImageCacheSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09632CBB2F640BA8006780BC /* ImageCacheSettingsView.swift */; };
 		0970258D2EBE48B3005E91B4 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 0970258C2EBE48B3005E91B4 /* Kingfisher */; };
 		0987CB542EA2889600F98967 /* PendingFollowingRequestsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0987CB532EA2889600F98967 /* PendingFollowingRequestsViewController.swift */; };
 		0990B1CA2E17DFDF00D523D0 /* SpacerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0990B1C92E17DFDF00D523D0 /* SpacerTableViewCell.swift */; };
@@ -533,6 +534,7 @@
 		092A51462E0A7FC000DD0C15 /* CheckinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinView.swift; sourceTree = "<group>"; };
 		09570F922ED5B34C00EB91CE /* WallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallViewController.swift; sourceTree = "<group>"; };
 		09570F942ED738E200EB91CE /* EmptyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyCollectionViewCell.swift; sourceTree = "<group>"; };
+		09632CBB2F640BA8006780BC /* ImageCacheSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheSettingsView.swift; sourceTree = "<group>"; };
 		0987CB532EA2889600F98967 /* PendingFollowingRequestsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingFollowingRequestsViewController.swift; sourceTree = "<group>"; };
 		0990B1C92E17DFDF00D523D0 /* SpacerTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacerTableViewCell.swift; sourceTree = "<group>"; };
 		0990B1CB2E17E0E200D523D0 /* SpacerTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpacerTableViewCell.xib; sourceTree = "<group>"; };
@@ -1684,6 +1686,7 @@
 				3AB0EF2429BB9C0B008F0201 /* SpoilersViewController.swift */,
 				3A0D03692C9DB2EF00D0DDD7 /* App Icon SwiftUI */,
 				09A5A0F52E96A52300BFC59C /* TransactionsView.swift */,
+				09632CBB2F640BA8006780BC /* ImageCacheSettingsView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -3080,6 +3083,7 @@
 				3A6F58B7264FC0900087345C /* AppearanceViewController.swift in Sources */,
 				3A588DD025CD3E4A008A2896 /* CountryWhereToWatchTableViewController.swift in Sources */,
 				3ABA24012AC1CEF400062DE8 /* PrivateNotesTableViewCell.swift in Sources */,
+				09632CBC2F640BA8006780BC /* ImageCacheSettingsView.swift in Sources */,
 				3AC8308C1FD7079400088486 /* LikeManager.swift in Sources */,
 				3A1C8CCA2D831A030046B3A0 /* AutomationSettingsView.swift in Sources */,
 				3AF9C66A235F1AE30073BEC8 /* ConfettiView.swift in Sources */,
