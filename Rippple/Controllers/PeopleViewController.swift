@@ -318,32 +318,6 @@ final class PeopleViewController: UITableViewController {
 
         errorView.removeFromSuperview()
         loadingView.removeFromSuperview()
-
-        /*
-        if let title = title {
-            navigationItem.titleMenuProvider = { _ in
-                let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
-                    var finalMenuElements = [UIAction]()
-
-                    finalMenuElements.append(UIAction(title: title,
-                                                      handler: { _ in
-                        UIPasteboard.general.string = title
-                    }))
-                    finalMenuElements.append(UIAction(title: title.slugify(),
-                                                      handler: { _ in
-                        UIPasteboard.general.string = title.slugify()
-                    }))
-                    finalMenuElements.append(UIAction(title: title.hashtagify(),
-                                                      handler: { _ in
-                        UIPasteboard.general.string = title.hashtagify()
-                    }))
-
-                    completion([UIMenu(options: .displayInline, children: finalMenuElements)])
-                }
-                return UIMenu(title: "Copy", children: [deferredMenuElement])
-            }
-        }
-         */
     }
 
     @objc func refresh(_ sender: Any) {

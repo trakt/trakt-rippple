@@ -1607,6 +1607,7 @@ struct Person: Codable, Equatable, Hashable {
     let birthday: Date?
     let death: Date?
     let birthplace: String?
+    let height: Float?
 
     let homepage: String?
 
@@ -1620,6 +1621,7 @@ struct Person: Codable, Equatable, Hashable {
         case biography
         case birthday
         case birthplace
+        case height
         case death
         case homepage
         case socialIds = "social_ids"
