@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="dark"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -113,7 +113,7 @@
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bck-GD-qnF">
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="1000" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bck-GD-qnF">
                                                 <rect key="frame" x="0.0" y="45" width="26.5" height="14.5"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                                 <color key="textColor" systemColor="secondaryLabelColor"/>
@@ -204,6 +204,14 @@
                             <action selector="ageRatingCertificationButtonTouchedUpInside:" destination="uqR-kW-ESU" eventType="touchUpInside" id="M4R-Gn-tEY"/>
                         </connections>
                     </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" preferredBehavioralStyle="pad" translatesAutoresizingMaskIntoConstraints="NO" id="PULSE-BTN-ID">
+                        <rect key="frame" x="26" y="137.5" width="26.5" height="14.5"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                        <connections>
+                            <action selector="presentPulse" destination="uqR-kW-ESU" eventType="touchUpInside" id="PULSE-ACTION-ID"/>
+                        </connections>
+                    </button>
                 </subviews>
                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                 <constraints>
@@ -213,6 +221,10 @@
                     <constraint firstItem="W0f-hg-uLk" firstAttribute="trailing" secondItem="jFD-Zr-7Uq" secondAttribute="trailing" constant="3" id="Hv2-qh-t0h"/>
                     <constraint firstItem="rmb-K5-DXI" firstAttribute="trailing" secondItem="XIS-Oy-9rR" secondAttribute="trailing" id="Kqa-yZ-2AN"/>
                     <constraint firstItem="JUe-xR-9dU" firstAttribute="top" secondItem="7qK-lE-rga" secondAttribute="top" constant="4" id="Mqm-iG-b5y"/>
+                    <constraint firstItem="PULSE-BTN-ID" firstAttribute="bottom" secondItem="Bck-GD-qnF" secondAttribute="bottom" id="PULSE-BOTTOM"/>
+                    <constraint firstItem="PULSE-BTN-ID" firstAttribute="leading" secondItem="Bck-GD-qnF" secondAttribute="leading" id="PULSE-LEADING"/>
+                    <constraint firstItem="PULSE-BTN-ID" firstAttribute="top" secondItem="Bck-GD-qnF" secondAttribute="top" id="PULSE-TOP"/>
+                    <constraint firstItem="PULSE-BTN-ID" firstAttribute="trailing" secondItem="Bck-GD-qnF" secondAttribute="trailing" id="PULSE-TRAILING"/>
                     <constraint firstItem="W0f-hg-uLk" firstAttribute="bottom" secondItem="jFD-Zr-7Uq" secondAttribute="bottom" constant="1" id="UKA-fl-7i5"/>
                     <constraint firstItem="JUe-xR-9dU" firstAttribute="leading" secondItem="7qK-lE-rga" secondAttribute="leading" constant="12" id="XZL-yc-XNE"/>
                     <constraint firstItem="W0f-hg-uLk" firstAttribute="leading" secondItem="jFD-Zr-7Uq" secondAttribute="leading" constant="-3" id="XmK-lD-CTx"/>

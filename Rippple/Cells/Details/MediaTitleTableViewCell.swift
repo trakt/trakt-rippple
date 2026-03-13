@@ -52,6 +52,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
         case presentShow
         case presentCertifications
         case presentMedia(MediaModel)
+        case presentPulse
     }
 
     weak var delegate: MediaTitleTableViewCellDelegate?
@@ -972,6 +973,11 @@ final class MediaTitleTableViewCell: UITableViewCell {
         default:
             return
         }
+    }
+
+    @objc private func presentPulse() {
+        guard let delegate = delegate else { return }
+        delegate.cell(self, action: .presentPulse)
     }
 
     func present(media: MediaModel) {

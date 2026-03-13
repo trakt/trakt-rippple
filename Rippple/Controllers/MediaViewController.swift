@@ -1300,6 +1300,8 @@ extension MediaViewController: MediaTitleTableViewCellDelegate {
             performSegue(withIdentifier: "certifications", sender: nil)
         case .presentMedia(let media):
             performSegue(withIdentifier: "media", sender: media)
+        case .presentPulse:
+            performSegue(withIdentifier: "activities", sender: media)
         }
     }
 }
