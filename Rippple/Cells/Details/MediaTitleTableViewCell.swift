@@ -52,7 +52,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
         case presentShow
         case presentCertifications
         case presentMedia(MediaModel)
-        case presentPulse
     }
 
     weak var delegate: MediaTitleTableViewCellDelegate?
@@ -69,7 +68,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
     @IBOutlet weak var rottenTomatoesAudienceImage: UIImageView!
 
     @IBOutlet weak var runtimeLabel: UILabel!
-    @IBOutlet weak var mediaSubInfoLabel: UILabel!
     @IBOutlet weak var stingerLabel: UILabel!
 
     @IBOutlet weak var mainActionButton: UIButton!
@@ -200,26 +198,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
 
                 // runtimeLabel.text = "\(movie.runtime ?? 0) min"
 
-                if let releaseYear = movie.releaseYear {
-                    mediaSubInfoLabel.text = "\(releaseYear)"
-                    mediaSubInfoLabel.isHiddenInStackView = false
-                } else {
-                    mediaSubInfoLabel.isHiddenInStackView = true
-                }
-
-                hasDate: if let released = movie.released, let country = movie.country {
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.locale = Locale(identifier: "en_US")
-                    dateFormatter.dateFormat = "yyyy-MM-dd"
-                    guard let date = dateFormatter.date(from: released) else { break hasDate }
-                    let localizedCountry = Locale(identifier: "en_US").localizedCountry(for: country)
-                    dateFormatter.dateFormat = "MMM d, yyyy"
-                    if date.compare(Date()) == .orderedDescending {
-                        mediaSubInfoLabel.text = "Coming \(dateFormatter.string(from: date)) in \(localizedCountry)"
-                    } else {
-                        mediaSubInfoLabel.text = "Released on \(dateFormatter.string(from: date)) in \(localizedCountry)"
-                    }
-                }
                 if let tmdbId = movie.identifiers.tmdb {
                     stingerLabel.text = "Loading stinger info..."
                     stingerLabel.alpha = 0.0
@@ -248,69 +226,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
 
                 // runtimeLabel.text = "\(show.runtime ?? 0) min"
 
-                if let releaseYear = show.releaseYear {
-                    mediaSubInfoLabel.text = "\(releaseYear)"
-                    mediaSubInfoLabel.isHiddenInStackView = false
-                } else {
-                    mediaSubInfoLabel.isHiddenInStackView = true
-                }
-
-                if let status = show.status {
-                    var onNetwork = ""
-                    if let network = show.network {
-                        onNetwork += "on \(network)"
-                    }
-
-                    var sinceYear = ""
-                    if let releaseYear = show.releaseYear {
-                        sinceYear = "since \(releaseYear)"
-                    }
-
-                    if status == "returning series" {
-                        mediaSubInfoLabel.text = "Airing \(onNetwork) \(sinceYear)"
-                        mediaSubInfoLabel.isHiddenInStackView = false
-                    } else if status == "in production" {
-                        if let firstAirDate = show.firstAired {
-                            let dateFormatter = DateFormatter.init()
-                            dateFormatter.dateFormat = "MMM d, yyyy"
-                            mediaSubInfoLabel.text = "Coming \(dateFormatter.string(from: firstAirDate)) \(onNetwork)"
-                        } else {
-                            mediaSubInfoLabel.text = "Coming soon \(onNetwork)"
-                        }
-                        mediaSubInfoLabel.isHiddenInStackView = false
-                    } else if status == "planned" {
-                        if let firstAirDate = show.firstAired {
-                            let dateFormatter = DateFormatter.init()
-                            dateFormatter.dateFormat = "MMM d, yyyy"
-                            mediaSubInfoLabel.text = "Coming \(dateFormatter.string(from: firstAirDate)) \(onNetwork)"
-                        } else {
-                            mediaSubInfoLabel.text = "Coming soon \(onNetwork)"
-                        }
-                        mediaSubInfoLabel.isHiddenInStackView = false
-                    } else if status == "canceled" {
-                        var info = [String]()
-                        if let releaseYear = show.releaseYear {
-                            info.append("\(releaseYear)")
-                        }
-                        if let network = show.network {
-                            info.append(network)
-                        }
-                        info.append("Canceled")
-                        mediaSubInfoLabel.text = info.joined(separator: " · ")
-                        mediaSubInfoLabel.isHiddenInStackView = false
-                    } else if status == "ended" {
-                        var info = [String]()
-                        if let releaseYear = show.releaseYear {
-                            info.append("\(releaseYear)")
-                        }
-                        if let network = show.network {
-                            info.append(network)
-                        }
-                        info.append("Ended")
-                        mediaSubInfoLabel.text = info.joined(separator: " · ")
-                        mediaSubInfoLabel.isHiddenInStackView = false
-                    }
-                }
                 stingerLabel.text = "No stinger"
                 stingerLabel.alpha = 0.0
 
@@ -323,25 +238,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
                 ratingsStack.isHiddenInStackView = true
 
                 // runtimeLabel.text = "\(episode.runtime ?? show.runtime ?? 0) min"
-
-                var onNetwork = ""
-                if let network = show.network {
-                    onNetwork += "on \(network)"
-                }
-
-                if let firstAired = episode.firstAired {
-                    let dateFormatter = DateFormatter.init()
-                    dateFormatter.locale = Locale(identifier: "en_US")
-                    dateFormatter.dateStyle = .medium
-                    dateFormatter.timeStyle = .short
-                    if firstAired < Date() {
-                        mediaSubInfoLabel.text = "Aired \(dateFormatter.string(from: firstAired)) \(onNetwork)"
-                    } else {
-                        mediaSubInfoLabel.text = "Will air \(dateFormatter.string(from: firstAired)) \(onNetwork)"
-                    }
-                } else {
-                    mediaSubInfoLabel.text = "Missing air date"
-                }
 
                 if let episodeType = episode.episodeType {
                     switch episodeType {
@@ -382,25 +278,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
                 ratingsStack.isHiddenInStackView = true
 
                 // runtimeLabel.text = "\(episode.runtime ?? show.runtime ?? 0) min"
-
-                var onNetwork = ""
-                if let network = show.network {
-                    onNetwork += "on \(network)"
-                }
-
-                if let firstAired = season.firstAired {
-                    let dateFormatter = DateFormatter.init()
-                    dateFormatter.locale = Locale(identifier: "en_US")
-                    dateFormatter.dateStyle = .medium
-                    dateFormatter.timeStyle = .short
-                    if firstAired < Date() {
-                        mediaSubInfoLabel.text = "First aired \(dateFormatter.string(from: firstAired)) \(onNetwork)"
-                    } else {
-                        mediaSubInfoLabel.text = "Will first air \(dateFormatter.string(from: firstAired)) \(onNetwork)"
-                    }
-                } else {
-                    mediaSubInfoLabel.text = "Missing first air date"
-                }
 
                 stingerLabel.text = ""
                 stingerLabel.alpha = 0.0
@@ -973,11 +850,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
         default:
             return
         }
-    }
-
-    @objc private func presentPulse() {
-        guard let delegate = delegate else { return }
-        delegate.cell(self, action: .presentPulse)
     }
 
     func present(media: MediaModel) {
