@@ -14,6 +14,8 @@ import SafariServices
 
 import Moya
 
+import SwiftUI
+
 let (onRemoveWatchTransmitter, onRemoveWatchReceiver) = Receiver<Int64>.make(with: .hot)
 let (onRemoveWatchMediaTransmitter, onRemoveWatchMediaReceiver) = Receiver<MediaModel>.make(with: .hot)
 let (onRemoveMultipleMediaTransmitter, onRemoveMultipleMediaReceiver) = Receiver<MediaModel>.make(with: .hot)
@@ -177,18 +179,6 @@ final class MediaViewController: UITableViewController {
             break
         }
 
-        if let trakt = media.traktWebsiteMediaLink {
-            snapshot.appendItems([.link("Open on Trakt", "link", trakt)])
-            linkCount += 1
-        }
-        if let tmdb = media.tmdbURL {
-            snapshot.appendItems([.link("Open on TMDb", "link", tmdb)])
-            linkCount += 1
-        }
-        if let imdb = media.imdbURL {
-            snapshot.appendItems([.link("Open on IMDb", "link", imdb)])
-            linkCount += 1
-        }
         if let homepage = media.homepageURL {
             snapshot.appendItems([.link("Open Official Website", "network", homepage)])
             linkCount += 1
@@ -198,8 +188,10 @@ final class MediaViewController: UITableViewController {
             snapshot.insertItems([.spacer(5.001)], afterItem: .summary)
         }
 
+        snapshot.appendItems([.spacer(5.003)])
+        snapshot.appendItems([.openIn])
+
         if let officialList = officialList {
-            snapshot.appendItems([.spacer(5.002)])
             snapshot.appendItems([.collection(officialList)])
         }
 
@@ -234,6 +226,7 @@ final class MediaViewController: UITableViewController {
         case notes
         case spacer(Float)
         case header
+        case openIn
     }
 
     private lazy var dataSource = UITableViewDiffableDataSource<Section, Wrapper>(tableView: tableView) { [weak self] tableView, indexPath, item in
@@ -355,6 +348,11 @@ final class MediaViewController: UITableViewController {
             cell.media = media
             cell.delegate = self
             return cell
+        case .openIn:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "open in") as! OpenActionsTableViewCell
+            cell.media = self.media
+            cell.delegate = self
+            return cell
         }
     }
 
@@ -399,6 +397,7 @@ final class MediaViewController: UITableViewController {
         tableView.register(UINib(nibName: "SpacerTableViewCell", bundle: nil), forCellReuseIdentifier: "spacer")
         tableView.register(UINib(nibName: "MediaHeaderTableViewCell", bundle: nil), forCellReuseIdentifier: "header")
         tableView.register(UINib(nibName: "EpisodeShowTableViewCell", bundle: nil), forCellReuseIdentifier: "episode")
+        tableView.register(UINib(nibName: "OpenActionsTableViewCell", bundle: nil), forCellReuseIdentifier: "open in")
 
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
         tableView.separatorStyle = .none
@@ -1074,6 +1073,8 @@ extension MediaViewController {
             return UITableView.automaticDimension
         case .link:
             return UITableView.automaticDimension
+        case .openIn:
+            return UITableView.automaticDimension
         case .collection:
             return UITableView.automaticDimension
         case .notes:
@@ -1392,5 +1393,17 @@ extension MediaViewController: MediaHeaderTableViewCellDelegate {
                 performSegue(withIdentifier: "seasons", sender: media.season)
             }
         }
+    }
+}
+
+extension MediaViewController: OpenInRowTableViewCellDelegate {
+    func openInRowCell(_ cell: OpenActionsTableViewCell, didSelectURL url: URL, for item: CustomOpenAction) {
+        UIApplication.shared.open(url)
+    }
+
+    func openInRowCellDidTapSettings(_ cell: OpenActionsTableViewCell) {
+        let settingsView = OpenInSettingsView()
+        let controller = UIHostingController(rootView: settingsView)
+        present(controller, animated: true)
     }
 }

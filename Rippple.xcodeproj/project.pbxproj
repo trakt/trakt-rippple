@@ -25,6 +25,7 @@
 		0987CB542EA2889600F98967 /* PendingFollowingRequestsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0987CB532EA2889600F98967 /* PendingFollowingRequestsViewController.swift */; };
 		0990B1CA2E17DFDF00D523D0 /* SpacerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0990B1C92E17DFDF00D523D0 /* SpacerTableViewCell.swift */; };
 		0990B1CC2E17E0E200D523D0 /* SpacerTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0990B1CB2E17E0E200D523D0 /* SpacerTableViewCell.xib */; };
+		0996F33C2F68133000BE58C7 /* OpenActionsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0996F33B2F68133000BE58C7 /* OpenActionsTableViewCell.xib */; };
 		0998A7B52E2D28B000079A2C /* ReplyCountButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0998A7B42E2D28B000079A2C /* ReplyCountButton.swift */; };
 		0998A7B72E2D2B9900079A2C /* CommentReactionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0998A7B62E2D2B9900079A2C /* CommentReactionButton.swift */; };
 		0998A7BD2E322FDA00079A2C /* ReactionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0998A7BC2E322FDA00079A2C /* ReactionsManager.swift */; };
@@ -42,6 +43,9 @@
 		09EFFF762E61E9B5009176CA /* Rippple Trakt.icon in Resources */ = {isa = PBXBuildFile; fileRef = 09EFFF752E61E974009176CA /* Rippple Trakt.icon */; };
 		09F275D02E055A670059D7CD /* LRUCache in Frameworks */ = {isa = PBXBuildFile; productRef = 09F275CF2E055A670059D7CD /* LRUCache */; };
 		09F4C1952E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09F4C1942E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib */; };
+		0A0B0C0D0E0F101112131417 /* OpenActionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0B0C0D0E0F101112131418 /* OpenActionManager.swift */; };
+		0A0B0C0D0E0F10111213141B /* OpenInSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0B0C0D0E0F10111213141C /* OpenInSettingsView.swift */; };
+		0A0B0C0D0E0F10111213141D /* OpenActionsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0B0C0D0E0F10111213141E /* OpenActionsTableViewCell.swift */; };
 		0FA34C9B2F3D11B700E5A1C2 /* UpcomingLabelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA34C9B2F3D11B700E5A1C3 /* UpcomingLabelManager.swift */; };
 		3A020B9720D3B64B0081FA3E /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A020B9620D3B64B0081FA3E /* SearchViewController.swift */; };
 		3A020B9920D3DE070081FA3E /* SearchResultsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A020B9820D3DE070081FA3E /* SearchResultsViewController.swift */; };
@@ -538,6 +542,7 @@
 		0987CB532EA2889600F98967 /* PendingFollowingRequestsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingFollowingRequestsViewController.swift; sourceTree = "<group>"; };
 		0990B1C92E17DFDF00D523D0 /* SpacerTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacerTableViewCell.swift; sourceTree = "<group>"; };
 		0990B1CB2E17E0E200D523D0 /* SpacerTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpacerTableViewCell.xib; sourceTree = "<group>"; };
+		0996F33B2F68133000BE58C7 /* OpenActionsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OpenActionsTableViewCell.xib; sourceTree = "<group>"; };
 		0998A7B42E2D28B000079A2C /* ReplyCountButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplyCountButton.swift; sourceTree = "<group>"; };
 		0998A7B62E2D2B9900079A2C /* CommentReactionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentReactionButton.swift; sourceTree = "<group>"; };
 		0998A7BC2E322FDA00079A2C /* ReactionsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactionsManager.swift; sourceTree = "<group>"; };
@@ -562,6 +567,9 @@
 		09E390162EB21BC800C39B30 /* InReviewBrowseRail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InReviewBrowseRail.swift; sourceTree = "<group>"; };
 		09EFFF752E61E974009176CA /* Rippple Trakt.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Rippple Trakt.icon"; sourceTree = "<group>"; };
 		09F4C1942E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ToWatchSettingsTableViewCell.xib; sourceTree = "<group>"; };
+		0A0B0C0D0E0F101112131418 /* OpenActionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenActionManager.swift; sourceTree = "<group>"; };
+		0A0B0C0D0E0F10111213141C /* OpenInSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenInSettingsView.swift; sourceTree = "<group>"; };
+		0A0B0C0D0E0F10111213141E /* OpenActionsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenActionsTableViewCell.swift; sourceTree = "<group>"; };
 		0FA34C9B2F3D11B700E5A1C3 /* UpcomingLabelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingLabelManager.swift; sourceTree = "<group>"; };
 		3A020B9620D3B64B0081FA3E /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		3A020B9820D3DE070081FA3E /* SearchResultsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsViewController.swift; sourceTree = "<group>"; };
@@ -1108,6 +1116,15 @@
 			path = "Calendar Manager";
 			sourceTree = "<group>";
 		};
+		0A0B0C0D0E0F101112131420 /* Open In */ = {
+			isa = PBXGroup;
+			children = (
+				0A0B0C0D0E0F101112131418 /* OpenActionManager.swift */,
+				0A0B0C0D0E0F10111213141C /* OpenInSettingsView.swift */,
+			);
+			path = "Open In";
+			sourceTree = "<group>";
+		};
 		31F48457202A6704839BA0C4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -1176,6 +1193,8 @@
 			children = (
 				3A0C7EBA26F509B400FD1F27 /* LinkTableViewCell.swift */,
 				3A0C7EBC26F509C400FD1F27 /* LinkTableViewCell.xib */,
+				0A0B0C0D0E0F10111213141E /* OpenActionsTableViewCell.swift */,
+				0996F33B2F68133000BE58C7 /* OpenActionsTableViewCell.xib */,
 			);
 			path = Links;
 			sourceTree = "<group>";
@@ -1928,6 +1947,7 @@
 		3A9119C61FADC7EB00457D28 /* Rippple */ = {
 			isa = PBXGroup;
 			children = (
+				0A0B0C0D0E0F101112131420 /* Open In */,
 				09E0C90D2EA11A180051485C /* Calendar Manager */,
 				0FA34C9B2F3D11B700E5A1C3 /* UpcomingLabelManager.swift */,
 				092A51452E0A7FA900DD0C15 /* Checkin View */,
@@ -2785,6 +2805,7 @@
 				3A59D98721D63D1A00305819 /* .swiftlint.yml in Resources */,
 				3A44BF3E1FD2C5AB0026AADE /* Initial.storyboard in Resources */,
 				3A93BC9E251E16B70097EBC8 /* StatsTableViewCell.xib in Resources */,
+				0996F33C2F68133000BE58C7 /* OpenActionsTableViewCell.xib in Resources */,
 				3A40A9A0286C94FC00737201 /* ListStatsTableViewCell.xib in Resources */,
 				3A775F2E288C6E0E00F9A95D /* RatingsStatTableViewCell.xib in Resources */,
 				3A3EA9542DA96087004D55A8 /* InfoCardTableViewCell.xib in Resources */,
@@ -3187,6 +3208,9 @@
 				3A1878A5283B9B7800E54540 /* PinnedImageView.swift in Sources */,
 				3ADE1DAB2492A15A0066F85D /* NotificationsTroubleshootViewController.swift in Sources */,
 				3A0C7EBB26F509B400FD1F27 /* LinkTableViewCell.swift in Sources */,
+				0A0B0C0D0E0F10111213141D /* OpenActionsTableViewCell.swift in Sources */,
+				0A0B0C0D0E0F101112131417 /* OpenActionManager.swift in Sources */,
+				0A0B0C0D0E0F10111213141B /* OpenInSettingsView.swift in Sources */,
 				3AD9FAFB2129760D00ADDF7F /* EpisodeTableViewCell.swift in Sources */,
 				3A48C5B12316C3CD004835CB /* RateTableViewCell.swift in Sources */,
 				3A59D98A21DA2A1A00305819 /* TmdbAPIProvider.swift in Sources */,
