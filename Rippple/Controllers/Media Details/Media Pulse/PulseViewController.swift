@@ -1007,15 +1007,19 @@ final class PulseViewController: UITableViewController {
             }
         }()
 
-        do {
-            let items = try await TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
-                                                                     id: list.identifiers.trakt!,
-                                                                     type: listItemsType,
-                                                                     extended: nil)
-            return items.first { MediaModel(item: $0).traktId == media.traktId }
-        } catch {
-            print("Items request failure \(error)")
-            return nil
+        return await withCheckedContinuation { continuation in
+            TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
+                                               id: list.identifiers.trakt!,
+                                               type: listItemsType,
+                                               extended: nil) { result in
+                switch result {
+                case let .success(items):
+                    continuation.resume(returning: items.first { MediaModel(item: $0).traktId == media.traktId })
+                case let .failure(error):
+                    print("Items request failure \(error)")
+                    continuation.resume(returning: nil)
+                }
+            }
         }
     }
 }

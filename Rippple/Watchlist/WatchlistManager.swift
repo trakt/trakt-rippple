@@ -160,45 +160,51 @@ private extension WatchlistManager {
         if SessionManager.shared.isLoggedOut {
             return
         }
-        TraktAPIProvider.provider.request(.watchlist(type: nil, extended: nil, sort: .added),
-                                          callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+        TraktAPIProvider.fetchAllWatchlistItems(slug: "me",
+                                                type: nil,
+                                                extended: .full,
+                                                sort: .added) { result in
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            case let .success(watchlistItems):
+                let watchlistedItems = watchlistItems.map {
+                    MediaItem(movie: $0.movie,
+                              show: $0.show,
+                              episode: $0.episode,
+                              season: $0.season,
+                              list: $0.list,
+                              watchers: nil,
+                              listedAt: $0.listedAt,
+                              collectedAt: nil,
+                              lastCollectedAt: nil,
+                              notes: $0.notes)
+                }
 
-                    let watchlistedItems = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
-
-                    var movieIds = Set<Int64>()
-                    var showIds = Set<Int64>()
-                    var episodeIds = Set<Int64>()
-                    var seasonIds = Set<Int64>()
-                    for item in watchlistedItems {
-                        switch item.type {
-                        case .movie:
-                            movieIds.insert(item.movie!.identifiers.trakt!)
-                        case .show:
-                            showIds.insert(item.show!.identifiers.trakt!)
-                        case .season:
-                            seasonIds.insert(item.season!.identifiers.trakt!)
-                        case .episode:
-                            episodeIds.insert(item.episode!.identifiers.trakt!)
-                        default:
-                            // do nothing
-                            continue
-                        }
+                var movieIds = Set<Int64>()
+                var showIds = Set<Int64>()
+                var episodeIds = Set<Int64>()
+                var seasonIds = Set<Int64>()
+                for item in watchlistedItems {
+                    switch item.type {
+                    case .movie:
+                        movieIds.insert(item.movie!.identifiers.trakt!)
+                    case .show:
+                        showIds.insert(item.show!.identifiers.trakt!)
+                    case .season:
+                        seasonIds.insert(item.season!.identifiers.trakt!)
+                    case .episode:
+                        episodeIds.insert(item.episode!.identifiers.trakt!)
+                    default:
+                        continue
                     }
+                }
 
-                    DispatchQueue.main.async {
-                        self.watchlistedMovies = movieIds
-                        self.watchlistedShows = showIds
-                        self.watchlistedSeasons = seasonIds
-                        self.watchlistedEpisodes = episodeIds
-                        self.watchlist = watchlistedItems
-                        onWatchlistChangedTransmitter.broadcast(true)
-                    }
-                } catch {
-                    print("Watchlist request JSON mapping failed! \(error)")
+                DispatchQueue.main.async {
+                    self.watchlistedMovies = movieIds
+                    self.watchlistedShows = showIds
+                    self.watchlistedSeasons = seasonIds
+                    self.watchlistedEpisodes = episodeIds
+                    self.watchlist = watchlistedItems
+                    onWatchlistChangedTransmitter.broadcast(true)
                 }
             case let .failure(error):
                 print("Watchlist request failure \(error)")

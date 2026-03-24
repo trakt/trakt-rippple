@@ -35,8 +35,10 @@
 		09B898F52F1CE2EB00DC202D /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09B898F42F1CE2EB00DC202D /* AppIntents.framework */; };
 		09B898F72F1CE3A800DC202D /* OpenRipppleIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B898F62F1CE3A800DC202D /* OpenRipppleIntent.swift */; };
 		09B898F92F1CE3A800DC202D /* OpenRipppleIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B898F62F1CE3A800DC202D /* OpenRipppleIntent.swift */; };
-		09B899032F21184200DC202D /* TraktAPIProvider+ListItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899022F21184200DC202D /* TraktAPIProvider+ListItems.swift */; };
-		09B899062F2A123400DC202D /* TraktAPIProvider+CollectionItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899052F2A123400DC202D /* TraktAPIProvider+CollectionItems.swift */; };
+		09B899032F21184200DC202D /* TraktAPIProvider+List.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899022F21184200DC202D /* TraktAPIProvider+List.swift */; };
+		09B899062F2A123400DC202D /* TraktAPIProvider+Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */; };
+		09B8990B2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */; };
+		09B8990D2F2A568900DC202D /* TraktAPIProvider+Recommended.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */; };
 		09DCC25E2EF83A3300C3EA79 /* ImageBrowserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DCC25D2EF83A3300C3EA79 /* ImageBrowserViewController.swift */; };
 		09DCC2602EFA889B00C3EA79 /* FullScreenImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DCC25F2EFA889B00C3EA79 /* FullScreenImageViewController.swift */; };
 		09E390172EB21BC800C39B30 /* InReviewBrowseRail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09E390162EB21BC800C39B30 /* InReviewBrowseRail.swift */; };
@@ -551,8 +553,10 @@
 		09A94A942F1BF69200642C38 /* ToWatchInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchInfoView.swift; sourceTree = "<group>"; };
 		09B898F42F1CE2EB00DC202D /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/AppIntents.framework; sourceTree = DEVELOPER_DIR; };
 		09B898F62F1CE3A800DC202D /* OpenRipppleIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenRipppleIntent.swift; sourceTree = "<group>"; };
-		09B899022F21184200DC202D /* TraktAPIProvider+ListItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+ListItems.swift"; sourceTree = "<group>"; };
-		09B899052F2A123400DC202D /* TraktAPIProvider+CollectionItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+CollectionItems.swift"; sourceTree = "<group>"; };
+		09B899022F21184200DC202D /* TraktAPIProvider+List.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+List.swift"; sourceTree = "<group>"; };
+		09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Collection.swift"; sourceTree = "<group>"; };
+		09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Watchlist.swift"; sourceTree = "<group>"; };
+		09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Recommended.swift"; sourceTree = "<group>"; };
 		09DA10562F4C990200DD80F5 /* CONTRIBUTING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CONTRIBUTING.md; sourceTree = "<group>"; };
 		09DA10572F4C990F00DD80F5 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		09DA10582F4C990F00DD80F5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -2090,8 +2094,10 @@
 			isa = PBXGroup;
 			children = (
 				3AFD3F0D1FB733360003B966 /* TraktAPIProvider.swift */,
-				09B899022F21184200DC202D /* TraktAPIProvider+ListItems.swift */,
-				09B899052F2A123400DC202D /* TraktAPIProvider+CollectionItems.swift */,
+				09B899022F21184200DC202D /* TraktAPIProvider+List.swift */,
+				09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */,
+				09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */,
+				09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */,
 				3A9119DB1FADDF3A00457D28 /* TraktAPIService.swift */,
 				3AD932A91FB9E885005289B5 /* TraktAPIService+Sample.swift */,
 				3AFD3F0F1FB734630003B966 /* TraktAPIModel.swift */,
@@ -3115,8 +3121,10 @@
 				3AC8BEAB24E44D74000EB9A0 /* SearchTableViewCell.swift in Sources */,
 				3ABAB4C4222DCBBC00B5EE0C /* MediaNextEpisodeErrorViewController.swift in Sources */,
 				3A4B57A224BB53B4005D36C7 /* HiddenMediaManager.swift in Sources */,
-				09B899032F21184200DC202D /* TraktAPIProvider+ListItems.swift in Sources */,
-				09B899062F2A123400DC202D /* TraktAPIProvider+CollectionItems.swift in Sources */,
+				09B899032F21184200DC202D /* TraktAPIProvider+List.swift in Sources */,
+				09B899062F2A123400DC202D /* TraktAPIProvider+Collection.swift in Sources */,
+				09B8990B2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift in Sources */,
+				09B8990D2F2A568900DC202D /* TraktAPIProvider+Recommended.swift in Sources */,
 				3A70632C1FF29A3B00D3B2BB /* ProductManager.swift in Sources */,
 				3A211D1824C824F200930DD3 /* SplitViewController.swift in Sources */,
 				3A44BF451FD2D4920026AADE /* UIWindow+Extension.swift in Sources */,

@@ -84,16 +84,13 @@ private extension CollectionManager {
         if SessionManager.shared.isLoggedOut {
             return
         }
-        Task { [weak self] in
+        TraktAPIProvider.fetchAllCollectionItems(slug: "me",
+                                                 type: .movies,
+                                                 extended: nil,
+                                                 sort: .added) { [weak self] result in
             guard let self = self else { return }
-
-            do {
-                let collectionItems = try await TraktAPIProvider.fetchAllCollectionItems(slug: "me",
-                                                                                         type: .movies,
-                                                                                         extended: nil,
-                                                                                         sort: .added)
-                if Task.isCancelled { return }
-
+            switch result {
+            case let .success(collectionItems):
                 var ids = [Int64]()
                 for item in collectionItems {
                     if let traktId = item.movie?.identifiers.trakt {
@@ -105,8 +102,7 @@ private extension CollectionManager {
                     self.movieCollection = ids
                     self.collectedMovieItems = collectionItems
                 }
-            } catch {
-                if Task.isCancelled { return }
+            case let .failure(error):
                 print("refreshMovieCollection request failure \(error)")
             }
         }
@@ -116,16 +112,13 @@ private extension CollectionManager {
         if SessionManager.shared.isLoggedOut {
             return
         }
-        Task { [weak self] in
+        TraktAPIProvider.fetchAllCollectionItems(slug: "me",
+                                                 type: .shows,
+                                                 extended: nil,
+                                                 sort: .added) { [weak self] result in
             guard let self = self else { return }
-
-            do {
-                let collectionItems = try await TraktAPIProvider.fetchAllCollectionItems(slug: "me",
-                                                                                         type: .shows,
-                                                                                         extended: nil,
-                                                                                         sort: .added)
-                if Task.isCancelled { return }
-
+            switch result {
+            case let .success(collectionItems):
                 var ids = [Int64]()
                 for item in collectionItems {
                     if let traktId = item.show?.identifiers.trakt {
@@ -137,8 +130,7 @@ private extension CollectionManager {
                     self.showCollection = ids
                     self.collectedShowItems = collectionItems
                 }
-            } catch {
-                if Task.isCancelled { return }
+            case let .failure(error):
                 print("refreshShowCollection request failure \(error)")
             }
         }
@@ -148,16 +140,13 @@ private extension CollectionManager {
         if SessionManager.shared.isLoggedOut {
             return
         }
-        Task { [weak self] in
+        TraktAPIProvider.fetchAllCollectionItems(slug: "me",
+                                                 type: .episodes,
+                                                 extended: nil,
+                                                 sort: .added) { [weak self] result in
             guard let self = self else { return }
-
-            do {
-                let collectionItems = try await TraktAPIProvider.fetchAllCollectionItems(slug: "me",
-                                                                                         type: .episodes,
-                                                                                         extended: nil,
-                                                                                         sort: .added)
-                if Task.isCancelled { return }
-
+            switch result {
+            case let .success(collectionItems):
                 var ids = [Int64]()
                 for item in collectionItems {
                     if let traktId = item.episode?.identifiers.trakt {
@@ -169,8 +158,7 @@ private extension CollectionManager {
                     self.episodeCollection = ids
                     self.collectedEpisodeItems = collectionItems
                 }
-            } catch {
-                if Task.isCancelled { return }
+            case let .failure(error):
                 print("refreshEpisodeCollection request failure \(error)")
             }
         }

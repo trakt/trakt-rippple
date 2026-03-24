@@ -63,39 +63,46 @@ private extension RecommendedManager {
         if SessionManager.shared.isLoggedOut {
             return
         }
-        TraktAPIProvider.provider.request(.recommended(type: nil, extended: nil, sort: .added),
-                                          callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+        TraktAPIProvider.fetchAllRecommendedItems(slug: "me",
+                                                  type: nil,
+                                                  extended: .full,
+                                                  sort: .added) { result in
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            case let .success(favorites):
+                let recommendedItems = favorites.map {
+                    MediaItem(movie: $0.movie,
+                              show: $0.show,
+                              episode: $0.episode,
+                              season: $0.season,
+                              list: $0.list,
+                              watchers: nil,
+                              listedAt: $0.listedAt,
+                              collectedAt: nil,
+                              lastCollectedAt: nil,
+                              notes: $0.notes)
+                }
 
-                    let watchlistedItems = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
-
-                    var ids = [Int64]()
-                    for item in watchlistedItems {
-                        switch item.type {
-                        case .movie:
-                            ids.append(item.movie!.identifiers.trakt!)
-                        case .show:
-                            ids.append(item.show!.identifiers.trakt!)
-                        case .season:
-                            ids.append(item.season!.identifiers.trakt!)
-                        case .episode:
-                            ids.append(item.episode!.identifiers.trakt!)
-                        case .list, .officiallist:
-                            ids.append(item.list!.identifiers.trakt!)
-                        case .unknown:
-                            continue
-                        }
+                var ids = [Int64]()
+                for item in recommendedItems {
+                    switch item.type {
+                    case .movie:
+                        ids.append(item.movie!.identifiers.trakt!)
+                    case .show:
+                        ids.append(item.show!.identifiers.trakt!)
+                    case .season:
+                        ids.append(item.season!.identifiers.trakt!)
+                    case .episode:
+                        ids.append(item.episode!.identifiers.trakt!)
+                    case .list, .officiallist:
+                        ids.append(item.list!.identifiers.trakt!)
+                    case .unknown:
+                        continue
                     }
+                }
 
-                    DispatchQueue.main.async {
-                        self.recommendedItems = watchlistedItems
-                        self.recommended = ids
-                    }
-                } catch {
-                    print("refreshRecommended request JSON mapping failed! \(error)")
+                DispatchQueue.main.async {
+                    self.recommendedItems = recommendedItems
+                    self.recommended = ids
                 }
             case let .failure(error):
                 print("refreshRecommended request failure \(error)")

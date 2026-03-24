@@ -682,32 +682,24 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
             return
         }
 
-        let cancellable = TraktAPIProvider.provider.request(.watchlist(type: .shows, extended: .full, sort: .none), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
+        TraktAPIProvider.fetchAllWatchlistItems(slug: "me",
+                                                type: .shows,
+                                                extended: .full,
+                                                sort: .none) { [weak self] result in
             guard let self = self else { return }
-
-            defer {
-                completion()
-            }
-
+            defer { completion() }
+            if self.isCancelled { return }
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let shows = try response.map([WatchlistItem].self, using: TraktAPIProvider.decoder).map { $0.show! }
-
-                    DispatchQueue.main.async {
-                        self.shows.formUnion(shows)
-                        self.showsInList.append(ToWatchGroup(name: "Watchlisted", order: 2, shows: Set(shows)))
-                    }
-                } catch {
-                    print("fetchWatchlistedShows (towatch) request JSON mapping failed! \(error)")
+            case let .success(items):
+                let shows = items.map { $0.show! }
+                DispatchQueue.main.async {
+                    self.shows.formUnion(shows)
+                    self.showsInList.append(ToWatchGroup(name: "Watchlisted", order: 2, shows: Set(shows)))
                 }
             case let .failure(error):
                 print("fetchWatchlistedShows (towatch) request failure \(error)")
             }
         }
-        cancellables.append(cancellable)
     }
 
     private func fetchRecommendedShows(completion: @escaping (() -> Void)) {
@@ -716,32 +708,24 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
             return
         }
 
-        let cancellable = TraktAPIProvider.provider.request(.recommended(type: .shows, extended: .full, sort: .none), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
+        TraktAPIProvider.fetchAllRecommendedItems(slug: "me",
+                                                  type: .shows,
+                                                  extended: .full,
+                                                  sort: .none) { [weak self] result in
             guard let self = self else { return }
-
-            defer {
-                completion()
-            }
-
+            defer { completion() }
+            if self.isCancelled { return }
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let shows = try response.map([WatchlistItem].self, using: TraktAPIProvider.decoder).map { $0.show! }
-
-                    DispatchQueue.main.async {
-                        self.shows.formUnion(shows)
-                        self.showsInList.append(ToWatchGroup(name: "Favorites", order: 3, shows: Set(shows)))
-                    }
-                } catch {
-                    print("fetchRecommendedShows (towatch) request JSON mapping failed! \(error)")
+            case let .success(items):
+                let shows = items.map { $0.show! }
+                DispatchQueue.main.async {
+                    self.shows.formUnion(shows)
+                    self.showsInList.append(ToWatchGroup(name: "Favorites", order: 3, shows: Set(shows)))
                 }
             case let .failure(error):
                 print("fetchRecommendedShows (towatch) request failure \(error)")
             }
         }
-        cancellables.append(cancellable)
     }
 
     private func fetchCollectedShows(completion: @escaping (() -> Void)) {
@@ -750,26 +734,21 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
             return
         }
 
-        _Concurrency.Task { [weak self] in
+        TraktAPIProvider.fetchAllCollectionItems(slug: "me",
+                                                 type: .shows,
+                                                 extended: .full,
+                                                 sort: .none) { [weak self] result in
             guard let self = self else { return }
             defer { completion() }
-
-            if self.isCancelled || _Concurrency.Task.isCancelled { return }
-
-            do {
-                let items = try await TraktAPIProvider.fetchAllCollectionItems(slug: "me",
-                                                                              type: .shows,
-                                                                              extended: .full,
-                                                                              sort: .none)
-                if self.isCancelled || _Concurrency.Task.isCancelled { return }
-
+            if self.isCancelled { return }
+            switch result {
+            case let .success(items):
                 let shows = items.map { $0.show! }
                 DispatchQueue.main.async {
                     self.shows.formUnion(shows)
                     self.showsInList.append(ToWatchGroup(name: "Collected", order: 4, shows: Set(shows)))
                 }
-            } catch {
-                if _Concurrency.Task.isCancelled { return }
+            case let .failure(error):
                 print("fetchCollectedShows (towatch) request failure \(error)")
             }
         }
@@ -781,26 +760,21 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
             return
         }
 
-        _Concurrency.Task { [weak self] in
+        TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
+                                           id: list.identifiers.trakt!,
+                                           type: .shows,
+                                           extended: .full) { [weak self] result in
             guard let self = self else { return }
             defer { completion() }
-
-            if self.isCancelled || _Concurrency.Task.isCancelled { return }
-
-            do {
-                let items = try await TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
-                                                                         id: list.identifiers.trakt!,
-                                                                         type: .shows,
-                                                                         extended: .full)
-                if self.isCancelled || _Concurrency.Task.isCancelled { return }
-
+            if self.isCancelled { return }
+            switch result {
+            case let .success(items):
                 let shows = items.map { $0.show! }
                 DispatchQueue.main.async {
                     self.shows.formUnion(shows)
                     self.showsInList.append(ToWatchGroup(name: list.name, order: order, shows: Set(shows)))
                 }
-            } catch {
-                if _Concurrency.Task.isCancelled { return }
+            case let .failure(error):
                 print("fetchShowsforlist (towatch) request failure \(error)")
             }
         }

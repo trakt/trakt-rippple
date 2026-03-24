@@ -576,21 +576,18 @@ final class CollectionViewController: UITableViewController {
         }
 
         fetchTask?.cancel()
-        fetchTask = Task { [weak self] in
+        guard case let .collection(slug, type, extended, sort, _) = self.service else { return }
+        TraktAPIProvider.fetchAllCollectionItems(slug: slug,
+                                                 type: type,
+                                                 extended: extended,
+                                                 sort: sort) { [weak self] result in
             guard let self = self else { return }
-            guard case let .collection(slug, type, extended, sort, _) = self.service else { return }
-
-            do {
-                let results = try await TraktAPIProvider.fetchAllCollectionItems(slug: slug,
-                                                                                type: type,
-                                                                                extended: extended,
-                                                                                sort: sort)
-                if Task.isCancelled { return }
+            switch result {
+            case let .success(results):
                 DispatchQueue.main.async {
                     self.watchlistItems = Array(Set(results))
                 }
-            } catch {
-                if Task.isCancelled { return }
+            case let .failure(error):
                 print("Comments request JSON mapping failed! \(error)")
 
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()

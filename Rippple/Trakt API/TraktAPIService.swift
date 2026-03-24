@@ -308,8 +308,8 @@ enum TraktAPIService {
 
     case showProgress(id: Int64, includesSpecials: Bool)
 
-    case watchlist(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?)
-    case recommended(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?)
+    case watchlist(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
+    case recommended(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
     case collection(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
 
     case addToWatchlist(item: WatchlistedItem)
@@ -707,7 +707,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/checkin"
         case .showProgress(let showId, _):
             return "shows/\(showId)/progress/watched"
-        case .watchlist(let slug, let type, _, let sort):
+        case .watchlist(let slug, let type, _, let sort, _):
             switch (type, sort) {
             case (.some(let type), .some(let sort)):
                 return "/users/\(slug)/watchlist/\(type)/\(sort)"
@@ -716,7 +716,7 @@ extension TraktAPIService: AuthorizedTargetType {
             default:
                 return "/users/\(slug)/watchlist"
             }
-        case .recommended(let slug, let type, _, let sort):
+        case .recommended(let slug, let type, _, let sort, _):
             switch (type, sort) {
             case (.some(let type), .some(let sort)):
                 return "/users/\(slug)/favorites/\(type)/\(sort)"
@@ -1476,13 +1476,14 @@ extension TraktAPIService: AuthorizedTargetType {
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             }
-        case .recommended(_, _, let extended, _), .watchlist(_, _, let extended, _):
+        case .recommended(_, _, let extended, _, let pageInfo), .watchlist(_, _, let extended, _, let pageInfo):
+            var parameters = ["page": "\(pageInfo.page)",
+                              "limit": "\(pageInfo.limit)"]
             if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended],
-                                          encoding: URLEncoding.default)
-            } else {
-                return .requestPlain
+                parameters["extended"] = extended.rawValue
             }
+            return .requestParameters(parameters: parameters,
+                                      encoding: URLEncoding.default)
         case .addToWatchlist(let item), .removeFromWatchlist(let item):
             return .requestJSONEncodable(item)
         case .addToRecommendations(let item), .removeFromRecommendations(let item):
