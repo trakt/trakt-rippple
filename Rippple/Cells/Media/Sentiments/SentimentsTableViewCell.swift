@@ -37,7 +37,7 @@ final class SentimentsTableViewCell: UITableViewCell {
     }
 
     private func setupSentiments() {
-        if sentiments.commentCount == 0 {
+        if sentiments.commentCount == 0 || sentiments.commentCount == 100000 {
             titleLabel.text = "Sentiment Highlights"
             bodyLabel.text = sentiments.formattedSentiment
             metaLabel.text = "Aggregated audience sentiment"
