@@ -156,7 +156,7 @@ final class MediaViewController: UITableViewController {
         }
 
         if media.noteItem != nil {
-            snapshot.insertItems([.notes], afterItem: .rating)
+            snapshot.insertItems([.notes], afterItem: .activity)
         }
 
         linkCount = 0

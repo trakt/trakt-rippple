@@ -73,6 +73,9 @@ final class MediaTitleTableViewCell: UITableViewCell {
     @IBOutlet weak var mainActionButton: UIButton!
     @IBOutlet weak var secondaryActionButton: UIButton!
 
+    private var mainActionButtonMinHeightConstraint: NSLayoutConstraint?
+    private var secondaryActionButtonMinHeightConstraint: NSLayoutConstraint?
+
     private let relativeDateTimeFormatter: RelativeDateTimeFormatter = {
         let dateFormatter = RelativeDateTimeFormatter()
         dateFormatter.unitsStyle = .full
@@ -118,6 +121,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
 
         registerForTraitChanges([UITraitUserInterfaceStyle.self],
                                 action: #selector(configureView))
+        registerForTraitChanges([UITraitPreferredContentSizeCategory.self],
+                                action: #selector(updateQuickActionButtonMinimumHeightsForTraitChanges))
 
         certificationBorderView.layer.borderWidth = 0.8
         certificationBorderView.layer.borderColor = UIColor.secondaryLabel.cgColor
@@ -167,6 +172,46 @@ final class MediaTitleTableViewCell: UITableViewCell {
         mainActionButton.configuration?.imagePadding = 5
         secondaryActionButton.configuration = UIButton.Configuration.borderedTinted()
         secondaryActionButton.configuration?.imagePadding = 5
+
+        let actionButtonsMinimumHeight = quickActionButtonMinimumHeight()
+        let mainActionButtonMinHeightConstraint = mainActionButton.heightAnchor.constraint(
+            greaterThanOrEqualToConstant: actionButtonsMinimumHeight)
+        mainActionButtonMinHeightConstraint.priority = .required
+        mainActionButtonMinHeightConstraint.isActive = true
+        self.mainActionButtonMinHeightConstraint = mainActionButtonMinHeightConstraint
+
+        let secondaryActionButtonMinHeightConstraint = secondaryActionButton.heightAnchor.constraint(
+            greaterThanOrEqualToConstant: actionButtonsMinimumHeight)
+        secondaryActionButtonMinHeightConstraint.priority = .required
+        secondaryActionButtonMinHeightConstraint.isActive = true
+        self.secondaryActionButtonMinHeightConstraint = secondaryActionButtonMinHeightConstraint
+
+        applyQuickActionButtonMultilineTitleStyle(mainActionButton)
+        applyQuickActionButtonMultilineTitleStyle(secondaryActionButton)
+    }
+
+    @objc
+    private func updateQuickActionButtonMinimumHeightsForTraitChanges() {
+        let actionButtonsMinimumHeight = quickActionButtonMinimumHeight()
+        mainActionButtonMinHeightConstraint?.constant = actionButtonsMinimumHeight
+        secondaryActionButtonMinHeightConstraint?.constant = actionButtonsMinimumHeight
+    }
+
+    private func quickActionButtonMinimumHeight() -> CGFloat {
+        let font = UIFont.preferredFont(forTextStyle: .callout, compatibleWith: traitCollection)
+        let twoLineTextHeight = font.lineHeight * 2
+        var configuration = UIButton.Configuration.borderedTinted()
+        configuration.imagePadding = 5
+        let verticalInsets = configuration.contentInsets.top + configuration.contentInsets.bottom
+        let titleSubtitleSpacing: CGFloat = 2
+        return ceil(twoLineTextHeight + titleSubtitleSpacing + verticalInsets)
+    }
+
+    private func applyQuickActionButtonMultilineTitleStyle(_ button: UIButton) {
+        guard var config = button.configuration else { return }
+        config.titleLineBreakMode = .byWordWrapping
+        config.subtitleLineBreakMode = .byWordWrapping
+        button.configuration = config
     }
 
     @objc
@@ -196,8 +241,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
                 certificationLabel.superview?.isHiddenInStackView = certificationLabel.text!.isEmpty == true
                 certificationBorderView.isHiddenInStackView = certificationLabel.text!.isEmpty == true
 
-                // runtimeLabel.text = "\(movie.runtime ?? 0) min"
-
                 if let tmdbId = movie.identifiers.tmdb {
                     stingerLabel.text = "Loading stinger info..."
                     stingerLabel.alpha = 0.0
@@ -224,20 +267,16 @@ final class MediaTitleTableViewCell: UITableViewCell {
                 certificationLabel.superview?.isHiddenInStackView = certificationLabel.text!.isEmpty == true
                 certificationBorderView.isHiddenInStackView = certificationLabel.text!.isEmpty == true
 
-                // runtimeLabel.text = "\(show.runtime ?? 0) min"
-
                 stingerLabel.text = "No stinger"
                 stingerLabel.alpha = 0.0
 
                 fetchRatingsFor(type: .show(showId: show.identifiers.trakt!))
-            case .episode(let episode, let show):
+            case .episode(let episode, _):
                 updateEpisodeMetadata()
 
                 certificationLabel.superview?.isHiddenInStackView = true
                 certificationBorderView.isHiddenInStackView = true
                 ratingsStack.isHiddenInStackView = true
-
-                // runtimeLabel.text = "\(episode.runtime ?? show.runtime ?? 0) min"
 
                 if let episodeType = episode.episodeType {
                     switch episodeType {
@@ -270,14 +309,12 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     stingerLabel.text = ""
                     stingerLabel.alpha = 0.0
                 }
-            case .season(let season, let show):
+            case .season:
                 updateSeasonMetadata()
 
                 certificationLabel.isHiddenInStackView = true
                 certificationBorderView.isHiddenInStackView = true
                 ratingsStack.isHiddenInStackView = true
-
-                // runtimeLabel.text = "\(episode.runtime ?? show.runtime ?? 0) min"
 
                 stingerLabel.text = ""
                 stingerLabel.alpha = 0.0
@@ -289,7 +326,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
             debouncedUpdateQuickActions.fireNow()
 
             updateRuntimeDisplay()
-            // invalidateIntrinsicContentSize() -> not needed because update runtime does it
         }
     }
 
@@ -565,6 +601,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                 UISelectionFeedbackGenerator().selectionChanged()
                                 self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
                             }), for: .touchUpInside)
+                            self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                            self.invalidateIntrinsicContentSize()
                         }
                     } else {
                         TraktAPIProvider.provider.request(.nextEpisode(id: show.identifiers.trakt!),
@@ -593,6 +631,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                             UISelectionFeedbackGenerator().selectionChanged()
                                             self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
                                         }), for: .touchUpInside)
+                                        self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                                        self.invalidateIntrinsicContentSize()
                                     }
                                 } catch {
                                     DispatchQueue.main.async {
@@ -608,6 +648,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                             UISelectionFeedbackGenerator().selectionChanged()
                                             self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
                                          }, for: .menuActionTriggered)
+                                        self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                                        self.invalidateIntrinsicContentSize()
                                     }
                                 }
                             case .failure:
@@ -624,6 +666,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                         UISelectionFeedbackGenerator().selectionChanged()
                                         self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
                                      }, for: .menuActionTriggered)
+                                    self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                                    self.invalidateIntrinsicContentSize()
                                 }
                             }
                         }
@@ -785,6 +829,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                         }, for: .menuActionTriggered)
                                         self.secondaryActionButton.isHidden = false
 
+                                        self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                                        self.applyQuickActionButtonMultilineTitleStyle(self.secondaryActionButton)
                                         self.invalidateIntrinsicContentSize()
                                         return
                                     }
@@ -805,6 +851,9 @@ final class MediaTitleTableViewCell: UITableViewCell {
                         }, for: .menuActionTriggered)
 
                         self.secondaryActionButton.isHidden = true
+                        self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                        self.applyQuickActionButtonMultilineTitleStyle(self.secondaryActionButton)
+                        self.invalidateIntrinsicContentSize()
                     }
                 }
             }
@@ -839,6 +888,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
         case .showProgress:
             fatalError()
         }
+        applyQuickActionButtonMultilineTitleStyle(mainActionButton)
+        applyQuickActionButtonMultilineTitleStyle(secondaryActionButton)
         invalidateIntrinsicContentSize()
     }
 

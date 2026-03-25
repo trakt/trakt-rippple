@@ -18,7 +18,7 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VP3-CB-Jrb" customClass="CardView" customModule="Rippple" customModuleProvider="target">
-                        <rect key="frame" x="12" y="4" width="350" height="128"/>
+                        <rect key="frame" x="13" y="4" width="349" height="128"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="40y-Lh-N6E">
@@ -161,7 +161,7 @@
                     <constraint firstAttribute="trailing" secondItem="40y-Lh-N6E" secondAttribute="trailing" constant="25" id="CKq-NQ-ydy"/>
                     <constraint firstItem="40y-Lh-N6E" firstAttribute="trailing" secondItem="VP3-CB-Jrb" secondAttribute="trailing" constant="-12" id="D0u-g2-gQD"/>
                     <constraint firstItem="40y-Lh-N6E" firstAttribute="top" secondItem="ZLk-Bn-7mR" secondAttribute="top" constant="15" id="VKq-t1-K3g"/>
-                    <constraint firstItem="VP3-CB-Jrb" firstAttribute="leading" secondItem="40y-Lh-N6E" secondAttribute="leading" constant="-13" id="bIc-jF-jVA"/>
+                    <constraint firstItem="VP3-CB-Jrb" firstAttribute="leading" secondItem="40y-Lh-N6E" secondAttribute="leading" constant="-12" id="bIc-jF-jVA"/>
                     <constraint firstAttribute="bottom" secondItem="VP3-CB-Jrb" secondAttribute="bottom" constant="4" id="dEF-Ks-nMh"/>
                     <constraint firstItem="40y-Lh-N6E" firstAttribute="leading" secondItem="ZLk-Bn-7mR" secondAttribute="leading" constant="25" id="iHQ-uW-wFg"/>
                     <constraint firstAttribute="bottom" secondItem="40y-Lh-N6E" secondAttribute="bottom" constant="15" id="yCV-yw-fH8"/>
