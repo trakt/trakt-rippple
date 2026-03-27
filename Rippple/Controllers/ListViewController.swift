@@ -763,8 +763,7 @@ final class ListViewController: UITableViewController {
         fetchTask?.cancel()
         TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
                                            id: list.identifiers.trakt!,
-                                           type: nil,
-                                           extended: .full) { [weak self] result in
+                                           type: nil) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case let .success(results):

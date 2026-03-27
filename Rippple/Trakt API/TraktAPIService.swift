@@ -336,7 +336,7 @@ enum TraktAPIService {
     case customLists(slug: String = "me")
     case customList(userSlug: String, listSlug: String)
     case collaborations(slug: String = "me")
-    case listItems(slug: String?, id: Int64, type: ListMediaType?, extended: Extended?, pageInfo: PageInfo)
+    case listItems(slug: String?, id: Int64, type: ListMediaType?, extended: Extended?, pageInfo: PageInfo, marker: String)
     case createList(name: String, description: String, privacy: ListPrivacy, displayNumbers: Bool, allowComments: Bool)
     case deleteList(id: Int64)
     case reorderLists(ids: [Int64])
@@ -772,7 +772,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/\(userSlug)/lists/\(listSlug)"
         case .collaborations(let slug):
             return "/users/\(slug)/lists/collaborations"
-        case .listItems(let slug, let listId, let type, _, _):
+        case .listItems(let slug, let listId, let type, _, _, _):
             if let slug = slug {
                 switch type {
                 case .some(let type):
@@ -1543,15 +1543,17 @@ extension TraktAPIService: AuthorizedTargetType {
         case .collaborations:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
-        case .listItems(_, _, _, let extended, let pageInfo):
+        case .listItems(_, _, _, let extended, let pageInfo, let marker):
             if let extended = extended {
                 return .requestParameters(parameters: ["extended": extended,
                                                        "page": "\(pageInfo.page)",
-                                                       "limit": "\(pageInfo.limit)"],
+                                                       "limit": "\(pageInfo.limit)",
+                                                       "marker": marker],
                                           encoding: URLEncoding.default)
             } else {
                 return .requestParameters(parameters: ["page": "\(pageInfo.page)",
-                                                       "limit": "\(pageInfo.limit)"],
+                                                       "limit": "\(pageInfo.limit)",
+                                                       "marker": marker],
                                           encoding: URLEncoding.default)
             }
         case .createList(let name, let description, let privacy, let displayNumbers, let allowComments):

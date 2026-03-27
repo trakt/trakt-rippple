@@ -14,7 +14,6 @@ extension TraktAPIProvider {
     static func fetchAllListItems(slug: String?,
                                   id: Int64,
                                   type: ListMediaType?,
-                                  extended: Extended?,
                                   limit: Int = 1000,
                                   completion: @escaping (Result<[WatchlistItem], Error>) -> Void) {
         _Concurrency.Task {
@@ -22,7 +21,6 @@ extension TraktAPIProvider {
                 let items = try await fetchAllListItemsAsync(slug: slug,
                                                              id: id,
                                                              type: type,
-                                                             extended: extended,
                                                              limit: limit)
                 completion(.success(items))
             } catch {
@@ -34,17 +32,17 @@ extension TraktAPIProvider {
     private static func fetchAllListItemsAsync(slug: String?,
                                                id: Int64,
                                                type: ListMediaType?,
-                                               extended: Extended?,
                                                limit: Int) async throws -> [WatchlistItem] {
         var pageInfo = PageInfo.firstPage(with: limit)
         var listItems = [WatchlistItem]()
+        let marker = ListItemsMarkerManager.shared.marker(for: id)
 
         while true {
             let (items, nextPage) = try await fetchListItemsPage(slug: slug,
                                                                  id: id,
                                                                  type: type,
-                                                                 extended: extended,
-                                                                 pageInfo: pageInfo)
+                                                                 pageInfo: pageInfo,
+                                                                 marker: marker)
             listItems.append(contentsOf: items)
 
             guard let nextPage = nextPage, nextPage.page <= nextPage.pageCount else {
@@ -58,14 +56,15 @@ extension TraktAPIProvider {
     private static func fetchListItemsPage(slug: String?,
                                            id: Int64,
                                            type: ListMediaType?,
-                                           extended: Extended?,
-                                           pageInfo: PageInfo) async throws -> ([WatchlistItem], PageInfo?) {
+                                           pageInfo: PageInfo,
+                                           marker: String) async throws -> ([WatchlistItem], PageInfo?) {
         return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.listItems(slug: slug,
                                                          id: id,
                                                          type: type,
-                                                         extended: extended,
-                                                         pageInfo: pageInfo),
+                                                         extended: .full,
+                                                         pageInfo: pageInfo,
+                                                         marker: marker),
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
                 case let .success(moyaResponse):

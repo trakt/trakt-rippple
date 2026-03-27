@@ -527,6 +527,9 @@ final class NotesComposerViewController: UIViewController {
                     if case .updateRecommendationItem = service {
                         onWatchlistTypeNotesChangedTransmitter.broadcast(watchlistType!)
                     } else if case .updateListItem = service {
+                        if case .listItem(_, _, let listId, _, _, _, _) = watchlistType! {
+                            ListItemsMarkerManager.shared.invalidate(listId: listId)
+                        }
                         onWatchlistTypeNotesChangedTransmitter.broadcast(watchlistType!)
                     } else if case .updateWatchlistItem = service {
                         onWatchlistTypeNotesChangedTransmitter.broadcast(watchlistType!)

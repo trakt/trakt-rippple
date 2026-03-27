@@ -104,8 +104,7 @@ final class ListActionTableViewCell: UITableViewCell {
         let listItemsType = self.listItemsType
         TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
                                            id: list.identifiers.trakt!,
-                                           type: listItemsType,
-                                           extended: nil) { [weak self] result in
+                                           type: listItemsType) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case let .success(results):

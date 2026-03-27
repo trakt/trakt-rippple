@@ -762,8 +762,7 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
 
         TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
                                            id: list.identifiers.trakt!,
-                                           type: .shows,
-                                           extended: .full) { [weak self] result in
+                                           type: .shows) { [weak self] result in
             guard let self = self else { return }
             defer { completion() }
             if self.isCancelled { return }

@@ -1492,8 +1492,7 @@ final class PulseViewController: UITableViewController {
         return await withCheckedContinuation { continuation in
             TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
                                                id: list.identifiers.trakt!,
-                                               type: listItemsType,
-                                               extended: nil) { result in
+                                               type: listItemsType) { result in
                 switch result {
                 case .success(let items):
                     continuation.resume(returning: items.first {

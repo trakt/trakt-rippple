@@ -587,8 +587,7 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
 
         TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
                                            id: list.identifiers.trakt!,
-                                           type: .movies,
-                                           extended: .full) { [weak self] result in
+                                           type: .movies) { [weak self] result in
             guard let self = self else { return }
             defer { completion() }
             if self.isCancelled { return }
