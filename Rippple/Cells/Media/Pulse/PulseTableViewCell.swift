@@ -18,19 +18,30 @@ final class PulseTableViewCell: UITableViewCell {
 
     @IBOutlet weak var activityType: UILabel!
     @IBOutlet weak var referenceDate: UILabel!
-    @IBOutlet weak var notes: ActivityLabel!
     @IBOutlet weak var metaInfo: UILabel!
     @IBOutlet weak var picto: UIImageView!
 
     @IBOutlet weak var ownEventIndicator: UIView!
 
     @IBOutlet weak var backdrop: BackdropImageView!
+    @IBOutlet weak var rateButton: UIButton?
 
     @IBOutlet var separator: UIView!
 
     @IBOutlet weak var bottomConstraint: NSLayoutConstraint!
     @IBOutlet weak var topConstraint: NSLayoutConstraint!
     @IBOutlet weak var contentConstraint: NSLayoutConstraint!
+
+    @IBOutlet weak var notes: ActivityLabel!
+    @IBOutlet weak var notesPicto: UIImageView!
+    @IBOutlet weak var noteButton: UIButton!
+    var onTapNoteButton: (() -> Void)?
+
+    var ratedItem: RatedItem? {
+        didSet {
+            updateRateButton()
+        }
+    }
 
     var cardType: CardType = CardType.middle {
         didSet {
@@ -85,5 +96,63 @@ final class PulseTableViewCell: UITableViewCell {
         ownEventIndicator.backgroundColor = .secondaryLabel
         ownEventIndicator.layer.cornerRadius = 1
         ownEventIndicator.layer.cornerCurve = .circular
+
+        noteButton.isHidden = true
+
+        rateButton?.isHidden = true
+        rateButton?.backgroundColor = UIColor(asset: .globalTint).withAlphaComponent(0.1)
+        rateButton?.maximumContentSizeCategory = .accessibilityExtraExtraLarge
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        ratedItem = nil
+        onTapNoteButton = nil
+        noteButton.isHidden = true
+        notesPicto.image = nil
+        notesPicto.isHiddenInStackView = true
+        notes.alpha = 1.0
+        notes.tintColor = .label
+    }
+
+    @IBAction private func didTapNoteButton(_ sender: UIButton) {
+        onTapNoteButton?()
+    }
+
+    private func updateRateButton() {
+        guard let rateButton else { return }
+        guard let ratedItem else {
+            rateButton.isHidden = true
+            rateButton.menu = nil
+            return
+        }
+
+        let media = MediaModel(item: ratedItem)
+        var configuration = rateButton.configuration
+        rateButton.isHidden = false
+        configuration?.indicator = .popup
+        configuration?.baseBackgroundColor = UIColor { trait in
+            if trait.userInterfaceStyle == .dark {
+                return UIColor(asset: .globalTint).withAlphaComponent(0.2)
+            }
+            return UIColor(asset: .globalTint).lighter(amount: 0.1).withAlphaComponent(0.2)
+        }
+        configuration?.title = ""
+        configuration?.contentInsets = NSDirectionalEdgeInsets(top: 2,
+                                                               leading: 4,
+                                                               bottom: 2,
+                                                               trailing: 4)
+        configuration?.imagePadding = .zero
+        configuration?.image = rateButtonImage(for: media)
+        rateButton.configuration = configuration
+        rateButton.menu = media.rateMenu
+        rateButton.showsMenuAsPrimaryAction = true
+    }
+
+    private func rateButtonImage(for media: MediaModel) -> UIImage? {
+        if let rating = media.userRating {
+            return UIImage(systemName: "\(rating).circle")
+        }
+        return UIImage(systemName: "heart")
     }
 }

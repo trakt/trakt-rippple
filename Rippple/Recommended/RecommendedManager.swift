@@ -54,7 +54,7 @@ final class RecommendedManager {
         }
     }
 
-    fileprivate var recommendedItems = [MediaItem]()
+    fileprivate var recommendedItems = [WatchlistItem]()
 }
 
 private extension RecommendedManager {
@@ -69,44 +69,34 @@ private extension RecommendedManager {
                                                   sort: .added) { result in
             switch result {
             case let .success(favorites):
-                let recommendedItems = favorites.map {
-                    MediaItem(movie: $0.movie,
-                              show: $0.show,
-                              episode: $0.episode,
-                              season: $0.season,
-                              list: $0.list,
-                              watchers: nil,
-                              listedAt: $0.listedAt,
-                              collectedAt: nil,
-                              lastCollectedAt: nil,
-                              notes: $0.notes)
-                }
-
-                var ids = [Int64]()
-                for item in recommendedItems {
-                    switch item.type {
-                    case .movie:
-                        ids.append(item.movie!.identifiers.trakt!)
-                    case .show:
-                        ids.append(item.show!.identifiers.trakt!)
-                    case .season:
-                        ids.append(item.season!.identifiers.trakt!)
-                    case .episode:
-                        ids.append(item.episode!.identifiers.trakt!)
-                    case .list, .officiallist:
-                        ids.append(item.list!.identifiers.trakt!)
-                    case .unknown:
-                        continue
-                    }
-                }
+                let ids = favorites.compactMap(\.traktId)
 
                 DispatchQueue.main.async {
-                    self.recommendedItems = recommendedItems
+                    self.recommendedItems = favorites
                     self.recommended = ids
                 }
             case let .failure(error):
                 print("refreshRecommended request failure \(error)")
             }
+        }
+    }
+}
+
+private extension WatchlistItem {
+    var traktId: Int64? {
+        switch type {
+        case .movie:
+            movie?.identifiers.trakt
+        case .show:
+            show?.identifiers.trakt
+        case .season:
+            season?.identifiers.trakt
+        case .episode:
+            episode?.identifiers.trakt
+        case .list, .officiallist:
+            list?.identifiers.trakt
+        case .unknown:
+            nil
         }
     }
 }
@@ -126,7 +116,7 @@ extension Show {
 }
 
 extension MediaModel {
-    var recommendedMediaItem: MediaItem? {
+    var recommendedMediaItem: WatchlistItem? {
         switch self {
         case .movie(let movie):
             return RecommendedManager.shared.recommendedItems.first(where: { $0.movie == movie })

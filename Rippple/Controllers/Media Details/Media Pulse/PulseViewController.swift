@@ -8,9 +8,12 @@
 
 import UIKit
 
+import Receiver
+
 final class PulseViewController: UITableViewController {
 
     public var media: MediaModel!
+    private let disposeBag = DisposeBag()
 
     private let relativeDateTimeFormatter: RelativeDateTimeFormatter = {
         let dateFormatter = RelativeDateTimeFormatter()
@@ -28,6 +31,532 @@ final class PulseViewController: UITableViewController {
         let date: Date
         let systemImageName: String
         let historyItem: HistoryItem?
+        let ratedItem: RatedItem?
+        let actions: [ActivityAction]
+
+        init(activity: String,
+             title: String,
+             notes: String,
+             meta: String,
+             date: Date,
+             systemImageName: String,
+             historyItem: HistoryItem? = nil,
+             ratedItem: RatedItem? = nil,
+             actions: [ActivityAction] = []) {
+            self.activity = activity
+            self.title = title
+            self.notes = notes
+            self.meta = meta
+            self.date = date
+            self.systemImageName = systemImageName
+            self.historyItem = historyItem
+            self.ratedItem = ratedItem
+            self.actions = actions
+        }
+    }
+
+    private enum ActionType: Hashable {
+        case delete
+        case note
+        case open
+    }
+
+    private struct ActivityAction: Hashable {
+        let type: ActionType
+        let title: String
+        let shortTitle: String?
+        let systemImageName: String?
+
+        let handler: () -> Void
+
+        static func == (lhs: ActivityAction, rhs: ActivityAction) -> Bool {
+            lhs.type == rhs.type &&
+            lhs.title == rhs.title && lhs.shortTitle == rhs.shortTitle &&
+            lhs.systemImageName == rhs.systemImageName
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(title)
+            hasher.combine(shortTitle)
+            hasher.combine(systemImageName)
+        }
+    }
+
+    private func openAction(for media: MediaModel) -> ActivityAction? {
+        guard let deeplink = media.deeplink else { return nil }
+        return ActivityAction(type: .open,
+                              title: "Open \(media.mediaTitle)",
+                              shortTitle: nil,
+                              systemImageName: nil,
+                              handler: {
+            UIApplication.shared.open(deeplink)
+        })
+    }
+
+    private func activityAction(ofType type: ActionType, in actions: [ActivityAction]) -> ActivityAction? {
+        actions.first(where: { $0.type == type })
+    }
+
+    private func buildHistoryActivityActions(for historyItem: HistoryItem) -> [ActivityAction] {
+        guard let media = MediaModel(item: historyItem) else { return [] }
+
+        let notes = ActivityAction(type: .note,
+                                   title: historyItem.noteItem == nil ? "Add History Note" : "Edit History Note",
+                                   shortTitle: historyItem.noteItem == nil ? "Add Note" : "Edit Note",
+                                   systemImageName: "note.text",
+                                   handler: {
+            NotesManager.shared.showNotes(for: historyItem)
+            UISelectionFeedbackGenerator().selectionChanged()
+        })
+
+        let remove = ActivityAction(type: .delete,
+                                    title: "Remove from History",
+                                    shortTitle: "Remove",
+                                    systemImageName: "trash.circle.fill",
+                                    handler: { [weak self] in
+            guard let self else { return }
+
+            let confirmationAlertController = UIAlertController(title: "⚠️",
+                                                                message: "Do you want to remove this from your watch history?",
+                                                                preferredStyle: .actionSheet)
+
+            let cancel = UIAlertAction(title: "Don't remove", style: .cancel)
+            confirmationAlertController.addAction(cancel)
+
+            let delete = UIAlertAction(title: "Remove", style: .destructive) { _ in
+                guard let window = self.view.window else { return }
+                window.isUserInteractionEnabled = false
+
+                SwiftMessages.show(message: "Removing from History...", style: .loading)
+
+                TraktAPIProvider.provider.request(.removeFromHistory(id: historyItem.identifier),
+                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                    defer {
+                        DispatchQueue.main.async {
+                            window.isUserInteractionEnabled = true
+                        }
+                    }
+
+                    guard let self else { return }
+
+                    switch result {
+                    case .success(let moyaResponse):
+                        do {
+                            let response =
+                            try moyaResponse.filterSuccessfulStatusCodes()
+                            DispatchQueue.main.async {
+                                if response.statusCode == 200 {
+                                    SwiftMessages.show(message: "🗑 Activity removed")
+                                    onRemoveWatchTransmitter.broadcast(historyItem.identifier)
+                                    onRemoveWatchMediaTransmitter.broadcast(self.media)
+                                    self.refresh()
+                                }
+                            }
+                        } catch let error {
+                            DispatchQueue.main.async {
+                                SwiftMessages.show(message: "😓 Error removing", style: .error(error))
+                            }
+                        }
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            SwiftMessages.show(message: "😓 Error removing", style: .error(error))
+                        }
+                    }
+                }
+            }
+
+            confirmationAlertController.addAction(delete)
+            self.present(confirmationAlertController, animated: true)
+        })
+
+        return [openAction(for: media), notes, remove].compactMap { $0 }
+    }
+
+    private func buildActivityActions(for media: MediaModel) -> [ActivityAction] {
+        switch media {
+        case .movie, .show, .season, .episode:
+            break
+        default:
+            return []
+        }
+
+        return [openAction(for: media)].compactMap { $0 }
+    }
+
+    private func buildRatedActivityActions(for ratedItem: RatedItem) -> [ActivityAction] {
+        let media = MediaModel(item: ratedItem)
+
+        let notes = ActivityAction(type: .note,
+                                   title: ratedItem.noteItem == nil ? "Add Rating Note" : "Edit Rating Note",
+                                   shortTitle: ratedItem.noteItem == nil ? "Add Note" : "Edit Note",
+                                   systemImageName: "note.text",
+                                   handler: {
+            NotesManager.shared.showNotes(for: ratedItem)
+            UISelectionFeedbackGenerator().selectionChanged()
+        })
+
+        return [openAction(for: media), notes].compactMap { $0 }
+    }
+
+    private func buildCommentActivityActions(for commentItem: CommentItem) -> [ActivityAction] {
+        let commentModel = CommentModel(commentItem: commentItem,
+                                        spoilerStrategy: .showAllSpoilers)
+
+        let open = ActivityAction(type: .open,
+                                  title: "Open Comment",
+                                  shortTitle: nil,
+                                  systemImageName: nil,
+                                  handler: {
+            guard let deeplink = URL(string: "ripl://comments/\(commentModel.comment.identifier)") else { return }
+            UIApplication.shared.open(deeplink)
+        })
+
+        let delete = ActivityAction(type: .delete,
+                                    title: "Delete Comment",
+                                    shortTitle: "Delete",
+                                    systemImageName: "trash.circle.fill",
+                                    handler: { [weak self] in
+            guard let self else { return }
+
+            let confirmationAlertController = UIAlertController(title: "⚠️",
+                                                                message: "Are you sure you want to delete this comment?",
+                                                                preferredStyle: .alert)
+
+            let cancel = UIAlertAction(title: "Cancel", style: .cancel)
+            confirmationAlertController.addAction(cancel)
+
+            let delete = UIAlertAction(title: "Yes, Delete Comment",
+                                       style: .destructive) { _ in
+                TraktAPIProvider.provider.request(.deleteComment(id: commentModel.comment.identifier),
+                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                    guard let self else { return }
+
+                    switch result {
+                    case .success(let moyaResponse):
+                        do {
+                            if moyaResponse.statusCode == 409 {
+                                DispatchQueue.main.async {
+                                    let alertController = UIAlertController(title: "Can't Delete",
+                                                                            message: "We cannot delete a comment that is older than 2 weeks or has at least one comment.",
+                                                                            preferredStyle: .alert)
+
+                                    let cancel = UIAlertAction(title: "Okay",
+                                                               style: .cancel)
+                                    alertController.addAction(cancel)
+                                    self.present(alertController, animated: true)
+                                }
+                            } else {
+                                _ =
+                                try moyaResponse.filterSuccessfulStatusCodes()
+
+                                DispatchQueue.main.async {
+                                    SwiftMessages.show(message: "🗑 Comment deleted")
+                                    self.refresh()
+                                }
+                            }
+                        } catch {
+                            DispatchQueue.main.async {
+                                SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
+                            }
+                        }
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
+                        }
+                    }
+                }
+            }
+
+            confirmationAlertController.addAction(delete)
+            self.present(confirmationAlertController, animated: true)
+        })
+
+        return [open, delete]
+    }
+
+    private func buildNoteActivityActions(for noteItem: NoteItem) -> [ActivityAction] {
+        let edit = ActivityAction(type: .note,
+                                  title: "Edit Note",
+                                  shortTitle: "Edit",
+                                  systemImageName: "pencil.circle.fill",
+                                  handler: {
+            NotesManager.shared.showNotes(for: noteItem)
+        })
+
+        let delete = ActivityAction(type: .delete,
+                                    title: "Delete Note",
+                                    shortTitle: "Delete",
+                                    systemImageName: "trash.circle.fill",
+                                    handler: { [weak self] in
+            guard let self else { return }
+
+            let confirmationAlertController = UIAlertController(title: "⚠️",
+                                                                message: "Are you sure you want to delete this note?",
+                                                                preferredStyle: .alert)
+            confirmationAlertController.addAction(UIAlertAction(title: "Cancel",
+                                                                style: .cancel))
+            confirmationAlertController.addAction(UIAlertAction(title: "Yes, Delete Note",
+                                                                style: .destructive) { _ in
+                self.deleteNote(noteItem: noteItem)
+            })
+            self.present(confirmationAlertController, animated: true)
+        })
+
+        return [edit, delete]
+    }
+
+    private func buildListActivityActions(for list: List, item: WatchlistItem) -> [ActivityAction] {
+        let open = ActivityAction(type: .open,
+                                  title: "Open \(list.name)",
+                                  shortTitle: nil,
+                                  systemImageName: nil,
+                                  handler: {
+            guard let deeplink = URL(string: "ripl://users/\(list.user.slug)/lists/\(list.identifiers.slugOrTraktId)") else { return }
+            UIApplication.shared.open(deeplink)
+        })
+
+        let hasNote = item.notes?.isEmpty == false
+        let notes = ActivityAction(type: .note,
+                                   title: hasNote ? "Edit List Note" : "Add List Note",
+                                   shortTitle: hasNote ? "Edit Note" : "Add Note",
+                                   systemImageName: "note.text.badge.plus",
+                                   handler: {
+            NotesManager.shared.showNotes(for: WatchlistType.listItem(note: item.notes ?? "",
+                                                                      userId: list.user.identifiers.slug ?? "me",
+                                                                      listId: list.identifiers.trakt!,
+                                                                      itemId: item.id,
+                                                                      canEdit: true,
+                                                                      user: list.user,
+                                                                      listItem: item))
+        })
+
+        let remove = ActivityAction(type: .delete,
+                                    title: "Remove from List",
+                                    shortTitle: "Remove",
+                                    systemImageName: "trash.circle.fill",
+                                    handler: { [weak self] in
+            guard let self = self else { return }
+
+            let confirmationAlertController = UIAlertController(title: "⚠️",
+                                                                message: "Are you sure you want to remove \(self.media.mediaTitle) from \(list.name.emojiUnescapedString)?",
+                                                                preferredStyle: .alert)
+
+            let cancel = UIAlertAction(title: "Cancel", style: .cancel)
+            confirmationAlertController.addAction(cancel)
+
+            let delete = UIAlertAction(title: "Yes, Remove",
+                                       style: .destructive) { _ in
+                self.remove(from: list)
+            }
+
+            confirmationAlertController.addAction(delete)
+            self.present(confirmationAlertController, animated: true)
+        })
+
+        return [open, notes, remove]
+    }
+
+    private func buildFavoriteActivityActions(for favoriteItem: WatchlistItem) -> [ActivityAction] {
+
+        let hasNote = favoriteItem.notes?.isEmpty == false
+        let notes = ActivityAction(type: .note,
+                                   title: hasNote ? "Edit Favorite Note" : "Add Favorite Note",
+                                   shortTitle: hasNote ? "Edit Note" : "Add Note",
+                                   systemImageName: "note.text.badge.plus",
+                                   handler: {
+            guard let currentUser = UserManager.shared.currentUser else { return }
+            NotesManager.shared.showNotes(for: WatchlistType.favoriteItem(note: favoriteItem.notes ?? "",
+                                                                          itemId: favoriteItem.id,
+                                                                          canEdit: true,
+                                                                          user: currentUser,
+                                                                          listItem: favoriteItem))
+        })
+
+        let remove = ActivityAction(type: .delete,
+                                    title: "Remove from Favorites",
+                                    shortTitle: "Remove",
+                                    systemImageName: "trash.circle.fill",
+                                    handler: { [weak self] in
+            guard let self else { return }
+
+            let confirmationAlertController = UIAlertController(title: "⚠️",
+                                                                message: "Are you sure you want to remove \(self.media.mediaTitle) from your favorites?",
+                                                                preferredStyle: .alert)
+            confirmationAlertController.addAction(UIAlertAction(title: "Cancel",
+                                                                style: .cancel))
+            confirmationAlertController.addAction(UIAlertAction(title: "Yes, Remove",
+                                                                style: .destructive) { _ in
+                self.media.removeFromRecommendations()
+            })
+            self.present(confirmationAlertController, animated: true)
+        })
+
+        return [notes, remove]
+    }
+
+    private func remove(from list: List) {
+        if SessionManager.shared.isLoggedOut { return }
+
+        let item: WatchlistedItem = {
+            switch media! {
+            case .movie(let movie):
+                return WatchlistedItem(movie: movie)
+            case .show(let show):
+                return WatchlistedItem(show: show)
+            case .episode(let episode, _):
+                return WatchlistedItem(episode: episode)
+            case .season(let season, _):
+                return WatchlistedItem(season: season)
+            case .list, .showProgress:
+                fatalError("Trying to remove something not supported.")
+            }
+        }()
+
+        TraktAPIProvider.provider.request(.removeFromList(slug: list.user.slug,
+                                                          id: list.identifiers.trakt!,
+                                                          item: item),
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+            guard let self = self else { return }
+
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response =
+                    try moyaResponse.filterSuccessfulStatusCodes()
+
+                    if response.statusCode == 200 {
+                        DispatchQueue.main.async {
+                            SwiftMessages.show(message: "🗑 Removed from \(list.name.emojiUnescapedString)")
+                            self.refresh()
+                        }
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: "😓 Removing failed", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: "😓 Removing failed", style: .error(error))
+                }
+            }
+        }
+    }
+
+    private func showComposer(for comment: Comment?, media: MediaModel) {
+        let composer = UIStoryboard(name: "Compose", bundle: nil).instantiateInitialViewController() as! ComposeNavigationController
+        composer.mediaModel = media
+        composer.editedComment = comment
+        present(composer, animated: true)
+    }
+
+    private func activityTypeText(for activityItem: ActivityItem) -> String {
+        guard activityItem.activity != "Today" else { return "Today" }
+        guard activityItem.date.timeIntervalSince1970 != 0 else { return activityItem.activity }
+        let relativeDate = relativeDateTimeFormatter.localizedString(for: activityItem.date, relativeTo: .now)
+        return "\(activityItem.activity), \(relativeDate)"
+    }
+
+    private func referenceDateText(for activityItem: ActivityItem) -> String {
+        activityItem.date.timeIntervalSince1970 == 0 ? "At Unknown Date" : activityItem.title
+    }
+
+    private func configureNotes(in cell: PulseTableViewCell, for activityItem: ActivityItem) {
+        if let noteAction = activityAction(ofType: .note, in: activityItem.actions) {
+            cell.noteButton.isHidden = false
+            cell.onTapNoteButton = noteAction.handler
+
+            cell.notes.isHiddenInStackView = false
+            if activityItem.notes.isEmpty {
+                cell.notes.alpha = 0.7
+                cell.notes.activityText = "**Add Notes**"
+                cell.notesPicto.image = UIImage(systemName: "plus.capsule.fill")
+                cell.notesPicto.isHiddenInStackView = false
+            } else {
+                cell.notes.alpha = 1.0
+                cell.notes.activityText = activityItem.notes
+                cell.notesPicto.isHiddenInStackView = true
+            }
+            return
+        }
+
+        cell.noteButton.isHidden = true
+        cell.notes.tintColor = .label
+        cell.notes.alpha = 1.0
+        cell.notes.activityText = activityItem.notes
+        cell.notes.isHiddenInStackView = activityItem.notes.isEmpty
+        cell.notesPicto.isHiddenInStackView = true
+    }
+
+    private func configurePicto(in cell: PulseTableViewCell, for activityItem: ActivityItem) {
+        let showsSystemIcon = activityItem.systemImageName.hasPrefix("calendar")
+        cell.picto.isHidden = !showsSystemIcon
+        cell.picto.isHiddenInStackView = !showsSystemIcon
+        cell.ownEventIndicator.superview?.isHidden = showsSystemIcon
+        cell.ownEventIndicator.superview?.isHiddenInStackView = showsSystemIcon
+
+        guard showsSystemIcon else { return }
+        cell.picto.image = UIImage(systemName: activityItem.systemImageName)
+        cell.picto.tintColor = .secondaryLabel
+    }
+
+    private func configureBackdrop(in cell: PulseTableViewCell, for activityItem: ActivityItem) {
+        let shouldShowBackdrop = media.show != nil && media.episode == nil && activityItem.historyItem != nil
+        cell.backdrop.isHidden = !shouldShowBackdrop
+        cell.backdrop.isHiddenInStackView = !shouldShowBackdrop
+
+        guard let historyItem = activityItem.historyItem, shouldShowBackdrop else { return }
+        cell.backdrop.media = MediaModel(item: historyItem)
+    }
+
+    private func configureActivityCell(_ cell: PulseTableViewCell, with activityItem: ActivityItem) {
+        cell.ratedItem = activityItem.ratedItem
+        cell.activityType.text = activityTypeText(for: activityItem)
+        cell.metaInfo.text = activityItem.meta
+        cell.metaInfo.isHiddenInStackView = activityItem.meta.isEmpty
+        cell.referenceDate.text = referenceDateText(for: activityItem)
+        configureNotes(in: cell, for: activityItem)
+        configurePicto(in: cell, for: activityItem)
+        configureBackdrop(in: cell, for: activityItem)
+        cell.cardType = .alone
+    }
+
+    private func deleteNote(noteItem: NoteItem) {
+        guard let window = view.window else { return }
+        window.isUserInteractionEnabled = false
+
+        SwiftMessages.show(message: "Deleting Notes...", style: .loading)
+
+        TraktAPIProvider.provider.request(.deleteNotes(id: noteItem.note.identifier),
+                                          callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
+            guard let self else { return }
+
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    _ = try moyaResponse.filterSuccessfulStatusCodes()
+                    NotesManager.shared.refresh()
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: "📝 Notes deleted")
+                        window.isUserInteractionEnabled = true
+                        self.refresh()
+                    }
+                } catch {
+                    NotesManager.shared.refresh()
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: "😓 Error deleting notes", style: .error(error))
+                        window.isUserInteractionEnabled = true
+                    }
+                }
+            case .failure(let error):
+                NotesManager.shared.refresh()
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: "😓 Error deleting notes", style: .error(error))
+                    window.isUserInteractionEnabled = true
+                }
+            }
+        }
     }
 
     override func viewDidLoad() {
@@ -44,9 +573,38 @@ final class PulseViewController: UITableViewController {
 
         tableView.allowsFocus = false
 
+        RatingsManager.shared.onRatedItemsChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.refresh()
+            }
+        }.disposed(by: disposeBag)
+
+        onRecommendedChangedReceiver.listen { [weak self] _ in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.refresh()
+            }
+        }.disposed(by: disposeBag)
+
+        onNotesChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.refresh()
+            }
+        }.disposed(by: disposeBag)
+
+        onWatchlistTypeNotesChangedReceiver.listen { [weak self] _ in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.refresh()
+            }
+        }.disposed(by: disposeBag)
+
         refresh()
 
         configureOptionButton()
+
     }
 
     private func configureOptionButton() {
@@ -54,124 +612,125 @@ final class PulseViewController: UITableViewController {
                                       image: UIImage(systemName: "minus.circle"),
                                       attributes: .destructive,
                                       handler: { _ in
-                let confirmationAlertController = UIAlertController(title: "⚠️",
-                                                        message: "Are you sure you want to remove all watch?",
-                                                        preferredStyle: .alert)
+            let confirmationAlertController = UIAlertController(title: "⚠️",
+                                                                message: "Are you sure you want to remove all watch?",
+                                                                preferredStyle: .alert)
 
-                let cancel = UIAlertAction(title: "Cancel", style: .cancel)
-                confirmationAlertController.addAction(cancel)
+            let cancel = UIAlertAction(title: "Cancel", style: .cancel)
+            confirmationAlertController.addAction(cancel)
 
-                let delete = UIAlertAction(title: "Yes, Remove All Watch", style: .destructive) { _ in
-                    switch self.media! {
-                    case .movie(let movie):
-                        TraktAPIProvider.provider.request(.removeMovieFromHistory(id: movie.identifiers.trakt!),
-                                                          callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
-                            guard let self = self else { return }
-                            switch result {
-                            case let .success(moyaResponse):
-                                do {
-                                    _ = try moyaResponse.filterSuccessfulStatusCodes()
-                                    DispatchQueue.main.async {
-                                        SwiftMessages.show(message: "🗑 Watch removed")
-                                        onRemoveWatchMediaTransmitter.broadcast(self.media)
-                                        onRemoveMultipleMediaTransmitter.broadcast(self.media)
-                                        self.refresh()
-                                    }
-                                } catch {
-                                    DispatchQueue.main.async {
-                                        SwiftMessages.show(message: "😓 Error removing", style: .error(error))
-                                    }
+            let delete = UIAlertAction(title: "Yes, Remove All Watch",
+                                       style: .destructive) { _ in
+                switch self.media! {
+                case .movie(let movie):
+                    TraktAPIProvider.provider.request(.removeMovieFromHistory(id: movie.identifiers.trakt!),
+                                                      callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
+                        guard let self = self else { return }
+                        switch result {
+                        case .success(let moyaResponse):
+                            do {
+                                _ = try moyaResponse.filterSuccessfulStatusCodes()
+                                DispatchQueue.main.async {
+                                    SwiftMessages.show(message: "🗑 Watch removed")
+                                    onRemoveWatchMediaTransmitter.broadcast(self.media)
+                                    onRemoveMultipleMediaTransmitter.broadcast(self.media)
+                                    self.refresh()
                                 }
-                            case let .failure(error):
+                            } catch {
                                 DispatchQueue.main.async {
                                     SwiftMessages.show(message: "😓 Error removing", style: .error(error))
                                 }
                             }
-                        }
-                    case .show(let show):
-                        TraktAPIProvider.provider.request(.removeShowFromHistory(id: show.identifiers.trakt!),
-                                                          callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
-                            guard let self = self else { return }
-                            switch result {
-                            case let .success(moyaResponse):
-                                do {
-                                    _ = try moyaResponse.filterSuccessfulStatusCodes()
-                                    DispatchQueue.main.async {
-                                        SwiftMessages.show(message: "🗑 Watch removed")
-                                        onRemoveWatchMediaTransmitter.broadcast(self.media)
-                                        onRemoveMultipleMediaTransmitter.broadcast(self.media)
-                                        self.refresh()
-                                    }
-                                } catch {
-                                    DispatchQueue.main.async {
-                                        SwiftMessages.show(message: "😓 Error removing", style: .error(error))
-                                    }
-                                }
-                            case let .failure(error):
-                                DispatchQueue.main.async {
-                                    SwiftMessages.show(message: "😓 Error removing", style: .error(error))
-                                }
+                        case .failure(let error):
+                            DispatchQueue.main.async {
+                                SwiftMessages.show(message: "😓 Error removing", style: .error(error))
                             }
                         }
-                    case .episode(let episode, _):
-                        TraktAPIProvider.provider.request(.removeEpisodeFromHistory(id: episode.identifiers.trakt!),
-                                                          callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
-                            guard let self = self else { return }
-                            switch result {
-                            case let .success(moyaResponse):
-                                do {
-                                    _ = try moyaResponse.filterSuccessfulStatusCodes()
-                                    DispatchQueue.main.async {
-                                        SwiftMessages.show(message: "🗑 Watch removed")
-                                        onRemoveWatchMediaTransmitter.broadcast(self.media)
-                                        onRemoveMultipleMediaTransmitter.broadcast(self.media)
-                                        self.refresh()
-                                    }
-                                } catch {
-                                    DispatchQueue.main.async {
-                                        SwiftMessages.show(message: "😓 Error removing", style: .error(error))
-                                    }
-                                }
-                            case let .failure(error):
-                                DispatchQueue.main.async {
-                                    SwiftMessages.show(message: "😓 Error removing", style: .error(error))
-                                }
-                            }
-                        }
-                    case .season(let season, _):
-                        TraktAPIProvider.provider.request(.removeSeasonFromHistory(id: season.identifiers.trakt!),
-                                                          callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
-                            guard let self = self else { return }
-                            switch result {
-                            case let .success(moyaResponse):
-                                do {
-                                    _ = try moyaResponse.filterSuccessfulStatusCodes()
-                                    DispatchQueue.main.async {
-                                        SwiftMessages.show(message: "🗑 Watch removed")
-                                        onRemoveWatchMediaTransmitter.broadcast(self.media)
-                                        onRemoveMultipleMediaTransmitter.broadcast(self.media)
-                                        self.refresh()
-                                    }
-                                } catch {
-                                    DispatchQueue.main.async {
-                                        SwiftMessages.show(message: "😓 Error removing", style: .error(error))
-                                    }
-                                }
-                            case let .failure(error):
-                                DispatchQueue.main.async {
-                                    SwiftMessages.show(message: "😓 Error removing", style: .error(error))
-                                }
-                            }
-                        }
-                    case .list:
-                        fatalError()
-                    case .showProgress:
-                        fatalError()
                     }
+                case .show(let show):
+                    TraktAPIProvider.provider.request(.removeShowFromHistory(id: show.identifiers.trakt!),
+                                                      callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
+                        guard let self = self else { return }
+                        switch result {
+                        case .success(let moyaResponse):
+                            do {
+                                _ = try moyaResponse.filterSuccessfulStatusCodes()
+                                DispatchQueue.main.async {
+                                    SwiftMessages.show(message: "🗑 Watch removed")
+                                    onRemoveWatchMediaTransmitter.broadcast(self.media)
+                                    onRemoveMultipleMediaTransmitter.broadcast(self.media)
+                                    self.refresh()
+                                }
+                            } catch {
+                                DispatchQueue.main.async {
+                                    SwiftMessages.show(message: "😓 Error removing", style: .error(error))
+                                }
+                            }
+                        case .failure(let error):
+                            DispatchQueue.main.async {
+                                SwiftMessages.show(message: "😓 Error removing", style: .error(error))
+                            }
+                        }
+                    }
+                case .episode(let episode, _):
+                    TraktAPIProvider.provider.request(.removeEpisodeFromHistory(id: episode.identifiers.trakt!),
+                                                      callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
+                        guard let self = self else { return }
+                        switch result {
+                        case .success(let moyaResponse):
+                            do {
+                                _ = try moyaResponse.filterSuccessfulStatusCodes()
+                                DispatchQueue.main.async {
+                                    SwiftMessages.show(message: "🗑 Watch removed")
+                                    onRemoveWatchMediaTransmitter.broadcast(self.media)
+                                    onRemoveMultipleMediaTransmitter.broadcast(self.media)
+                                    self.refresh()
+                                }
+                            } catch {
+                                DispatchQueue.main.async {
+                                    SwiftMessages.show(message: "😓 Error removing", style: .error(error))
+                                }
+                            }
+                        case .failure(let error):
+                            DispatchQueue.main.async {
+                                SwiftMessages.show(message: "😓 Error removing", style: .error(error))
+                            }
+                        }
+                    }
+                case .season(let season, _):
+                    TraktAPIProvider.provider.request(.removeSeasonFromHistory(id: season.identifiers.trakt!),
+                                                      callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
+                        guard let self = self else { return }
+                        switch result {
+                        case .success(let moyaResponse):
+                            do {
+                                _ = try moyaResponse.filterSuccessfulStatusCodes()
+                                DispatchQueue.main.async {
+                                    SwiftMessages.show(message: "🗑 Watch removed")
+                                    onRemoveWatchMediaTransmitter.broadcast(self.media)
+                                    onRemoveMultipleMediaTransmitter.broadcast(self.media)
+                                    self.refresh()
+                                }
+                            } catch {
+                                DispatchQueue.main.async {
+                                    SwiftMessages.show(message: "😓 Error removing", style: .error(error))
+                                }
+                            }
+                        case .failure(let error):
+                            DispatchQueue.main.async {
+                                SwiftMessages.show(message: "😓 Error removing", style: .error(error))
+                            }
+                        }
+                    }
+                case .list:
+                    fatalError()
+                case .showProgress:
+                    fatalError()
                 }
-                confirmationAlertController.addAction(delete)
+            }
+            confirmationAlertController.addAction(delete)
 
-                self.present(confirmationAlertController, animated: true)
+            self.present(confirmationAlertController, animated: true)
         })
 
         let menu = UIMenu(children: [removeAllWatch])
@@ -215,7 +774,7 @@ final class PulseViewController: UITableViewController {
                                             meta: meta.joined(separator: " · "),
                                             date: firstAired,
                                             systemImageName: "calendar",
-                                            historyItem: nil)
+                                            actions: buildActivityActions(for: media))
                     activityItems.append(item)
                 }
             }
@@ -243,8 +802,7 @@ final class PulseViewController: UITableViewController {
                                             notes: "",
                                             meta: meta.joined(separator: " · "),
                                             date: firstAired,
-                                            systemImageName: "calendar",
-                                            historyItem: nil)
+                                            systemImageName: "calendar")
                     activityItems.append(item)
                 }
             }
@@ -276,9 +834,8 @@ final class PulseViewController: UITableViewController {
                                             title: "\(dateFormatter.string(from: firstAired))",
                                             notes: "",
                                             meta: meta.joined(separator: " · "),
-                                            date: firstAired.addingTimeInterval(-5), // make sure this is displayed before anythin else,
-                                            systemImageName: "calendar",
-                                            historyItem: nil)
+                                            date: firstAired.addingTimeInterval(-5),  // make sure this is displayed before anythin else,
+                                            systemImageName: "calendar")
                     activityItems.append(item)
                 }
 
@@ -298,7 +855,8 @@ final class PulseViewController: UITableViewController {
                                             meta: "\(lastEpisode.localizedEpisodeNumber)",
                                             date: firstAired,
                                             systemImageName: "calendar",
-                                            historyItem: nil)
+                                            actions: buildActivityActions(for: lastEpisode.mediaModel(given: show))
+                    )
                     activityItems.append(item)
                 }
 
@@ -318,12 +876,13 @@ final class PulseViewController: UITableViewController {
                                             meta: "\(nextEpisode.localizedEpisodeNumber)",
                                             date: firstAired,
                                             systemImageName: "calendar",
-                                            historyItem: nil)
+                                            actions: buildActivityActions(for: nextEpisode.mediaModel(given: show)))
                     activityItems.append(item)
                 }
             }
 
-            if let movie = media.movie, let movieActivities = await fetchMovieReleases(for: movie) {
+            if let movie = media.movie,
+               let movieActivities = await fetchMovieReleases(for: movie) {
 
                 let dateFormatter: DateFormatter = {
                     let dateFormatter = DateFormatter.init()
@@ -332,8 +891,11 @@ final class PulseViewController: UITableViewController {
                     return dateFormatter
                 }()
 
-                let localCountry = Locale.current.language.region?.identifier ?? "us"
-                for activity in movieActivities.filter({ $0.country.lowercased() == movie.country?.lowercased() || $0.country.lowercased() == localCountry.lowercased() }) {
+                let localCountry =
+                Locale.current.language.region?.identifier ?? "us"
+                for activity in movieActivities.filter({
+                    $0.country.lowercased() == movie.country?.lowercased() ||
+                    $0.country.lowercased() == localCountry.lowercased() }) {
                     var meta = [String]()
                     meta.append("\(Locale.current.localizedString(forRegionCode: activity.country) ?? activity.country)")
                     if let certification = activity.certification {
@@ -345,8 +907,7 @@ final class PulseViewController: UITableViewController {
                                             notes: activity.note ?? "",
                                             meta: meta.joined(separator: " · "),
                                             date: activity.releaseDate,
-                                            systemImageName: "calendar",
-                                            historyItem: nil)
+                                            systemImageName: "calendar")
                     activityItems.append(item)
                 }
             }
@@ -361,19 +922,20 @@ final class PulseViewController: UITableViewController {
 
                 for list in lists {
                     if let item = await fetchItem(in: list) {
-                        let item = ActivityItem(activity: "Listed",
-                                                title: "\(dateFormatter.string(from: item .listedAt))",
-                                                notes: item.notes ?? "",
-                                                meta: "Added to \(list.name)",
-                                                date: item.listedAt,
-                                                systemImageName: "plus",
-                                                historyItem: nil)
-                        activityItems.append(item)
+                        let activityItem = ActivityItem(activity: "Listed",
+                                                        title: "\(dateFormatter.string(from: item .listedAt))",
+                                                        notes: item.notes ?? "",
+                                                        meta: "Added to \(list.name)",
+                                                        date: item.listedAt,
+                                                        systemImageName: "plus",
+                                                        actions: buildListActivityActions(for: list, item: item))
+                        activityItems.append(activityItem)
                     }
                 }
             }
 
-            if let watchlistMediaItem = media.watchlistMediaItem, let watchlistedAt = watchlistMediaItem.listedAt {
+            if let watchlistMediaItem = media.watchlistMediaItem,
+               let watchlistedAt = watchlistMediaItem.listedAt {
                 let dateFormatter: DateFormatter = {
                     let dateFormatter = DateFormatter.init()
                     dateFormatter.dateStyle = .medium
@@ -386,12 +948,12 @@ final class PulseViewController: UITableViewController {
                                         notes: watchlistMediaItem.notes ?? "",
                                         meta: "",
                                         date: watchlistedAt,
-                                        systemImageName: "bookmark.fill",
-                                        historyItem: nil)
+                                        systemImageName: "bookmark.fill")
                 activityItems.append(item)
             }
 
-            if let recommendedMediaItem = media.recommendedMediaItem, let recommendedAt = recommendedMediaItem.listedAt {
+            if let recommendedMediaItem = media.recommendedMediaItem {
+                let recommendedAt = recommendedMediaItem.listedAt
                 let dateFormatter: DateFormatter = {
                     let dateFormatter = DateFormatter.init()
                     dateFormatter.dateStyle = .medium
@@ -405,11 +967,12 @@ final class PulseViewController: UITableViewController {
                                         meta: "",
                                         date: recommendedAt,
                                         systemImageName: "star.fill",
-                                        historyItem: nil)
+                                        actions: buildFavoriteActivityActions(for: recommendedMediaItem))
                 activityItems.append(item)
             }
 
-            if let collectedMediaItem = media.collectedMediaItem, let collectedAt = collectedMediaItem.collectedAt {
+            if let collectedMediaItem = media.collectedMediaItem,
+               let collectedAt = collectedMediaItem.collectedAt {
                 let dateFormatter: DateFormatter = {
                     let dateFormatter = DateFormatter.init()
                     dateFormatter.dateStyle = .medium
@@ -422,12 +985,12 @@ final class PulseViewController: UITableViewController {
                                         notes: collectedMediaItem.notes ?? "",
                                         meta: "",
                                         date: collectedAt,
-                                        systemImageName: "book.circle",
-                                        historyItem: nil)
+                                        systemImageName: "book.circle")
                 activityItems.append(item)
             }
 
-            if let collectedMediaItem = media.collectedMediaItem, let collectedAt = collectedMediaItem.lastCollectedAt {
+            if let collectedMediaItem = media.collectedMediaItem,
+               let collectedAt = collectedMediaItem.lastCollectedAt {
                 let dateFormatter: DateFormatter = {
                     let dateFormatter = DateFormatter.init()
                     dateFormatter.dateStyle = .medium
@@ -440,8 +1003,7 @@ final class PulseViewController: UITableViewController {
                                         notes: collectedMediaItem.notes ?? "",
                                         meta: "",
                                         date: collectedAt,
-                                        systemImageName: "book.circle",
-                                        historyItem: nil)
+                                        systemImageName: "book.circle")
                 activityItems.append(item)
             }
 
@@ -458,40 +1020,44 @@ final class PulseViewController: UITableViewController {
 
                     switch media {
                     case .movie:
-                        let item = ActivityItem(activity: "Rated Movie: \(ratedMediaItem.rating)",
+                        let item = ActivityItem(activity: "Rated Movie",
                                                 title: "\(dateFormatter.string(from: ratedMediaItem.rateDate))",
                                                 notes: ratedMediaItem.note ?? "",
                                                 meta: "",
                                                 date: ratedMediaItem.rateDate,
                                                 systemImageName: "heart.fill",
-                                                historyItem: nil)
+                                                ratedItem: ratedMediaItem,
+                                                actions: buildRatedActivityActions(for: ratedMediaItem))
                         activityItems.append(item)
                     case .show:
-                        let item = ActivityItem(activity: "Rated Show: \(ratedMediaItem.rating)",
+                        let item = ActivityItem(activity: "Rated Show",
                                                 title: "\(dateFormatter.string(from: ratedMediaItem.rateDate))",
                                                 notes: ratedMediaItem.note ?? "",
                                                 meta: "",
                                                 date: ratedMediaItem.rateDate,
                                                 systemImageName: "heart.fill",
-                                                historyItem: nil)
+                                                ratedItem: ratedMediaItem,
+                                                actions: buildRatedActivityActions(for: ratedMediaItem))
                         activityItems.append(item)
                     case .season(let season, _):
-                        let item = ActivityItem(activity: "Rated \(season.localizedSeasonNumber): \(ratedMediaItem.rating)",
+                        let item = ActivityItem(activity: "Rated \(season.localizedSeasonNumber)",
                                                 title: "\(dateFormatter.string(from: ratedMediaItem.rateDate))",
                                                 notes: ratedMediaItem.note ?? "",
                                                 meta: "",
                                                 date: ratedMediaItem.rateDate,
                                                 systemImageName: "heart.fill",
-                                                historyItem: nil)
+                                                ratedItem: ratedMediaItem,
+                                                actions: buildRatedActivityActions(for: ratedMediaItem))
                         activityItems.append(item)
                     case .episode(let episode, _):
-                        let item = ActivityItem(activity: "Rated \(episode.localizedEpisodeNumber): \(ratedMediaItem.rating)",
+                        let item = ActivityItem(activity: "Rated \(episode.localizedEpisodeNumber)",
                                                 title: "\(dateFormatter.string(from: ratedMediaItem.rateDate))",
                                                 notes: ratedMediaItem.note ?? "",
                                                 meta: "",
                                                 date: ratedMediaItem.rateDate,
                                                 systemImageName: "heart.fill",
-                                                historyItem: nil)
+                                                ratedItem: ratedMediaItem,
+                                                actions: buildRatedActivityActions(for: ratedMediaItem))
                         activityItems.append(item)
                     case .list:
                         fatalError()
@@ -543,7 +1109,7 @@ final class PulseViewController: UITableViewController {
                                             meta: meta.joined(separator: " · "),
                                             date: noteItem.note.createdAt,
                                             systemImageName: "note.text",
-                                            historyItem: nil)
+                                            actions: buildNoteActivityActions(for: noteItem))
 
                     activityItems.append(item)
                 }
@@ -563,7 +1129,7 @@ final class PulseViewController: UITableViewController {
                                         meta: "\(CommentModel(commentItem: commentItem, spoilerStrategy: .showAllSpoilers).media.mediaTitle)",
                                         date: commentItem.comment.createDate,
                                         systemImageName: "pencil.circle.fill",
-                                        historyItem: nil)
+                                        actions: buildCommentActivityActions(for: commentItem))
 
                 activityItems.append(item)
             }
@@ -593,24 +1159,30 @@ final class PulseViewController: UITableViewController {
 
                     // if it's an episode from a season or a show VS the episode level or movie
                     if let episode = activity.episode, media.episode == nil {
-                        let meta = if let title = episode.title { "\(episode.localizedEpisodeNumber) - \(title)" } else { episode.localizedEpisodeNumber }
+                        let meta =
+                        if let title = episode.title {
+                            "\(episode.localizedEpisodeNumber) - \(title)"
+                        } else { episode.localizedEpisodeNumber }
                         let item = ActivityItem(activity: header,
                                                 title: "\(dateFormatter.string(from: activity.watchDate))",
                                                 notes: activity.note ?? "",
                                                 meta: meta,
                                                 date: activity.watchDate,
                                                 systemImageName: systemImage,
-                                                historyItem: activity)
+                                                historyItem: activity,
+                                                actions: buildHistoryActivityActions(for: activity))
                         activityItems.append(item)
                     } else {
-                        let meta = "\(formatter.string(from: ordinalCount as NSNumber) ?? "1st") watch"
+                        let meta =
+                        "\(formatter.string(from: ordinalCount as NSNumber) ?? "1st") watch"
                         let item = ActivityItem(activity: header,
                                                 title: "\(dateFormatter.string(from: activity.watchDate))",
                                                 notes: activity.note ?? "",
                                                 meta: meta,
                                                 date: activity.watchDate,
                                                 systemImageName: systemImage,
-                                                historyItem: activity)
+                                                historyItem: activity,
+                                                actions: buildHistoryActivityActions(for: activity))
                         activityItems.append(item)
                     }
                     ordinalCount += 1
@@ -628,8 +1200,7 @@ final class PulseViewController: UITableViewController {
                                      notes: "",
                                      meta: "",
                                      date: .now,
-                                     systemImageName: "calendar.badge.clock",
-                                     historyItem: nil)
+                                     systemImageName: "calendar.badge.clock")
             activityItems.append(today)
 
             activityItems.sort { $0.date > $1.date }
@@ -678,53 +1249,7 @@ final class PulseViewController: UITableViewController {
         switch item {
         case .activity(let activityItem):
             let cell = tableView.dequeueReusableCell(withIdentifier: "activity") as! PulseTableViewCell
-            if activityItem.activity == "Today" {
-                cell.activityType.text = "Today"
-            } else {
-                if activityItem.date.timeIntervalSince1970 == 0 {
-                    cell.activityType.text = "\(activityItem.activity)"
-                } else {
-                    cell.activityType.text = "\(activityItem.activity), \(relativeDateTimeFormatter.localizedString(for: activityItem.date, relativeTo: .now))"
-                }
-            }
-            cell.metaInfo.text = activityItem.meta
-            cell.metaInfo.isHiddenInStackView = activityItem.meta.isEmpty
-            if activityItem.date.timeIntervalSince1970 == 0 {
-                cell.referenceDate.text = "At Unknown Date"
-            } else {
-                cell.referenceDate.text = activityItem.title
-            }
-            cell.notes.activityText = activityItem.notes
-            cell.notes.isHiddenInStackView = activityItem.notes.isEmpty
-
-            if activityItem.systemImageName.hasPrefix("calendar") {
-                cell.picto.image = UIImage(systemName: activityItem.systemImageName)
-                cell.picto.tintColor = .secondaryLabel
-                cell.picto.isHidden = false
-                cell.picto.isHiddenInStackView = false
-
-                cell.ownEventIndicator.superview?.isHidden = true
-                cell.ownEventIndicator.superview?.isHiddenInStackView = true
-            } else {
-                cell.picto.isHidden = true
-                cell.picto.isHiddenInStackView = true
-
-                cell.ownEventIndicator.superview?.isHidden = false
-                cell.ownEventIndicator.superview?.isHiddenInStackView = false
-            }
-
-            cell.cardType = .alone
-
-            if media.show != nil && media.episode == nil,
-               let historyItem = activityItem.historyItem {
-                cell.backdrop.media = MediaModel(item: historyItem)
-                cell.backdrop.isHidden = false
-                cell.backdrop.isHiddenInStackView = false
-            } else {
-                cell.backdrop.isHidden = true
-                cell.backdrop.isHiddenInStackView = true
-            }
-
+            self.configureActivityCell(cell, with: activityItem)
             return cell
         case .loading:
             let cell = tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
@@ -744,80 +1269,25 @@ final class PulseViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         guard case .activity(let activity) = item else { return }
+        activityAction(ofType: .open, in: activity.actions)?.handler()
+    }
 
-        if let historyItem = activity.historyItem {
-            let alertController = UIAlertController(title: nil,
-                                                    message: nil,
-                                                    preferredStyle: .actionSheet)
+    override func tableView(_ tableView: UITableView,
+                            trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
+        guard case .activity(let activity) = item else { return nil }
+        guard let deleteAction = activityAction(ofType: .delete, in: activity.actions) else { return nil }
 
-            let cancel = UIAlertAction(title: "Cancel", style: .cancel)
-            alertController.addAction(cancel)
-
-            let media = MediaModel(item: historyItem)!
-            let goToMedia = UIAlertAction(title: "Open \(media.mediaTitle)", style: .default) { _ in
-                UIApplication.shared.open(media.deeplink!)
-            }
-            alertController.addAction(goToMedia)
-
-            let delete = UIAlertAction(title: "Remove", style: .destructive) { _ in
-                let alertController = UIAlertController(title: "Do you want to remove this from your watch history?",
-                                                        message: nil,
-                                                        preferredStyle: .actionSheet)
-
-                let cancel = UIAlertAction(title: "Don't remove", style: .cancel)
-                alertController.addAction(cancel)
-
-                let delete = UIAlertAction(title: "Remove", style: .destructive) { _ in
-                    guard let window = self.view.window else { return }
-                    window.isUserInteractionEnabled = false
-                    SwiftMessages.show(message: "Removing from History...", style: .loading)
-                    TraktAPIProvider.provider.request(.removeFromHistory(id: historyItem.identifier),
-                                                      callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                        defer {
-                            DispatchQueue.main.async {
-                                window.isUserInteractionEnabled = true
-                            }
-                        }
-                        guard let self = self else { return }
-                        switch result {
-                        case let .success(moyaResponse):
-                            do {
-                                let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                                DispatchQueue.main.async {
-                                    if response.statusCode == 200 {
-                                        SwiftMessages.show(message: "🗑 Activity removed")
-                                        self.refresh()
-                                        onRemoveWatchTransmitter.broadcast(historyItem.identifier)
-                                        onRemoveWatchMediaTransmitter.broadcast(self.media)
-                                    }
-                                }
-                            } catch {
-                                DispatchQueue.main.async {
-                                    print("removeFromHistory request JSON mapping failed! \(error)")
-                                    SwiftMessages.show(message: "😓 Error removing", style: .error(error))
-                                }
-                            }
-                        case let .failure(error):
-                            DispatchQueue.main.async {
-                                print("removeFromHistory request failure \(error)")
-                                SwiftMessages.show(message: "😓 Error removing", style: .error(error))
-                            }
-                        }
-                    }
-                }
-                alertController.addAction(delete)
-
-                alertController.popoverPresentationController?.sourceView = tableView.cellForRow(at: indexPath)
-
-                self.present(alertController, animated: true)
-            }
-            alertController.addAction(delete)
-
-            alertController.popoverPresentationController?.sourceView = tableView.cellForRow(at: indexPath)
-
-            present(alertController, animated: true)
+        let remove = UIContextualAction(style: .destructive,
+                                        title: deleteAction.shortTitle ?? deleteAction.title) { _, _, completion in
+            deleteAction.handler()
+            completion(true)
         }
+        remove.image = deleteAction.systemImageName.flatMap(UIImage.init(systemName:))
+
+        let configuration = UISwipeActionsConfiguration(actions: [remove])
+        configuration.performsFirstActionWithFullSwipe = false
+        return configuration
     }
 
     private func fetchMovieReleases(for movie: Movie) async -> [MovieReleaseActivity]? {
@@ -825,7 +1295,7 @@ final class PulseViewController: UITableViewController {
             TraktAPIProvider.provider.request(.movieReleases(id: movie.identifiers.trakt!),
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -846,13 +1316,25 @@ final class PulseViewController: UITableViewController {
     private var fetchHistoryService: TraktAPIService? {
         switch media! {
         case .movie(let movie):
-            return .history(type: .movies, id: movie.identifiers.trakt!, pageInfo: PageInfo.firstPage(with: 100), endDate: nil)
+            return .history(type: .movies,
+                            id: movie.identifiers.trakt!,
+                            pageInfo: PageInfo.firstPage(with: 100),
+                            endDate: nil)
         case .show(let show):
-            return .history(type: .shows, id: show.identifiers.trakt!, pageInfo: PageInfo.firstPage(with: 100), endDate: nil)
+            return .history(type: .shows,
+                            id: show.identifiers.trakt!,
+                            pageInfo: PageInfo.firstPage(with: 100),
+                            endDate: nil)
         case .episode(let episode, _):
-            return .history(type: .episodes, id: episode.identifiers.trakt!, pageInfo: PageInfo.firstPage(with: 100), endDate: nil)
+            return .history(type: .episodes,
+                            id: episode.identifiers.trakt!,
+                            pageInfo: PageInfo.firstPage(with: 100),
+                            endDate: nil)
         case .season(let season, _):
-            return .history(type: .seasons, id: season.identifiers.trakt!, pageInfo: PageInfo.firstPage(with: 100), endDate: nil)
+            return .history(type: .seasons,
+                            id: season.identifiers.trakt!,
+                            pageInfo: PageInfo.firstPage(with: 100),
+                            endDate: nil)
         case .list:
             return nil
         case .showProgress:
@@ -866,7 +1348,7 @@ final class PulseViewController: UITableViewController {
             TraktAPIProvider.provider.request(fetchHistoryService,
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let history = try response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
@@ -887,7 +1369,7 @@ final class PulseViewController: UITableViewController {
             TraktAPIProvider.provider.request(.show(id: show.identifiers.traktIdOrSlug, extended: .full),
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let fullShow = try response.map(Show.self, using: TraktAPIProvider.decoder)
@@ -908,7 +1390,7 @@ final class PulseViewController: UITableViewController {
             TraktAPIProvider.provider.request(.lastEpisode(id: show.identifiers.trakt!),
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
@@ -929,7 +1411,7 @@ final class PulseViewController: UITableViewController {
             TraktAPIProvider.provider.request(.nextEpisode(id: show.identifiers.trakt!),
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
@@ -968,9 +1450,9 @@ final class PulseViewController: UITableViewController {
 
         let result: [List]? = await withCheckedContinuation { continuation in
             TraktAPIProvider.noChacheProvider.request(service,
-                                                    callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+                                                      callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
@@ -979,7 +1461,7 @@ final class PulseViewController: UITableViewController {
                         print("Listed request JSON mapping failed! \(error)")
                         continuation.resume(returning: nil)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Listed request failure \(error)")
                     continuation.resume(returning: nil)
                 }
@@ -1013,9 +1495,11 @@ final class PulseViewController: UITableViewController {
                                                type: listItemsType,
                                                extended: nil) { result in
                 switch result {
-                case let .success(items):
-                    continuation.resume(returning: items.first { MediaModel(item: $0).traktId == media.traktId })
-                case let .failure(error):
+                case .success(let items):
+                    continuation.resume(returning: items.first {
+                        MediaModel(item: $0).traktId == media.traktId
+                    })
+                case .failure(let error):
                     print("Items request failure \(error)")
                     continuation.resume(returning: nil)
                 }
