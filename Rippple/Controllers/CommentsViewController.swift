@@ -396,10 +396,20 @@ final class CommentsViewController: UITableViewController {
     }
 
     private func showNewCommentComposer(for media: MediaModel) {
+        if UserManager.shared.currentUser == nil {
+            onNeedsToShowLoginTransmitter.broadcast(true)
+            return
+        }
+
         showComposer(for: nil, media: media)
     }
 
     private func showComposer(for comment: Comment?, media: MediaModel) {
+        if UserManager.shared.currentUser == nil {
+            onNeedsToShowLoginTransmitter.broadcast(true)
+            return
+        }
+
         let composer = UIStoryboard(name: "Compose", bundle: nil).instantiateInitialViewController() as! ComposeNavigationController
         composer.mediaModel = media
         composer.editedComment = comment
@@ -407,6 +417,10 @@ final class CommentsViewController: UITableViewController {
     }
 
     private func commentReply(for comment: Comment) -> Comment {
+        if UserManager.shared.currentUser == nil {
+            return comment
+        }
+
         if comment.parentIdentifier == 0 {
             return Comment(identifier: 0,
                            body: "",
