@@ -719,6 +719,9 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                                 "CollectionViewController.currentFilter",
                                                 "CollectionViewController.currentSorting",
                                                 "CommentsCoordinator.sort",
+                                                "CountryManager.disabled",
+                                                "CountryManager.displayInLists",
+                                                "CountryManager.favoritesOnly",
                                                 "CountryManager.userCountry",
                                                 "CustomListsViewController.customList",
                                                 "CustomListsViewController.displayList",
@@ -799,7 +802,6 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                                 "ActivityNotificationsManager.commentNewLikes",
                                                 "AnticipatedNotificationsManager.anticipatedShows",
                                                 "AnticipatedNotificationsManager.anticipatedMovies",
-                                                "CountryManager.displayInLists",
                                                 "Stinger.alert.type",
                                                 "AppManager.currentUserInterfaceStyle",
                                                 "AppManager.currentTint"]
@@ -824,8 +826,10 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
             // Validate key is in allowed set (or is a dynamic ListViewController key)
             let isDynamicListViewControllerKey = key.hasPrefix("ListViewController.") &&
                                                  (key.contains(".currentFilter") || key.contains(".currentSorting"))
+            let isDynamicCountryManagerKey = key.hasPrefix("CountryManager.favoriteProviders.") &&
+                                             key.split(separator: ".").count == 3
 
-            guard isDynamicListViewControllerKey || allowedKeys.contains(key) else {
+            guard isDynamicListViewControllerKey || isDynamicCountryManagerKey || allowedKeys.contains(key) else {
                 print("[Migration Deeplink] Skipping unknown key: \(key)")
                 continue
             }
