@@ -124,11 +124,7 @@ final class AppearanceViewController: UITableViewController {
         #if targetEnvironment(macCatalyst)
         return 1
         #else
-        if PurchaseManager.shared.purchased {
-            return 3
-        } else {
-            return 2
-        }
+        return 3
         #endif
     }
 
