@@ -814,6 +814,20 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                            "RecentSearchManager.recentSearches",
                                            "CommentDraftManager.drafts"]
 
+        let dataUserDefaultsKeys: Set<String> = ["MainTabBarController.tab.positions",
+                                                 "WallViewController.savedFilter",
+                                                 "NotesManager.notes",
+                                                 "ListsManager.lists",
+                                                 "CollaborationsManager.collaborations",
+                                                 "SavedFiltersManager.savedFilters"]
+
+        let dataUbiquitousKeys: Set<String> = ["EpisodeToWatchManager.pinnedShows",
+                                               "MovieToWatchManager.pinnedMovies",
+                                               "SmartSearch.movies",
+                                               "SmartSearch.shows",
+                                               "RecentSearchManager.recentSearches",
+                                               "CommentDraftManager.drafts"]
+
         // Combine all allowed keys
         let allowedKeys = allUserDefaultsKeys.union(ubiquitousKeys)
 
@@ -856,25 +870,33 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                 continue
             }
 
-            // Try to detect if this is a base64-encoded Data object
-            if let data = Data(base64Encoded: valueString) {
+            let shouldStoreAsData = dataUserDefaultsKeys.contains(key) ||
+                                    dataUbiquitousKeys.contains(key) ||
+                                    isDynamicCountryManagerKey
+
+            if shouldStoreAsData, let data = Data(base64Encoded: valueString) {
                 print("[Migration Deeplink] \(key): <Data> (base64 length: \(valueString.count))")
 
-                // Store Data value in the appropriate store
                 if isUbiquitousKey {
                     NSUbiquitousKeyValueStore.default.set(data, forKey: key)
                 } else {
                     UserDefaults.standard.set(data, forKey: key)
                 }
             } else {
-                // Best-effort type inference for scalar values
-                if let boolValue = Bool(valueString.lowercased()) {
+                if valueString == "1" || valueString.lowercased() == "true" {
                     if isUbiquitousKey {
-                        NSUbiquitousKeyValueStore.default.set(boolValue, forKey: key)
+                        NSUbiquitousKeyValueStore.default.set(true, forKey: key)
                     } else {
-                        UserDefaults.standard.set(boolValue, forKey: key)
+                        UserDefaults.standard.set(true, forKey: key)
                     }
-                    print("[Migration Deeplink] \(key): \(boolValue) (Bool)")
+                    print("[Migration Deeplink] \(key): true (Bool)")
+                } else if valueString == "0" || valueString.lowercased() == "false" {
+                    if isUbiquitousKey {
+                        NSUbiquitousKeyValueStore.default.set(false, forKey: key)
+                    } else {
+                        UserDefaults.standard.set(false, forKey: key)
+                    }
+                    print("[Migration Deeplink] \(key): false (Bool)")
                 } else if let intValue = Int(valueString) {
                     if isUbiquitousKey {
                         NSUbiquitousKeyValueStore.default.set(intValue, forKey: key)
@@ -902,30 +924,18 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
     }
 
     private func handleListViewControllerKey(key: String, valueString: String) {
-        // Extract trakt ID from key pattern: ListViewController.{trakt_id}.currentFilter/Sorting
         let components = key.components(separatedBy: ".")
         guard components.count == 3 else {
             print("[Migration Deeplink] \(key): \(valueString)")
             return
         }
 
-        let traktId = components[1]
-
         guard let intValue = Int(valueString) else {
             print("[Migration Deeplink] \(key): \(valueString)")
             return
         }
 
-        if key.contains(".currentFilter") {
-            // Filter enum: none=0, movies=1, shows=2, seasons=3, episodes=4
-            let filterNames = ["none", "movies", "shows", "seasons", "episodes"]
-            let filterName = intValue < filterNames.count ? filterNames[intValue] : "unknown(\(intValue))"
-            print("[Migration Deeplink] \(key) - ListViewController filter for list ID \(traktId): \(filterName) (rawValue: \(intValue))")
-        } else if key.contains(".currentSorting") {
-            // Sort enum: rank=0, listed=1, title=2, releaseDate=3, runtime=4, rating=5, votes=6, weightedRating=7, random=8
-            let sortNames = ["rank", "listed", "title", "releaseDate", "runtime", "rating", "votes", "weightedRating", "random"]
-            let sortName = intValue < sortNames.count ? sortNames[intValue] : "unknown(\(intValue))"
-            print("[Migration Deeplink] \(key) - ListViewController sorting for list ID \(traktId): \(sortName) (rawValue: \(intValue))")
-        }
+        UserDefaults.standard.set(intValue, forKey: key)
+        print("[Migration Deeplink] \(key): \(intValue) (Int)")
     }
 }
