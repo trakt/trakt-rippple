@@ -27,10 +27,10 @@ final class GeneralSettingsViewController: UITableViewController {
             return "Choose what's displayed in some media list: comment count, Trakt rating or nothing."
         } else if section == 2 {
             return "Allows you to drag and drop Movies, TV Shows and Episodes from a list to another. Dragging can sometimes interfere with Contextual Actions. Enable or disable Drag and Drop based on your own usage."
-        } else if PurchaseManager.shared.purchased && section == 3 {
-            return "Disable Dropped TV Shows only if you manage your To Watch manually. Let's keep the list of TV Shows' progress manageable to ensure the smooth operation of Rippple and Trakt's servers 🙏"
-        } else {
+        } else if section == 3 {
             return "Configure how images are cached on your device. You can favor offline usage or always-fresh artwork."
+        } else {
+            return "Disable Dropped TV Shows only if you manage your To Watch manually. Let's keep the list of TV Shows' progress manageable to ensure the smooth operation of Rippple and Trakt's servers 🙏"
         }
     }
 
@@ -41,15 +41,15 @@ final class GeneralSettingsViewController: UITableViewController {
             return "Comment Count"
         } else if section == 2 {
             return "Drag & Drop"
-        } else if PurchaseManager.shared.purchased && section == 3 {
-            return "Dropped Shows"
-        } else {
+        } else if section == 3 {
             return "Image Cache"
+        } else {
+            return "Dropped Shows"
         }
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        PurchaseManager.shared.purchased ? 5 : 4
+        return 5
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -84,16 +84,16 @@ final class GeneralSettingsViewController: UITableViewController {
             } else {
                 cell.detailTextLabel?.text = "Disabled"
             }
-        } else if PurchaseManager.shared.purchased && indexPath.section == 3 {
+        } else if indexPath.section == 3 {
+            cell.textLabel?.text = "Image Cache Settings"
+            cell.detailTextLabel?.text = ImagesManager.shared.cacheMode.name
+        } else {
             cell.textLabel?.text = "Dropped TV Shows"
             if UserDefaults.standard.bool(forKey: "GeneralSettings.droppedshows") == true {
                 cell.detailTextLabel?.text = "Drop Shows after 6 month"
             } else {
                 cell.detailTextLabel?.text = "Never Drop Shows"
             }
-        } else {
-            cell.textLabel?.text = "Image Cache Settings"
-            cell.detailTextLabel?.text = ImagesManager.shared.cacheMode.name
         }
 
         return cell
@@ -158,7 +158,11 @@ final class GeneralSettingsViewController: UITableViewController {
                 dragEnabledTransmitter.broadcast(true)
             }
             tableView.reloadData()
-        } else if PurchaseManager.shared.purchased && indexPath.section == 3 {
+        } else if indexPath.section == 3 {
+            let view = ImageCacheSettingsView()
+            let controller = UIHostingController(rootView: view)
+            navigationController?.pushViewController(controller, animated: true)
+        } else {
             if UserDefaults.standard.bool(forKey: "GeneralSettings.droppedshows") == true {
                 UserDefaults.standard.setValue(false, forKey: "GeneralSettings.droppedshows")
                 UserDefaults.standard.synchronize()
@@ -169,10 +173,6 @@ final class GeneralSettingsViewController: UITableViewController {
                 toWatchDroppedEnabledTransmitter.broadcast(true)
             }
             tableView.reloadData()
-        } else {
-            let view = ImageCacheSettingsView()
-            let controller = UIHostingController(rootView: view)
-            navigationController?.pushViewController(controller, animated: true)
         }
         tableView.deselectRow(at: indexPath, animated: true)
     }
