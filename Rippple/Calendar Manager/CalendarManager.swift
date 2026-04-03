@@ -167,6 +167,8 @@ final class CalendarManager {
         let addAnticipatedMovies = UserDefaults.standard.bool(forKey: "CalendarSettings.addAnticipatedMovies")
         let hideHiddenMovies = UserDefaults.standard.bool(forKey: "CalendarSettings.hideHiddenMovies")
         let hideHiddenShows = UserDefaults.standard.bool(forKey: "CalendarSettings.hideHiddenShows")
+        let hideRecentlyWatchedMovies = UserDefaults.standard.bool(forKey: "CalendarSettings.hideRecentlyWatchedMovies")
+        let hideRecentlyWatchedShows = UserDefaults.standard.bool(forKey: "CalendarSettings.hideRecentlyWatchedShows")
 
         let dayRange: TimeInterval = 33 * 60 * 60 * 24
 
@@ -186,7 +188,14 @@ final class CalendarManager {
         let premieres = (pastPremiereShows + futurePremiereShows).filter { anticipatedShowsList.contains($0.show) || trendingShowsList.contains($0.show) }
         let shows = (filteredMyShows + premieres).removingDuplicates().filter {
             if hideHiddenShows {
-                return $0.show.isHiddenFromCalendar == false
+                if $0.show.isHiddenFromCalendar {
+                    return false
+                }
+            }
+            if hideRecentlyWatchedShows {
+                if $0.episode.isRecentlyWatched {
+                    return false
+                }
             }
             return true
         }
@@ -202,7 +211,14 @@ final class CalendarManager {
         let moviesCombined = (myMoviesList + trendingMoviesList + anticipatedMoviesList)
         let movies = moviesCombined.removingDuplicates().filter {
             if hideHiddenMovies {
-                return $0.isHiddenFromCalendar == false
+                if $0.isHiddenFromCalendar {
+                    return false
+                }
+            }
+            if hideRecentlyWatchedMovies {
+                if $0.isWatched {
+                    return false
+                }
             }
             return true
         }

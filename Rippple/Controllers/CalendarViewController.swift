@@ -16,6 +16,7 @@ import UIKit
 
 import Receiver
 import NVActivityIndicatorView
+import SwiftUI
 
 final class Debouncer {
     var callback: (() -> Void)
@@ -413,7 +414,7 @@ final class CalendarViewController: UITableViewController {
                 self.scrollToClosestToNow(animated: false)
             }
         } else {
-            snapshot.reloadItems(snapshot.itemIdentifiers)
+            snapshot.reconfigureItems(snapshot.itemIdentifiers)
             DispatchQueue.main.async {
                 self.loadingView.alpha = 0.0
                 self.dataSource.apply(snapshot, animatingDifferences: true)
@@ -656,7 +657,7 @@ extension CalendarViewController: MediaTableViewCellDelegate {
 
 let (calendarSettingsUpdatedTransmitter, calendarSettingsUpdatedReceiver) = Receiver<Int>.make(with: .hot)
 
-final class CalendarSettingsViewController: UITableViewController {
+final class CalendarSettingsViewController: UIViewController {
 
     @IBOutlet weak var myShowsSwitch: UISwitch!
     @IBOutlet weak var filterToWatchSwitch: UISwitch!
@@ -667,6 +668,10 @@ final class CalendarSettingsViewController: UITableViewController {
     @IBOutlet weak var addAnticipatedMoviesSwitch: UISwitch!
     @IBOutlet weak var hideHiddenMoviesSwitch: UISwitch!
     @IBOutlet weak var hideHiddenShowsSwitch: UISwitch!
+    @IBOutlet weak var hideRecentlyWatchedMoviesSwitch: UISwitch!
+    @IBOutlet weak var hideRecentlyWatchedShowsSwitch: UISwitch!
+
+    private var settingsHostingController: UIHostingController<CalendarSettingsSwiftUIView>?
 
     @IBAction func switchChanged(_ sender: UISwitch) {
         if sender == myShowsSwitch {
@@ -688,6 +693,10 @@ final class CalendarSettingsViewController: UITableViewController {
             hideHiddenMovies = sender.isOn
         } else if sender == hideHiddenShowsSwitch {
             hideHiddenShows = sender.isOn
+        } else if sender == hideRecentlyWatchedMoviesSwitch {
+            hideRecentlyWatchedMovies = sender.isOn
+        } else if sender == hideRecentlyWatchedShowsSwitch {
+            hideRecentlyWatchedShows = sender.isOn
         }
 
         if myShows == false, filtersShowToWatch == false, addTrendingShows == false, addAnticipatedShows == false, myMovies == false, addTrendingMovies == false, addAnticipatedMovies == false {
@@ -756,6 +765,18 @@ final class CalendarSettingsViewController: UITableViewController {
             UserDefaults.standard.synchronize()
         }
     }
+    var hideRecentlyWatchedMovies = false {
+        didSet {
+            UserDefaults.standard.set(hideRecentlyWatchedMovies, forKey: "CalendarSettings.hideRecentlyWatchedMovies")
+            UserDefaults.standard.synchronize()
+        }
+    }
+    var hideRecentlyWatchedShows = false {
+        didSet {
+            UserDefaults.standard.set(hideRecentlyWatchedShows, forKey: "CalendarSettings.hideRecentlyWatchedShows")
+            UserDefaults.standard.synchronize()
+        }
+    }
 
     @IBAction func done(_ sender: Any) {
         dismiss(animated: true)
@@ -768,9 +789,7 @@ final class CalendarSettingsViewController: UITableViewController {
         super.viewDidLoad()
 
         navigationController?.presentationController?.delegate = self
-
-        tableView.allowsFocus = false
-        tableView.separatorStyle = .none
+        view.backgroundColor = .systemBackground
 
         myShows = UserDefaults.standard.bool(forKey: "CalendarSettings.myShows")
         filtersShowToWatch = UserDefaults.standard.bool(forKey: "CalendarSettings.filtersShowToWatch")
@@ -781,38 +800,157 @@ final class CalendarSettingsViewController: UITableViewController {
         addAnticipatedMovies = UserDefaults.standard.bool(forKey: "CalendarSettings.addAnticipatedMovies")
         hideHiddenMovies = UserDefaults.standard.bool(forKey: "CalendarSettings.hideHiddenMovies")
         hideHiddenShows = UserDefaults.standard.bool(forKey: "CalendarSettings.hideHiddenShows")
-
-        myShowsSwitch.isOn = myShows
-        filterToWatchSwitch.isOn = filtersShowToWatch
-        addTrendingShowsSwitch.isOn = addTrendingShows
-        addAnticipatedShowsSwitch.isOn = addAnticipatedShows
-        myMoviesSwitch.isOn = myMovies
-        addTrendingMoviesSwitch.isOn = addTrendingMovies
-        addAnticipatedMoviesSwitch.isOn = addAnticipatedMovies
-        hideHiddenMoviesSwitch.isOn = hideHiddenMovies
-        hideHiddenShowsSwitch.isOn = hideHiddenShows
-
-        filterToWatchSwitch.isEnabled = myShows
+        hideRecentlyWatchedMovies = UserDefaults.standard.bool(forKey: "CalendarSettings.hideRecentlyWatchedMovies")
+        hideRecentlyWatchedShows = UserDefaults.standard.bool(forKey: "CalendarSettings.hideRecentlyWatchedShows")
+        updateDoneButtonState()
+        setupSwiftUISettings()
     }
 
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return nil
+    private func setupSwiftUISettings() {
+        if settingsHostingController != nil { return }
+
+        let settingsView = makeSettingsView()
+
+        let hostingController = UIHostingController(rootView: settingsView)
+        settingsHostingController = hostingController
+        hostingController.view.backgroundColor = .systemBackground
+        hostingController.view.frame = view.bounds
+        hostingController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        view.bringSubviewToFront(hostingController.view)
+        hostingController.didMove(toParent: self)
     }
 
-    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        return nil
+    private func makeSettingsView() -> CalendarSettingsSwiftUIView {
+        CalendarSettingsSwiftUIView(
+            myShows: binding(for: \.myShows),
+            filtersShowToWatch: binding(for: \.filtersShowToWatch),
+            addTrendingShows: binding(for: \.addTrendingShows),
+            addAnticipatedShows: binding(for: \.addAnticipatedShows),
+            hideHiddenShows: binding(for: \.hideHiddenShows),
+            hideRecentlyWatchedShows: binding(for: \.hideRecentlyWatchedShows),
+            myMovies: binding(for: \.myMovies),
+            addTrendingMovies: binding(for: \.addTrendingMovies),
+            addAnticipatedMovies: binding(for: \.addAnticipatedMovies),
+            hideHiddenMovies: binding(for: \.hideHiddenMovies),
+            hideRecentlyWatchedMovies: binding(for: \.hideRecentlyWatchedMovies)
+        )
     }
 
-    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 5
+    private func refreshSettingsView() {
+        settingsHostingController?.rootView = makeSettingsView()
     }
 
-    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 15
+    private func binding(for keyPath: ReferenceWritableKeyPath<CalendarSettingsViewController, Bool>) -> Binding<Bool> {
+        Binding(get: { [weak self] in
+            guard let self = self else { return false }
+            return self[keyPath: keyPath]
+        }, set: { [weak self] newValue in
+            guard let self = self else { return }
+            if self[keyPath: keyPath] != newValue {
+                self[keyPath: keyPath] = newValue
+                self.didUpdateSettings = true
+                self.updateDoneButtonState()
+                self.refreshSettingsView()
+            }
+        })
     }
 
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
+    private func updateDoneButtonState() {
+        if myShows == false, filtersShowToWatch == false, addTrendingShows == false, addAnticipatedShows == false, myMovies == false, addTrendingMovies == false, addAnticipatedMovies == false {
+            navigationItem.leftBarButtonItem?.isEnabled = false
+        } else {
+            navigationItem.leftBarButtonItem?.isEnabled = true
+        }
+    }
+
+}
+
+private struct CalendarSettingsSwiftUIView: View {
+    @Binding var myShows: Bool
+    @Binding var filtersShowToWatch: Bool
+    @Binding var addTrendingShows: Bool
+    @Binding var addAnticipatedShows: Bool
+    @Binding var hideHiddenShows: Bool
+    @Binding var hideRecentlyWatchedShows: Bool
+
+    @Binding var myMovies: Bool
+    @Binding var addTrendingMovies: Bool
+    @Binding var addAnticipatedMovies: Bool
+    @Binding var hideHiddenMovies: Bool
+    @Binding var hideRecentlyWatchedMovies: Bool
+
+    var body: some View {
+        Form {
+            Section {
+                CalendarSettingsToggleRow(title: "Include Your Shows",
+                                          subtitle: "Adds episodes from shows you watch or keep in your watchlist, plus individually watchlisted episodes.",
+                                          isOn: $myShows)
+                if myShows {
+                    CalendarSettingsToggleRow(title: "Only Shows in To Watch",
+                                              subtitle: "Limits \"Include Your Shows\" to titles currently in Rippple's \"To Watch\" list.",
+                                              isOn: $filtersShowToWatch)
+                }
+                CalendarSettingsToggleRow(title: "Include Trending Premieres",
+                                          subtitle: "Adds trending show premieres from Trakt to your calendar.",
+                                          isOn: $addTrendingShows)
+                CalendarSettingsToggleRow(title: "Include Anticipated Premieres",
+                                          subtitle: "Adds anticipated show premieres from Trakt to your calendar.",
+                                          isOn: $addAnticipatedShows)
+                CalendarSettingsToggleRow(title: "Hide \"Hidden from Calendar\"",
+                                          subtitle: "When enabled, shows marked \"Hidden from Calendar\" are removed. When disabled, they remain visible but toned down.",
+                                          isOn: $hideHiddenShows)
+                CalendarSettingsToggleRow(title: "Hide Recently Watched",
+                                          subtitle: "When enabled, recently watched episodes are removed. When disabled, they remain visible but toned down.",
+                                          isOn: $hideRecentlyWatchedShows)
+            }
+
+            Section {
+                CalendarSettingsToggleRow(title: "Include Your Movies",
+                                          subtitle: "Adds movies you watch or keep in your watchlist.",
+                                          isOn: $myMovies)
+                CalendarSettingsToggleRow(title: "Include Trending",
+                                          subtitle: "Adds trending movies from Trakt to your calendar.",
+                                          isOn: $addTrendingMovies)
+                CalendarSettingsToggleRow(title: "Include Anticipated",
+                                          subtitle: "Adds anticipated movies from Trakt to your calendar.",
+                                          isOn: $addAnticipatedMovies)
+                CalendarSettingsToggleRow(title: "Hide \"Hidden from Calendar\"",
+                                          subtitle: "When enabled, movies marked \"Hidden from Calendar\" are removed. When disabled, they remain visible but toned down.",
+                                          isOn: $hideHiddenMovies)
+                CalendarSettingsToggleRow(title: "Hide Watched",
+                                          subtitle: "When enabled, watched movies are removed. When disabled, they remain visible but toned down.",
+                                          isOn: $hideRecentlyWatchedMovies)
+            }
+        }.animation(.default, value: myShows)
+    }
+}
+
+private struct CalendarSettingsToggleRow: View {
+    let title: String
+    let subtitle: String
+
+    @Binding var isOn: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Toggle(isOn: $isOn) {
+                Text(title)
+                    .font(.headline)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }.tint(Color(uiColor: UIColor(asset: .globalTint)))
+                .toggleStyle(.switch)
+
+            Text(subtitle)
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.trailing, 75)
+        }.padding(.vertical, 4)
     }
 }
 

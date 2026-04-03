@@ -56,6 +56,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                   "CalendarSettings.myMovies": true,
                                                   "CalendarSettings.hideHiddenMovies": true,
                                                   "CalendarSettings.hideHiddenShows": true,
+                                                  "CalendarSettings.hideRecentlyWatchedMovies": false,
+                                                  "CalendarSettings.hideRecentlyWatchedShows": false,
                                                   "EpisodeNotificationsManager.groupEpisodes": true,
                                                   "EpisodeNotificationsManager.watchlistShowPremiere": true,
                                                   "EpisodeNotificationsManager.watchlistSeasonPremiere": true,
