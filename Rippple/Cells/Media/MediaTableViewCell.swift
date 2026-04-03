@@ -78,29 +78,29 @@ final class MediaTableViewCell: UITableViewCell {
                 cellContextMenu.media = media
                 menuButtonContextMenu.media = media
                 progress?.media = nil
-                progress?.superview?.isHidden = true
-                whereToWatchImageView?.isHidden = true
+                progress?.superview?.isHiddenInStackView = true
+                whereToWatchImageView?.isHiddenInStackView = true
                 setupMovie(movie: movie)
             case .show(let show):
                 cellContextMenu.media = media
                 menuButtonContextMenu.media = media
                 progress?.hideIfNoProgress = true
                 progress?.media = media
-                whereToWatchImageView?.isHidden = true
+                whereToWatchImageView?.isHiddenInStackView = true
                 setupShow(show: show)
             case .episode(let episode, let show):
                 cellContextMenu.media = show.mediaModel
                 menuButtonContextMenu.media = media
                 progress?.media = nil
-                progress?.superview?.isHidden = true
-                whereToWatchImageView?.isHidden = true
+                progress?.superview?.isHiddenInStackView = true
+                whereToWatchImageView?.isHiddenInStackView = true
                 setupEpisode(episode: episode, show: show)
             case .season(let season, let show):
                 cellContextMenu.media = show.mediaModel
                 menuButtonContextMenu.media = media
                 progress?.media = nil
-                progress?.superview?.isHidden = true
-                whereToWatchImageView?.isHidden = true
+                progress?.superview?.isHiddenInStackView = true
+                whereToWatchImageView?.isHiddenInStackView = true
                 setupSeason(season: season, show: show)
             case .list:
                 fatalError()
@@ -113,8 +113,8 @@ final class MediaTableViewCell: UITableViewCell {
                     menuButtonContextMenu.media = show.mediaModel
                 }
                 progress?.media = nil
-                progress?.superview?.isHidden = true
-                whereToWatchImageView?.isHidden = true // will be set after if needed
+                progress?.superview?.isHiddenInStackView = true
+                whereToWatchImageView?.isHiddenInStackView = true // will be set after if needed
                 setupShowProgress(episode: showProgress.nextEpisodeToWatch, show: show, progress: showProgress)
             }
 
@@ -188,13 +188,13 @@ final class MediaTableViewCell: UITableViewCell {
 
     var note: String? {
         didSet {
-            submeta?.isHidden = false
+            submeta?.isHiddenInStackView = false
             if let note = note, note.isEmpty == false {
                 submeta?.attributedText = attributedString()
                 notesButton?.isUserInteractionEnabled = true
             } else {
                 submeta?.attributedText = nil
-                submeta?.isHidden = true
+                submeta?.isHiddenInStackView = true
                 notesButton?.isUserInteractionEnabled = false
             }
             invalidateIntrinsicContentSize()
@@ -229,8 +229,8 @@ final class MediaTableViewCell: UITableViewCell {
 
         contentView.autoresizingMask = .flexibleHeight
 
-        submeta?.isHidden = true
-        rateButton?.isHidden = true
+        submeta?.isHiddenInStackView = true
+        rateButton?.isHiddenInStackView = true
 
         rateButton?.backgroundColor = UIColor(asset: .globalTint).withAlphaComponent(0.1)
 
@@ -341,7 +341,7 @@ final class MediaTableViewCell: UITableViewCell {
 
         notesButton?.isUserInteractionEnabled = false
 
-        submeta?.isHidden = true
+        submeta?.isHiddenInStackView = true
     }
 
     private func setupMovie(movie: Movie) {
@@ -356,7 +356,7 @@ final class MediaTableViewCell: UITableViewCell {
                 info.append(status)
             }
             subtitle.text = info.joined(separator: " · ")
-            submeta?.isHidden = false
+            submeta?.isHiddenInStackView = false
 
             let media: MediaModel = .movie(movie)
 
@@ -364,17 +364,17 @@ final class MediaTableViewCell: UITableViewCell {
             collectedStatus?.media = media
             watchlistedStatus?.media = media
             watchedStatus?.media = media
-            toWatchStatus?.isHidden = true
+            toWatchStatus?.isHiddenInStackView = true
             commentedStatus?.media = media
             if let ratedItem = ratedItem {
                 ratedStatus?.ratedItem = ratedItem
             } else {
                 ratedStatus?.media = media
             }
-            hiddenStatus?.isHidden = true
-            pinnedStatus?.isHidden = true
-            droppedStatus?.isHidden = true
-            listedStatus?.isHidden = true
+            hiddenStatus?.isHiddenInStackView = true
+            pinnedStatus?.isHiddenInStackView = true
+            droppedStatus?.isHiddenInStackView = true
+            listedStatus?.isHiddenInStackView = true
 
             poster.movie = movie
 
@@ -396,32 +396,32 @@ final class MediaTableViewCell: UITableViewCell {
         meta?.media = media
 
         if toWatchMode {
-            recommendedStatus?.isHidden = true
-            collectedStatus?.isHidden = true
-            watchlistedStatus?.isHidden = true
-            watchedStatus?.isHidden = true
-            toWatchStatus?.isHidden = true
-            commentedStatus?.isHidden = true
-            ratedStatus?.isHidden = true
-            hiddenStatus?.isHidden = true
-            droppedStatus?.isHidden = true
-            pinnedStatus?.isHidden = true
+            recommendedStatus?.isHiddenInStackView = true
+            collectedStatus?.isHiddenInStackView = true
+            watchlistedStatus?.isHiddenInStackView = true
+            watchedStatus?.isHiddenInStackView = true
+            toWatchStatus?.isHiddenInStackView = true
+            commentedStatus?.isHiddenInStackView = true
+            ratedStatus?.isHiddenInStackView = true
+            hiddenStatus?.isHiddenInStackView = true
+            droppedStatus?.isHiddenInStackView = true
+            pinnedStatus?.isHiddenInStackView = true
             whereToWatchImageView?.media = media
-            listedStatus?.isHidden = true
+            listedStatus?.isHiddenInStackView = true
         } else {
             recommendedStatus?.media = media
             collectedStatus?.media = media
             watchlistedStatus?.media = media
             watchedStatus?.media = media
-            toWatchStatus?.isHidden = true
+            toWatchStatus?.isHiddenInStackView = true
             commentedStatus?.media = media
             if let ratedItem = ratedItem {
                 ratedStatus?.ratedItem = ratedItem
             } else {
                 ratedStatus?.media = media
             }
-            hiddenStatus?.isHidden = true
-            droppedStatus?.isHidden = true
+            hiddenStatus?.isHiddenInStackView = true
+            droppedStatus?.isHiddenInStackView = true
             pinnedStatus?.media = media
             whereToWatchImageView?.media = media
             listedStatus?.media = media
@@ -447,9 +447,9 @@ final class MediaTableViewCell: UITableViewCell {
             let media: MediaModel = .episode(episode, show)
             watchlistedStatus?.media = media
             watchedStatus?.media = media
-            recommendedStatus?.isHidden = true
+            recommendedStatus?.isHiddenInStackView = true
             collectedStatus?.media = media
-            toWatchStatus?.isHidden = true
+            toWatchStatus?.isHiddenInStackView = true
             commentedStatus?.media = media
 
             if episode.isRecentlyWatched, let title = episode.title {
@@ -464,17 +464,17 @@ final class MediaTableViewCell: UITableViewCell {
                 }
             }
 
-            submeta?.isHidden = false
+            submeta?.isHiddenInStackView = false
 
             if let ratedItem = ratedItem {
                 ratedStatus?.ratedItem = ratedItem
             } else {
                 ratedStatus?.media = media
             }
-            hiddenStatus?.isHidden = true
-            pinnedStatus?.isHidden = true
-            droppedStatus?.isHidden = true
-            listedStatus?.isHidden = true
+            hiddenStatus?.isHiddenInStackView = true
+            pinnedStatus?.isHiddenInStackView = true
+            droppedStatus?.isHiddenInStackView = true
+            listedStatus?.isHiddenInStackView = true
 
             poster.show = show
 
@@ -494,18 +494,18 @@ final class MediaTableViewCell: UITableViewCell {
 
         watchlistedStatus?.media = media
         watchedStatus?.media = media
-        recommendedStatus?.isHidden = true
+        recommendedStatus?.isHiddenInStackView = true
         collectedStatus?.media = media
-        toWatchStatus?.isHidden = true
+        toWatchStatus?.isHiddenInStackView = true
         commentedStatus?.media = media
         if let ratedItem = ratedItem {
             ratedStatus?.ratedItem = ratedItem
         } else {
             ratedStatus?.media = media
         }
-        hiddenStatus?.isHidden = true
-        pinnedStatus?.isHidden = true
-        droppedStatus?.isHidden = true
+        hiddenStatus?.isHiddenInStackView = true
+        pinnedStatus?.isHiddenInStackView = true
+        droppedStatus?.isHiddenInStackView = true
         whereToWatchImageView?.media = media
         listedStatus?.media = media
 
@@ -515,7 +515,7 @@ final class MediaTableViewCell: UITableViewCell {
     }
 
     private func setupShowProgress(episode: Episode?, show: Show, progress: ShowProgress) {
-        submeta?.isHidden = false
+        submeta?.isHiddenInStackView = false
         submeta?.text = ""
         if let episode = episode {
             title.text = show.title
@@ -562,18 +562,18 @@ final class MediaTableViewCell: UITableViewCell {
                 }
             }
 
-            recommendedStatus?.isHidden = true
-            collectedStatus?.isHidden = true
-            watchlistedStatus?.isHidden = true
-            watchedStatus?.isHidden = true
-            toWatchStatus?.isHidden = true
-            commentedStatus?.isHidden = true
-            ratedStatus?.isHidden = true
-            hiddenStatus?.isHidden = true
-            pinnedStatus?.isHidden = true
-            droppedStatus?.isHidden = true
+            recommendedStatus?.isHiddenInStackView = true
+            collectedStatus?.isHiddenInStackView = true
+            watchlistedStatus?.isHiddenInStackView = true
+            watchedStatus?.isHiddenInStackView = true
+            toWatchStatus?.isHiddenInStackView = true
+            commentedStatus?.isHiddenInStackView = true
+            ratedStatus?.isHiddenInStackView = true
+            hiddenStatus?.isHiddenInStackView = true
+            pinnedStatus?.isHiddenInStackView = true
+            droppedStatus?.isHiddenInStackView = true
             whereToWatchImageView?.media = media
-            listedStatus?.isHidden = true
+            listedStatus?.isHiddenInStackView = true
 
             poster.show = show
         }
@@ -601,20 +601,20 @@ final class MediaTableViewCell: UITableViewCell {
 
         meta?.media = media
 
-        recommendedStatus?.isHidden = true
-        collectedStatus?.isHidden = true
+        recommendedStatus?.isHiddenInStackView = true
+        collectedStatus?.isHiddenInStackView = true
         watchlistedStatus?.media = media
-        watchedStatus?.isHidden = true
-        toWatchStatus?.isHidden = true
-        commentedStatus?.isHidden = true
+        watchedStatus?.isHiddenInStackView = true
+        toWatchStatus?.isHiddenInStackView = true
+        commentedStatus?.isHiddenInStackView = true
         if let ratedItem = ratedItem {
             ratedStatus?.ratedItem = ratedItem
         } else {
             ratedStatus?.media = media
         }
         hiddenStatus?.media = media
-        pinnedStatus?.isHidden = true
-        droppedStatus?.isHidden = true
+        pinnedStatus?.isHiddenInStackView = true
+        droppedStatus?.isHiddenInStackView = true
         whereToWatchImageView?.media = media
         listedStatus?.media = media
 
@@ -644,7 +644,7 @@ final class MediaTableViewCell: UITableViewCell {
         watchedStatus?.media = media
         toWatchStatus?.media = media
         collectedStatus?.media = media
-        commentedStatus?.isHidden = true
+        commentedStatus?.isHiddenInStackView = true
         if let ratedItem = ratedItem {
             ratedStatus?.ratedItem = ratedItem
         } else {

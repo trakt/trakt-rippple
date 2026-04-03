@@ -36,7 +36,7 @@ final class WhereToWatchImageView: UIImageView {
             cancelCancellable()
         }
         didSet {
-            isHidden = true
+            isHiddenInStackView = true
             if CountryManager.shared.disabled || CountryManager.shared.displayInLists == false {
                 return
             }
@@ -65,7 +65,7 @@ final class WhereToWatchImageView: UIImageView {
     private var result: ProvidersResult? {
         didSet {
             if CountryManager.shared.disabled || CountryManager.shared.displayInLists == false {
-                isHidden = true
+                isHiddenInStackView = true
                 return
             }
             var data = [ProviderType]()
@@ -185,13 +185,12 @@ final class WhereToWatchImageView: UIImageView {
                                 options: [.scaleFactor(traitCollection.displayScale), .processor(DownsamplingImageProcessor(size: CGSize(width: maxHeight,
                                                                                              height: maxHeight)))]) { [weak self] _ in
                         guard let self = self else { return }
-                        self.isHidden = false
+                        self.isHiddenInStackView = false
                     }
                 }
             } else {
-                isHidden = true
+                isHiddenInStackView = true
             }
-            invalidateCellIntrinsicContentSize()
         }
     }
 
