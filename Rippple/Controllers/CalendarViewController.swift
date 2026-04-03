@@ -414,7 +414,6 @@ final class CalendarViewController: UITableViewController {
                 self.scrollToClosestToNow(animated: false)
             }
         } else {
-            snapshot.reconfigureItems(snapshot.itemIdentifiers)
             DispatchQueue.main.async {
                 self.loadingView.alpha = 0.0
                 self.dataSource.apply(snapshot, animatingDifferences: true)

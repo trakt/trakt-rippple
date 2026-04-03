@@ -124,7 +124,7 @@ final class CalendarManager {
         // Settings changes
         calendarSettingsUpdatedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.debouncedReload.call()
+            self.debouncedReload.fireNow()
         }.disposed(by: disposeBag)
 
         // Day change
