@@ -84,7 +84,7 @@ final class CheckinView: UIView {
         stack.spacing = 6
         stack.axis = .horizontal
         stack.alignment = .center
-        stack.distribution = .fillProportionally
+        stack.distribution = .fill
         return stack
     }()
 
@@ -123,11 +123,23 @@ final class CheckinView: UIView {
 
         button.translatesAutoresizingMaskIntoConstraints = false
         horizontalStackView.translatesAutoresizingMaskIntoConstraints = false
+        let topConstraint = horizontalStackView.topAnchor.constraint(equalTo: topAnchor, constant: 6)
+        topConstraint.priority = .defaultHigh
+
+        let leadingConstraint = horizontalStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6)
+        leadingConstraint.priority = .defaultHigh
+
+        let trailingConstraint = horizontalStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10)
+        trailingConstraint.priority = .defaultHigh
+
+        let bottomConstraint = horizontalStackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6)
+        bottomConstraint.priority = .defaultHigh
+
         NSLayoutConstraint.activate([
-            horizontalStackView.topAnchor.constraint(equalTo: topAnchor, constant: 6),
-            horizontalStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
-            horizontalStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
-            horizontalStackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6),
+            topConstraint,
+            leadingConstraint,
+            trailingConstraint,
+            bottomConstraint,
 
             button.trailingAnchor.constraint(equalTo: trailingAnchor),
             button.topAnchor.constraint(equalTo: topAnchor),
@@ -146,6 +158,11 @@ final class CheckinView: UIView {
 
         update(watchingItem: WatchingManager.shared.watchingItem)
 
+        WatchingManager.shared.onWatchingItemChangedReceiver.listen { [weak self] watchingItem, _ in
+            guard let self = self else { return }
+            self.update(watchingItem: watchingItem)
+        }.disposed(by: disposeBag)
+
         WatchingManager.shared.onProgressChangedReceiver.listen { [weak self] progress in
             guard let self = self else { return }
             self.progress.updateProgress(CGFloat(progress), animated: false)
@@ -161,18 +178,27 @@ final class CheckinView: UIView {
     }
 
     func update(watchingItem: WatchingItem?) {
-        if let watchingItem = watchingItem {
-            if let movie = watchingItem.movie {
-                contextMenu.media = movie.mediaModel
-                poster.movie = movie
-                title.text = movie.title
-                subtitle.text = if let releaseYear = movie.releaseYear { "\(releaseYear)" } else { nil }
-            } else if let show = watchingItem.show, let episode = watchingItem.episode {
-                contextMenu.media = show.mediaModel
-                poster.show = show
-                title.text = show.title
-                subtitle.text = episode.localizedEpisodeNumber
-            }
+        guard let watchingItem = watchingItem else {
+            contextMenu.media = nil
+            poster.movie = nil
+            poster.show = nil
+            title.text = nil
+            subtitle.text = nil
+            return
+        }
+
+        if let movie = watchingItem.movie {
+            contextMenu.media = movie.mediaModel
+            poster.show = nil
+            poster.movie = movie
+            title.text = movie.title
+            subtitle.text = if let releaseYear = movie.releaseYear { "\(releaseYear)" } else { nil }
+        } else if let show = watchingItem.show, let episode = watchingItem.episode {
+            contextMenu.media = show.mediaModel
+            poster.movie = nil
+            poster.show = show
+            title.text = show.title
+            subtitle.text = episode.localizedEpisodeNumber
         }
     }
 }

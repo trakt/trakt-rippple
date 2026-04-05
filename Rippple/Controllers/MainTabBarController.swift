@@ -154,8 +154,7 @@ final class MainTabBarController: UITabBarController {
     }
 
     private func updateWatchingItem() {
-        if let watchingItem = WatchingManager.shared.watchingItem {
-            checkinView.update(watchingItem: watchingItem)
+        if WatchingManager.shared.watchingItem != nil {
             self.setBottomAccessory(UITabAccessory(contentView: checkinView),
                                     animated: true)
         } else {
