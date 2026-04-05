@@ -53,7 +53,7 @@ class ServicesBrowseTableViewCell: UITableViewCell {
                                             filter: SavedFilter(section: "search",
                                                                 name: "On Paramount+",
                                                                 path: "/search/movie,show",
-                                                                query: "watchnow=us-paramount_plus",
+                                                                query: "watchnow=paramountplusessential,paramount_plus_premium",
                                                                 limit: nil)),
                                     Service(logoName: "Hulu",
                                             filter: SavedFilter(section: "search",
