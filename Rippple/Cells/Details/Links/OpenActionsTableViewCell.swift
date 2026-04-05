@@ -46,12 +46,16 @@ final class OpenActionsTableViewCell: UITableViewCell, UICollectionViewDataSourc
 
         onCustomOpenActionsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.rebuildEntries()
+            DispatchQueue.main.async {
+                self.rebuildEntries()
+            }
         }.disposed(by: disposeBag)
 
         onBuiltInOpenActionsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.rebuildEntries()
+            DispatchQueue.main.async {
+                self.rebuildEntries()
+            }
         }.disposed(by: disposeBag)
     }
 

@@ -324,8 +324,7 @@ enum OpenActionURLResolver {
                 "imdbId": firstNonEmptyString(season.identifiers.imdb, show.identifiers.imdb),
                 "traktId": stringValue(season.identifiers.trakt),
                 "slug": firstNonEmptyString(season.identifiers.slug, show.identifiers.slug),
-                "title": season.title ?? season.localizedSeasonNumber,
-                "year": stringValue(show.releaseYear),
+                "title": "\(show.officialTitle) \(season.localizedSeasonNumber)",
                 "season": String(season.number),
                 "showTitle": show.officialTitle
             ]
@@ -335,7 +334,7 @@ enum OpenActionURLResolver {
                 "imdbId": firstNonEmptyString(episode.identifiers.imdb, show.identifiers.imdb),
                 "traktId": stringValue(episode.identifiers.trakt),
                 "slug": firstNonEmptyString(episode.identifiers.slug, show.identifiers.slug),
-                "title": episode.title ?? episode.localizedEpisodeNumber,
+                "title": "\(show.officialTitle) \(episode.localizedEpisodeNumber)",
                 "year": stringValue(show.releaseYear),
                 "season": String(episode.season),
                 "episode": String(episode.number),

@@ -53,9 +53,8 @@ struct OpenInSettingsView: View {
                             customRow(for: action)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .contentShape(Rectangle())
+                        }.buttonStyle(.plain)
+                            .contentShape(Rectangle())
                     }
                     .onDelete(perform: deleteItems)
                     .onMove(perform: moveItems)
@@ -79,8 +78,8 @@ struct OpenInSettingsView: View {
                                 withAnimation {
                                     editMode = editMode.isEditing ? .inactive : .active
                                 }
-                            }
-                            .font(.callout)
+                            }.font(.callout)
+                                .buttonStyle(.plain)
                         }
                     }
                 }
@@ -96,16 +95,23 @@ struct OpenInSettingsView: View {
                     }
                 }
             }
-            .task {
+            .onAppear {
                 customActions = OpenActionManager.shared.customOpenActions
                 builtInActions = BuiltInOpenAction.allCases
-
+            }
+            .task {
                 onCustomOpenActionsChangedReceiver.listen { _ in
-                    self.rebuildEntries()
+                    DispatchQueue.main.async {
+                        self.customActions = OpenActionManager.shared.customOpenActions
+                        self.builtInActions = BuiltInOpenAction.allCases
+                    }
                 }.disposed(by: disposeBag)
 
                 onBuiltInOpenActionsChangedReceiver.listen { _ in
-                    self.rebuildEntries()
+                    DispatchQueue.main.async {
+                        self.customActions = OpenActionManager.shared.customOpenActions
+                        self.builtInActions = BuiltInOpenAction.allCases
+                    }
                 }.disposed(by: disposeBag)
             }
             .onChange(of: customActions) { _, newValue in
@@ -134,6 +140,9 @@ struct OpenInSettingsView: View {
                 }, onDelete: {
                     customActions.removeAll { $0.id == state.action.id }
                 })
+#if targetEnvironment(macCatalyst)
+                .frame(minWidth: 620, minHeight: 720)
+#endif
             }
         }
     }
@@ -157,6 +166,7 @@ struct OpenInSettingsView: View {
                 }
             }
         }.tint(Color(uiColor: UIColor(asset: .globalTint)))
+            .toggleStyle(.switch)
     }
 
     private func customRow(for item: CustomOpenAction) -> some View {
@@ -176,11 +186,6 @@ struct OpenInSettingsView: View {
                     .truncationMode(.middle)
             }
         }
-    }
-
-    private func rebuildEntries() {
-        customActions = OpenActionManager.shared.customOpenActions
-        builtInActions = BuiltInOpenAction.allCases
     }
 
     private func deleteItems(at offsets: IndexSet) {
@@ -256,6 +261,7 @@ struct OpenInItemEditView: View {
                                isOn: Binding(get: { mediaTypes.contains(type) },
                                              set: { if $0 { mediaTypes.insert(type) } else { mediaTypes.remove(type) } })
                         ).tint(Color(uiColor: UIColor(asset: .globalTint)))
+                            .toggleStyle(.switch)
                     }
                 }
 
