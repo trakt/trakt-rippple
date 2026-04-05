@@ -188,15 +188,18 @@ extension BuiltInOpenAction {
                 return nil
             }
         case .infuse:
-            guard let tmdbId = media.tmdbId else { return nil }
             switch media {
-            case .movie:
+            case .movie(let movie):
+                guard let tmdbId = movie.identifiers.tmdb else { return nil }
                 return URL(string: "infuse://movie/\(tmdbId)")
-            case .show:
+            case .show(let show):
+                guard let tmdbId = show.identifiers.tmdb else { return nil }
                 return URL(string: "infuse://series/\(tmdbId)")
-            case .season(let season, _):
+            case .season(let season, let show):
+                guard let tmdbId = show.identifiers.tmdb else { return nil }
                 return URL(string: "infuse://series/\(tmdbId)-\(season.number)")
-            case .episode(let episode, _):
+            case .episode(let episode, let show):
+                guard let tmdbId = show.identifiers.tmdb else { return nil }
                 return URL(string: "infuse://series/\(tmdbId)-\(episode.season)-\(episode.number)")
             case .list, .showProgress:
                 return nil
