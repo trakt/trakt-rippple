@@ -192,6 +192,8 @@ final class PurchaseManager {
         }
 
         if transaction.environment == .sandbox {
+            // Enable to test in-app purchase on the Sandbox
+            /*
             TraktAPIProvider.debug_provider.request(.verifySandboxIAP(transactionId: transaction.id,
                                                                       userId: userId),
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
@@ -215,6 +217,7 @@ final class PurchaseManager {
                     }
                 }
             }
+             */
         } else {
             TraktAPIProvider.provider.request(.verifyIAP(transactionId: transaction.id,
                                                          userId: userId),
