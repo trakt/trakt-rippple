@@ -13,10 +13,14 @@ final class ListItemsMarkerManager {
     static let shared = ListItemsMarkerManager()
 
     private var markers = [Int64: String]()
+    private let lock = NSLock()
 
     private init() { }
 
     func marker(for listId: Int64) -> String {
+        lock.lock()
+        defer { lock.unlock() }
+
         if let marker = markers[listId] {
             return marker
         }
@@ -27,6 +31,8 @@ final class ListItemsMarkerManager {
     }
 
     func invalidate(listId: Int64) {
+        lock.lock()
+        defer { lock.unlock() }
         markers[listId] = UUID().uuidString
     }
 
