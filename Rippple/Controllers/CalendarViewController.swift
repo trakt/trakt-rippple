@@ -22,6 +22,7 @@ final class Debouncer {
     var callback: (() -> Void)
     var delay: Double
     private var workItem: DispatchWorkItem?
+    private let lock = NSLock()
 
     init(delay: Double, callback: @escaping (() -> Void)) {
         self.delay = delay
@@ -30,11 +31,13 @@ final class Debouncer {
 
     func call() {
         print("Debouncer called")
+        let item: DispatchWorkItem
+        lock.lock()
         // Cancel any pending work
         workItem?.cancel()
 
         // Create a new work item
-        let item = DispatchWorkItem { [weak self] in
+        item = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
             print("Debouncer execute")
             self.callback()
@@ -42,17 +45,23 @@ final class Debouncer {
 
         // Keep a strong reference so we can cancel if needed
         workItem = item
+        lock.unlock()
 
         // Schedule on the main queue after the specified delay
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: item)
     }
 
     func fireNow() {
+        let callback: (() -> Void)
+        lock.lock()
         // Cancel any pending debounced work
         workItem?.cancel()
         workItem = nil
+        callback = self.callback
+        lock.unlock()
+
         // Execute immediately on main queue to match previous semantics
-        DispatchQueue.main.async { [callback] in
+        DispatchQueue.main.async {
             callback()
         }
     }
