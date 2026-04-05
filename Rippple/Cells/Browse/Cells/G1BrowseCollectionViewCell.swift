@@ -76,14 +76,15 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
 
                 if let episode = progress.nextEpisodeToWatch {
                     backdrop.media = episode.mediaModel(given: show)
+                    
+                    if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = episode.title {
+                        subtitle.text = "\(episode.localizedEpisodeNumber) - \(title)"
+                    } else {
+                        subtitle.text = episode.localizedEpisodeNumber
+                    }
                 } else {
                     backdrop.media = show.mediaModel
-                }
-
-                if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = progress.nextEpisodeToWatch!.title {
-                    subtitle.text = "\(progress.nextEpisodeToWatch!.localizedEpisodeNumber) - \(title)"
-                } else {
-                    subtitle.text = progress.nextEpisodeToWatch!.localizedEpisodeNumber
+                    subtitle.text = "Unknown next episode"
                 }
 
                 if progress.toRewatchCount > 0 {
