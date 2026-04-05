@@ -1396,6 +1396,13 @@ extension MediaViewController: MediaHeaderTableViewCellDelegate {
 
 extension MediaViewController: OpenInRowTableViewCellDelegate {
     func openInRowCell(_ cell: OpenActionsTableViewCell, didSelectURL url: URL, for item: CustomOpenAction) {
+        if url.scheme?.lowercased() == "infuse",
+           UIApplication.shared.canOpenURL(url) == false,
+           let appStoreURL = URL(string: "https://apps.apple.com/app/id1136220934") {
+            UIApplication.shared.open(appStoreURL)
+            return
+        }
+
         UIApplication.shared.open(url)
     }
 

@@ -76,7 +76,7 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
 
                 if let episode = progress.nextEpisodeToWatch {
                     backdrop.media = episode.mediaModel(given: show)
-                    
+
                     if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = episode.title {
                         subtitle.text = "\(episode.localizedEpisodeNumber) - \(title)"
                     } else {
