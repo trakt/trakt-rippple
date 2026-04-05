@@ -24,6 +24,7 @@ final class PulseViewController: UITableViewController {
     }()
 
     private struct ActivityItem: Hashable {
+        let identifier = UUID()
         let activity: String
         let title: String
         let notes: String
@@ -52,6 +53,14 @@ final class PulseViewController: UITableViewController {
             self.historyItem = historyItem
             self.ratedItem = ratedItem
             self.actions = actions
+        }
+
+        static func == (lhs: ActivityItem, rhs: ActivityItem) -> Bool {
+            lhs.identifier == rhs.identifier
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(identifier)
         }
     }
 
