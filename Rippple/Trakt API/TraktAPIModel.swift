@@ -912,6 +912,7 @@ struct MediaItem: Codable, Equatable {
     let listedAt: Date?
     let collectedAt: Date?
     let lastCollectedAt: Date?
+    let hiddenAt: Date?
     let notes: String?
 
     enum CodingKeys: String, CodingKey {
@@ -924,6 +925,7 @@ struct MediaItem: Codable, Equatable {
         case listedAt = "listed_at"
         case collectedAt = "collected_at"
         case lastCollectedAt = "last_collected_at"
+        case hiddenAt = "hidden_at"
         case notes
     }
 

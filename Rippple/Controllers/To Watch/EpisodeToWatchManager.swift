@@ -802,7 +802,7 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
 
                     var searchResults: [MediaItem]
                     if case .popularShows = service {
-                        searchResults = try response.map([Show].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: nil, show: $0, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil) }
+                        searchResults = try response.map([Show].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: nil, show: $0, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                     } else {
                         searchResults = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
                     }

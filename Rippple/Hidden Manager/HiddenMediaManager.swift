@@ -158,12 +158,12 @@ final class HiddenMediaManager {
 
 private extension HiddenMediaManager {
 
-    private func refreshHiddenShowsFromProgress(pageInfo: PageInfo = PageInfo.firstPage(with: 50), hiddenMedia: [MediaModel] = [MediaModel]()) {
+    private func refreshHiddenShowsFromProgress(pageInfo: PageInfo = PageInfo.firstPage(with: 50), hiddenMedia: [MediaItem] = [MediaItem]()) {
         if SessionManager.shared.isLoggedOut {
             return
         }
         TraktAPIProvider.provider.request(.hidden(section: .progressWatched,
-                                                  type: .show,
+                                                  type: nil,
                                                   extended: .full,
                                                   pageInfo: pageInfo),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
@@ -172,7 +172,7 @@ private extension HiddenMediaManager {
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                    let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).map { MediaModel(item: $0) }
+                    let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
 
                     if let response = response.response,
                     let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
@@ -180,7 +180,9 @@ private extension HiddenMediaManager {
                             if pageInfo.page <= pageInfo.pageCount {
                                 self.refreshHiddenShowsFromProgress(pageInfo: pageInfo, hiddenMedia: hiddenMedia + items)
                             } else {
-                                self.showsHiddenFromProgressMediaList = hiddenMedia + items
+                                self.showsHiddenFromProgressMediaList = (hiddenMedia + items)
+                                    .sorted { ($0.hiddenAt ?? .distantPast) > ($1.hiddenAt ?? .distantPast) }
+                                    .map { MediaModel(item: $0) }
                             }
                         }
                     }

@@ -569,7 +569,7 @@ enum MediaModel: Equatable, Hashable, Codable {
 extension Movie {
 
     var mediaModel: MediaModel {
-        return MediaModel(item: MediaItem(movie: self, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil))
+        return MediaModel(item: MediaItem(movie: self, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil))
     }
 
 }
@@ -577,7 +577,7 @@ extension Movie {
 extension Show {
 
     var mediaModel: MediaModel {
-        return MediaModel(item: MediaItem(movie: nil, show: self, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil))
+        return MediaModel(item: MediaItem(movie: nil, show: self, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil))
     }
 
 }
@@ -585,7 +585,7 @@ extension Show {
 extension Episode {
 
     func mediaModel(given show: Show) -> MediaModel {
-        return MediaModel(item: MediaItem(movie: nil, show: show, episode: self, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil))
+        return MediaModel(item: MediaItem(movie: nil, show: show, episode: self, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil))
     }
 
 }
@@ -593,7 +593,7 @@ extension Episode {
 extension Season {
 
     func mediaModel(given show: Show) -> MediaModel {
-        return MediaModel(item: MediaItem(movie: nil, show: show, episode: nil, season: self, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil))
+        return MediaModel(item: MediaItem(movie: nil, show: show, episode: nil, season: self, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil))
     }
 
 }

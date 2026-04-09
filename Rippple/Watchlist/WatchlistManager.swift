@@ -176,6 +176,7 @@ private extension WatchlistManager {
                               listedAt: $0.listedAt,
                               collectedAt: nil,
                               lastCollectedAt: nil,
+                              hiddenAt: nil,
                               notes: $0.notes)
                 }
 

@@ -627,7 +627,7 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
 
                     var searchResults: [MediaItem]
                     if case .popularMovies = service {
-                        searchResults = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil) }
+                        searchResults = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                     } else {
                         searchResults = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
                     }

@@ -103,6 +103,7 @@ final class AnticipatedNotificationsManager {
                                                                     listedAt: nil,
                                                                     collectedAt: nil,
                                                                     lastCollectedAt: nil,
+                                                                    hiddenAt: nil,
                                                                     notes: nil)
                     anticipatedShowsWithPremiereDate.append(anticipatedShowWithPremiereDate)
                 }

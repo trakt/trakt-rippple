@@ -521,19 +521,19 @@ final class GridViewController: UICollectionViewController {
                         }
 
                         if filter.path == "/shows/popular" {
-                            let items = try response.map([Show].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: nil, show: $0, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil) }
+                            let items = try response.map([Show].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: nil, show: $0, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else if filter.path == "/movies/popular" {
-                            let items = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil) }
+                            let items = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else if filter.path == "/recommendations/shows" {
-                            let items = try response.map([Show].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: nil, show: $0, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil) }
+                            let items = try response.map([Show].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: nil, show: $0, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else if filter.path == "/recommendations/movies" {
-                            let items = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil) }
+                            let items = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else if filter.section == "WatchedItem" {
-                            let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder).sorted { $0.lastWatchedAt > $1.lastWatchedAt }.map { MediaItem(movie: $0.movie, show: $0.show, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil) }
+                            let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder).sorted { $0.lastWatchedAt > $1.lastWatchedAt }.map { MediaItem(movie: $0.movie, show: $0.show, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else {
                             let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in
