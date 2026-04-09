@@ -67,9 +67,13 @@ final class MarkWatchedProgressActionViewController: UIViewController {
     func makeMultiWatchedProgressActionViewController(coder: NSCoder, sender: Any?) -> MultiWatchedProgressActionViewController? {
         guard let unwatched = unwatched else { return nil }
         if let watchedAt = watchedAt {
-            let watchedAt = Calendar.current.date(byAdding: .second,
-                                                  value: (media.show?.runtime ?? 1) * -60,
-                                                  to: watchedAt)
+            let watchedAt = if watchedAt.timeIntervalSince1970 == 0 {
+                watchedAt
+            } else {
+                Calendar.current.date(byAdding: .second,
+                                      value: (media.show?.runtime ?? 1) * -60,
+                                      to: watchedAt)
+            }
             return MultiWatchedProgressActionViewController(coder: coder,
                                                             media: media,
                                                             watchedAt: watchedAt,
@@ -77,7 +81,7 @@ final class MarkWatchedProgressActionViewController: UIViewController {
         } else {
             return MultiWatchedProgressActionViewController(coder: coder,
                                                             media: media,
-                                                            watchedAt: watchedAt,
+                                                            watchedAt: nil,
                                                             unwatched: unwatched)
         }
     }

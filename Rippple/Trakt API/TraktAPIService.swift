@@ -1621,9 +1621,11 @@ extension TraktAPIService: AuthorizedTargetType {
             for (season, episode) in seasonsEpisodes.sorted(by: { $0.0 == $1.0 ? $0.1 > $1.1 : $0.0 > $1.0 }) {
                 if let watchedAt = watchedAt {
                     let watched = formatter.string(from: watchedAtWithOffset!)
-                    watchedAtWithOffset = Calendar.current.date(byAdding: .second,
-                                                                value: (runtime ?? 1) * -60,
-                                                                to: watchedAtWithOffset!) ?? watchedAt
+                    if watchedAt.timeIntervalSince1970 != 0 {
+                        watchedAtWithOffset = Calendar.current.date(byAdding: .second,
+                                                                    value: (runtime ?? 1) * -60,
+                                                                    to: watchedAtWithOffset!) ?? watchedAt
+                    }
                     let episode = AddHistoryEpisode(number: episode, watched_at: watched)
                     let season = AddHistorySeason(number: season, episodes: [episode])
                     seasons.append(season)
