@@ -183,6 +183,10 @@ final class EpisodeNotificationsManager {
                 var requests = [UNNotificationRequest]()
 
                 for showEpisodeCalendarItem in showEpisodeCalendarItems where showEpisodeCalendarItem.episode.season != 0 {
+                    // Never schedule local episode notifications for dropped or hidden shows.
+                    if showEpisodeCalendarItem.show.isDropped || showEpisodeCalendarItem.show.isHiddenFromProgress || showEpisodeCalendarItem.show.isHiddenFromCalendar {
+                        continue
+                    }
                     // is in to watch
                     if toWatchShows.contains(showEpisodeCalendarItem.show) {
                         // check if show premiere
