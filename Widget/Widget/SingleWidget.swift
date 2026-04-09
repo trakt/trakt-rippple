@@ -80,13 +80,15 @@ struct SingleWidgetProvider: IntentTimelineProvider {
         print("Getting Widget Timeline for configuration: \(configuration)")
         if configuration.type?.identifier == WidgetType.custom.rawValue {
             Task {
-                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/search/tmdb/\(configuration.type!.tmdbId!)?extended=full&type=\(configuration.type!.tmdbType! == "tv" ? "show" : "movie")")!)
+                let data = await TraktItemLoader().loadCachedMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/search/tmdb/\(configuration.type!.tmdbId!)?extended=full&type=\(configuration.type!.tmdbType! == "tv" ? "show" : "movie")")!)
 
                 let entries = await entries(for: data,
                                             and: configuration,
                                             in: context,
                                             adding: nil)
-                var refreshDate = Date.now.advanced(by: 60*60)
+                
+                var refreshDate = Date.now.advanced(by: data == nil ? 60 * 5 : 60 * 60)
+                
                 for entry in entries {
                     if let date = entry.progress.endDate, date < refreshDate {
                         refreshDate = date
@@ -531,12 +533,102 @@ struct SingleWidget_Previews: PreviewProvider {
 struct TraktItemLoader {
     var session = URLSession.shared
 
+    private static let cacheSuiteName = "group.tv.trakt.rippple"
+    private static let tmdbSearchCacheKeyPrefix = "widget.search.tmdb.cache."
+    private static let tmdbSearchCacheLifetime: TimeInterval = 60 * 60 * 3
+    private static let tmdbSearchCleanupThreshold: TimeInterval = 60 * 60 * 24 * 30
+    private static let tmdbSearchLastCleanupKey = "widget.search.tmdb.cache.lastCleanupAt"
+    private static let tmdbSearchCleanupInterval: TimeInterval = 60 * 60 * 24
+
+    private struct CachedTraktItem: Codable {
+        let item: TraktItem
+        let cachedAt: Date
+    }
+
     private var userAgent: String {
         let bundle = Bundle.main
         let name = bundle.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "Rippple"
         let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
         let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
         return "\(name)/\(version) (\(build))"
+    }
+
+    private func searchTMDbCacheKey(for url: URL) -> String {
+        TraktItemLoader.tmdbSearchCacheKeyPrefix + url.absoluteString
+    }
+
+    private func cleanupOldTMDbSearchCacheEntries() {
+        guard let defaults = UserDefaults(suiteName: TraktItemLoader.cacheSuiteName) else { return }
+
+        let now = Date()
+        if let lastCleanup = defaults.object(forKey: TraktItemLoader.tmdbSearchLastCleanupKey) as? Date,
+           now.timeIntervalSince(lastCleanup) < TraktItemLoader.tmdbSearchCleanupInterval {
+            return
+        }
+
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(TraktItemLoader.tmdbSearchCacheKeyPrefix) {
+            guard let data = defaults.data(forKey: key),
+                  let cached = try? JSONDecoder().decode(CachedTraktItem.self, from: data) else {
+                defaults.removeObject(forKey: key)
+                continue
+            }
+
+            if now.timeIntervalSince(cached.cachedAt) > TraktItemLoader.tmdbSearchCleanupThreshold {
+                defaults.removeObject(forKey: key)
+            }
+        }
+
+        defaults.set(now, forKey: TraktItemLoader.tmdbSearchLastCleanupKey)
+    }
+
+    private func cachedMediaItem(for url: URL) -> CachedTraktItem? {
+        guard let defaults = UserDefaults(suiteName: TraktItemLoader.cacheSuiteName),
+              let data = defaults.data(forKey: searchTMDbCacheKey(for: url)),
+              let cached = try? JSONDecoder().decode(CachedTraktItem.self, from: data) else {
+            return nil
+        }
+        return cached
+    }
+
+    private func storeMediaItemInCache(_ item: TraktItem, for url: URL) {
+        guard let defaults = UserDefaults(suiteName: TraktItemLoader.cacheSuiteName) else { return }
+        let cached = CachedTraktItem(item: item, cachedAt: Date())
+        guard let data = try? JSONEncoder().encode(cached) else { return }
+        defaults.removeObject(forKey: searchTMDbCacheKey(for: url))
+        defaults.set(data, forKey: searchTMDbCacheKey(for: url))
+    }
+
+    func loadCachedMediaItem(from url: URL) async -> TraktItem? {
+        cleanupOldTMDbSearchCacheEntries()
+
+        let cached = cachedMediaItem(for: url)
+
+        if let cached, Date().timeIntervalSince(cached.cachedAt) <= TraktItemLoader.tmdbSearchCacheLifetime {
+            return cached.item
+        }
+
+        do {
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            request.setValue(TraktAPIConfiguration.clientId, forHTTPHeaderField: "trakt-api-key")
+            request.setValue("2", forHTTPHeaderField: "trakt-api-version")
+            request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+
+            let (data, _) = try await session.data(for: request)
+            let decoder = JSONDecoder()
+            let mediaItem = try decoder.decode([TraktItem].self, from: data).first
+
+            if let mediaItem, mediaItem.movie != nil || mediaItem.show != nil {
+                storeMediaItemInCache(mediaItem, for: url)
+                return mediaItem
+            }
+
+            // Network succeeded but wasn't usable: keep stale/invalid cache as fallback.
+            return cached?.item ?? mediaItem
+        } catch {
+            // Network failed: keep stale/invalid cache as fallback.
+            return cached?.item
+        }
     }
 
     func loadMediaItem(from url: URL) async -> TraktItem? {
