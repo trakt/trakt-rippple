@@ -595,10 +595,10 @@ struct SmartSearch: Codable, Equatable, Hashable {
     }
 
     static private func createDefaultSmartSearchesForShows() -> [SmartSearch] {
-        let defaultShows = [SmartSearch(urlString: "https://apiz.trakt.tv/shows/trending", count: 50, name: "Trending"),
-                            SmartSearch(urlString: "https://apiz.trakt.tv/shows/popular", count: 50, name: "Popular"),
-                            SmartSearch(urlString: "https://apiz.trakt.tv/shows/anticipated", count: 50, name: "Anticipated"),
-                            SmartSearch(urlString: "https://apiz.trakt.tv/shows/favorited/weekly", count: 50, name: "Favorited")]
+        let defaultShows = [SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/shows/trending", count: 50, name: "Trending"),
+                            SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/shows/popular", count: 50, name: "Popular"),
+                            SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/shows/anticipated", count: 50, name: "Anticipated"),
+                            SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/shows/favorited/weekly", count: 50, name: "Favorited")]
 
         save(smartSearches: defaultShows, contentType: .show, transmit: false)
 
@@ -606,11 +606,11 @@ struct SmartSearch: Codable, Equatable, Hashable {
     }
 
     static private func createDefaultSmartSearchesForMovies() -> [SmartSearch] {
-        let defaultMovies = [SmartSearch(urlString: "https://apiz.trakt.tv/movies/trending", count: 50, name: "Trending"),
-                            SmartSearch(urlString: "https://apiz.trakt.tv/movies/popular", count: 50, name: "Popular"),
-                            SmartSearch(urlString: "https://apiz.trakt.tv/movies/anticipated", count: 50, name: "Anticipated"),
-                            SmartSearch(urlString: "https://apiz.trakt.tv/movies/favorited/weekly", count: 50, name: "Favorited"),
-                             SmartSearch(urlString: "https://apiz.trakt.tv/movies/boxoffice", count: 50, name: "Box Office")]
+        let defaultMovies = [SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/trending", count: 50, name: "Trending"),
+                            SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/popular", count: 50, name: "Popular"),
+                            SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/anticipated", count: 50, name: "Anticipated"),
+                            SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/favorited/weekly", count: 50, name: "Favorited"),
+                             SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/boxoffice", count: 50, name: "Box Office")]
 
         save(smartSearches: defaultMovies, contentType: .movie, transmit: false)
 

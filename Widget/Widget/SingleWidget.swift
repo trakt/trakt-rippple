@@ -80,7 +80,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
         print("Getting Widget Timeline for configuration: \(configuration)")
         if configuration.type?.identifier == WidgetType.custom.rawValue {
             Task {
-                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "https://apiz.trakt.tv/search/tmdb/\(configuration.type!.tmdbId!)?extended=full&type=\(configuration.type!.tmdbType! == "tv" ? "show" : "movie")")!)
+                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/search/tmdb/\(configuration.type!.tmdbId!)?extended=full&type=\(configuration.type!.tmdbType! == "tv" ? "show" : "movie")")!)
 
                 let entries = await entries(for: data,
                                             and: configuration,
@@ -97,7 +97,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
             }
         } else if configuration.type?.identifier == WidgetType.trendingShow.rawValue {
             Task {
-                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "https://apiz.trakt.tv/shows/trending?extended=full&page=1&limit=1")!)
+                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/shows/trending?extended=full&page=1&limit=1")!)
 
                 let entries = await entries(for: data,
                                             and: configuration,
@@ -114,7 +114,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
             }
         } else if configuration.type?.identifier == WidgetType.trendingMovie.rawValue {
             Task {
-                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "https://apiz.trakt.tv/movies/trending?extended=full&page=1&limit=1")!)
+                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/movies/trending?extended=full&page=1&limit=1")!)
 
                 let entries = await entries(for: data,
                                             and: configuration,
@@ -131,7 +131,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
             }
         } else if configuration.type?.identifier == WidgetType.recommendedShow.rawValue {
             Task {
-                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "https://apiz.trakt.tv/shows/favorited/weekly/?extended=full&page=1&limit=1")!)
+                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/shows/favorited/weekly/?extended=full&page=1&limit=1")!)
 
                 let entries = await entries(for: data,
                                             and: configuration,
@@ -148,7 +148,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
             }
         } else if configuration.type?.identifier == WidgetType.recommendedMovie.rawValue {
             Task {
-                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "https://apiz.trakt.tv/movies/favorited/weekly/?extended=full&page=1&limit=1")!)
+                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/movies/favorited/weekly/?extended=full&page=1&limit=1")!)
 
                 let entries = await entries(for: data,
                                             and: configuration,
@@ -279,7 +279,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                                                                 type: "tv",
                                                                 with: imageWidthToGet(for: context))
 
-            let progress = await TraktItemLoader().loadProgress(from: URL(string: "https://apiz.trakt.tv/shows/\(show.ids.trakt)/progress/watched?last_activity=watched")!)
+            let progress = await TraktItemLoader().loadProgress(from: URL(string: "\(TraktAPIConfiguration.baseURL)/shows/\(show.ids.trakt)/progress/watched?last_activity=watched")!)
 
             var behind: String?
             var subtitle: String?
@@ -304,7 +304,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
 
                 if let episodeToWatch = nextEpisodeToWatch {
                     if behindCount == 0 {
-                        if let firstAirDate = await TraktItemLoader().loadEpisodeFirstAirDate(from: URL(string: "https://apiz.trakt.tv/shows/\(show.ids.trakt)/seasons/\(episodeToWatch.season)/episodes/\(episodeToWatch.number)?extended=full")!) {
+                        if let firstAirDate = await TraktItemLoader().loadEpisodeFirstAirDate(from: URL(string: "\(TraktAPIConfiguration.baseURL)/shows/\(show.ids.trakt)/seasons/\(episodeToWatch.season)/episodes/\(episodeToWatch.number)?extended=full")!) {
                             behind = "Coming..."
                             refreshDate = firstAirDate
                         }
@@ -318,7 +318,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                     deeplink = URL(string: "ripl://shows/\(show.ids.trakt)/seasons/\(nextEpisodeToWatch.season)/episodes/\(nextEpisodeToWatch.number)")
                 }
                 if nextEpisodeToWatch == nil, nextEpisodeToRewtach == nil, progress.completed == 0 {
-                    if let firstEpisode = await TraktItemLoader().loadFirstEpisode(from: URL(string: "https://apiz.trakt.tv/shows/\(show.ids.trakt)/seasons/1/episodes/1?extended=full")!) {
+                    if let firstEpisode = await TraktItemLoader().loadFirstEpisode(from: URL(string: "\(TraktAPIConfiguration.baseURL)/shows/\(show.ids.trakt)/seasons/1/episodes/1?extended=full")!) {
                         behind = "Coming..."
                         refreshDate = firstEpisode.firstAired
                         subtitle = firstEpisode.localizedEpisodeNumber
