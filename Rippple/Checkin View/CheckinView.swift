@@ -27,6 +27,7 @@ final class CheckinView: UIView {
         imageView.widthAnchor.constraint(equalToConstant: 36).isActive = true
         imageView.heightAnchor.constraint(equalToConstant: 36).isActive = true
         imageView.setContentHuggingPriority(.required, for: .horizontal)
+        imageView.setContentCompressionResistancePriority(.required, for: .horizontal)
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         return imageView
@@ -39,7 +40,6 @@ final class CheckinView: UIView {
         label.font = .preferredFont(forTextStyle: .caption1).bold()
         label.textColor = .label
         label.numberOfLines = 1
-        label.setContentCompressionResistancePriority(.required, for: .horizontal)
         return label
     }()
 
@@ -50,7 +50,6 @@ final class CheckinView: UIView {
         label.font = .preferredFont(forTextStyle: .caption2).bold()
         label.textColor = .secondaryLabel
         label.numberOfLines = 1
-        label.setContentCompressionResistancePriority(.required, for: .horizontal)
         return label
     }()
 
@@ -61,7 +60,7 @@ final class CheckinView: UIView {
         stack.spacing = 0
         stack.alignment = .leading
         stack.distribution = .fill
-        stack.setContentCompressionResistancePriority(.required, for: .horizontal)
+        stack.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         return stack
     }()
 
@@ -71,6 +70,7 @@ final class CheckinView: UIView {
         view.widthAnchor.constraint(equalToConstant: 28).isActive = true
         view.heightAnchor.constraint(equalToConstant: 28).isActive = true
         view.setContentHuggingPriority(.required, for: .horizontal)
+        view.setContentCompressionResistancePriority(.required, for: .horizontal)
         view.trackTintColor = .label.withAlphaComponent(0.4)
         view.progressTintColor = .label
         view.roundedCorners = true
@@ -124,16 +124,16 @@ final class CheckinView: UIView {
         button.translatesAutoresizingMaskIntoConstraints = false
         horizontalStackView.translatesAutoresizingMaskIntoConstraints = false
         let topConstraint = horizontalStackView.topAnchor.constraint(equalTo: topAnchor, constant: 6)
-        topConstraint.priority = .defaultHigh
+        topConstraint.priority = .required
 
         let leadingConstraint = horizontalStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6)
-        leadingConstraint.priority = .defaultHigh
+        leadingConstraint.priority = .required
 
         let trailingConstraint = horizontalStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10)
-        trailingConstraint.priority = .defaultHigh
+        trailingConstraint.priority = .required
 
         let bottomConstraint = horizontalStackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6)
-        bottomConstraint.priority = .defaultHigh
+        bottomConstraint.priority = .required
 
         NSLayoutConstraint.activate([
             topConstraint,
