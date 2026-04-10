@@ -86,9 +86,9 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                                             and: configuration,
                                             in: context,
                                             adding: nil)
-                
+
                 var refreshDate = Date.now.advanced(by: data == nil ? 60 * 5 : 60 * 60)
-                
+
                 for entry in entries {
                     if let date = entry.progress.endDate, date < refreshDate {
                         refreshDate = date
