@@ -547,14 +547,14 @@ final class WatchedViewController: UITableViewController {
         }.disposed(by: disposeBag)
 
         if user.isCurrentUser {
-            onWatchedShowsChangedReceiver.listen { [weak self] items in
+            onWatchedShowsChangedReceiver.listen { [weak self] _ in
                 guard let self = self else { return }
-                self.watchedShows = items
+                self.watchedShows = WatchedManager.shared.watchedShowsItems
             }.disposed(by: disposeBag)
 
-            onWatchedMoviesChangedReceiver.listen { [weak self] items in
+            onWatchedMoviesChangedReceiver.listen { [weak self] _ in
                 guard let self = self else { return }
-                self.watchedMovies = items
+                self.watchedMovies = WatchedManager.shared.watchedMoviesItems
             }.disposed(by: disposeBag)
         }
     }

@@ -20,11 +20,8 @@ extension TinyStorage {
     }()
 }
 
-let (onWatchedMoviesChangedTransmitter, onWatchedMoviesChangedReceiver) = Receiver<[WatchedItem]>.make(with: .warm(upTo: 1))
-let (onWatchedShowsChangedTransmitter, onWatchedShowsChangedReceiver) = Receiver<[WatchedItem]>.make(with: .warm(upTo: 1))
-
-let (onWatchedShowsSetChangedTransmitter, onWatchedShowsSetChangedReceiver) = Receiver<Set<WatchedItem>>.make(with: .warm(upTo: 1))
-let (onWatchedShowsChangedRemoteTransmitter, onWatchedShowsSetChangedRemoteReceiver) = Receiver<Bool>.make(with: .hot)
+let (onWatchedMoviesChangedTransmitter, onWatchedMoviesChangedReceiver) = Receiver<Set<Int64>>.make(with: .warm(upTo: 1))
+let (onWatchedShowsChangedTransmitter, onWatchedShowsChangedReceiver) = Receiver<Set<Int64>>.make(with: .warm(upTo: 1))
 
 final class WatchedManager {
 
@@ -38,15 +35,10 @@ final class WatchedManager {
     func setup() {
         if let array = TinyStorage.cache.retrieve(type: [WatchedItem].self, forKey: "WatchedManager.showsHistoryItems") {
             showsHistoryItems = array
-            let showsIds = showsHistoryItems.compactMap { $0.show?.identifiers.trakt }
-            let rewatchingIds = showsHistoryItems.filter { $0.resetAt != nil }.compactMap { $0.show?.identifiers.trakt }
-            watchedShows = showsIds
-            rewatchingShows = rewatchingIds
         }
 
         if let array = TinyStorage.cache.retrieve(type: [WatchedItem].self, forKey: "WatchedManager.moviesHistoryItems") {
             moviesHistoryItems = array
-            watchedMovies = moviesHistoryItems.map { $0.movie!.identifiers.trakt! }
         }
 
         if let array = TinyStorage.cache.retrieve(type: [HistoryItem].self, forKey: "WatchedManager.episodeHistoryItems") {
@@ -60,7 +52,6 @@ final class WatchedManager {
                 self.lastShowsAndEpisodesCheck = .now
                 self.refreshWatchedShows()
                 self.refreshWatchedEpisodes()
-                onWatchedShowsChangedRemoteTransmitter.broadcast(true)
             }
         }.disposed(by: disposeBag)
 
@@ -92,12 +83,10 @@ final class WatchedManager {
             if settings != nil {
                 if let data = UserDefaults.standard.data(forKey: "WatchedManager.showsHistoryItems"), let array = try? PropertyListDecoder().decode([WatchedItem].self, from: data) {
                     self.showsHistoryItems = array
-                    self.watchedShows = self.showsHistoryItems.map { $0.show!.identifiers.trakt! }
                 }
 
                 if let data = UserDefaults.standard.data(forKey: "WatchedManager.moviesHistoryItems"), let array = try? PropertyListDecoder().decode([WatchedItem].self, from: data) {
                     self.moviesHistoryItems = array
-                    self.watchedMovies = self.moviesHistoryItems.map { $0.movie!.identifiers.trakt! }
                 }
                 self.lastShowsAndEpisodesCheck = .now
                 self.lastMoviesCheck = .now
@@ -177,8 +166,18 @@ final class WatchedManager {
         return showsHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }.compactMap { $0.show?.mediaModel }
     }
 
+    var watchedMoviesItems: [WatchedItem] {
+        return moviesHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }
+    }
+    var watchedShowsItems: [WatchedItem] {
+        return showsHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }
+    }
+
     fileprivate var showsHistoryItems = [WatchedItem]() {
         didSet {
+            watchedShows = Set(showsHistoryItems.compactMap { $0.show?.identifiers.trakt })
+            rewatchingShows = Set(showsHistoryItems.filter { $0.resetAt != nil }.compactMap { $0.show?.identifiers.trakt })
+
             if oldValue.isEmpty == false {
                 let oldShows = Set(oldValue)
                 let newShows = Set(showsHistoryItems)
@@ -187,17 +186,14 @@ final class WatchedManager {
                     print("Refreshing progress for \(show.title) because history changed...")
                     ProgressManager.shared.refreshProgress(for: show)
                 }
-                if Set(oldShows.compactMap { $0.show }) != Set(newShows.compactMap { $0.show }) {
-                    onWatchedShowsSetChangedTransmitter.broadcast(newShows)
-                }
             }
-            onWatchedShowsChangedTransmitter.broadcast(showsHistoryItems)
+
             TinyStorage.cache.store(showsHistoryItems, forKey: "WatchedManager.showsHistoryItems")
         }
     }
     fileprivate var moviesHistoryItems = [WatchedItem]() {
         didSet {
-            onWatchedMoviesChangedTransmitter.broadcast(moviesHistoryItems)
+            watchedMovies = Set(moviesHistoryItems.compactMap { $0.movie?.identifiers.trakt })
             TinyStorage.cache.store(moviesHistoryItems, forKey: "WatchedManager.moviesHistoryItems")
         }
     }
@@ -210,10 +206,20 @@ final class WatchedManager {
 
     fileprivate var watchedEpisodes = [Int64]()
 
-    fileprivate var watchedShows = [Int64]()
-    fileprivate var watchedMovies = [Int64]()
+    fileprivate var watchedShows = Set<Int64>() {
+        didSet {
+            if oldValue == watchedShows { return }
+            onWatchedShowsChangedTransmitter.broadcast(watchedShows)
+        }
+    }
+    fileprivate var watchedMovies = Set<Int64>() {
+        didSet {
+            if oldValue == watchedShows { return }
+            onWatchedMoviesChangedTransmitter.broadcast(watchedMovies)
+        }
+    }
 
-    fileprivate var rewatchingShows = [Int64]()
+    fileprivate var rewatchingShows = Set<Int64>()
 }
 
 private extension WatchedManager {
@@ -258,10 +264,8 @@ private extension WatchedManager {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder)
-                    let moviesIds = items.map { $0.movie!.identifiers.trakt! }
 
                     DispatchQueue.main.async {
-                        self.watchedMovies = moviesIds
                         self.moviesHistoryItems = items
                     }
                 } catch {
@@ -286,12 +290,8 @@ private extension WatchedManager {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder)
-                    let showsIds = items.compactMap { $0.show?.identifiers.trakt }
-                    let rewatchingIds = items.filter { $0.resetAt != nil }.compactMap { $0.show?.identifiers.trakt }
 
                     DispatchQueue.main.async {
-                        self.watchedShows = showsIds
-                        self.rewatchingShows = rewatchingIds
                         self.showsHistoryItems = items
                     }
                 } catch {

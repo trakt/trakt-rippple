@@ -41,39 +41,34 @@ final class WidgetManager {
             self.updateLastWatched()
         }.disposed(by: disposeBag)
 
-        onWatchedMoviesChangedReceiver.listen { [weak self] watchedItems in
+        onWatchedMoviesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            if let last = watchedItems.sorted(by: { $0.lastWatchedAt > $1.lastWatchedAt }).first {
-                if let movie = last.movie {
-                    let media = movie.mediaModel
-                    media.backdropURL { url in
-                        let progress = WidgetModel(label: "Last Watched Movie",
-                                                         title: movie.title,
-                                                         subtitle: (movie.releaseYear != nil) ? "\(movie.releaseYear!)" : "",
-                                                         image: url,
-                                                         behind: nil,
-                                                         redacted: false,
-                                                         deeplink: media.deeplink)
-                        self.store(singleWidget: progress, with: WidgetType.lastWatchedMovie.rawValue)
-                    }
+            if let media = WatchedManager.shared.watchedMoviesMediaModels.first, let movie = media.movie {
+                media.backdropURL { url in
+                    let progress = WidgetModel(label: "Last Watched Movie",
+                                               title: movie.title,
+                                               subtitle: (movie.releaseYear != nil) ? "\(movie.releaseYear!)" : "",
+                                               image: url,
+                                               behind: nil,
+                                               redacted: false,
+                                               deeplink: media.deeplink)
+                    self.store(singleWidget: progress, with: WidgetType.lastWatchedMovie.rawValue)
                 }
             }
         }.disposed(by: disposeBag)
 
-        onWatchedShowsChangedReceiver.skipRepeats().listen { [weak self] watchedItems in
+        onWatchedShowsChangedReceiver.skipRepeats().listen { [weak self] _ in
             guard let self = self else { return }
-            if let last = watchedItems.sorted(by: { $0.lastWatchedAt > $1.lastWatchedAt }).first {
-                if let show = last.show {
-                    show.mediaModel.backdropURL { url in
-                        let progress = WidgetModel(label: "Last Watched Show",
-                                                         title: show.title,
-                                                         subtitle: nil,
-                                                         image: url,
-                                                         behind: nil,
-                                                         redacted: false,
-                                                         deeplink: show.mediaModel.deeplink)
-                        self.store(singleWidget: progress, with: WidgetType.lastWatchedShow.rawValue)
-                    }
+            if let media = WatchedManager.shared.watchedShowsMediaModels.first, let show = media.show {
+                media.backdropURL { url in
+                    let progress = WidgetModel(label: "Last Watched Show",
+                                               title: show.title,
+                                               subtitle: nil,
+                                               image: url,
+                                               behind: nil,
+                                               redacted: false,
+                                               deeplink: media.deeplink)
+                    self.store(singleWidget: progress, with: WidgetType.lastWatchedShow.rawValue)
                 }
             }
         }.disposed(by: disposeBag)

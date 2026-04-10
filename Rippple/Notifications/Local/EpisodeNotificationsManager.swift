@@ -194,7 +194,7 @@ final class EpisodeNotificationsManager {
 
         rebuildNotificationsTask = Task { [weak self] in
             guard let self = self else { return }
-            
+
             let backgroundTaskIdentifier = beginNotificationRebuildBackgroundTask()
             defer {
                 endNotificationRebuildBackgroundTask(backgroundTaskIdentifier)

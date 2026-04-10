@@ -323,7 +323,7 @@ final class EpisodeToWatchManager {
             }
         }.disposed(by: disposeBag)
 
-        onWatchedShowsSetChangedReceiver.skipRepeats().listen { [weak self] _ in
+        onWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if EpisodeToWatchSettings.shared.watched {
                 print("EpisodeToWatchManager.forceRefresh because watched changed")
@@ -421,11 +421,6 @@ final class EpisodeToWatchManager {
         episodeToWatchGroupModeReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedTransmit.call()
-        }.disposed(by: disposeBag)
-
-        onWatchedShowsSetChangedRemoteReceiver.listen { [weak self] _ in
-            guard let self = self else { return }
-            self.debouncedRefreshProgress.call()
         }.disposed(by: disposeBag)
 
         onProgressCacheChangedReceiver.listen { [weak self] showShowProgress in
