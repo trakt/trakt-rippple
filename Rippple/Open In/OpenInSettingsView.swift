@@ -208,6 +208,7 @@ struct OpenInItemEditView: View {
 
     @State private var name: String = ""
     @State private var urlTemplate: String = ""
+    @State private var urlTemplateSelection: TextSelection?
     @State private var mediaTypes: Set<OpenActionMediaType> = []
     @State private var systemImageName: String = "arrow.up.forward"
     @Environment(\.dismiss) private var dismiss
@@ -230,14 +231,14 @@ struct OpenInItemEditView: View {
                 }
 
                 Section("URL template") {
-                    TextField("URL with variables", text: $urlTemplate, prompt: Text("How?"))
+                    TextField("URL with variables", text: $urlTemplate, selection: $urlTemplateSelection, prompt: Text("How?"))
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
 
                     FlowLayout(spacing: 6) {
                         ForEach(suggestedStrings, id: \.self) { string in
                             Button(string) {
-                                urlTemplate += string
+                                insertIntoUrlTemplate(string)
                             }
                             .font(.caption)
                             .buttonStyle(.bordered)
@@ -247,7 +248,7 @@ struct OpenInItemEditView: View {
                     FlowLayout(spacing: 6) {
                         ForEach(OpenActionVariable.allCases) { variable in
                             Button(variable.placeholder) {
-                                urlTemplate += variable.placeholder
+                                insertIntoUrlTemplate(variable.placeholder)
                             }
                             .font(.caption)
                             .buttonStyle(.bordered)
@@ -343,6 +344,20 @@ struct OpenInItemEditView: View {
                 Text("This will delete the custom \"Open In\" action. This cannot be undone.")
             }
         }
+    }
+
+    private func insertIntoUrlTemplate(_ value: String) {
+        guard let selection = urlTemplateSelection,
+              case .selection(let range) = selection.indices else {
+            urlTemplate.append(value)
+            urlTemplateSelection = TextSelection(insertionPoint: urlTemplate.endIndex)
+            return
+        }
+
+        let insertionStart = range.lowerBound
+        urlTemplate.replaceSubrange(range, with: value)
+        let insertedEnd = urlTemplate.index(insertionStart, offsetBy: value.count)
+        urlTemplateSelection = TextSelection(insertionPoint: insertedEnd)
     }
 
 }
