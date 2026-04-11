@@ -188,7 +188,7 @@ final class MediaViewController: UITableViewController {
             snapshot.insertItems([.spacer(5.001)], afterItem: .summary)
         }
 
-        snapshot.appendItems([.spacer(5.003)])
+        snapshot.appendItems([.spacer(5.005)])
         snapshot.appendItems([.openIn])
 
         if let officialList = officialList {
