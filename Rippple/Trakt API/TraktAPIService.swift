@@ -308,8 +308,8 @@ enum TraktAPIService {
 
     case showProgress(id: Int64, includesSpecials: Bool)
 
-    case watchlist(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?)
-    case recommended(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?)
+    case watchlist(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
+    case recommended(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
     case collection(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
 
     case addToWatchlist(item: WatchlistedItem)
@@ -336,7 +336,7 @@ enum TraktAPIService {
     case customLists(slug: String = "me")
     case customList(userSlug: String, listSlug: String)
     case collaborations(slug: String = "me")
-    case listItems(slug: String?, id: Int64, type: ListMediaType?, extended: Extended?, pageInfo: PageInfo)
+    case listItems(slug: String?, id: Int64, type: ListMediaType?, extended: Extended?, pageInfo: PageInfo, marker: String)
     case createList(name: String, description: String, privacy: ListPrivacy, displayNumbers: Bool, allowComments: Bool)
     case deleteList(id: Int64)
     case reorderLists(ids: [Int64])
@@ -707,7 +707,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/checkin"
         case .showProgress(let showId, _):
             return "shows/\(showId)/progress/watched"
-        case .watchlist(let slug, let type, _, let sort):
+        case .watchlist(let slug, let type, _, let sort, _):
             switch (type, sort) {
             case (.some(let type), .some(let sort)):
                 return "/users/\(slug)/watchlist/\(type)/\(sort)"
@@ -716,7 +716,7 @@ extension TraktAPIService: AuthorizedTargetType {
             default:
                 return "/users/\(slug)/watchlist"
             }
-        case .recommended(let slug, let type, _, let sort):
+        case .recommended(let slug, let type, _, let sort, _):
             switch (type, sort) {
             case (.some(let type), .some(let sort)):
                 return "/users/\(slug)/favorites/\(type)/\(sort)"
@@ -772,7 +772,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/\(userSlug)/lists/\(listSlug)"
         case .collaborations(let slug):
             return "/users/\(slug)/lists/collaborations"
-        case .listItems(let slug, let listId, let type, _, _):
+        case .listItems(let slug, let listId, let type, _, _, _):
             if let slug = slug {
                 switch type {
                 case .some(let type):
@@ -1476,13 +1476,14 @@ extension TraktAPIService: AuthorizedTargetType {
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             }
-        case .recommended(_, _, let extended, _), .watchlist(_, _, let extended, _):
+        case .recommended(_, _, let extended, _, let pageInfo), .watchlist(_, _, let extended, _, let pageInfo):
+            var parameters = ["page": "\(pageInfo.page)",
+                              "limit": "\(pageInfo.limit)"]
             if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended],
-                                          encoding: URLEncoding.default)
-            } else {
-                return .requestPlain
+                parameters["extended"] = extended.rawValue
             }
+            return .requestParameters(parameters: parameters,
+                                      encoding: URLEncoding.default)
         case .addToWatchlist(let item), .removeFromWatchlist(let item):
             return .requestJSONEncodable(item)
         case .addToRecommendations(let item), .removeFromRecommendations(let item):
@@ -1542,15 +1543,17 @@ extension TraktAPIService: AuthorizedTargetType {
         case .collaborations:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
-        case .listItems(_, _, _, let extended, let pageInfo):
+        case .listItems(_, _, _, let extended, let pageInfo, let marker):
             if let extended = extended {
                 return .requestParameters(parameters: ["extended": extended,
                                                        "page": "\(pageInfo.page)",
-                                                       "limit": "\(pageInfo.limit)"],
+                                                       "limit": "\(pageInfo.limit)",
+                                                       "marker": marker],
                                           encoding: URLEncoding.default)
             } else {
                 return .requestParameters(parameters: ["page": "\(pageInfo.page)",
-                                                       "limit": "\(pageInfo.limit)"],
+                                                       "limit": "\(pageInfo.limit)",
+                                                       "marker": marker],
                                           encoding: URLEncoding.default)
             }
         case .createList(let name, let description, let privacy, let displayNumbers, let allowComments):
@@ -1618,9 +1621,11 @@ extension TraktAPIService: AuthorizedTargetType {
             for (season, episode) in seasonsEpisodes.sorted(by: { $0.0 == $1.0 ? $0.1 > $1.1 : $0.0 > $1.0 }) {
                 if let watchedAt = watchedAt {
                     let watched = formatter.string(from: watchedAtWithOffset!)
-                    watchedAtWithOffset = Calendar.current.date(byAdding: .second,
-                                                                value: (runtime ?? 1) * -60,
-                                                                to: watchedAtWithOffset!) ?? watchedAt
+                    if watchedAt.timeIntervalSince1970 != 0 {
+                        watchedAtWithOffset = Calendar.current.date(byAdding: .second,
+                                                                    value: (runtime ?? 1) * -60,
+                                                                    to: watchedAtWithOffset!) ?? watchedAt
+                    }
                     let episode = AddHistoryEpisode(number: episode, watched_at: watched)
                     let season = AddHistorySeason(number: season, episodes: [episode])
                     seasons.append(season)

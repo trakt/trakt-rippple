@@ -761,18 +761,14 @@ final class ListViewController: UITableViewController {
         }
 
         fetchTask?.cancel()
-        fetchTask = Task { [weak self] in
+        TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
+                                           id: list.identifiers.trakt!,
+                                           type: nil) { [weak self] result in
             guard let self = self else { return }
-
-            do {
-                let results = try await TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
-                                                                           id: list.identifiers.trakt!,
-                                                                           type: nil,
-                                                                           extended: .full)
-                if Task.isCancelled { return }
+            switch result {
+            case let .success(results):
                 self.watchlistItems = results
-            } catch {
-                if Task.isCancelled { return }
+            case let .failure(error):
                 print("Comments request JSON mapping failed! \(error)")
 
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()

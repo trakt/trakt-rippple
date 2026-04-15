@@ -66,6 +66,11 @@ final class EpisodeNotificationsManager {
 
     private let disposeBag = DisposeBag()
 
+    private var rebuildNotificationsTask: Task<Void, Never>?
+
+    private var cachedCalendarItems: [ShowEpisodeCalendarItem]?
+    private var lastCalendarFetchDate: Date?
+
     private init() {
         groupEpisodes = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.groupEpisodes")
         watchlistShowPremiere = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.watchlistShowPremiere")
@@ -115,6 +120,7 @@ final class EpisodeNotificationsManager {
         // the ToWatch or Watchlist can be empty, this call  is debounced enough to not wait more than this!
         if toWatchShows == nil && watchlistedShows == nil { return }
 
+        rebuildNotificationsTask?.cancel()
         scheduleNotifications()
     }
 
@@ -123,7 +129,7 @@ final class EpisodeNotificationsManager {
     }
 
     func setup() {
-        debouncedRebuildNotifications = Debouncer(delay: 5.0) { [weak self] in
+        debouncedRebuildNotifications = Debouncer(delay: 2.0) { [weak self] in
             guard let self = self else { return }
             self.rebuildNotifications()
         }
@@ -154,6 +160,12 @@ final class EpisodeNotificationsManager {
     private var debouncedRebuildNotifications: Debouncer!
 
     private func fetchCalendar() async throws -> [ShowEpisodeCalendarItem] {
+        if let cachedCalendarItems = cachedCalendarItems,
+           let lastCalendarFetchDate = lastCalendarFetchDate,
+           Calendar.current.isDate(lastCalendarFetchDate, inSameDayAs: .now) == true {
+            return cachedCalendarItems
+        }
+
         let result: [ShowEpisodeCalendarItem] = try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.showsCalendar(startDate: Calendar.current.date(byAdding: .day, value: -1, to: Date())!, days: 7, filters: [String: String]()), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
@@ -170,19 +182,36 @@ final class EpisodeNotificationsManager {
                 }
             }
         }
+
+        cachedCalendarItems = result
+        lastCalendarFetchDate = Date()
+
         return result
     }
 
     private func scheduleNotifications() {
         guard let toWatchShows = toWatchShows else { return }
 
-        Task.init {
+        rebuildNotificationsTask = Task { [weak self] in
+            guard let self = self else { return }
+
+            let backgroundTaskIdentifier = beginNotificationRebuildBackgroundTask()
+            defer {
+                endNotificationRebuildBackgroundTask(backgroundTaskIdentifier)
+            }
+
             do {
                 let showEpisodeCalendarItems = try await fetchCalendar().filter { $0.firstAired > .now }
+                try Task.checkCancellation()
 
                 var requests = [UNNotificationRequest]()
 
                 for showEpisodeCalendarItem in showEpisodeCalendarItems where showEpisodeCalendarItem.episode.season != 0 {
+                    try Task.checkCancellation()
+                    // Never schedule local episode notifications for dropped or hidden shows.
+                    if showEpisodeCalendarItem.show.isDropped || showEpisodeCalendarItem.show.isHiddenFromProgress || showEpisodeCalendarItem.show.isHiddenFromCalendar {
+                        continue
+                    }
                     // is in to watch
                     if toWatchShows.contains(showEpisodeCalendarItem.show) {
                         // check if show premiere
@@ -230,6 +259,7 @@ final class EpisodeNotificationsManager {
                 if groupEpisodes {
                     var groupedRequests = [UNNotificationRequest]()
                     for request in requests {
+                        try Task.checkCancellation()
                         let filteredAndSortedRequests = requests.filter { otherRequest -> Bool in
                             return otherRequest.content.threadIdentifier == request.content.threadIdentifier && (request.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate() == (otherRequest.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate()
                         }.sorted { firstRequest, secondRequest -> Bool in
@@ -254,6 +284,7 @@ final class EpisodeNotificationsManager {
                 // Clean then add
                 let notificationCenter = UNUserNotificationCenter.current()
                 let pendingNotifications = await notificationCenter.pendingNotificationRequests()
+                try Task.checkCancellation()
                 var identifiersToRemove = [String]()
                 for pendingNotification in pendingNotifications where requests.contains(where: {  $0.identifier == pendingNotification.identifier }) == false && pendingNotification.isEpisodeNotification {
                     print("Removing notification: \(pendingNotification.identifier) - \(pendingNotification.content.title) - \(pendingNotification.content.body)")
@@ -263,6 +294,7 @@ final class EpisodeNotificationsManager {
                 notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
 
                 for request in requests {
+                    try Task.checkCancellation()
                     do {
                         try await notificationCenter.add(request)
                         print("Adding notification: \(request.identifier) - \(request.content.title) - \(request.content.body)")
@@ -271,9 +303,26 @@ final class EpisodeNotificationsManager {
                     }
                 }
                 onEpisodesNotificationsChangedTransmitter.broadcast(requests)
+            } catch is CancellationError {
+                print("EpisodeNotificationsManager: scheduleNotififcations() cancelled for a new one.")
             } catch {
                 print("Coudn't fetch calendar, don't do nothing: \(error)")
             }
+        }
+    }
+
+    private func beginNotificationRebuildBackgroundTask() -> UIBackgroundTaskIdentifier? {
+        return UIApplication.shared.beginBackgroundTask(withName: "EpisodeNotificationRebuild") { [weak self] in
+            guard let self = self else { return }
+            self.rebuildNotificationsTask?.cancel()
+        }
+    }
+
+    private func endNotificationRebuildBackgroundTask(_ taskIdentifier: UIBackgroundTaskIdentifier?) {
+        guard let taskIdentifier = taskIdentifier else { return }
+        let identifier = UIBackgroundTaskIdentifier(rawValue: taskIdentifier.rawValue)
+        if identifier != .invalid {
+            UIApplication.shared.endBackgroundTask(identifier)
         }
     }
 

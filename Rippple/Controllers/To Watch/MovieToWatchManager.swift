@@ -507,32 +507,24 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
             return
         }
 
-        let cancellable = TraktAPIProvider.provider.request(.watchlist(type: .movies, extended: .full, sort: .none), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
+        TraktAPIProvider.fetchAllWatchlistItems(slug: "me",
+                                                type: .movies,
+                                                extended: .full,
+                                                sort: .none) { [weak self] result in
             guard let self = self else { return }
-
-            defer {
-                completion()
-            }
-
+            defer { completion() }
+            if self.isCancelled { return }
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let movies = try response.map([WatchlistItem].self, using: TraktAPIProvider.decoder).map { $0.movie! }
-
-                    DispatchQueue.main.async {
-                        self.movies.formUnion(movies)
-                        self.moviesInList.append(MovieToWatchGroup(name: "Watchlisted", order: 1, shows: Set(movies)))
-                    }
-                } catch {
-                    print("fetchWatchlistedMovies (towatch) request JSON mapping failed! \(error)")
+            case let .success(items):
+                let movies = items.map { $0.movie! }
+                DispatchQueue.main.async {
+                    self.movies.formUnion(movies)
+                    self.moviesInList.append(MovieToWatchGroup(name: "Watchlisted", order: 1, shows: Set(movies)))
                 }
             case let .failure(error):
                 print("fetchWatchlistedMovies (towatch) request failure \(error)")
             }
         }
-        cancellables.append(cancellable)
     }
 
     private func fetchRecommendedMovies(completion: @escaping (() -> Void)) {
@@ -541,32 +533,24 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
             return
         }
 
-        let cancellable = TraktAPIProvider.provider.request(.recommended(type: .movies, extended: .full, sort: .none), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
+        TraktAPIProvider.fetchAllRecommendedItems(slug: "me",
+                                                  type: .movies,
+                                                  extended: .full,
+                                                  sort: .none) { [weak self] result in
             guard let self = self else { return }
-
-            defer {
-                completion()
-            }
-
+            defer { completion() }
+            if self.isCancelled { return }
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let movies = try response.map([WatchlistItem].self, using: TraktAPIProvider.decoder).map { $0.movie! }
-
-                    DispatchQueue.main.async {
-                        self.movies.formUnion(movies)
-                        self.moviesInList.append(MovieToWatchGroup(name: "Favorites", order: 2, shows: Set(movies)))
-                    }
-                } catch {
-                    print("fetchRecommendedMovies (towatch) request JSON mapping failed! \(error)")
+            case let .success(items):
+                let movies = items.map { $0.movie! }
+                DispatchQueue.main.async {
+                    self.movies.formUnion(movies)
+                    self.moviesInList.append(MovieToWatchGroup(name: "Favorites", order: 2, shows: Set(movies)))
                 }
             case let .failure(error):
                 print("fetchRecommendedMovies (towatch) request failure \(error)")
             }
         }
-        cancellables.append(cancellable)
     }
 
     private func fetchCollectedMovies(completion: @escaping (() -> Void)) {
@@ -575,26 +559,21 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
             return
         }
 
-        _Concurrency.Task { [weak self] in
+        TraktAPIProvider.fetchAllCollectionItems(slug: "me",
+                                                 type: .movies,
+                                                 extended: .full,
+                                                 sort: .none) { [weak self] result in
             guard let self = self else { return }
             defer { completion() }
-
-            if self.isCancelled || _Concurrency.Task.isCancelled { return }
-
-            do {
-                let items = try await TraktAPIProvider.fetchAllCollectionItems(slug: "me",
-                                                                              type: .movies,
-                                                                              extended: .full,
-                                                                              sort: .none)
-                if self.isCancelled || _Concurrency.Task.isCancelled { return }
-
+            if self.isCancelled { return }
+            switch result {
+            case let .success(items):
                 let movies = items.map { $0.movie! }
                 DispatchQueue.main.async {
                     self.movies.formUnion(movies)
                     self.moviesInList.append(MovieToWatchGroup(name: "Collected", order: 3, shows: Set(movies)))
                 }
-            } catch {
-                if _Concurrency.Task.isCancelled { return }
+            case let .failure(error):
                 print("fetchCollectedMovies (towatch) request failure \(error)")
             }
         }
@@ -606,26 +585,20 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
             return
         }
 
-        _Concurrency.Task { [weak self] in
+        TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
+                                           id: list.identifiers.trakt!,
+                                           type: .movies) { [weak self] result in
             guard let self = self else { return }
             defer { completion() }
-
-            if self.isCancelled || _Concurrency.Task.isCancelled { return }
-
-            do {
-                let items = try await TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
-                                                                         id: list.identifiers.trakt!,
-                                                                         type: .movies,
-                                                                         extended: .full)
-                if self.isCancelled || _Concurrency.Task.isCancelled { return }
-
+            if self.isCancelled { return }
+            switch result {
+            case let .success(items):
                 let movies = items.map { $0.movie! }
                 DispatchQueue.main.async {
                     self.movies.formUnion(movies)
                     self.moviesInList.append(MovieToWatchGroup(name: list.name, order: order, shows: Set(movies)))
                 }
-            } catch {
-                if _Concurrency.Task.isCancelled { return }
+            case let .failure(error):
                 print("fetchMoviesforlist (towatch) request failure \(error)")
             }
         }
@@ -654,7 +627,7 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
 
                     var searchResults: [MediaItem]
                     if case .popularMovies = service {
-                        searchResults = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, notes: nil) }
+                        searchResults = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                     } else {
                         searchResults = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
                     }

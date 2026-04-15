@@ -53,13 +53,19 @@ class ServicesBrowseTableViewCell: UITableViewCell {
                                             filter: SavedFilter(section: "search",
                                                                 name: "On Paramount+",
                                                                 path: "/search/movie,show",
-                                                                query: "watchnow=us-paramount_plus",
+                                                                query: "watchnow=paramountplusessential,paramount_plus_premium",
                                                                 limit: nil)),
                                     Service(logoName: "Hulu",
                                             filter: SavedFilter(section: "search",
                                                                 name: "On Hulu",
                                                                 path: "/search/movie,show",
                                                                 query: "watchnow=us-hulu",
+                                                                limit: nil)),
+                                    Service(logoName: "Crunchyroll",
+                                            filter: SavedFilter(section: "search",
+                                                                name: "On Crunchyroll",
+                                                                path: "/search/movie,show",
+                                                                query: "watchnow=crunchyroll",
                                                                 limit: nil))]
 
     override func awakeFromNib() {

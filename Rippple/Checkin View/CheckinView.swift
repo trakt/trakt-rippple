@@ -27,6 +27,7 @@ final class CheckinView: UIView {
         imageView.widthAnchor.constraint(equalToConstant: 36).isActive = true
         imageView.heightAnchor.constraint(equalToConstant: 36).isActive = true
         imageView.setContentHuggingPriority(.required, for: .horizontal)
+        imageView.setContentCompressionResistancePriority(.required, for: .horizontal)
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         return imageView
@@ -39,7 +40,6 @@ final class CheckinView: UIView {
         label.font = .preferredFont(forTextStyle: .caption1).bold()
         label.textColor = .label
         label.numberOfLines = 1
-        label.setContentCompressionResistancePriority(.required, for: .horizontal)
         return label
     }()
 
@@ -50,7 +50,6 @@ final class CheckinView: UIView {
         label.font = .preferredFont(forTextStyle: .caption2).bold()
         label.textColor = .secondaryLabel
         label.numberOfLines = 1
-        label.setContentCompressionResistancePriority(.required, for: .horizontal)
         return label
     }()
 
@@ -61,7 +60,7 @@ final class CheckinView: UIView {
         stack.spacing = 0
         stack.alignment = .leading
         stack.distribution = .fill
-        stack.setContentCompressionResistancePriority(.required, for: .horizontal)
+        stack.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         return stack
     }()
 
@@ -71,6 +70,7 @@ final class CheckinView: UIView {
         view.widthAnchor.constraint(equalToConstant: 28).isActive = true
         view.heightAnchor.constraint(equalToConstant: 28).isActive = true
         view.setContentHuggingPriority(.required, for: .horizontal)
+        view.setContentCompressionResistancePriority(.required, for: .horizontal)
         view.trackTintColor = .label.withAlphaComponent(0.4)
         view.progressTintColor = .label
         view.roundedCorners = true
@@ -84,7 +84,7 @@ final class CheckinView: UIView {
         stack.spacing = 6
         stack.axis = .horizontal
         stack.alignment = .center
-        stack.distribution = .fillProportionally
+        stack.distribution = .fill
         return stack
     }()
 
@@ -123,11 +123,23 @@ final class CheckinView: UIView {
 
         button.translatesAutoresizingMaskIntoConstraints = false
         horizontalStackView.translatesAutoresizingMaskIntoConstraints = false
+        let topConstraint = horizontalStackView.topAnchor.constraint(equalTo: topAnchor, constant: 6)
+        topConstraint.priority = .required
+
+        let leadingConstraint = horizontalStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6)
+        leadingConstraint.priority = .required
+
+        let trailingConstraint = horizontalStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10)
+        trailingConstraint.priority = .required
+
+        let bottomConstraint = horizontalStackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6)
+        bottomConstraint.priority = .required
+
         NSLayoutConstraint.activate([
-            horizontalStackView.topAnchor.constraint(equalTo: topAnchor, constant: 6),
-            horizontalStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
-            horizontalStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
-            horizontalStackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6),
+            topConstraint,
+            leadingConstraint,
+            trailingConstraint,
+            bottomConstraint,
 
             button.trailingAnchor.constraint(equalTo: trailingAnchor),
             button.topAnchor.constraint(equalTo: topAnchor),
@@ -146,6 +158,11 @@ final class CheckinView: UIView {
 
         update(watchingItem: WatchingManager.shared.watchingItem)
 
+        WatchingManager.shared.onWatchingItemChangedReceiver.listen { [weak self] watchingItem, _ in
+            guard let self = self else { return }
+            self.update(watchingItem: watchingItem)
+        }.disposed(by: disposeBag)
+
         WatchingManager.shared.onProgressChangedReceiver.listen { [weak self] progress in
             guard let self = self else { return }
             self.progress.updateProgress(CGFloat(progress), animated: false)
@@ -161,18 +178,27 @@ final class CheckinView: UIView {
     }
 
     func update(watchingItem: WatchingItem?) {
-        if let watchingItem = watchingItem {
-            if let movie = watchingItem.movie {
-                contextMenu.media = movie.mediaModel
-                poster.movie = movie
-                title.text = movie.title
-                subtitle.text = if let releaseYear = movie.releaseYear { "\(releaseYear)" } else { nil }
-            } else if let show = watchingItem.show, let episode = watchingItem.episode {
-                contextMenu.media = show.mediaModel
-                poster.show = show
-                title.text = show.title
-                subtitle.text = episode.localizedEpisodeNumber
-            }
+        guard let watchingItem = watchingItem else {
+            contextMenu.media = nil
+            poster.movie = nil
+            poster.show = nil
+            title.text = nil
+            subtitle.text = nil
+            return
+        }
+
+        if let movie = watchingItem.movie {
+            contextMenu.media = movie.mediaModel
+            poster.show = nil
+            poster.movie = movie
+            title.text = movie.title
+            subtitle.text = if let releaseYear = movie.releaseYear { "\(releaseYear)" } else { nil }
+        } else if let show = watchingItem.show, let episode = watchingItem.episode {
+            contextMenu.media = show.mediaModel
+            poster.movie = nil
+            poster.show = show
+            title.text = show.title
+            subtitle.text = episode.localizedEpisodeNumber
         }
     }
 }

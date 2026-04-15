@@ -102,15 +102,12 @@ final class ListActionTableViewCell: UITableViewCell {
         isLoading = true
 
         let listItemsType = self.listItemsType
-        fetchTask = _Concurrency.Task { [weak self] in
+        TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
+                                           id: list.identifiers.trakt!,
+                                           type: listItemsType) { [weak self] result in
             guard let self = self else { return }
-            do {
-                let results = try await TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
-                                                                           id: list.identifiers.trakt!,
-                                                                           type: listItemsType,
-                                                                           extended: nil)
-                if _Concurrency.Task.isCancelled { return }
-
+            switch result {
+            case let .success(results):
                 var inList = false
                 for item in results {
                     if let movie = media.movie {
@@ -149,8 +146,7 @@ final class ListActionTableViewCell: UITableViewCell {
                     self.titleLabel.text = self.list?.name.emojiUnescapedString
                     self.titleLabel.textColor = .label
                 }
-            } catch {
-                if _Concurrency.Task.isCancelled { return }
+            case let .failure(error):
                 DispatchQueue.main.async {
                     print("List items request failure \(error)")
                     self.isLoading = false

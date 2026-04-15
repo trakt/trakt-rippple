@@ -21,25 +21,19 @@ final class ToWatchBrowseCollectionViewCell: UICollectionViewCell {
                 label?.text = show.title
                 pinned?.isHidden = !show.isPinned
                 backdrop.showEpisodeSpoilers = UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle")
-                if progress.toRewatchCount > 0 {
-                    backdrop.media = show.mediaModel
-                } else if let episode = progress.nextEpisodeToWatch {
+                if let episode = progress.nextEpisodeToWatch {
                     backdrop.media = episode.mediaModel(given: show)
                 } else {
                     backdrop.media = show.mediaModel
                 }
-                if progress.toRewatchCount > 0 {
-                    sublabel?.text = "\(progress.toRewatchCount) to rewatch"
-                } else {
-                    if let nextEpisodeToWatch = progress.nextEpisodeToWatch {
-                        if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = nextEpisodeToWatch.title {
-                            sublabel?.text = "\(nextEpisodeToWatch.localizedEpisodeNumber) - \(title)"
-                        } else {
-                            sublabel?.text = nextEpisodeToWatch.localizedEpisodeNumber
-                        }
+                if let nextEpisodeToWatch = progress.nextEpisodeToWatch {
+                    if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = nextEpisodeToWatch.title {
+                        sublabel?.text = "\(nextEpisodeToWatch.localizedEpisodeNumber) - \(title)"
                     } else {
-                        sublabel?.text = ""
+                        sublabel?.text = nextEpisodeToWatch.localizedEpisodeNumber
                     }
+                } else {
+                    sublabel?.text = ""
                 }
             case .list, .show, .season, .episode, .movie:
                 fatalError("This type is not handled")

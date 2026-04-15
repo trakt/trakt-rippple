@@ -132,13 +132,6 @@ final class MainTabBarController: UITabBarController {
 
         updateTabBar(animated: false)
 
-        PurchaseManager.shared.onPurchasedChangedReceiver.skipRepeats().listen { [weak self] _ in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                self.updateTabBar(animated: false)
-            }
-        }.disposed(by: disposeBag)
-
         if let userDefault = UserDefaults.standard.string(forKey: "MainTabBarController.selectedTab"),
            let tab = Tab(rawValue: userDefault),
            let uiTab = tabStore[tab],
@@ -161,8 +154,7 @@ final class MainTabBarController: UITabBarController {
     }
 
     private func updateWatchingItem() {
-        if let watchingItem = WatchingManager.shared.watchingItem {
-            checkinView.update(watchingItem: watchingItem)
+        if WatchingManager.shared.watchingItem != nil {
             self.setBottomAccessory(UITabAccessory(contentView: checkinView),
                                     animated: true)
         } else {
@@ -176,28 +168,19 @@ final class MainTabBarController: UITabBarController {
     }
 
     fileprivate func updateTabBar(animated: Bool) {
-        if PurchaseManager.shared.purchased == true {
-            if customTabs == [Tab.browse] {
-                isTabBarHidden = true
-            } else {
-                isTabBarHidden = false
-            }
-            let tabs: [UITab] = customTabs.map {
-                return tabStore[$0]!
-            }
-            if tabs == self.tabs { return }
-            setTabs(tabs, animated: animated)
-            contextMenus.removeAll()
-            for item in self.tabBar.items! {
-                updateContextMenu(for: item)
-            }
+        if customTabs == [Tab.browse] {
+            isTabBarHidden = true
         } else {
-            let tabs: [UITab] = defaultTabBar.map {
-                return tabStore[$0]!
-            }
-            if tabs == self.tabs { return }
-            setTabs(tabs, animated: animated)
-            contextMenus.removeAll()
+            isTabBarHidden = false
+        }
+        let tabs: [UITab] = customTabs.map {
+            return tabStore[$0]!
+        }
+        if tabs == self.tabs { return }
+        setTabs(tabs, animated: animated)
+        contextMenus.removeAll()
+        for item in self.tabBar.items! {
+            updateContextMenu(for: item)
         }
     }
 

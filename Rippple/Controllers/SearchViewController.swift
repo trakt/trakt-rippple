@@ -718,7 +718,7 @@ final class SearchViewController: UITableViewController {
             return
         }
 
-        performSegue(withIdentifier: "smartSearch", sender: SmartSearch(urlString: "https://apiz.trakt.tv/movies/trending", count: 10))
+        performSegue(withIdentifier: "smartSearch", sender: SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/trending", count: 10))
         UISelectionFeedbackGenerator().selectionChanged()
     }
 
@@ -728,7 +728,7 @@ final class SearchViewController: UITableViewController {
             return
         }
 
-        performSegue(withIdentifier: "smartSearch", sender: SmartSearch(urlString: "https://apiz.trakt.tv/shows/trending", count: 10))
+        performSegue(withIdentifier: "smartSearch", sender: SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/shows/trending", count: 10))
         UISelectionFeedbackGenerator().selectionChanged()
     }
 

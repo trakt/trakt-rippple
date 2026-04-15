@@ -22,13 +22,19 @@ private struct CompletedShow: Codable, Hashable {
 final class CompletedShowsManager {
 
     private let disposeBag = DisposeBag()
+    private let stateLock = NSLock()
 
     private init() { }
 
     private var debouncedTransmit: Debouncer!
 
     var completedShowsModels: [MediaModel] {
-        return completedShows.sorted { $0.lastWatchedAt > $1.lastWatchedAt }.filter { $0.show.isHiddenFromProgress == false }.compactMap { $0.show.mediaModel }
+        let snapshot = withStateLock { completedShows }
+
+        return snapshot
+            .sorted { $0.lastWatchedAt > $1.lastWatchedAt }
+            .filter { $0.show.isHiddenFromProgress == false }
+            .compactMap { $0.show.mediaModel }
     }
 
     func setup() {
@@ -38,7 +44,9 @@ final class CompletedShowsManager {
         }
 
         if let array = TinyStorage.cache.retrieve(type: [CompletedShow].self, forKey: "CompletedShowsManager.completedShows") {
-            completedShows = array
+            updateCompletedShows { completedShows in
+                completedShows = array
+            }
         }
 
         onShowsHiddenFromProgressMediaChangedReceiver.listen { [weak self] _ in
@@ -62,7 +70,9 @@ final class CompletedShowsManager {
 
         // if it's not in watched, don't try to check if it's complete
         guard let lastWatchedAt = progress.showProgress.lastWatchedAt else {
-            completedShows.removeAll(where: { $0.show == show })
+            updateCompletedShows { completedShows in
+                completedShows.removeAll(where: { $0.show == show })
+            }
             return
         }
 
@@ -71,27 +81,42 @@ final class CompletedShowsManager {
 
         // the shows's complete
         if (show.status == "canceled" || show.status == "ended") && (progress.showProgress.nextEpisodeToWatch == nil && progress.showProgress.nextToRewatch == nil) {
-            if completedShows.contains(where: { $0.show == show }) == false {
-                completedShows.append(CompletedShow(show: show,
-                                                    lastWatchedAt: lastWatchedAt))
+            updateCompletedShows { completedShows in
+                if completedShows.contains(where: { $0.show == show }) == false {
+                    completedShows.append(CompletedShow(show: show,
+                                                        lastWatchedAt: lastWatchedAt))
+                }
             }
         } else {
-            completedShows.removeAll(where: { $0.show == show })
+            updateCompletedShows { completedShows in
+                completedShows.removeAll(where: { $0.show == show })
+            }
         }
     }
 
     static let shared = CompletedShowsManager()
 
     fileprivate var completedShowSet = Set<Int64>()
-    fileprivate var completedShows = [CompletedShow]() {
-        didSet {
-            if Set(oldValue) != Set(completedShows) {
-                completedShowSet = Set(completedShows.compactMap { $0.show.identifiers.trakt })
-                debouncedTransmit.call()
+    fileprivate var completedShows = [CompletedShow]()
 
-                TinyStorage.cache.store(completedShows, forKey: "CompletedShowsManager.completedShows")
-            }
+    private func withStateLock<T>(_ work: () -> T) -> T {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return work()
+    }
+
+    private func updateCompletedShows(_ update: (inout [CompletedShow]) -> Void) {
+        let updatedShows: [CompletedShow]? = withStateLock {
+            let oldShows = completedShows
+            update(&completedShows)
+            guard Set(oldShows) != Set(completedShows) else { return nil }
+            completedShowSet = Set(completedShows.compactMap { $0.show.identifiers.trakt })
+            return completedShows
         }
+
+        guard let updatedShows else { return }
+        debouncedTransmit.call()
+        TinyStorage.cache.store(updatedShows, forKey: "CompletedShowsManager.completedShows")
     }
 
     private func transmit() {
@@ -99,13 +124,17 @@ final class CompletedShowsManager {
     }
 
     var completedShowCount: Int {
-        return completedShows.count
+        return withStateLock { completedShows.count }
+    }
+
+    fileprivate func containsCompletedShow(traktId: Int64) -> Bool {
+        return withStateLock { completedShowSet.contains(traktId) }
     }
 }
 
 extension Show {
     var isCompleted: Bool {
         guard let traktId = identifiers.trakt else { return false }
-        return CompletedShowsManager.shared.completedShowSet.contains(traktId)
+        return CompletedShowsManager.shared.containsCompletedShow(traktId: traktId)
     }
 }

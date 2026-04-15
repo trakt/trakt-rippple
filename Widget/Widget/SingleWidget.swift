@@ -80,13 +80,15 @@ struct SingleWidgetProvider: IntentTimelineProvider {
         print("Getting Widget Timeline for configuration: \(configuration)")
         if configuration.type?.identifier == WidgetType.custom.rawValue {
             Task {
-                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "https://apiz.trakt.tv/search/tmdb/\(configuration.type!.tmdbId!)?extended=full&type=\(configuration.type!.tmdbType! == "tv" ? "show" : "movie")")!)
+                let data = await TraktItemLoader().loadCachedMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/search/tmdb/\(configuration.type!.tmdbId!)?extended=full&type=\(configuration.type!.tmdbType! == "tv" ? "show" : "movie")")!)
 
                 let entries = await entries(for: data,
                                             and: configuration,
                                             in: context,
                                             adding: nil)
-                var refreshDate = Date.now.advanced(by: 60*60)
+
+                var refreshDate = Date.now.advanced(by: data == nil ? 60 * 5 : 60 * 60)
+
                 for entry in entries {
                     if let date = entry.progress.endDate, date < refreshDate {
                         refreshDate = date
@@ -97,7 +99,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
             }
         } else if configuration.type?.identifier == WidgetType.trendingShow.rawValue {
             Task {
-                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "https://apiz.trakt.tv/shows/trending?extended=full&page=1&limit=1")!)
+                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/shows/trending?extended=full&page=1&limit=1")!)
 
                 let entries = await entries(for: data,
                                             and: configuration,
@@ -114,7 +116,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
             }
         } else if configuration.type?.identifier == WidgetType.trendingMovie.rawValue {
             Task {
-                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "https://apiz.trakt.tv/movies/trending?extended=full&page=1&limit=1")!)
+                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/movies/trending?extended=full&page=1&limit=1")!)
 
                 let entries = await entries(for: data,
                                             and: configuration,
@@ -131,7 +133,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
             }
         } else if configuration.type?.identifier == WidgetType.recommendedShow.rawValue {
             Task {
-                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "https://apiz.trakt.tv/shows/favorited/weekly/?extended=full&page=1&limit=1")!)
+                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/shows/favorited/weekly/?extended=full&page=1&limit=1")!)
 
                 let entries = await entries(for: data,
                                             and: configuration,
@@ -148,7 +150,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
             }
         } else if configuration.type?.identifier == WidgetType.recommendedMovie.rawValue {
             Task {
-                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "https://apiz.trakt.tv/movies/favorited/weekly/?extended=full&page=1&limit=1")!)
+                let data = await TraktItemLoader().loadMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/movies/favorited/weekly/?extended=full&page=1&limit=1")!)
 
                 let entries = await entries(for: data,
                                             and: configuration,
@@ -279,7 +281,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                                                                 type: "tv",
                                                                 with: imageWidthToGet(for: context))
 
-            let progress = await TraktItemLoader().loadProgress(from: URL(string: "https://apiz.trakt.tv/shows/\(show.ids.trakt)/progress/watched?last_activity=watched")!)
+            let progress = await TraktItemLoader().loadProgress(from: URL(string: "\(TraktAPIConfiguration.baseURL)/shows/\(show.ids.trakt)/progress/watched?last_activity=watched")!)
 
             var behind: String?
             var subtitle: String?
@@ -304,7 +306,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
 
                 if let episodeToWatch = nextEpisodeToWatch {
                     if behindCount == 0 {
-                        if let firstAirDate = await TraktItemLoader().loadEpisodeFirstAirDate(from: URL(string: "https://apiz.trakt.tv/shows/\(show.ids.trakt)/seasons/\(episodeToWatch.season)/episodes/\(episodeToWatch.number)?extended=full")!) {
+                        if let firstAirDate = await TraktItemLoader().loadEpisodeFirstAirDate(from: URL(string: "\(TraktAPIConfiguration.baseURL)/shows/\(show.ids.trakt)/seasons/\(episodeToWatch.season)/episodes/\(episodeToWatch.number)?extended=full")!) {
                             behind = "Coming..."
                             refreshDate = firstAirDate
                         }
@@ -318,7 +320,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                     deeplink = URL(string: "ripl://shows/\(show.ids.trakt)/seasons/\(nextEpisodeToWatch.season)/episodes/\(nextEpisodeToWatch.number)")
                 }
                 if nextEpisodeToWatch == nil, nextEpisodeToRewtach == nil, progress.completed == 0 {
-                    if let firstEpisode = await TraktItemLoader().loadFirstEpisode(from: URL(string: "https://apiz.trakt.tv/shows/\(show.ids.trakt)/seasons/1/episodes/1?extended=full")!) {
+                    if let firstEpisode = await TraktItemLoader().loadFirstEpisode(from: URL(string: "\(TraktAPIConfiguration.baseURL)/shows/\(show.ids.trakt)/seasons/1/episodes/1?extended=full")!) {
                         behind = "Coming..."
                         refreshDate = firstEpisode.firstAired
                         subtitle = firstEpisode.localizedEpisodeNumber
@@ -531,12 +533,102 @@ struct SingleWidget_Previews: PreviewProvider {
 struct TraktItemLoader {
     var session = URLSession.shared
 
+    private static let cacheSuiteName = "group.tv.trakt.rippple"
+    private static let tmdbSearchCacheKeyPrefix = "widget.search.tmdb.cache."
+    private static let tmdbSearchCacheLifetime: TimeInterval = 60 * 60 * 3
+    private static let tmdbSearchCleanupThreshold: TimeInterval = 60 * 60 * 24 * 30
+    private static let tmdbSearchLastCleanupKey = "widget.search.tmdb.cache.lastCleanupAt"
+    private static let tmdbSearchCleanupInterval: TimeInterval = 60 * 60 * 24
+
+    private struct CachedTraktItem: Codable {
+        let item: TraktItem
+        let cachedAt: Date
+    }
+
     private var userAgent: String {
         let bundle = Bundle.main
         let name = bundle.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "Rippple"
         let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
         let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
         return "\(name)/\(version) (\(build))"
+    }
+
+    private func searchTMDbCacheKey(for url: URL) -> String {
+        TraktItemLoader.tmdbSearchCacheKeyPrefix + url.absoluteString
+    }
+
+    private func cleanupOldTMDbSearchCacheEntries() {
+        guard let defaults = UserDefaults(suiteName: TraktItemLoader.cacheSuiteName) else { return }
+
+        let now = Date()
+        if let lastCleanup = defaults.object(forKey: TraktItemLoader.tmdbSearchLastCleanupKey) as? Date,
+           now.timeIntervalSince(lastCleanup) < TraktItemLoader.tmdbSearchCleanupInterval {
+            return
+        }
+
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(TraktItemLoader.tmdbSearchCacheKeyPrefix) {
+            guard let data = defaults.data(forKey: key),
+                  let cached = try? JSONDecoder().decode(CachedTraktItem.self, from: data) else {
+                defaults.removeObject(forKey: key)
+                continue
+            }
+
+            if now.timeIntervalSince(cached.cachedAt) > TraktItemLoader.tmdbSearchCleanupThreshold {
+                defaults.removeObject(forKey: key)
+            }
+        }
+
+        defaults.set(now, forKey: TraktItemLoader.tmdbSearchLastCleanupKey)
+    }
+
+    private func cachedMediaItem(for url: URL) -> CachedTraktItem? {
+        guard let defaults = UserDefaults(suiteName: TraktItemLoader.cacheSuiteName),
+              let data = defaults.data(forKey: searchTMDbCacheKey(for: url)),
+              let cached = try? JSONDecoder().decode(CachedTraktItem.self, from: data) else {
+            return nil
+        }
+        return cached
+    }
+
+    private func storeMediaItemInCache(_ item: TraktItem, for url: URL) {
+        guard let defaults = UserDefaults(suiteName: TraktItemLoader.cacheSuiteName) else { return }
+        let cached = CachedTraktItem(item: item, cachedAt: Date())
+        guard let data = try? JSONEncoder().encode(cached) else { return }
+        defaults.removeObject(forKey: searchTMDbCacheKey(for: url))
+        defaults.set(data, forKey: searchTMDbCacheKey(for: url))
+    }
+
+    func loadCachedMediaItem(from url: URL) async -> TraktItem? {
+        cleanupOldTMDbSearchCacheEntries()
+
+        let cached = cachedMediaItem(for: url)
+
+        if let cached, Date().timeIntervalSince(cached.cachedAt) <= TraktItemLoader.tmdbSearchCacheLifetime {
+            return cached.item
+        }
+
+        do {
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            request.setValue(TraktAPIConfiguration.clientId, forHTTPHeaderField: "trakt-api-key")
+            request.setValue("2", forHTTPHeaderField: "trakt-api-version")
+            request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+
+            let (data, _) = try await session.data(for: request)
+            let decoder = JSONDecoder()
+            let mediaItem = try decoder.decode([TraktItem].self, from: data).first
+
+            if let mediaItem, mediaItem.movie != nil || mediaItem.show != nil {
+                storeMediaItemInCache(mediaItem, for: url)
+                return mediaItem
+            }
+
+            // Network succeeded but wasn't usable: keep stale/invalid cache as fallback.
+            return cached?.item ?? mediaItem
+        } catch {
+            // Network failed: keep stale/invalid cache as fallback.
+            return cached?.item
+        }
     }
 
     func loadMediaItem(from url: URL) async -> TraktItem? {

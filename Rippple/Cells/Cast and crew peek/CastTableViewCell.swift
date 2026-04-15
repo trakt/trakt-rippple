@@ -99,6 +99,9 @@ final class CastTableViewCell: UITableViewCell {
 
         collectionView.allowsFocus = false
         collectionView.register(UINib(nibName: "CastCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "cast")
+        if let flowLayout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            flowLayout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
+        }
         moreAction.isHidden = true
 
         maximumContentSizeCategory = .large
@@ -112,7 +115,7 @@ final class CastTableViewCell: UITableViewCell {
             case .placeholder:
                 cell.avatarImageView.image = nil
                 cell.avatarInitialLabel.text = ""
-                cell.additionalInfoLabel.text = ""
+                cell.additionalInfoLabel.text = " "
                 cell.asLabel.text = self.isLoading ? "Loading..." : "as Unknown"
                 cell.personNameLabel.text = self.isLoading ? "" : "Unknown"
             case .cast(let cast):
@@ -307,23 +310,6 @@ final class CastTableViewCell: UITableViewCell {
     }
 
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
-}
-
-extension CastTableViewCell: UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        switch media! {
-        case .movie:
-            return CGSize(width: 98, height: 125)
-        case .show:
-            return CGSize(width: 98, height: 140)
-        case .episode:
-            return CGSize(width: 98, height: 125)
-        case .season:
-            return CGSize(width: 98, height: 140)
-        default:
-            fatalError()
-        }
-    }
 }
 
 extension CastTableViewCell: UICollectionViewDelegate {

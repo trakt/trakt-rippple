@@ -142,6 +142,13 @@ struct SepiaFilter: CIImageProcessor {
 
 final class ImagesManager {
 
+    struct CacheStats {
+        let memoryExpirationDescription: String
+        let diskExpirationDescription: String
+        let diskSizeLimit: UInt
+        let diskSize: UInt
+    }
+
     private let movieCache = NSCache<NSString, NSString>()
     private let showCache = NSCache<NSString, NSString>()
     private let seasonCache = NSCache<NSString, NSString>()
@@ -155,6 +162,28 @@ final class ImagesManager {
     private let episodeStillsCache = NSCache<NSString, NSString>()
 
     private let peopleCache = NSCache<NSString, NSString>()
+
+    enum CacheMode: CaseIterable, Hashable {
+        case balanced
+        case offlineFirst
+        case alwaysFresh
+
+        var name: String {
+            switch self {
+            case .balanced: return "Balanced"
+            case .offlineFirst: return "Offline"
+            case .alwaysFresh: return "Freshest"
+            }
+        }
+
+        var description: String {
+            switch self {
+            case .balanced: return "Balances caching and freshness."
+            case .offlineFirst: return "Prioritizes cached images."
+            case .alwaysFresh: return "Prioritizes fresh (online) images."
+            }
+        }
+    }
 
     enum ImageType {
         case poster
@@ -170,9 +199,119 @@ final class ImagesManager {
     private var profileSizes: [String] = ["w45", "w185", "h632", "original"]
     private var logoSizes: [String] = ["w45", "w92", "w154", "w185", "w300", "w500", "original"]
 
-    private init() { }
+    private static let expirationFormatter: DateComponentsFormatter = {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.day, .hour, .minute, .second]
+        formatter.maximumUnitCount = 1
+        formatter.unitsStyle = .full
+        formatter.zeroFormattingBehavior = .dropAll
+        return formatter
+    }()
+
+    private(set) var cacheMode: CacheMode = .balanced {
+        didSet {
+            if oldValue != cacheMode {
+                applyCacheMode(bustCache: true, previousMode: oldValue)
+            }
+        }
+    }
+
+    private init() {
+        applyCacheMode(bustCache: false, previousMode: nil)
+    }
 
     static let shared = ImagesManager()
+
+    func updateCacheMode(_ mode: CacheMode) {
+        cacheMode = mode
+    }
+
+    private func applyCacheMode(bustCache: Bool, previousMode: CacheMode?) {
+        let cache = ImageCache.default
+
+        switch cacheMode {
+        case .balanced:
+            cache.memoryStorage.config.expiration = .seconds(12 * 60 * 60) // 12 hours
+            cache.diskStorage.config.expiration = .days(30)
+            cache.diskStorage.config.sizeLimit = 512 * 1024 * 1024 // 512 MB
+
+        case .offlineFirst:
+            cache.memoryStorage.config.expiration = .days(7)
+            cache.diskStorage.config.expiration = .days(90)
+            cache.diskStorage.config.sizeLimit = 1024 * 1024 * 1024 // 1 GB
+
+        case .alwaysFresh:
+            cache.memoryStorage.config.expiration = .seconds(10 * 60) // 10 minutes
+            cache.diskStorage.config.expiration = .days(2)
+            cache.diskStorage.config.sizeLimit = 256 * 1024 * 1024 // 256 MB
+        }
+
+        guard bustCache else {
+            return
+        }
+
+        cache.clearMemoryCache()
+        cache.clearDiskCache()
+    }
+
+    private func expirationDescription(_ expiration: StorageExpiration) -> String {
+        switch expiration {
+        case .never:
+            return "Never"
+        case .expired:
+            return "Expired"
+        case .seconds(let seconds):
+            let interval = TimeInterval(seconds)
+            return ImagesManager.expirationFormatter.string(from: interval) ?? "\(Int(seconds)) seconds"
+        case .days(let days):
+            if days == 1 {
+                return "1 day"
+            }
+            return "\(days) days"
+        default:
+            return ""
+        }
+    }
+
+    func loadCacheStats(completion: @escaping (CacheStats) -> Void) {
+        let cache = ImageCache.default
+
+        let memoryExpirationDescription = expirationDescription(cache.memoryStorage.config.expiration)
+        let diskExpirationDescription = expirationDescription(cache.diskStorage.config.expiration)
+        let diskSizeLimit = cache.diskStorage.config.sizeLimit
+
+        cache.calculateDiskStorageSize { result in
+            let diskSize: UInt
+            switch result {
+            case .success(let size):
+                diskSize = size
+            case .failure:
+                diskSize = 0
+            }
+
+            let stats = CacheStats(memoryExpirationDescription: memoryExpirationDescription,
+                                   diskExpirationDescription: diskExpirationDescription,
+                                   diskSizeLimit: diskSizeLimit,
+                                   diskSize: diskSize)
+            completion(stats)
+        }
+    }
+
+    func options(adding extra: KingfisherOptionsInfo = []) -> KingfisherOptionsInfo {
+        var base: KingfisherOptionsInfo = []
+
+        switch cacheMode {
+        case .balanced:
+            break
+        case .offlineFirst:
+            base.append(.cacheOriginalImage)
+        case .alwaysFresh:
+            base.append(.fromMemoryCacheOrRefresh)
+        }
+
+        base.append(contentsOf: extra)
+        return base
+    }
 
     func imageURL(for providerLogoURL: String) -> URL? {
         return URL(string: "\(baseURL)original/\(providerLogoURL)")
@@ -680,7 +819,7 @@ final class PosterImageView: UIImageView {
                                                                  for: size) {
             kf.setImage(with: imageURL,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             if let completion = completion { completion(true) }
             return
         }
@@ -717,7 +856,7 @@ final class PosterImageView: UIImageView {
                         if movie != self.movie { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)]) { [weak self] _ in
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)])) { [weak self] _ in
                             guard let self = self else { return }
                             if let completion = self.completion { completion(true) }
                         }
@@ -758,7 +897,7 @@ final class PosterImageView: UIImageView {
                                                                 for: size) {
             kf.setImage(with: imageURL,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             if let completion = completion { completion(true) }
             return
         }
@@ -795,7 +934,7 @@ final class PosterImageView: UIImageView {
                         if show != self.show { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)]) { [weak self] _ in
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)])) { [weak self] _ in
                             guard let self = self else { return }
                             if let completion = self.completion { completion(true) }
                         }
@@ -837,7 +976,7 @@ final class PosterImageView: UIImageView {
                                                                   for: size) {
             kf.setImage(with: imageURL,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             if let completion = completion { completion(true) }
             return
         }
@@ -874,7 +1013,7 @@ final class PosterImageView: UIImageView {
                         if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)]) { [weak self] _ in
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)])) { [weak self] _ in
                             guard let self = self else { return }
                             if let completion = self.completion { completion(true) }
                         }
@@ -940,7 +1079,7 @@ final class PeopleProfileImageView: UIImageView {
         if let imageURL = ImagesManager.shared.cachedPeopleImage(with: person.ids, for: size) {
             kf.setImage(with: imageURL,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             return
         }
 
@@ -974,7 +1113,7 @@ final class PeopleProfileImageView: UIImageView {
                         if person.ids != self.person?.ids { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)])
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)]))
                     }
 
                 } catch {
@@ -1033,7 +1172,7 @@ final class BigPeopleProfileImageView: UIImageView {
         if let imageURL = ImagesManager.shared.cachedPeopleImage(with: person.ids, for: size) {
             kf.setImage(with: imageURL,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             return
         }
 
@@ -1067,7 +1206,7 @@ final class BigPeopleProfileImageView: UIImageView {
                         if person.ids != self.person?.ids { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)])
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)]))
                     }
 
                 } catch {
@@ -1161,7 +1300,7 @@ final class PosterButton: UIButton {
             kf.setImage(with: imageURL,
                         for: .normal,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             return
         }
 
@@ -1197,7 +1336,7 @@ final class PosterButton: UIButton {
                         self.kf.setImage(with: imageURL,
                                          for: .normal,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)])
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)]))
                     }
 
                 } catch {
@@ -1231,7 +1370,7 @@ final class PosterButton: UIButton {
             kf.setImage(with: imageURL,
                         for: .normal,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             return
         }
 
@@ -1267,7 +1406,7 @@ final class PosterButton: UIButton {
                         self.kf.setImage(with: imageURL,
                                          for: .normal,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)])
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)]))
                     }
 
                 } catch {
@@ -1302,7 +1441,7 @@ final class PosterButton: UIButton {
             kf.setImage(with: imageURL,
                         for: .normal,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             return
         }
 
@@ -1338,7 +1477,7 @@ final class PosterButton: UIButton {
                         self.kf.setImage(with: imageURL,
                                          for: .normal,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)])
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)]))
                     }
 
                 } catch {
@@ -1487,7 +1626,7 @@ final class BackdropImageView: UIImageView {
                                                                    for: size) {
             kf.setImage(with: imageURL,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             if let completion = completion { completion(true) }
             return
         }
@@ -1524,7 +1663,7 @@ final class BackdropImageView: UIImageView {
                         if movie != self.media?.movie { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)]) { [weak self] _ in
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)])) { [weak self] _ in
                             guard let self = self else { return }
                             if let completion = self.completion { completion(true) }
                         }
@@ -1565,7 +1704,7 @@ final class BackdropImageView: UIImageView {
                                                                   for: size) {
             kf.setImage(with: imageURL,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             if let completion = completion { completion(true) }
             return
         }
@@ -1602,7 +1741,7 @@ final class BackdropImageView: UIImageView {
                         if show != self.media?.show { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)])
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)]))
                         if let completion = self.completion { completion(true) }
                     }
 
@@ -1641,7 +1780,7 @@ final class BackdropImageView: UIImageView {
                                                                   for: size) {
             kf.setImage(with: imageURL,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             if let completion = completion { completion(true) }
             return
         }
@@ -1674,7 +1813,7 @@ final class BackdropImageView: UIImageView {
                         if episode != self.media?.episode { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,
-                                         options: [.processor(self.filter), .transition(.fade(0.6))]) { [weak self] _ in
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter), .transition(.fade(0.6))])) { [weak self] _ in
                             guard let self = self else { return }
                             if let completion = self.completion { completion(true) }
                         }
@@ -1760,10 +1899,10 @@ final class LogoImageView: UIImageView {
         }
 
         if let imageURL = ImagesManager.shared.cachedMovieLogo(with: movie.identifiers,
-                                                                   for: size) {
+                                                               for: size) {
             kf.setImage(with: imageURL,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             if let completion = completion { completion(true) }
             return
         }
@@ -1808,7 +1947,7 @@ final class LogoImageView: UIImageView {
                         if movie != self.media?.movie { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)]) { [weak self] _ in
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)])) { [weak self] _ in
                             guard let self = self else { return }
                             if let completion = self.completion { completion(true) }
                         }
@@ -1846,10 +1985,10 @@ final class LogoImageView: UIImageView {
         }
 
         if let imageURL = ImagesManager.shared.cachedShowLogo(with: show.identifiers,
-                                                                  for: size) {
+                                                              for: size) {
             kf.setImage(with: imageURL,
                         placeholder: nil,
-                        options: [.processor(filter)])
+                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
             if let completion = completion { completion(true) }
             return
         }
@@ -1894,7 +2033,7 @@ final class LogoImageView: UIImageView {
                         if show != self.media?.show { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,
-                                         options: [.processor(self.filter)]) { [weak self] _ in
+                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)])) { [weak self] _ in
                             guard let self = self else { return }
                             if let completion = self.completion { completion(true) }
                         }

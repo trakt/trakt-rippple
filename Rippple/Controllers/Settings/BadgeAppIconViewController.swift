@@ -55,7 +55,7 @@ struct BadgeAppIconView: View {
                             Spacer()
                             if selectedMode == option.wrappedValue.identifier {
                                 Image(systemName: "checkmark")
-                                    .foregroundStyle(.globalTint)
+                                    .foregroundStyle(Color(UIColor(asset: .globalTint)))
                             }
                         }
                     }.foregroundColor(.primary)
@@ -71,7 +71,7 @@ struct BadgeAppIconView: View {
                             Spacer()
                             if selectedMode == option.wrappedValue.identifier {
                                 Image(systemName: "checkmark")
-                                    .foregroundStyle(.globalTint)
+                                    .foregroundStyle(Color(UIColor(asset: .globalTint)))
                             }
                         }
                     }.foregroundColor(.primary)
@@ -87,7 +87,7 @@ struct BadgeAppIconView: View {
                             Spacer()
                             if selectedMode == option.wrappedValue.identifier {
                                 Image(systemName: "checkmark")
-                                    .foregroundStyle(.globalTint)
+                                    .foregroundStyle(Color(UIColor(asset: .globalTint)))
                             }
                         }
                     }.foregroundColor(.primary)

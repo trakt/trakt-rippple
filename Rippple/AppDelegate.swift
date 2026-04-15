@@ -56,6 +56,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                   "CalendarSettings.myMovies": true,
                                                   "CalendarSettings.hideHiddenMovies": true,
                                                   "CalendarSettings.hideHiddenShows": true,
+                                                  "CalendarSettings.hideRecentlyWatchedMovies": false,
+                                                  "CalendarSettings.hideRecentlyWatchedShows": false,
                                                   "EpisodeNotificationsManager.groupEpisodes": true,
                                                   "EpisodeNotificationsManager.watchlistShowPremiere": true,
                                                   "EpisodeNotificationsManager.watchlistSeasonPremiere": true,
@@ -239,6 +241,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         WidgetManager.shared.setup()
         SavedFiltersManager.shared.setup()
         RecentSearchManager.shared.setup()
+        OpenActionManager.shared.setup()
 
         WatchlistManager.shared.setup()
         CompletedShowsManager.shared.setup()

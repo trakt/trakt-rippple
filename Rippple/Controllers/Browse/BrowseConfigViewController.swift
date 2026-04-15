@@ -148,8 +148,9 @@ final class BrowseConfigManager {
             { "module": "L1", "filter": { "section": "movies", "name": "Movies on Netflix", "path": "/movies/trending", "query": "watchnow=netflix" } }
             { "module": "L1", "filter": { "section": "movies", "name": "Movies on Apple TV", "path": "/movies/trending", "query": "watchnow=apple_tv_plus" } }
             { "module": "L1", "filter": { "section": "movies", "name": "Movies on Amazon Prime", "path": "/movies/trending", "query": "watchnow=amazon_prime_video" } }
-            { "module": "L1", "filter": { "section": "movies", "name": "Movies on Hulu", "path": "/movies/trending", "query": "watchnow=us-hulu" } }
             { "module": "L1", "filter": { "section": "movies", "name": "Movies on HBO Max", "path": "/movies/trending", "query": "watchnow=hbo_max" } }
+            { "module": "L1", "filter": { "section": "movies", "name": "Movies on Paramount+", "path": "/movies/trending", "query": "watchnow=paramountplusessential,paramount_plus_premium" } }
+            { "module": "L1", "filter": { "section": "movies", "name": "Movies on Hulu", "path": "/movies/trending", "query": "watchnow=us-hulu" } }
             { "module": "L2", "filter": { "section": "movies", "name": "Movies Recommendations", "path": "/recommendations/movies", "query": "" } }
             """
 
@@ -168,7 +169,7 @@ final class BrowseConfigManager {
             { "module": "L1", "filter": { "section": "shows", "name": "Shows on Prime Video", "path": "/shows/trending", "query": "watchnow=amazon_prime_video" } }
             { "module": "L1", "filter": { "section": "shows", "name": "Shows on Apple TV", "path": "/shows/trending", "query": "watchnow=apple_tv_plus" } }
             { "module": "L1", "filter": { "section": "shows", "name": "Shows on HBO Max", "path": "/shows/trending", "query": "watchnow=hbo_max" } }
-            { "module": "L1", "filter": { "section": "shows", "name": "Shows on Paramount+", "path": "/shows/trending", "query": "watchnow=us-paramount_plus" } }
+            { "module": "L1", "filter": { "section": "shows", "name": "Shows on Paramount+", "path": "/shows/trending", "query": "watchnow=paramountplusessential,paramount_plus_premium" } }
             { "module": "L1", "filter": { "section": "shows", "name": "Shows on Hulu", "path": "/shows/trending", "query": "watchnow=us-hulu" } }
             { "module": "L2", "filter": { "section": "shows", "name": "TV Shows Recommendations", "path": "/recommendations/shows", "query": "" } }
             """

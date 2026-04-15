@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -18,32 +18,43 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VP3-CB-Jrb" customClass="CardView" customModule="Rippple" customModuleProvider="target">
-                        <rect key="frame" x="12" y="4" width="350" height="128"/>
+                        <rect key="frame" x="13" y="4" width="349" height="128"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
-                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="40y-Lh-N6E">
+                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="40y-Lh-N6E">
                         <rect key="frame" x="25" y="15" width="325" height="106"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Kx9-Vk-07F">
                                 <rect key="frame" x="0.0" y="0.0" width="325" height="106"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="rsg-mF-be9">
-                                        <rect key="frame" x="0.0" y="32" width="76" height="42.5"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="ZBJ-Zd-YZh">
+                                        <rect key="frame" x="0.0" y="35.5" width="90.5" height="35"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="waveform" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="u0m-ek-Wz8">
-                                                <rect key="frame" x="0.0" y="-0.5" width="20.5" height="43.5"/>
+                                                <rect key="frame" x="0.0" y="7" width="20.5" height="21"/>
                                                 <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font">
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                 </preferredSymbolConfiguration>
                                             </imageView>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Activities" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cI2-IC-VQ7">
-                                                <rect key="frame" x="23.5" y="0.0" width="52.5" height="42.5"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="rsg-mF-be9">
+                                                <rect key="frame" x="26.5" y="0.0" width="64" height="35"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Activities" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cI2-IC-VQ7">
+                                                        <rect key="frame" x="0.0" y="0.0" width="64" height="20.5"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Date" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="u9e-zL-Lf8">
+                                                        <rect key="frame" x="0.0" y="20.5" width="64" height="14.5"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
                                         </subviews>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" distribution="fillEqually" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="wny-ow-hi2">
+                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" distribution="fillEqually" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="wny-ow-hi2">
                                         <rect key="frame" x="90.5" y="43.5" width="234.5" height="19"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="S6d-TJ-ap5" customClass="PinnedImageView" customModule="Rippple" customModuleProvider="target">
@@ -150,7 +161,7 @@
                     <constraint firstAttribute="trailing" secondItem="40y-Lh-N6E" secondAttribute="trailing" constant="25" id="CKq-NQ-ydy"/>
                     <constraint firstItem="40y-Lh-N6E" firstAttribute="trailing" secondItem="VP3-CB-Jrb" secondAttribute="trailing" constant="-12" id="D0u-g2-gQD"/>
                     <constraint firstItem="40y-Lh-N6E" firstAttribute="top" secondItem="ZLk-Bn-7mR" secondAttribute="top" constant="15" id="VKq-t1-K3g"/>
-                    <constraint firstItem="VP3-CB-Jrb" firstAttribute="leading" secondItem="40y-Lh-N6E" secondAttribute="leading" constant="-13" id="bIc-jF-jVA"/>
+                    <constraint firstItem="VP3-CB-Jrb" firstAttribute="leading" secondItem="40y-Lh-N6E" secondAttribute="leading" constant="-12" id="bIc-jF-jVA"/>
                     <constraint firstAttribute="bottom" secondItem="VP3-CB-Jrb" secondAttribute="bottom" constant="4" id="dEF-Ks-nMh"/>
                     <constraint firstItem="40y-Lh-N6E" firstAttribute="leading" secondItem="ZLk-Bn-7mR" secondAttribute="leading" constant="25" id="iHQ-uW-wFg"/>
                     <constraint firstAttribute="bottom" secondItem="40y-Lh-N6E" secondAttribute="bottom" constant="15" id="yCV-yw-fH8"/>
@@ -166,6 +177,7 @@
                 <outlet property="pulseSymbol" destination="u0m-ek-Wz8" id="JF8-RO-cCK"/>
                 <outlet property="ratedStatus" destination="ccR-FK-f7N" id="37q-lF-hi1"/>
                 <outlet property="recommendedStatus" destination="ERZ-uE-PNq" id="qp9-7D-iYH"/>
+                <outlet property="subtitle" destination="u9e-zL-Lf8" id="MqB-zn-KVx"/>
                 <outlet property="title" destination="cI2-IC-VQ7" id="06o-lH-k7V"/>
                 <outlet property="toWatchStatus" destination="E7p-Cd-WUH" id="orU-Gy-6me"/>
                 <outlet property="watchedStatus" destination="Oy9-Q5-oii" id="D7X-mQ-qVJ"/>
@@ -189,6 +201,9 @@
         <image name="waveform" catalog="system" width="125" height="128"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

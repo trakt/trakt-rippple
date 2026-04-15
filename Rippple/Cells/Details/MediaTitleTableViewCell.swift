@@ -68,11 +68,13 @@ final class MediaTitleTableViewCell: UITableViewCell {
     @IBOutlet weak var rottenTomatoesAudienceImage: UIImageView!
 
     @IBOutlet weak var runtimeLabel: UILabel!
-    @IBOutlet weak var mediaSubInfoLabel: UILabel!
     @IBOutlet weak var stingerLabel: UILabel!
 
     @IBOutlet weak var mainActionButton: UIButton!
     @IBOutlet weak var secondaryActionButton: UIButton!
+
+    private var mainActionButtonMinHeightConstraint: NSLayoutConstraint?
+    private var secondaryActionButtonMinHeightConstraint: NSLayoutConstraint?
 
     private let relativeDateTimeFormatter: RelativeDateTimeFormatter = {
         let dateFormatter = RelativeDateTimeFormatter()
@@ -119,6 +121,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
 
         registerForTraitChanges([UITraitUserInterfaceStyle.self],
                                 action: #selector(configureView))
+        registerForTraitChanges([UITraitPreferredContentSizeCategory.self],
+                                action: #selector(updateQuickActionButtonMinimumHeightsForTraitChanges))
 
         certificationBorderView.layer.borderWidth = 0.8
         certificationBorderView.layer.borderColor = UIColor.secondaryLabel.cgColor
@@ -168,6 +172,46 @@ final class MediaTitleTableViewCell: UITableViewCell {
         mainActionButton.configuration?.imagePadding = 5
         secondaryActionButton.configuration = UIButton.Configuration.borderedTinted()
         secondaryActionButton.configuration?.imagePadding = 5
+
+        let actionButtonsMinimumHeight = quickActionButtonMinimumHeight()
+        let mainActionButtonMinHeightConstraint = mainActionButton.heightAnchor.constraint(
+            greaterThanOrEqualToConstant: actionButtonsMinimumHeight)
+        mainActionButtonMinHeightConstraint.priority = .required
+        mainActionButtonMinHeightConstraint.isActive = true
+        self.mainActionButtonMinHeightConstraint = mainActionButtonMinHeightConstraint
+
+        let secondaryActionButtonMinHeightConstraint = secondaryActionButton.heightAnchor.constraint(
+            greaterThanOrEqualToConstant: actionButtonsMinimumHeight)
+        secondaryActionButtonMinHeightConstraint.priority = .required
+        secondaryActionButtonMinHeightConstraint.isActive = true
+        self.secondaryActionButtonMinHeightConstraint = secondaryActionButtonMinHeightConstraint
+
+        applyQuickActionButtonMultilineTitleStyle(mainActionButton)
+        applyQuickActionButtonMultilineTitleStyle(secondaryActionButton)
+    }
+
+    @objc
+    private func updateQuickActionButtonMinimumHeightsForTraitChanges() {
+        let actionButtonsMinimumHeight = quickActionButtonMinimumHeight()
+        mainActionButtonMinHeightConstraint?.constant = actionButtonsMinimumHeight
+        secondaryActionButtonMinHeightConstraint?.constant = actionButtonsMinimumHeight
+    }
+
+    private func quickActionButtonMinimumHeight() -> CGFloat {
+        let font = UIFont.preferredFont(forTextStyle: .callout, compatibleWith: traitCollection)
+        let twoLineTextHeight = font.lineHeight * 2
+        var configuration = UIButton.Configuration.borderedTinted()
+        configuration.imagePadding = 5
+        let verticalInsets = configuration.contentInsets.top + configuration.contentInsets.bottom
+        let titleSubtitleSpacing: CGFloat = 2
+        return ceil(twoLineTextHeight + titleSubtitleSpacing + verticalInsets)
+    }
+
+    private func applyQuickActionButtonMultilineTitleStyle(_ button: UIButton) {
+        guard var config = button.configuration else { return }
+        config.titleLineBreakMode = .byWordWrapping
+        config.subtitleLineBreakMode = .byWordWrapping
+        button.configuration = config
     }
 
     @objc
@@ -197,28 +241,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
                 certificationLabel.superview?.isHiddenInStackView = certificationLabel.text!.isEmpty == true
                 certificationBorderView.isHiddenInStackView = certificationLabel.text!.isEmpty == true
 
-                // runtimeLabel.text = "\(movie.runtime ?? 0) min"
-
-                if let releaseYear = movie.releaseYear {
-                    mediaSubInfoLabel.text = "\(releaseYear)"
-                    mediaSubInfoLabel.isHiddenInStackView = false
-                } else {
-                    mediaSubInfoLabel.isHiddenInStackView = true
-                }
-
-                hasDate: if let released = movie.released, let country = movie.country {
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.locale = Locale(identifier: "en_US")
-                    dateFormatter.dateFormat = "yyyy-MM-dd"
-                    guard let date = dateFormatter.date(from: released) else { break hasDate }
-                    let localizedCountry = Locale(identifier: "en_US").localizedCountry(for: country)
-                    dateFormatter.dateFormat = "MMM d, yyyy"
-                    if date.compare(Date()) == .orderedDescending {
-                        mediaSubInfoLabel.text = "Coming \(dateFormatter.string(from: date)) in \(localizedCountry)"
-                    } else {
-                        mediaSubInfoLabel.text = "Released on \(dateFormatter.string(from: date)) in \(localizedCountry)"
-                    }
-                }
                 if let tmdbId = movie.identifiers.tmdb {
                     stingerLabel.text = "Loading stinger info..."
                     stingerLabel.alpha = 0.0
@@ -245,102 +267,16 @@ final class MediaTitleTableViewCell: UITableViewCell {
                 certificationLabel.superview?.isHiddenInStackView = certificationLabel.text!.isEmpty == true
                 certificationBorderView.isHiddenInStackView = certificationLabel.text!.isEmpty == true
 
-                // runtimeLabel.text = "\(show.runtime ?? 0) min"
-
-                if let releaseYear = show.releaseYear {
-                    mediaSubInfoLabel.text = "\(releaseYear)"
-                    mediaSubInfoLabel.isHiddenInStackView = false
-                } else {
-                    mediaSubInfoLabel.isHiddenInStackView = true
-                }
-
-                if let status = show.status {
-                    var onNetwork = ""
-                    if let network = show.network {
-                        onNetwork += "on \(network)"
-                    }
-
-                    var sinceYear = ""
-                    if let releaseYear = show.releaseYear {
-                        sinceYear = "since \(releaseYear)"
-                    }
-
-                    if status == "returning series" {
-                        mediaSubInfoLabel.text = "Airing \(onNetwork) \(sinceYear)"
-                        mediaSubInfoLabel.isHiddenInStackView = false
-                    } else if status == "in production" {
-                        if let firstAirDate = show.firstAired {
-                            let dateFormatter = DateFormatter.init()
-                            dateFormatter.dateFormat = "MMM d, yyyy"
-                            mediaSubInfoLabel.text = "Coming \(dateFormatter.string(from: firstAirDate)) \(onNetwork)"
-                        } else {
-                            mediaSubInfoLabel.text = "Coming soon \(onNetwork)"
-                        }
-                        mediaSubInfoLabel.isHiddenInStackView = false
-                    } else if status == "planned" {
-                        if let firstAirDate = show.firstAired {
-                            let dateFormatter = DateFormatter.init()
-                            dateFormatter.dateFormat = "MMM d, yyyy"
-                            mediaSubInfoLabel.text = "Coming \(dateFormatter.string(from: firstAirDate)) \(onNetwork)"
-                        } else {
-                            mediaSubInfoLabel.text = "Coming soon \(onNetwork)"
-                        }
-                        mediaSubInfoLabel.isHiddenInStackView = false
-                    } else if status == "canceled" {
-                        var info = [String]()
-                        if let releaseYear = show.releaseYear {
-                            info.append("\(releaseYear)")
-                        }
-                        if let network = show.network {
-                            info.append(network)
-                        }
-                        info.append("Canceled")
-                        mediaSubInfoLabel.text = info.joined(separator: " · ")
-                        mediaSubInfoLabel.isHiddenInStackView = false
-                    } else if status == "ended" {
-                        var info = [String]()
-                        if let releaseYear = show.releaseYear {
-                            info.append("\(releaseYear)")
-                        }
-                        if let network = show.network {
-                            info.append(network)
-                        }
-                        info.append("Ended")
-                        mediaSubInfoLabel.text = info.joined(separator: " · ")
-                        mediaSubInfoLabel.isHiddenInStackView = false
-                    }
-                }
                 stingerLabel.text = "No stinger"
                 stingerLabel.alpha = 0.0
 
                 fetchRatingsFor(type: .show(showId: show.identifiers.trakt!))
-            case .episode(let episode, let show):
+            case .episode(let episode, _):
                 updateEpisodeMetadata()
 
                 certificationLabel.superview?.isHiddenInStackView = true
                 certificationBorderView.isHiddenInStackView = true
                 ratingsStack.isHiddenInStackView = true
-
-                // runtimeLabel.text = "\(episode.runtime ?? show.runtime ?? 0) min"
-
-                var onNetwork = ""
-                if let network = show.network {
-                    onNetwork += "on \(network)"
-                }
-
-                if let firstAired = episode.firstAired {
-                    let dateFormatter = DateFormatter.init()
-                    dateFormatter.locale = Locale(identifier: "en_US")
-                    dateFormatter.dateStyle = .medium
-                    dateFormatter.timeStyle = .short
-                    if firstAired < Date() {
-                        mediaSubInfoLabel.text = "Aired \(dateFormatter.string(from: firstAired)) \(onNetwork)"
-                    } else {
-                        mediaSubInfoLabel.text = "Will air \(dateFormatter.string(from: firstAired)) \(onNetwork)"
-                    }
-                } else {
-                    mediaSubInfoLabel.text = "Missing air date"
-                }
 
                 if let episodeType = episode.episodeType {
                     switch episodeType {
@@ -373,33 +309,12 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     stingerLabel.text = ""
                     stingerLabel.alpha = 0.0
                 }
-            case .season(let season, let show):
+            case .season:
                 updateSeasonMetadata()
 
                 certificationLabel.isHiddenInStackView = true
                 certificationBorderView.isHiddenInStackView = true
                 ratingsStack.isHiddenInStackView = true
-
-                // runtimeLabel.text = "\(episode.runtime ?? show.runtime ?? 0) min"
-
-                var onNetwork = ""
-                if let network = show.network {
-                    onNetwork += "on \(network)"
-                }
-
-                if let firstAired = season.firstAired {
-                    let dateFormatter = DateFormatter.init()
-                    dateFormatter.locale = Locale(identifier: "en_US")
-                    dateFormatter.dateStyle = .medium
-                    dateFormatter.timeStyle = .short
-                    if firstAired < Date() {
-                        mediaSubInfoLabel.text = "First aired \(dateFormatter.string(from: firstAired)) \(onNetwork)"
-                    } else {
-                        mediaSubInfoLabel.text = "Will first air \(dateFormatter.string(from: firstAired)) \(onNetwork)"
-                    }
-                } else {
-                    mediaSubInfoLabel.text = "Missing first air date"
-                }
 
                 stingerLabel.text = ""
                 stingerLabel.alpha = 0.0
@@ -411,7 +326,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
             debouncedUpdateQuickActions.fireNow()
 
             updateRuntimeDisplay()
-            // invalidateIntrinsicContentSize() -> not needed because update runtime does it
         }
     }
 
@@ -687,6 +601,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                 UISelectionFeedbackGenerator().selectionChanged()
                                 self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
                             }), for: .touchUpInside)
+                            self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                            self.invalidateIntrinsicContentSize()
                         }
                     } else {
                         TraktAPIProvider.provider.request(.nextEpisode(id: show.identifiers.trakt!),
@@ -715,6 +631,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                             UISelectionFeedbackGenerator().selectionChanged()
                                             self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
                                         }), for: .touchUpInside)
+                                        self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                                        self.invalidateIntrinsicContentSize()
                                     }
                                 } catch {
                                     DispatchQueue.main.async {
@@ -730,6 +648,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                             UISelectionFeedbackGenerator().selectionChanged()
                                             self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
                                          }, for: .menuActionTriggered)
+                                        self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                                        self.invalidateIntrinsicContentSize()
                                     }
                                 }
                             case .failure:
@@ -746,6 +666,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                         UISelectionFeedbackGenerator().selectionChanged()
                                         self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
                                      }, for: .menuActionTriggered)
+                                    self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                                    self.invalidateIntrinsicContentSize()
                                 }
                             }
                         }
@@ -907,6 +829,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                         }, for: .menuActionTriggered)
                                         self.secondaryActionButton.isHidden = false
 
+                                        self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                                        self.applyQuickActionButtonMultilineTitleStyle(self.secondaryActionButton)
                                         self.invalidateIntrinsicContentSize()
                                         return
                                     }
@@ -927,6 +851,9 @@ final class MediaTitleTableViewCell: UITableViewCell {
                         }, for: .menuActionTriggered)
 
                         self.secondaryActionButton.isHidden = true
+                        self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
+                        self.applyQuickActionButtonMultilineTitleStyle(self.secondaryActionButton)
+                        self.invalidateIntrinsicContentSize()
                     }
                 }
             }
@@ -961,6 +888,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
         case .showProgress:
             fatalError()
         }
+        applyQuickActionButtonMultilineTitleStyle(mainActionButton)
+        applyQuickActionButtonMultilineTitleStyle(secondaryActionButton)
         invalidateIntrinsicContentSize()
     }
 

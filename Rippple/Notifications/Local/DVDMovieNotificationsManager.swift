@@ -118,18 +118,14 @@ final class DVDMovieNotificationsManager {
 
         onMoviesWatchlistedChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-
-            TraktAPIProvider.provider.request(.watchlist(type: .movies, extended: .full, sort: nil), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
+            TraktAPIProvider.fetchAllWatchlistItems(slug: "me",
+                                                    type: .movies,
+                                                    extended: .full,
+                                                    sort: nil) { [weak self] result in
                 guard let self = self else { return }
-
                 switch result {
-                case let .success(moyaResponse):
-                    do {
-                        let response = try moyaResponse.filterSuccessfulStatusCodes()
-                        self.watchlistedMovies = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).map { $0.movie! }
-                    } catch {
-                        print("watchlist request JSON mapping failed! \(error)")
-                    }
+                case let .success(watchlistItems):
+                    self.watchlistedMovies = watchlistItems.map { $0.movie! }
                 case let .failure(error):
                     print("watchlist request failure \(error)")
                 }

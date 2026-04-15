@@ -39,10 +39,9 @@ final class CastCollectionViewCell: UICollectionViewCell {
                 avatarImageView.person = cast.person
                 avatarInitialLabel.text = cast.person!.name.initials
                 if let episodeCount = cast.episodeCount {
-                    additionalInfoLabel.isHidden = false
                     additionalInfoLabel.text = episodeCount <= 1 ? "\(episodeCount) episode" : "\(episodeCount) episodes"
                 } else {
-                    additionalInfoLabel.isHidden = true
+                    additionalInfoLabel.text = " "
                 }
             }
         }
@@ -57,7 +56,7 @@ final class CastCollectionViewCell: UICollectionViewCell {
                 avatarInitialLabel.text = crew.person!.name.initials
                 asLabel.text = crew.jobs.joined(separator: ", ")
                 avatarImageView.person = crew.person
-                additionalInfoLabel.isHidden = true
+                additionalInfoLabel.text = " "
             }
         }
     }

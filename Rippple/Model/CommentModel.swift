@@ -143,6 +143,61 @@ final class CommentModel: Equatable, Hashable {
 }
 
 extension CommentModel {
+    private enum CommentLabel: String {
+        case review = "Review"
+        case hype = "Hype"
+        case hotTake = "Hot take"
+        case shout = "Shout"
+    }
+
+    private static let releaseDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter
+    }()
+
+    private var commentLabel: CommentLabel {
+        if comment.isReview {
+            return .review
+        }
+
+        guard let releaseDate = releaseDate,
+              let oneMonthBeforeRelease = Calendar.current.date(byAdding: .month,
+                                                                value: -1,
+                                                                to: releaseDate),
+              let twoWeeksAfterRelease = Calendar.current.date(byAdding: .day,
+                                                               value: 14,
+                                                               to: releaseDate) else {
+            return .shout
+        }
+
+        if comment.createDate < oneMonthBeforeRelease {
+            return .hype
+        }
+        if comment.createDate <= twoWeeksAfterRelease {
+            return .hotTake
+        }
+        return .shout
+    }
+
+    private var releaseDate: Date? {
+        switch media {
+        case .movie(let movie):
+            guard let released = movie.released else { return nil }
+            return CommentModel.releaseDateFormatter.date(from: released)
+        case .show(let show):
+            return show.firstAired
+        case .episode(let episode, _):
+            return episode.firstAired
+        case .season(let season, _):
+            return season.firstAired
+        case .list, .showProgress:
+            return nil
+        }
+    }
+
     private func processComment() async {
         commentAttributedString = await attributedString(markdownParser: markdownParser)
 
@@ -151,7 +206,7 @@ extension CommentModel {
         if comment.parentIdentifier != 0 {
             userAttributedString = await markdownUserParser.parse("by **\(comment.user.name)**")
         } else {
-            userAttributedString = await markdownUserParser.parse("\(comment.isReview ? "Review" : "Shout") by **\(comment.user.name)**")
+            userAttributedString = await markdownUserParser.parse("\(commentLabel.rawValue) by **\(comment.user.name)**")
         }
 
         commentModelRefreshedTransmitter.broadcast(self)

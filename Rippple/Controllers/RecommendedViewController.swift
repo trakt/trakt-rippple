@@ -36,7 +36,7 @@ final class RecommendedViewController: UITableViewController {
         case shows
     }
 
-    private var service: TraktAPIService = .recommended(type: nil, extended: .full, sort: nil) {
+    private var service: TraktAPIService = .recommended(type: nil, extended: .full, sort: nil, pageInfo: .firstPage(with: 1000)) {
         didSet {
             reset()
         }
@@ -85,17 +85,17 @@ final class RecommendedViewController: UITableViewController {
             switch currentFilter {
             case .none:
                 filterButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
-                service = .recommended(slug: user.slug, type: nil, extended: .full, sort: nil)
+                service = .recommended(slug: user.slug, type: nil, extended: .full, sort: nil, pageInfo: .firstPage(with: 1000))
                 navigationItem.title = "Favorites"
                 navigationItem.subtitle = "All Items"
             case .movies:
                 filterButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
-                service = .recommended(slug: user.slug, type: .movies, extended: .full, sort: nil)
+                service = .recommended(slug: user.slug, type: .movies, extended: .full, sort: nil, pageInfo: .firstPage(with: 1000))
                 navigationItem.title = "Favorites"
                 navigationItem.subtitle = "Movies"
             case .shows:
                 filterButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
-                service = .recommended(slug: user.slug, type: .shows, extended: .full, sort: nil)
+                service = .recommended(slug: user.slug, type: .shows, extended: .full, sort: nil, pageInfo: .firstPage(with: 1000))
                 navigationItem.title = "Favorites"
                 navigationItem.subtitle = "Shows"
             }
@@ -424,32 +424,19 @@ final class RecommendedViewController: UITableViewController {
             }
         }
 
-        cancellable = TraktAPIProvider.provider.request(service, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+        guard case let .recommended(slug, type, extended, sort, _) = self.service else { return }
+        TraktAPIProvider.fetchAllRecommendedItems(slug: slug,
+                                                  type: type,
+                                                  extended: extended,
+                                                  sort: sort) { [weak self] result in
             guard let self = self else { return }
-
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let results = Array(Set(try response.map([WatchlistItem].self, using: TraktAPIProvider.decoder)))
-
-                    DispatchQueue.main.async {
-                        self.watchlistItems = results
-                    }
-                } catch {
-                    print("Comments request JSON mapping failed! \(error)")
-
-                    var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
-                    snapshot.appendSections([.error])
-                    DispatchQueue.main.async {
-                        self.error = error
-                        self.dataSource.apply(snapshot, animatingDifferences: false)
-                    }
+            case let .success(items):
+                DispatchQueue.main.async {
+                    self.watchlistItems = Array(Set(items))
                 }
             case let .failure(error):
-                print("Comments request failure \(error)")
-
+                print("Favorites request failure \(error)")
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
                 snapshot.appendSections([.error])
                 DispatchQueue.main.async {

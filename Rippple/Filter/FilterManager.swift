@@ -79,6 +79,10 @@ final class FilterManager {
     fileprivate var blockedUsers: [User]?
 
     fileprivate func block(user: User) {
+        if SessionManager.shared.isLoggedOut {
+            return
+        }
+
         let slug = user.identifiers.slugOrTraktId
 
         SwiftMessages.show(message: "Blocking \(user.username)...", style: .loading)
@@ -113,6 +117,10 @@ final class FilterManager {
     }
 
     fileprivate func unblock(user: User) {
+        if SessionManager.shared.isLoggedOut {
+            return
+        }
+
         let slug = user.identifiers.slugOrTraktId
 
         SwiftMessages.show(message: "Unblocking \(user.username)...", style: .loading)

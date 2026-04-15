@@ -15,7 +15,27 @@ extension TraktAPIProvider {
                                         type: ListMediaType?,
                                         extended: Extended?,
                                         sort: WatchlistSort?,
-                                        limit: Int = 1000) async throws -> [CollectionItem] {
+                                        limit: Int = 1000,
+                                        completion: @escaping (Result<[CollectionItem], Error>) -> Void) {
+        _Concurrency.Task {
+            do {
+                let items = try await fetchAllCollectionItemsAsync(slug: slug,
+                                                                   type: type,
+                                                                   extended: extended,
+                                                                   sort: sort,
+                                                                   limit: limit)
+                completion(.success(items))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+
+    private static func fetchAllCollectionItemsAsync(slug: String,
+                                                     type: ListMediaType?,
+                                                     extended: Extended?,
+                                                     sort: WatchlistSort?,
+                                                     limit: Int) async throws -> [CollectionItem] {
         var pageInfo = PageInfo.firstPage(with: limit)
         var collectionItems = [CollectionItem]()
 

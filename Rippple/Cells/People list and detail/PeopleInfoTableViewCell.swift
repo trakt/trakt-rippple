@@ -15,6 +15,14 @@ final class PeopleInfoTableViewCell: UITableViewCell {
 
     @IBOutlet weak var candleLabel: UILabel!
 
+    private static let heightFormatter: LengthFormatter = {
+        let formatter = LengthFormatter()
+        formatter.isForPersonHeightUse = true
+        formatter.numberFormatter.maximumFractionDigits = 0
+        formatter.unitStyle = .short
+        return formatter
+    }()
+
     var person: Person! {
         didSet {
             let dateFormatter = DateFormatter()
@@ -90,8 +98,28 @@ final class PeopleInfoTableViewCell: UITableViewCell {
                 secondaryInfoLabel.text = "Died \(dateFormatter.string(from: death))"
                 secondaryInfoLabel.isHidden = false
             }
+
+            if let heightText = PeopleInfoTableViewCell.formattedHeight(fromCentimeters: person.height) {
+                if let existingText = secondaryInfoLabel.text, existingText.isEmpty == false {
+                    secondaryInfoLabel.text = "\(existingText) · \(heightText)"
+                } else {
+                    secondaryInfoLabel.text = heightText
+                }
+                secondaryInfoLabel.isHidden = false
+            }
+
             setNeedsLayout()
             layoutIfNeeded()
         }
+    }
+}
+
+private extension PeopleInfoTableViewCell {
+    static func formattedHeight(fromCentimeters height: Float?) -> String? {
+        guard let height = height, height > 0 else { return nil }
+
+        let localizedHeight = heightFormatter.string(fromValue: Double(height), unit: .centimeter)
+
+        return "Height \(localizedHeight)"
     }
 }

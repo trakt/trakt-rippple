@@ -191,7 +191,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
     }
 
     var sortedSorts: [EpisodeToWatchSettings.Sort] {
-        EpisodeToWatchSettings.Sort.allCases.sorted { $0.rawValue < $1.rawValue }
+        EpisodeToWatchSettings.Sort.allCases
     }
 
     var watchlistWarning: String? {
@@ -325,6 +325,8 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
             return reversed ? "Your Worst Rating" : "Your Best Rating"
         case .title:
             return reversed ? "Reverse Alphabetical" : "Alphabetical"
+        case .timeLeft:
+            return reversed ? "Most Time Left" : "Least Time Left"
         }
     }
 
@@ -974,6 +976,7 @@ final class EpisodeToWatchSettings {
         case released = 5
         case leastEpisodeRemaining = 3
         case mostCompleted = 2
+        case timeLeft = 12
         case mostPlayed = 4
         case releaseYear = 6
         case rating = 7
