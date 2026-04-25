@@ -263,6 +263,8 @@ enum OpenActionMediaType: String, Codable, CaseIterable, Identifiable {
 
 enum OpenActionVariable: String, CaseIterable, Identifiable {
     case tmdbId
+    case showTmdbId
+    case showTraktId
     case imdbId
     case traktId
     case slug
@@ -279,6 +281,8 @@ enum OpenActionVariable: String, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .tmdbId: return "TMDb ID"
+        case .showTmdbId: return "Show TMDb ID"
+        case .showTraktId: return "Show Trakt ID"
         case .imdbId: return "IMDb ID"
         case .traktId: return "Trakt ID"
         case .slug: return "Slug"
@@ -306,6 +310,8 @@ enum OpenActionURLResolver {
         case .movie(let movie):
             return [
                 "tmdbId": stringValue(movie.identifiers.tmdb),
+                "showTmdbId": "",
+                "showTraktId": "",
                 "imdbId": stringValue(movie.identifiers.imdb),
                 "traktId": stringValue(movie.identifiers.trakt),
                 "slug": stringValue(movie.identifiers.slug),
@@ -315,6 +321,8 @@ enum OpenActionURLResolver {
         case .show(let show):
             return [
                 "tmdbId": stringValue(show.identifiers.tmdb),
+                "showTmdbId": stringValue(show.identifiers.tmdb),
+                "showTraktId": stringValue(show.identifiers.trakt),
                 "imdbId": stringValue(show.identifiers.imdb),
                 "traktId": stringValue(show.identifiers.trakt),
                 "slug": stringValue(show.identifiers.slug),
@@ -324,6 +332,8 @@ enum OpenActionURLResolver {
         case .season(let season, let show):
             return [
                 "tmdbId": firstNonEmptyString(season.identifiers.tmdb, show.identifiers.tmdb),
+                "showTmdbId": stringValue(show.identifiers.tmdb),
+                "showTraktId": stringValue(show.identifiers.trakt),
                 "imdbId": firstNonEmptyString(season.identifiers.imdb, show.identifiers.imdb),
                 "traktId": stringValue(season.identifiers.trakt),
                 "slug": firstNonEmptyString(season.identifiers.slug, show.identifiers.slug),
@@ -334,6 +344,8 @@ enum OpenActionURLResolver {
         case .episode(let episode, let show):
             return [
                 "tmdbId": firstNonEmptyString(episode.identifiers.tmdb, show.identifiers.tmdb),
+                "showTmdbId": stringValue(show.identifiers.tmdb),
+                "showTraktId": stringValue(show.identifiers.trakt),
                 "imdbId": firstNonEmptyString(episode.identifiers.imdb, show.identifiers.imdb),
                 "traktId": stringValue(episode.identifiers.trakt),
                 "slug": firstNonEmptyString(episode.identifiers.slug, show.identifiers.slug),
