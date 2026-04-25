@@ -342,6 +342,8 @@ final class MediaTableViewCell: UITableViewCell {
         notesButton?.isUserInteractionEnabled = false
 
         submeta?.isHiddenInStackView = true
+        dimmedIfWatched = true
+        menuButtonContainter?.isHiddenInStackView = false
     }
 
     private func setupMovie(movie: Movie) {

@@ -421,6 +421,7 @@
 		3AD932A81FB884F5005289B5 /* MediaTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD932A71FB884F5005289B5 /* MediaTableViewCell.swift */; };
 		3AD932AA1FB9E885005289B5 /* TraktAPIService+Sample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD932A91FB9E885005289B5 /* TraktAPIService+Sample.swift */; };
 		3AD94BDB23A0D5EE0092C294 /* ListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD94BD923A0D0AB0092C294 /* ListViewController.swift */; };
+		09D261502F76B2200536D40 /* ListReorderingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D261512F76B2200536D40 /* ListReorderingViewController.swift */; };
 		3AD94BDD23A0EF670092C294 /* ListFormViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD94BDC23A0EF670092C294 /* ListFormViewController.swift */; };
 		3AD9FAFB2129760D00ADDF7F /* EpisodeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD9FAFA2129760A00ADDF7F /* EpisodeTableViewCell.swift */; };
 		3AD9FAFC2129761200ADDF7F /* EpisodeTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AD9FAF92129760A00ADDF7F /* EpisodeTableViewCell.xib */; };
@@ -955,6 +956,7 @@
 		3AD932A71FB884F5005289B5 /* MediaTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTableViewCell.swift; sourceTree = "<group>"; };
 		3AD932A91FB9E885005289B5 /* TraktAPIService+Sample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIService+Sample.swift"; sourceTree = "<group>"; };
 		3AD94BD923A0D0AB0092C294 /* ListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListViewController.swift; sourceTree = "<group>"; };
+		09D261512F76B2200536D40 /* ListReorderingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListReorderingViewController.swift; sourceTree = "<group>"; };
 		3AD94BDC23A0EF670092C294 /* ListFormViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFormViewController.swift; sourceTree = "<group>"; };
 		3AD9FAF92129760A00ADDF7F /* EpisodeTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EpisodeTableViewCell.xib; sourceTree = "<group>"; };
 		3AD9FAFA2129760A00ADDF7F /* EpisodeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeTableViewCell.swift; sourceTree = "<group>"; };
@@ -2443,6 +2445,7 @@
 				09033ADD2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift */,
 				3A6232E7239FA9CA00D9D24B /* CustomListsViewController.swift */,
 				3AD94BD923A0D0AB0092C294 /* ListViewController.swift */,
+				09D261512F76B2200536D40 /* ListReorderingViewController.swift */,
 				3AD94BDC23A0EF670092C294 /* ListFormViewController.swift */,
 				3A6B073623B4EB3E00869D01 /* To Watch */,
 				3AF138D825D9B02200910ED8 /* WhatsNewViewController.swift */,
@@ -3168,6 +3171,7 @@
 				3A859B0C207236F000DDEE47 /* CustomTableView.swift in Sources */,
 				3AF138D925D9B02300910ED8 /* WhatsNewViewController.swift in Sources */,
 				3AD94BDB23A0D5EE0092C294 /* ListViewController.swift in Sources */,
+				09D261502F76B2200536D40 /* ListReorderingViewController.swift in Sources */,
 				3AC160D8201F52AF004A2A4F /* DeeplinkLoadingViewController.swift in Sources */,
 				3A7FF65229F3107700E2E08E /* EmptyTableViewCell.swift in Sources */,
 				3AEA95C329DDEA2C00BE9BA4 /* CalendarViewController.swift in Sources */,

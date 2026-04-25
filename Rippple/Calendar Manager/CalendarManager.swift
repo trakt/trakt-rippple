@@ -50,11 +50,23 @@ final class CalendarManager {
     func setup() {
         loadCacheFromDisk()
         if cachedData == nil {
-            Task { try? await self.reload(force: true) }
+            Task {
+                do {
+                    try await self.reload(force: true)
+                } catch {
+                    print("CalendarManager error \(#function) : \(error)")
+                }
+            }
         }
 
         debouncedReload = Debouncer(delay: 5.0) {
-            Task { try? await self.reload(force: true) }
+            Task {
+                do {
+                    try await self.reload(force: true)
+                } catch {
+                    print("CalendarManager error \(#function) : \(error)")
+                }
+            }
         }
 
         applicationLifecycleReceiver.hotOnly().listen { [weak self] applicationLifecycle in
@@ -296,9 +308,11 @@ private extension CalendarManager {
                         let items = try response.map([ShowEpisodeCalendarItem].self, using: TraktAPIProvider.decoder)
                         continuation.resume(returning: items)
                     } catch {
+                        print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
                 case let .failure(error):
+                    print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
@@ -316,9 +330,11 @@ private extension CalendarManager {
                         let items = try response.map([MovieCalendarItem].self, using: TraktAPIProvider.decoder)
                         continuation.resume(returning: items)
                     } catch {
+                        print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
                 case let .failure(error):
+                    print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
@@ -336,9 +352,11 @@ private extension CalendarManager {
                         let items = try response.map([ShowEpisodeCalendarItem].self, using: TraktAPIProvider.decoder)
                         continuation.resume(returning: items)
                     } catch {
+                        print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
                 case let .failure(error):
+                    print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
@@ -356,9 +374,11 @@ private extension CalendarManager {
                         let items = try response.map([MovieCalendarItem].self, using: TraktAPIProvider.decoder)
                         continuation.resume(returning: items)
                     } catch {
+                        print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
                 case let .failure(error):
+                    print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
@@ -376,9 +396,11 @@ private extension CalendarManager {
                         let movies = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).compactMap { $0.movie }
                         continuation.resume(returning: movies)
                     } catch {
+                        print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
                 case let .failure(error):
+                    print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
@@ -396,9 +418,11 @@ private extension CalendarManager {
                         let movies = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).compactMap { $0.movie }
                         continuation.resume(returning: movies)
                     } catch {
+                        print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
                 case let .failure(error):
+                    print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
@@ -416,9 +440,11 @@ private extension CalendarManager {
                         let shows = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).compactMap { $0.show }
                         continuation.resume(returning: shows)
                     } catch {
+                        print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
                 case let .failure(error):
+                    print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
@@ -436,9 +462,11 @@ private extension CalendarManager {
                         let shows = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).compactMap { $0.show }
                         continuation.resume(returning: shows)
                     } catch {
+                        print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
                 case let .failure(error):
+                    print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }

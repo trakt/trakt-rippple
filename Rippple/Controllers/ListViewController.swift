@@ -181,8 +181,6 @@ final class ListViewController: UITableViewController {
 
     private let disposeBag = DisposeBag()
 
-    private var noteTextFieldDelegate = NoteTextFieldDelegate()
-
     private enum ViewControllerSegue: String {
         case comments
         case details
@@ -263,11 +261,6 @@ final class ListViewController: UITableViewController {
                 navigationItem.subtitle = "Shows"
             case .seasons:
                 navigationItem.subtitle = "Seasons"
-            }
-
-            if let button = filterButtonItem.customView as? UIButton {
-                button.setImage(filterButtonItem.image?.withConfiguration(UIImage.SymbolConfiguration(scale: .large)),
-                                for: .normal)
             }
 
             if watchlistItems != nil {
@@ -365,8 +358,7 @@ final class ListViewController: UITableViewController {
 
     private func updateDatasource() {
         let watchlistedItems = sortedList.filter {
-            if searchQuery.isEmpty { return true }
-            if searchQuery == "" { return true }
+            guard searchQuery.isEmpty == false else { return true }
             if $0.title.localizedCaseInsensitiveContains(searchQuery) { return true }
             if String($0.releaseYear).localizedCaseInsensitiveContains(searchQuery) { return true }
             return false
@@ -494,6 +486,9 @@ final class ListViewController: UITableViewController {
         tableView.register(UINib(nibName: "MediaTableViewCell", bundle: nil), forCellReuseIdentifier: "media")
         tableView.register(UINib(nibName: "LightListTableViewCell", bundle: nil), forCellReuseIdentifier: "light list")
         tableView.register(UINib(nibName: "ListStatsTableViewCell", bundle: nil), forCellReuseIdentifier: "stats")
+        tableView.dragInteractionEnabled = UserDefaults.standard.bool(forKey: "GeneralSettings.dragging")
+        tableView.dragDelegate = tableView as? CustomTableView
+        tableView.dropDelegate = nil
 
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.header])
@@ -509,19 +504,8 @@ final class ListViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
-        #if targetEnvironment(macCatalyst)
-        let filterButton = UIButton()
-        filterButton.setImage(filterButtonItem.image?.withConfiguration(UIImage.SymbolConfiguration(scale: .large)),
-                              for: .normal)
-        filterButton.tintColor = .gray
-        filterButton.showsMenuAsPrimaryAction = true
-        filterButton.menu = filterMenu()
-        filterButtonItem.customView = filterButton
-        filterButton.sizeToFit()
-        #else
         filterButtonItem.primaryAction = nil
         filterButtonItem.menu = filterMenu()
-        #endif
 
         #if !targetEnvironment(macCatalyst)
         self.refreshControl = UIRefreshControl()
@@ -534,7 +518,6 @@ final class ListViewController: UITableViewController {
 
         searchController.searchBar.placeholder = "Search \(list.name.emojiUnescapedString)"
         searchController.searchBar.tintColor = UIColor(asset: .globalTint)
-        searchController.searchBar.delegate = self
         searchController.searchBar.barTintColor = nil
         searchController.searchBar.barStyle = .default
         searchController.searchBar.isTranslucent = true
@@ -582,6 +565,7 @@ final class ListViewController: UITableViewController {
                                               .fixedSpace(),
                                               filterButtonItem]
     }
+
     private func menu() -> UIMenu {
         let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
             guard let self = self else { return }
@@ -673,6 +657,25 @@ final class ListViewController: UITableViewController {
             UIMenu(options: .displayInline, children: [shelfOnTop, shelfUnder])
         }
 
+        var reorderMenu = [UIMenu]()
+        if isListEditable {
+            let reorder = UIAction(title: "Reorder Items",
+                                   image: UIImage(systemName: "arrow.up.arrow.down")) { [weak self] _ in
+                guard let self = self else { return }
+
+                let listReorderingViewController = ListReorderingViewController(list: list,
+                                                                                user: user,
+                                                                                items: watchlistItems ?? []) { [weak self] in
+                    guard let self = self else { return }
+                    self.fetch()
+                }
+                let navigation = UINavigationController(rootViewController: listReorderingViewController)
+                navigation.modalPresentationStyle = .pageSheet
+                present(navigation, animated: true)
+            }
+            reorderMenu = [UIMenu(options: .displayInline, children: [reorder])]
+        }
+
         if list.user.isCurrentUser {
             if let shareLink = list.shareLink,
                 list.privacy != .me,
@@ -697,15 +700,15 @@ final class ListViewController: UITableViewController {
                     UIApplication.shared.present(activityViewController)
                 }
                 if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") {
-                    return UIMenu(children: [UIMenu(options: .displayInline, children: [couchMoney]), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
+                    return UIMenu(children: reorderMenu + [UIMenu(options: .displayInline, children: [couchMoney]), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
                 } else {
-                    return UIMenu(children: [UIMenu(options: .displayInline, children: [edit, delete]), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
+                    return UIMenu(children: reorderMenu + [UIMenu(options: .displayInline, children: [edit, delete]), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
                 }
             } else {
                 if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") {
-                    return UIMenu(children: [couchMoney, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
+                    return UIMenu(children: reorderMenu + [couchMoney, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
                 } else {
-                    return UIMenu(children: [edit, delete, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
+                    return UIMenu(children: reorderMenu + [edit, delete, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
                 }
             }
         } else {
@@ -716,9 +719,9 @@ final class ListViewController: UITableViewController {
                     let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
                     UIApplication.shared.present(activityViewController)
                 }
-                return UIMenu(children: [(list.liked ? unlike : like), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
+                return UIMenu(children: reorderMenu + [(list.liked ? unlike : like), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
             } else {
-                return UIMenu(children: [(list.liked ? unlike : like), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
+                return UIMenu(children: reorderMenu + [(list.liked ? unlike : like), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
             }
         }
     }
@@ -833,22 +836,30 @@ final class ListViewController: UITableViewController {
                 self.currentFilter = .none
             }
 
-            let movies = UIAction(title: "Movies", image: nil, state: (self.currentFilter == .movies ? .on : .off)) { [weak self] _ in
+            let movies = UIAction(title: "Movies",
+                                  image: nil,
+                                  state: self.currentFilter == .movies ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .movies
             }
 
-            let shows = UIAction(title: "Shows", image: nil, state: (self.currentFilter == .shows ? .on : .off)) { [weak self] _ in
+            let shows = UIAction(title: "Shows",
+                                 image: nil,
+                                 state: self.currentFilter == .shows ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .shows
             }
 
-            let seasons = UIAction(title: "Seasons", image: nil, state: (self.currentFilter == .seasons ? .on : .off)) { [weak self] _ in
+            let seasons = UIAction(title: "Seasons",
+                                   image: nil,
+                                   state: self.currentFilter == .seasons ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .seasons
             }
 
-            let episodes = UIAction(title: "Episodes", image: nil, state: (self.currentFilter == .episodes ? .on : .off)) { [weak self] _ in
+            let episodes = UIAction(title: "Episodes",
+                                    image: nil,
+                                    state: self.currentFilter == .episodes ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .episodes
             }
@@ -907,6 +918,11 @@ final class ListViewController: UITableViewController {
 
         return UIMenu(children: [deferredMenuElement])
     }
+
+    private var isListEditable: Bool {
+        list.user.isCurrentUser || CollaborationsManager.shared.collaborations.contains(list)
+    }
+
 }
 
 extension ListViewController {
@@ -936,7 +952,7 @@ extension ListViewController {
                     emptyLabel.text = "Your list seems to be empty.\nTry adding something in it: a movie,\na tv show, an episode or a season.\nOr don't. Do as you wish."
                 } else if list.itemCount == 0 {
                     emptyLabel.text = "This list seems to be empty.\nI wouldn't like it but it's your call."
-                } else if currentFilter.self == .none {
+                } else if currentFilter == .none {
                     if searchQuery.isEmpty {
                         emptyLabel.text = "This list seems to be empty...\nDo you hear that? No. Nothing..."
                     } else {
@@ -1168,10 +1184,6 @@ extension ListViewController: UISearchResultsUpdating {
         searchQuery = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         updateDatasource()
     }
-}
-
-extension ListViewController: UISearchBarDelegate {
-
 }
 
 final class NoteTextFieldDelegate: NSObject, UITextFieldDelegate {

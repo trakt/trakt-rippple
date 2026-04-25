@@ -344,6 +344,7 @@ enum TraktAPIService {
 
     case addToList(slug: String? = "me", id: Int64, item: WatchlistedItem)
     case removeFromList(slug: String? = "me", id: Int64, item: WatchlistedItem)
+    case reorderListItems(slug: String? = "me", id: Int64, ids: [Int64])
 
     case addToListWithNotes(slug: String? = "me", id: Int64, item: WatchlistedItemWithNotes)
 
@@ -806,6 +807,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/\(slug!)/lists/\(listId)/items"
         case .removeFromList(let slug, let listId, _):
             return "/users/\(slug!)/lists/\(listId)/items/remove"
+        case .reorderListItems(let slug, let listId, _):
+            return "/users/\(slug!)/lists/\(listId)/items/reorder"
         case .watched(let slug, let type, _):
             return "/users/\(slug)/watched/\(type)"
         case .syncWatched(let type, _):
@@ -1089,6 +1092,8 @@ extension TraktAPIService: AuthorizedTargetType {
         case .updateList:
             return .put
         case .addToList, .removeFromList, .addToListWithNotes:
+            return .post
+        case .reorderListItems:
             return .post
         case .watched, .syncWatched:
             return .get
@@ -1577,6 +1582,9 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: JSONEncoding.default)
         case .addToList(_, _, let item), .removeFromList(_, _, let item):
             return .requestJSONEncodable(item)
+        case .reorderListItems(_, _, let ids):
+            return .requestParameters(parameters: ["rank": ids],
+                                      encoding: JSONEncoding.default)
         case .addToListWithNotes(_, _, let item):
             return .requestJSONEncodable(item)
         case .watched(_, _, let extended):
