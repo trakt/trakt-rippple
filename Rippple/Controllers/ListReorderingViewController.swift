@@ -9,6 +9,47 @@ import UIKit
 
 final class ListReorderingViewController: UITableViewController {
 
+    enum Destination {
+        case list(List, User?)
+        case watchlist
+        case favorites
+
+        var title: String {
+            switch self {
+            case .list(let list, _):
+                return list.name.emojiUnescapedString
+            case .watchlist:
+                return "Watchlist"
+            case .favorites:
+                return "Favorites"
+            }
+        }
+
+        func reorderService(ids: [Int64]) -> TraktAPIService {
+            switch self {
+            case .list(let list, let user):
+                let listId = list.identifiers.trakt!
+                let userSlug = list.user.identifiers.slug ?? user?.slug ?? "me"
+                return .reorderListItems(slug: userSlug, id: listId, ids: ids)
+            case .watchlist:
+                return .reorderWatchlistItems(ids: ids)
+            case .favorites:
+                return .reorderFavoriteItems(ids: ids)
+            }
+        }
+
+        func handleSuccessfulReorder() {
+            switch self {
+            case .list(let list, _):
+                ListItemsMarkerManager.shared.invalidate(listId: list.identifiers.trakt!)
+            case .watchlist:
+                WatchlistManager.shared.refresh()
+            case .favorites:
+                RecommendedManager.shared.refresh()
+            }
+        }
+    }
+
     private enum Section: Int {
         case content
     }
@@ -34,15 +75,13 @@ final class ListReorderingViewController: UITableViewController {
         }
     }
 
-    private let list: List
-    private let user: User?
+    private let destination: Destination
     private let onCommit: () -> Void
 
     private let rankedItems: [WatchlistItem]
     private let initialIDs: [Int64]
 
-    private lazy var diffableDataSource = ReorderDiffableDataSource(tableView: tableView) { [weak self] tableView, _, row in
-        guard let self = self else { return nil }
+    private lazy var diffableDataSource = ReorderDiffableDataSource(tableView: tableView) { tableView, _, row in
         switch row {
         case .item(let watchlistItem):
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "media") as? MediaTableViewCell else {
@@ -62,14 +101,17 @@ final class ListReorderingViewController: UITableViewController {
         }
     }
 
-    init(list: List, user: User?, items: [WatchlistItem], onCommit: @escaping () -> Void) {
-        self.list = list
-        self.user = user
+    init(destination: Destination, items: [WatchlistItem], onCommit: @escaping () -> Void) {
+        self.destination = destination
         self.onCommit = onCommit
         let ranked = items.sorted { $0.rank < $1.rank }
         self.rankedItems = ranked
         self.initialIDs = ranked.map(\.id)
         super.init(style: .plain)
+    }
+
+    convenience init(list: List, user: User?, items: [WatchlistItem], onCommit: @escaping () -> Void) {
+        self.init(destination: .list(list, user), items: items, onCommit: onCommit)
     }
 
     required init?(coder: NSCoder) {
@@ -80,7 +122,7 @@ final class ListReorderingViewController: UITableViewController {
         super.viewDidLoad()
 
         navigationItem.style = .browser
-        navigationItem.title = list.name.emojiUnescapedString
+        navigationItem.title = destination.title
         navigationItem.subtitle = "Drag to reorder"
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel,
@@ -118,7 +160,6 @@ final class ListReorderingViewController: UITableViewController {
         diffableDataSource.apply(snapshot, animatingDifferences: false)
     }
 
-    /// Ordered items from the current snapshot (after local moves).
     private func watchlistItemsFromSnapshot() -> [WatchlistItem] {
         diffableDataSource.snapshot().itemIdentifiers(inSection: .content).compactMap { row in
             if case .item(let w) = row { return w }
@@ -158,19 +199,16 @@ final class ListReorderingViewController: UITableViewController {
             dismiss(animated: true)
             return
         }
-        let listId = list.identifiers.trakt!
-        let userSlug = list.user.identifiers.slug ?? user?.slug ?? "me"
+
         AppManager.shared.isUserInteractionEnabled = false
-        TraktAPIProvider.noRatingProvider.request(.reorderListItems(slug: userSlug,
-                                                                    id: listId,
-                                                                    ids: ids),
+        TraktAPIProvider.noRatingProvider.request(destination.reorderService(ids: ids),
                                                   callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 AppManager.shared.isUserInteractionEnabled = true
                 switch result {
                 case .success:
-                    ListItemsMarkerManager.shared.invalidate(listId: listId)
+                    self.destination.handleSuccessfulReorder()
                     self.onCommit()
                     self.dismiss(animated: true)
                     SwiftMessages.show(message: "👍 Order updated")

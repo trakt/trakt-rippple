@@ -365,12 +365,37 @@ final class RecommendedViewController: UITableViewController {
                 self.refresh(self.refreshControl as Any)
             }
         }.disposed(by: disposeBag)
+
+        configureMenu()
     }
 
     deinit {
         if let cancellable = cancellable {
             cancellable.cancel()
         }
+    }
+
+    private func configureMenu() {
+        guard user.isCurrentUser else { return }
+        navigationItem.rightBarButtonItems = [UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu()),
+                                              .fixedSpace(),
+                                              filterButtonItem]
+    }
+
+    private func menu() -> UIMenu {
+        let reorder = UIAction(title: "Reorder Items",
+                               image: UIImage(systemName: "arrow.up.arrow.down")) { [weak self] _ in
+            guard let self = self else { return }
+            let listReorderingViewController = ListReorderingViewController(destination: .favorites,
+                                                                            items: watchlistItems ?? []) { [weak self] in
+                self?.fetch()
+            }
+            let navigation = UINavigationController(rootViewController: listReorderingViewController)
+            navigation.modalPresentationStyle = .pageSheet
+            present(navigation, animated: true)
+        }
+
+        return UIMenu(children: [UIMenu(options: .displayInline, children: [reorder])])
     }
 
     @objc func refresh(_ sender: Any) {

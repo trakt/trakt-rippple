@@ -145,13 +145,40 @@ final class WatchlistViewController: UITableViewController {
     }
 
     private func configureFloatingButton() {
-        navigationItem.rightBarButtonItems = [UIBarButtonItem(image: UIImage(systemName: "rectangle.grid.3x2"),
-                                                              primaryAction: UIAction { [weak self] _ in
+        if user.isCurrentUser {
+            navigationItem.rightBarButtonItems = [UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu()),
+                                                  .fixedSpace(),
+                                                  filterButtonItem]
+        } else {
+            navigationItem.rightBarButtonItems = [UIBarButtonItem(image: UIImage(systemName: "rectangle.grid.3x2"),
+                                                                  primaryAction: UIAction { [weak self] _ in
+                guard let self = self else { return }
+                self.performSegue(withIdentifier: "grid", sender: nil)
+            }),
+                                                  .fixedSpace(),
+                                                  filterButtonItem]
+        }
+    }
+
+    private func menu() -> UIMenu {
+        let browseAsGrid = UIAction(title: "Show in Grid",
+                                    image: UIImage(systemName: "rectangle.grid.3x2")) { [weak self] _ in
             guard let self = self else { return }
             self.performSegue(withIdentifier: "grid", sender: nil)
-         }),
-                                              .fixedSpace(),
-                                              filterButtonItem]
+        }
+        let reorder = UIAction(title: "Reorder Items",
+                               image: UIImage(systemName: "arrow.up.arrow.down")) { [weak self] _ in
+            guard let self = self else { return }
+            let listReorderingViewController = ListReorderingViewController(destination: .watchlist,
+                                                                            items: watchlistItems ?? []) { [weak self] in
+                self?.fetch()
+            }
+            let navigation = UINavigationController(rootViewController: listReorderingViewController)
+            navigation.modalPresentationStyle = .pageSheet
+            present(navigation, animated: true)
+        }
+
+        return UIMenu(children: [UIMenu(options: .displayInline, children: [reorder]), UIMenu(options: .displayInline, children: [browseAsGrid])])
     }
 
     private enum Section: Hashable {
