@@ -1543,7 +1543,7 @@ class ContextMenuHelper: NSObject {
                                                             DispatchQueue.main.async {
                                                                 RecommendedManager.shared.refresh()
                                                                 AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "⭐️ Added to Favorited")
+                                                                SwiftMessages.show(message: "⭐️ Added to Favorites")
                                                             }
 
                                                         } catch {
