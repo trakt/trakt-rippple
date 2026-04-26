@@ -10,8 +10,6 @@ import UIKit
 
 import NVActivityIndicatorView
 
-import Moya
-
 import Receiver
 import SafariServices
 
@@ -117,8 +115,6 @@ final class CustomListsViewController: UITableViewController {
         self.user = UserManager.shared.currentUser
         super.init(coder: aDecoder)
     }
-
-    private var cancellable: Cancellable?
 
     private var lists = [List]()
     private var likedLists = [List]()
@@ -449,29 +445,16 @@ final class CustomListsViewController: UITableViewController {
             }
         }
 
-        cancellable = TraktAPIProvider.provider.request(.customLists(slug: user.identifiers.slug ?? "me"), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+        TraktAPIProvider.fetchAllCustomLists(slug: user.identifiers.slug ?? "me") { [weak self] result in
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
-
-                    DispatchQueue.main.async {
-                        self.lists = lists
-                        self.showLoading = false
-                        self.error = nil
-                        self.applySnapshot(animating: true)
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        print("customLists request JSON mapping failed! \(error)")
-                        self.error = error
-                        self.showLoading = false
-                        self.applySnapshot(animating: true)
-                    }
+            case let .success(lists):
+                DispatchQueue.main.async {
+                    self.lists = lists
+                    self.showLoading = false
+                    self.error = nil
+                    self.applySnapshot(animating: true)
                 }
             case let .failure(error):
                 DispatchQueue.main.async {

@@ -117,7 +117,7 @@ final class ListActionViewController: UITableViewController {
 
         let result: [List]? = await withCheckedContinuation { continuation in
             TraktAPIProvider.noChacheProvider.request(service,
-                                                    callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+                                                      callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
                 case let .success(moyaResponse):
                     do {

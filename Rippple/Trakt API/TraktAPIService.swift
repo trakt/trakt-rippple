@@ -333,7 +333,7 @@ enum TraktAPIService {
     case peopleShows(id: Int64)
     case knownFor(id: Int64)
 
-    case customLists(slug: String = "me")
+    case customLists(slug: String = "me", pageInfo: PageInfo = PageInfo.firstPage(with: 100))
     case customList(userSlug: String, listSlug: String)
     case collaborations(slug: String = "me")
     case listItems(slug: String?, id: Int64, type: ListMediaType?, extended: Extended?, pageInfo: PageInfo, marker: String)
@@ -769,7 +769,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/people/\(peopleId)/movies"
         case .peopleShows(let peopleId):
             return "/people/\(peopleId)/shows"
-        case .customLists(let slug):
+        case .customLists(let slug, _):
             return "/users/\(slug)/lists"
         case .customList(let userSlug, let listSlug):
             return "/users/\(userSlug)/lists/\(listSlug)"
@@ -1546,8 +1546,10 @@ extension TraktAPIService: AuthorizedTargetType {
         case .people, .peopleSlug, .peopleShows, .peopleMovies:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
-        case .customLists:
-            return .requestPlain
+        case .customLists(_, let pageInfo):
+            return .requestParameters(parameters: ["page": "\(pageInfo.page)",
+                                                   "limit": "\(pageInfo.limit)"],
+                                      encoding: URLEncoding.default)
         case .customList:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
