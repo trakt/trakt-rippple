@@ -468,15 +468,7 @@ extension SidebarViewController: UICollectionViewDelegate {
         if indexPath.section == 0 {
             if let navigationController = splitViewController?.viewController(for: column) as? UINavigationController,
                navigationController == secondaryViewControllers[indexPath.row] {
-                if indexPath.row == 4 {
-                    ShortcutManager.shared.shouldHandle(shortcut: ShortcutManager.shared.searchAndKeyboardShortcutItem)
-                    if SessionManager.shared.isLoggedIn,
-                        DeeplinkManager.shared.shouldOpenDeeplink() {
-                        UIApplication.shared.switchToDeeplink()
-                    }
-                } else {
-                    navigationController.popToRootViewController(animated: true)
-                }
+                handleReselection(of: navigationController, secondaryViewControllerIndex: indexPath.row)
             } else {
                 setSupplementaryView(index: indexPath.row)
             }
@@ -484,7 +476,7 @@ extension SidebarViewController: UICollectionViewDelegate {
             let secondaryViewControllerIndex = tabsItems.count + indexPath.row
             if let navigationController = splitViewController?.viewController(for: column) as? UINavigationController,
                navigationController == secondaryViewControllers[secondaryViewControllerIndex] {
-                navigationController.popToRootViewController(animated: true)
+                handleReselection(of: navigationController, secondaryViewControllerIndex: secondaryViewControllerIndex)
             } else {
                 setSupplementaryView(index: secondaryViewControllerIndex)
             }
@@ -539,6 +531,81 @@ extension SidebarViewController: UICollectionViewDelegate {
             navigationController.topViewController?.loadViewIfNeeded()
             splitViewController?.setViewController(listsViewController, for: column)
             navigationController.topViewController?.navigationItem.hidesBackButton = true
+        }
+    }
+
+    private func handleReselection(of navigationController: UINavigationController, secondaryViewControllerIndex: Int) {
+        switch secondaryViewControllerIndex {
+        case 0:
+            if shouldScrollToTop(view: navigationController.view) {
+                scrollToTop(view: navigationController.view)
+            } else {
+                cycleBrowseConfig()
+            }
+        case 1:
+            if shouldScrollToTop(view: navigationController.view) {
+                scrollToTop(view: navigationController.view)
+            } else if let toWatchViewController = navigationController.topViewController as? ToWatchViewController {
+                switch toWatchViewController.currentType {
+                case .episodes:
+                    toWatchViewController.currentType = .movies
+                case .movies:
+                    toWatchViewController.currentType = .episodes
+                }
+            } else {
+                navigationController.popToRootViewController(animated: true)
+            }
+        case 4:
+            ShortcutManager.shared.shouldHandle(shortcut: ShortcutManager.shared.searchAndKeyboardShortcutItem)
+            if SessionManager.shared.isLoggedIn,
+                DeeplinkManager.shared.shouldOpenDeeplink() {
+                UIApplication.shared.switchToDeeplink()
+            }
+        case 6:
+            if let calendarViewController = navigationController.topViewController as? CalendarViewController {
+                calendarViewController.scrollToClosestToNow(animated: true)
+            } else {
+                navigationController.popToRootViewController(animated: true)
+            }
+        default:
+            navigationController.popToRootViewController(animated: true)
+        }
+    }
+
+    private func cycleBrowseConfig() {
+        if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.freeConfig {
+            // do nothing
+        } else if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.defaultConfig {
+            BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.showsConfig
+        } else if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.showsConfig {
+            BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.moviesConfig
+        } else if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.moviesConfig {
+            BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.newAndHot
+        } else if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.newAndHot {
+            BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.shelfConfig
+        } else if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.shelfConfig {
+            BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.defaultConfig
+        }
+    }
+
+    private func shouldScrollToTop(view: UIView) -> Bool {
+        if let scrollView = view as? UIScrollView {
+            return (scrollView.adjustedContentInset.top + scrollView.contentOffset.y) != 0
+        } else {
+            for subview in view.subviews {
+                return shouldScrollToTop(view: subview)
+            }
+            return false
+        }
+    }
+
+    private func scrollToTop(view: UIView) {
+        if let scrollView = view as? UIScrollView {
+            scrollView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: true)
+            return
+        }
+        for subview in view.subviews {
+            scrollToTop(view: subview)
         }
     }
 }
