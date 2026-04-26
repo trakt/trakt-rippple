@@ -52,6 +52,8 @@ final class MediaCollectionViewCell: UICollectionViewCell {
                         additionalInfoLabel.isHidden = false
                         if lastWatchedDate > Date.now {
                             additionalInfoLabel.text = "Just now..."
+                        } else if lastWatchedDate.timeIntervalSince1970 == 0 {
+                            additionalInfoLabel.text = "Unknown"
                         } else {
                             additionalInfoLabel.text = "\(dateComponentsFormatter.string(from: lastWatchedDate, to: Date.now) ?? "X") ago"
                         }
