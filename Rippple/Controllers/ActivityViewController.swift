@@ -40,6 +40,19 @@ final class ActivityViewController: UITableViewController {
         case movies
         case episodes
         case shows
+
+        var apiMediaType: HistoryMediaType? {
+            switch self {
+            case .none:
+                return nil
+            case .movies:
+                return .movies
+            case .episodes:
+                return .episodes
+            case .shows:
+                return .shows
+            }
+        }
     }
 
     private let disposeBag = DisposeBag()
@@ -86,15 +99,10 @@ final class ActivityViewController: UITableViewController {
         let sortedActivities = activities.removingDuplicates().sorted(by: { $0.watchDate > $1.watchDate })
         let filteredActivities: [HistoryItem] = {
             switch currentFilter {
-            case .none:
+            case .none, .movies, .episodes:
                 return sortedActivities
-            case .movies:
-                return sortedActivities.filter { $0.movie != nil }
-            case .episodes:
-                return sortedActivities.filter { $0.movie == nil }
             case .shows:
-                let showActivities = sortedActivities.filter { $0.show != nil }
-                return latestShowActivities(from: showActivities)
+                return latestShowActivities(from: sortedActivities)
             }
         }()
 
@@ -198,7 +206,11 @@ final class ActivityViewController: UITableViewController {
 
             updateSubtitle()
 
-            updateDataSource()
+            if shouldUpdateDataSource, oldValue != currentFilter {
+                fetchFirstActivities()
+            } else {
+                updateDataSource()
+            }
         }
     }
 
@@ -694,7 +706,7 @@ final class ActivityViewController: UITableViewController {
 
         print("######## Fetching activity for page: \(page.page)#####")
         cancellable = TraktAPIProvider.provider.request(.history(slug: slug,
-                                                                 type: nil,
+                                                                 type: currentFilter.apiMediaType,
                                                                  id: nil,
                                                                  pageInfo: page,
                                                                  endDate: endAtDate?.timeIntervalSince1970 == 0 ? endAtDate : endAtDate?.advanced(by: 60*60*24)),
