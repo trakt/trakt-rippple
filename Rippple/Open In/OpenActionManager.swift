@@ -262,17 +262,22 @@ enum OpenActionMediaType: String, Codable, CaseIterable, Identifiable {
 }
 
 enum OpenActionVariable: String, CaseIterable, Identifiable {
+    case title
+    case showTitle
+
+    case slug
+    case traktId
+
     case tmdbId
+    case imdbId
+
     case showTmdbId
     case showTraktId
-    case imdbId
-    case traktId
-    case slug
-    case title
+    case showImdbId
+
     case year
     case season
     case episode
-    case showTitle
 
     var id: String { rawValue }
 
@@ -280,17 +285,22 @@ enum OpenActionVariable: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .tmdbId: return "TMDb ID"
-        case .showTmdbId: return "Show TMDb ID"
-        case .showTraktId: return "Show Trakt ID"
-        case .imdbId: return "IMDb ID"
-        case .traktId: return "Trakt ID"
-        case .slug: return "Slug"
         case .title: return "Title"
+        case .showTitle: return "Show title"
+
+        case .slug: return "Slug"
+        case .traktId: return "Trakt ID"
+
+        case .tmdbId: return "TMDb ID"
+        case .imdbId: return "IMDb ID"
+
+        case .showTraktId: return "Show Trakt ID"
+        case .showTmdbId: return "Show TMDb ID"
+        case .showImdbId: return "Show IMDb ID"
+
         case .year: return "Year"
         case .season: return "Season number"
         case .episode: return "Episode number"
-        case .showTitle: return "Show title"
         }
     }
 }
@@ -312,6 +322,7 @@ enum OpenActionURLResolver {
                 "tmdbId": stringValue(movie.identifiers.tmdb),
                 "showTmdbId": "",
                 "showTraktId": "",
+                "showImdbId": "",
                 "imdbId": stringValue(movie.identifiers.imdb),
                 "traktId": stringValue(movie.identifiers.trakt),
                 "slug": stringValue(movie.identifiers.slug),
@@ -323,6 +334,7 @@ enum OpenActionURLResolver {
                 "tmdbId": stringValue(show.identifiers.tmdb),
                 "showTmdbId": stringValue(show.identifiers.tmdb),
                 "showTraktId": stringValue(show.identifiers.trakt),
+                "showImdbId": stringValue(show.identifiers.imdb),
                 "imdbId": stringValue(show.identifiers.imdb),
                 "traktId": stringValue(show.identifiers.trakt),
                 "slug": stringValue(show.identifiers.slug),
@@ -334,6 +346,7 @@ enum OpenActionURLResolver {
                 "tmdbId": firstNonEmptyString(season.identifiers.tmdb, show.identifiers.tmdb),
                 "showTmdbId": stringValue(show.identifiers.tmdb),
                 "showTraktId": stringValue(show.identifiers.trakt),
+                "showImdbId": stringValue(show.identifiers.imdb),
                 "imdbId": firstNonEmptyString(season.identifiers.imdb, show.identifiers.imdb),
                 "traktId": stringValue(season.identifiers.trakt),
                 "slug": firstNonEmptyString(season.identifiers.slug, show.identifiers.slug),
@@ -346,6 +359,7 @@ enum OpenActionURLResolver {
                 "tmdbId": firstNonEmptyString(episode.identifiers.tmdb, show.identifiers.tmdb),
                 "showTmdbId": stringValue(show.identifiers.tmdb),
                 "showTraktId": stringValue(show.identifiers.trakt),
+                "showImdbId": stringValue(show.identifiers.imdb),
                 "imdbId": firstNonEmptyString(episode.identifiers.imdb, show.identifiers.imdb),
                 "traktId": stringValue(episode.identifiers.trakt),
                 "slug": firstNonEmptyString(episode.identifiers.slug, show.identifiers.slug),
