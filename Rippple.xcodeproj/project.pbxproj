@@ -169,6 +169,7 @@
 		3A541CF12A606C0300E1A153 /* CommentsBrowseTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A541CF02A606C0300E1A153 /* CommentsBrowseTableViewCell.xib */; };
 		3A541CF32A606C0A00E1A153 /* CommentsBrowseTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A541CF22A606C0A00E1A153 /* CommentsBrowseTableViewCell.swift */; };
 		3A541CF52A612C6700E1A153 /* CommentsBrowseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A541CF42A612C6700E1A153 /* CommentsBrowseViewController.swift */; };
+		09C0DEC22F9ABCD000000001 /* CommentsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */; };
 		3A541CF72A61334000E1A153 /* HistoryBrowseCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A541CF62A61334000E1A153 /* HistoryBrowseCollectionViewCell.swift */; };
 		3A541CF92A61334C00E1A153 /* HistoryBrowseCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A541CF82A61334C00E1A153 /* HistoryBrowseCollectionViewCell.xib */; };
 		3A588DD025CD3E4A008A2896 /* CountryWhereToWatchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A588DCF25CD3E4A008A2896 /* CountryWhereToWatchTableViewController.swift */; };
@@ -703,6 +704,7 @@
 		3A541CF02A606C0300E1A153 /* CommentsBrowseTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CommentsBrowseTableViewCell.xib; sourceTree = "<group>"; };
 		3A541CF22A606C0A00E1A153 /* CommentsBrowseTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsBrowseTableViewCell.swift; sourceTree = "<group>"; };
 		3A541CF42A612C6700E1A153 /* CommentsBrowseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsBrowseViewController.swift; sourceTree = "<group>"; };
+		09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsTabViewController.swift; sourceTree = "<group>"; };
 		3A541CF62A61334000E1A153 /* HistoryBrowseCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryBrowseCollectionViewCell.swift; sourceTree = "<group>"; };
 		3A541CF82A61334C00E1A153 /* HistoryBrowseCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HistoryBrowseCollectionViewCell.xib; sourceTree = "<group>"; };
 		3A5869C02892A5770005A5D6 /* LiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivity.swift; sourceTree = "<group>"; };
@@ -1247,6 +1249,7 @@
 				3A1B950A2A3C59DA0044972F /* BrowseViewController.swift */,
 				3AEA58052A42D8FA00B64165 /* GridViewController.swift */,
 				3A541CF42A612C6700E1A153 /* CommentsBrowseViewController.swift */,
+				09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */,
 				3AFDDDA02A63EFF70069840D /* BrowseConfigViewController.swift */,
 				09570F942ED738E200EB91CE /* EmptyCollectionViewCell.swift */,
 			);
@@ -3147,6 +3150,7 @@
 				3A903146287B032700FA27D4 /* Widget.intentdefinition in Sources */,
 				3AB24648200763B6008B3A58 /* SwiftMessage.swift in Sources */,
 				3A541CF52A612C6700E1A153 /* CommentsBrowseViewController.swift in Sources */,
+				09C0DEC22F9ABCD000000001 /* CommentsTabViewController.swift in Sources */,
 				3A9DC0F228D4983B009C2C27 /* LiveActivityAttributes.swift in Sources */,
 				3A216A092C2C1BEC0006E14C /* BrowseLinkCardViewCell.swift in Sources */,
 				0998A7B52E2D28B000079A2C /* ReplyCountButton.swift in Sources */,

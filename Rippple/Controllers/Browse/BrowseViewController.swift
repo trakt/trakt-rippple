@@ -162,7 +162,10 @@ final class BrowseViewController: UITableViewController {
 
         navigationItem.style = .browser
         title = "Browse"
-        navigationItem.subtitle = "Loading..."
+        if menuBarButtonItem != nil {
+            navigationItem.subtitle = "Loading..."
+        }
+        configureProfileBarButtonItem()
 
         tableView.allowsFocus = false
         tableView.register(UINib(nibName: "BrowseHeaderTableViewCell", bundle: nil), forCellReuseIdentifier: "header")
@@ -463,7 +466,13 @@ final class BrowseViewController: UITableViewController {
             var moduleTypes = try JSONDecoder().decode([ModuleType].self, from: jsonData)
 
             let first = moduleTypes.remove(at: 0)
-            navigationItem.subtitle = first.module == "Browse" ? "Home" : first.module
+            let isShelf = first.module == "Shelf"
+            if isShelf, menuBarButtonItem == nil {
+                navigationItem.title = "Shelf"
+                navigationItem.subtitle = nil
+            } else {
+                navigationItem.subtitle = first.module == "Browse" ? "Home" : first.module
+            }
 
             snapshot.appendSections([.content])
             for moduleType in moduleTypes {
@@ -486,7 +495,7 @@ final class BrowseViewController: UITableViewController {
                 }
             }
 
-            if navigationItem.subtitle == "Shelf", moduleTypes.isEmpty {
+            if isShelf, moduleTypes.isEmpty {
                 snapshot.appendItems([.empty])
             }
 
@@ -497,19 +506,26 @@ final class BrowseViewController: UITableViewController {
             print("\(error)")
         }
 
-        if navigationItem.subtitle == "Shelf" {
-            navigationItem.setRightBarButtonItems([.init(image: UIImage(systemName: "slider.horizontal.3"),
-                                                         primaryAction: UIAction { [weak self] _ in
+        if navigationItem.title == "Shelf" || navigationItem.subtitle == "Shelf" {
+            let customizeShelf = UIBarButtonItem(image: UIImage(systemName: "slider.horizontal.3"),
+                                                 primaryAction: UIAction { [weak self] _ in
                 guard let self = self else { return }
                 if PurchaseManager.shared.purchased {
-                    self.performSegue(withIdentifier: "customizeShelf", sender: nil)
+                    if self.menuBarButtonItem == nil {
+                        self.present(UIHostingController(rootView: ShelfConfigView()), animated: true)
+                    } else {
+                        self.performSegue(withIdentifier: "customizeShelf", sender: nil)
+                    }
                 } else {
                     UIApplication.shared.switchToPurchase()
                 }
-             }),
-                                                   .fixedSpace(),
-                                                   menuBarButtonItem!],
-                                                  animated: true)
+             })
+            if let menuBarButtonItem = menuBarButtonItem {
+                navigationItem.setRightBarButtonItems([customizeShelf, .fixedSpace(), menuBarButtonItem],
+                                                      animated: true)
+            } else {
+                navigationItem.setRightBarButtonItems([customizeShelf], animated: true)
+            }
         } else if let menuBarButtonItem = menuBarButtonItem {
             navigationItem.setRightBarButtonItems([menuBarButtonItem], animated: true)
         }
@@ -608,6 +624,33 @@ final class BrowseViewController: UITableViewController {
             searchButton.heightAnchor.constraint(equalToConstant: 60)])
 
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
+    }
+
+    private func configureProfileBarButtonItem() {
+        if menuBarButtonItem != nil { return }
+        if tabBarController == nil { return }
+        if navigationController?.viewControllers.first != self { return }
+
+        #if targetEnvironment(macCatalyst)
+        navigationItem.leftBarButtonItem = nil
+        return
+        #else
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            navigationItem.leftBarButtonItem = nil
+            return
+        }
+        #endif
+
+        let profileButton = ProfileButton()
+        let profileAction = UIAction(handler: { [weak self] _ in
+            guard let self = self else { return }
+            let profileViewController = UIStoryboard(name: "Profile", bundle: nil).instantiateInitialViewController()!
+            self.present(profileViewController, animated: true)
+            UISelectionFeedbackGenerator().selectionChanged()
+        })
+        profileButton.addAction(profileAction, for: .touchUpInside)
+        profileButton.setImage(UIImage(imageLiteralResourceName: "bg_placeholder_avatar_small"), for: .normal)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: profileButton)
     }
 
     override func viewDidLayoutSubviews() {

@@ -14,6 +14,8 @@ final class MainTabBarController: UITabBarController {
 
     enum Tab: String, Codable, CaseIterable {
         case browse
+        case shelf
+        case comments
         case wall
 
         case purchase
@@ -46,6 +48,20 @@ final class MainTabBarController: UITabBarController {
                                identifier: Tab.browse.rawValue,
                                viewControllerProvider: { _ in
             UIStoryboard(name: "Browse", bundle: nil).instantiateInitialViewController()!
+        })
+        store[.shelf] = UITab(title: "Shelf",
+                               image: UIImage(systemName: "square.grid.3x1.below.line.grid.1x2"),
+                               identifier: Tab.shelf.rawValue,
+                               viewControllerProvider: { _ in
+            let browseViewController = UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(identifier: "standalone browse") as! BrowseViewController
+            browseViewController.model = BrowseConfigManager.shared.shelfConfig
+            return StyledNavigationController(rootViewController: browseViewController)
+        })
+        store[.comments] = UITab(title: "Comments",
+                               image: UIImage(systemName: "text.bubble"),
+                               identifier: Tab.comments.rawValue,
+                               viewControllerProvider: { _ in
+            StyledNavigationController(rootViewController: CommentsTabViewController())
         })
         store[.purchase] = UITab(title: "Unlock",
                                image: UIImage(systemName: "fireworks"),
@@ -311,6 +327,26 @@ final class MainTabBarController: UITabBarController {
                     self.selectedIndex = 0
                 })
                 manageActions.append(hideTabBar)
+            case .shelf:
+                let remove = UIAction(title: "Remove Shelf",
+                                              image: UIImage(systemName: "xmark.circle"),
+                                              attributes: .destructive,
+                                              handler: { [weak self] _ in
+                    guard let self = self else { return }
+                    tabPositions.remove(at: currentIndex)
+                    self.save(tabs: tabPositions)
+                })
+                manageActions.append(remove)
+            case .comments:
+                let remove = UIAction(title: "Remove Comments",
+                                              image: UIImage(systemName: "xmark.circle"),
+                                              attributes: .destructive,
+                                              handler: { [weak self] _ in
+                    guard let self = self else { return }
+                    tabPositions.remove(at: currentIndex)
+                    self.save(tabs: tabPositions)
+                })
+                manageActions.append(remove)
             case .wall:
                 let remove = UIAction(title: "Remove Wall",
                                               image: UIImage(systemName: "xmark.circle"),
@@ -428,6 +464,24 @@ final class MainTabBarController: UITabBarController {
                 case .browse:
                     let swapAction = UIAction(title: "Swap with Browse",
                                                   image: UIImage(systemName: "sparkles.rectangle.stack"),
+                                                  handler: { [weak self] _ in
+                        guard let self = self else { return }
+                        tabPositions.swapAt(currentIndex, position)
+                        self.save(tabs: tabPositions)
+                    })
+                    swapActions.append(swapAction)
+                case .shelf:
+                    let swapAction = UIAction(title: "Swap with Shelf",
+                                                  image: UIImage(systemName: "square.grid.3x1.below.line.grid.1x2"),
+                                                  handler: { [weak self] _ in
+                        guard let self = self else { return }
+                        tabPositions.swapAt(currentIndex, position)
+                        self.save(tabs: tabPositions)
+                    })
+                    swapActions.append(swapAction)
+                case .comments:
+                    let swapAction = UIAction(title: "Swap with Comments",
+                                                  image: UIImage(systemName: "text.bubble"),
                                                   handler: { [weak self] _ in
                         guard let self = self else { return }
                         tabPositions.swapAt(currentIndex, position)
@@ -558,6 +612,28 @@ final class MainTabBarController: UITabBarController {
                 case .wall:
                     let replaceAction = UIAction(title: "Replace with Wall",
                                                   image: UIImage(systemName: "rectangle.grid.3x2"),
+                                                  handler: { [weak self] _ in
+                        guard let self = self else { return }
+                        tabPositions.remove(at: currentIndex)
+                        tabPositions.insert(tab, at: currentIndex)
+                        self.save(tabs: tabPositions)
+                        self.selectedIndex = currentIndex
+                    })
+                    replaceActions.append(replaceAction)
+                case .shelf:
+                    let replaceAction = UIAction(title: "Replace with Shelf",
+                                                  image: UIImage(systemName: "square.grid.3x1.below.line.grid.1x2"),
+                                                  handler: { [weak self] _ in
+                        guard let self = self else { return }
+                        tabPositions.remove(at: currentIndex)
+                        tabPositions.insert(tab, at: currentIndex)
+                        self.save(tabs: tabPositions)
+                        self.selectedIndex = currentIndex
+                    })
+                    replaceActions.append(replaceAction)
+                case .comments:
+                    let replaceAction = UIAction(title: "Replace with Comments",
+                                                  image: UIImage(systemName: "text.bubble"),
                                                   handler: { [weak self] _ in
                         guard let self = self else { return }
                         tabPositions.remove(at: currentIndex)
