@@ -54,7 +54,7 @@ final class MainTabBarController: UITabBarController {
                                identifier: Tab.shelf.rawValue,
                                viewControllerProvider: { _ in
             let browseViewController = UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(identifier: "standalone browse") as! BrowseViewController
-            browseViewController.model = BrowseConfigManager.shared.shelfConfig
+            browseViewController.followsShelfConfig = true
             return StyledNavigationController(rootViewController: browseViewController)
         })
         store[.comments] = UITab(title: "Comments",

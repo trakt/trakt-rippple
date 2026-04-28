@@ -29,6 +29,34 @@ final class BrowseViewController: UITableViewController {
         }
     }
 
+    var followsShelfConfig = false {
+        didSet {
+            if followsShelfConfig {
+                model = BrowseConfigManager.shared.shelfConfig
+            }
+        }
+    }
+
+    private var displayedRootModule: String? {
+        guard let model else { return nil }
+
+        do {
+            let jsonString = "[\(model.components(separatedBy: .newlines).joined(separator: ","))]"
+            let jsonData = jsonString.data(using: .utf8)!
+            return try JSONDecoder().decode([ModuleType].self, from: jsonData).first?.module
+        } catch {
+            return nil
+        }
+    }
+
+    private var isDisplayingShelf: Bool {
+        displayedRootModule == "Shelf"
+    }
+
+    private var isDisplayingNewAndHot: Bool {
+        displayedRootModule == "This Week"
+    }
+
     private let contextMenu = ContextMenuHelper()
 
     private let disposeBag = DisposeBag()
@@ -68,7 +96,7 @@ final class BrowseViewController: UITableViewController {
             cell.title.textColor = .label
 
             if (savedFilter.path.isEmpty ||
-                BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.newAndHot || savedFilter.section == "movies,shows") &&
+                self.isDisplayingNewAndHot || savedFilter.section == "movies,shows") &&
                 savedFilter.section != "episodes_to_watch" &&
                 savedFilter.section != "movies_to_watch" &&
                 savedFilter.section != "pinned_to_watch" &&
@@ -79,7 +107,7 @@ final class BrowseViewController: UITableViewController {
                 cell.chevron?.isHidden = false
             }
 
-            if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.shelfConfig {
+            if self.isDisplayingShelf {
                 if cell.gestureRecognizers?.contains(where: { $0 is BrowseLongPressGestureRecognizer }) != true {
                     let longPress = BrowseLongPressGestureRecognizer(target: self, action: #selector(self.headerLongPressed(_:)))
                     longPress.minimumPressDuration = 0.5
@@ -199,10 +227,20 @@ final class BrowseViewController: UITableViewController {
 
         onBrowseConfigChangedReceiver.skipRepeats().listen { [weak self] model in
             guard let self = self else { return }
+            if self.followsShelfConfig {
+                return
+            }
+
             // Only change Browse config if it's the main browse, not if it's a sub browse
             if menuBarButtonItem == nil { return }
             self.model = model
             self.menuBarButtonItem?.menu = menu()
+        }.disposed(by: disposeBag)
+
+        onShelfChangedReceiver.skipRepeats().listen { [weak self] shelf in
+            guard let self = self else { return }
+            if !self.followsShelfConfig { return }
+            self.model = BrowseConfigManager.shared.shelfConfiguration(for: shelf)
         }.disposed(by: disposeBag)
 
         configureSearchButton()
@@ -398,7 +436,7 @@ final class BrowseViewController: UITableViewController {
         // Only act on the initial press
         guard gesture.state == .began else { return }
 
-        if BrowseConfigManager.shared.currentConfig != BrowseConfigManager.shared.shelfConfig { return }
+        if !isDisplayingShelf { return }
 
         // Determine which header cell was long-pressed
         let location = gesture.location(in: tableView)
@@ -486,7 +524,7 @@ final class BrowseViewController: UITableViewController {
                         snapshot.appendItems([.header(filter.name, filter, moduleType)])
                     }
                     snapshot.appendItems([.content(moduleType.module, filter)])
-                    if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.newAndHot {
+                    if self.isDisplayingNewAndHot {
                         snapshot.appendItems([.weeklyTrackerLink])
                     }
                 } else {
@@ -758,7 +796,7 @@ extension BrowseViewController {
             return
         }
         if savedFilter.path.isEmpty { return }
-        if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.newAndHot { return }
+        if isDisplayingNewAndHot { return }
         if savedFilter.section == "movies,shows" { return }
         performSegue(withIdentifier: "grid", sender: savedFilter)
     }

@@ -91,9 +91,13 @@ final class BrowseConfigManager {
 
     private var shelfProxy = ""
     var shelfConfig: String {
+        shelfConfiguration(for: shelfProxy)
+    }
+
+    func shelfConfiguration(for shelf: String) -> String {
         return """
             { "module": "Shelf", "filter": { "section": "", "name": "", "path": "", "query": "" } }
-            \(shelfProxy)
+            \(shelf)
             """
     }
 

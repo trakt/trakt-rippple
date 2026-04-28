@@ -183,7 +183,7 @@ class SidebarViewController: UIViewController {
 
     private func updatePurchasedState() {
         let shelfViewController = UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(identifier: "standalone browse") as! BrowseViewController
-        shelfViewController.model = BrowseConfigManager.shared.shelfConfig
+        shelfViewController.followsShelfConfig = true
 
         secondaryViewControllers = [
             UIStoryboard(name: "Browse", bundle: nil).instantiateInitialViewController()!,
