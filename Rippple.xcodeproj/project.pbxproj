@@ -39,7 +39,9 @@
 		09B899062F2A123400DC202D /* TraktAPIProvider+Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */; };
 		09B8990B2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */; };
 		09B8990D2F2A568900DC202D /* TraktAPIProvider+Recommended.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */; };
+		09C0DEC22F9ABCD000000001 /* CommentsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */; };
 		09D2613A2F76B1B000536D3D /* ListItemsMarkerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D261392F76B1B000536D3D /* ListItemsMarkerManager.swift */; };
+		09D261502F76B2200536D40 /* ListReorderingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D261512F76B2200536D40 /* ListReorderingViewController.swift */; };
 		09DCC25E2EF83A3300C3EA79 /* ImageBrowserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DCC25D2EF83A3300C3EA79 /* ImageBrowserViewController.swift */; };
 		09DCC2602EFA889B00C3EA79 /* FullScreenImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DCC25F2EFA889B00C3EA79 /* FullScreenImageViewController.swift */; };
 		09E390172EB21BC800C39B30 /* InReviewBrowseRail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09E390162EB21BC800C39B30 /* InReviewBrowseRail.swift */; };
@@ -169,7 +171,6 @@
 		3A541CF12A606C0300E1A153 /* CommentsBrowseTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A541CF02A606C0300E1A153 /* CommentsBrowseTableViewCell.xib */; };
 		3A541CF32A606C0A00E1A153 /* CommentsBrowseTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A541CF22A606C0A00E1A153 /* CommentsBrowseTableViewCell.swift */; };
 		3A541CF52A612C6700E1A153 /* CommentsBrowseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A541CF42A612C6700E1A153 /* CommentsBrowseViewController.swift */; };
-		09C0DEC22F9ABCD000000001 /* CommentsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */; };
 		3A541CF72A61334000E1A153 /* HistoryBrowseCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A541CF62A61334000E1A153 /* HistoryBrowseCollectionViewCell.swift */; };
 		3A541CF92A61334C00E1A153 /* HistoryBrowseCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A541CF82A61334C00E1A153 /* HistoryBrowseCollectionViewCell.xib */; };
 		3A588DD025CD3E4A008A2896 /* CountryWhereToWatchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A588DCF25CD3E4A008A2896 /* CountryWhereToWatchTableViewController.swift */; };
@@ -217,7 +218,6 @@
 		3A6DB4292D3B9B33007A7BA2 /* G1BrowseCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A6DB4282D3B9B33007A7BA2 /* G1BrowseCollectionViewCell.xib */; };
 		3A6DB42B2D3B9ED5007A7BA2 /* LandscapeBrowseTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A6DB42A2D3B9ED5007A7BA2 /* LandscapeBrowseTableViewCell.xib */; };
 		3A6DB42D2D3BA54D007A7BA2 /* G1BrowseCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6DB42C2D3BA54D007A7BA2 /* G1BrowseCollectionViewCell.swift */; };
-		3A6F58B5264FBBB40087345C /* ExperimentalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6F58B4264FBBB40087345C /* ExperimentalViewController.swift */; };
 		3A6F58B7264FC0900087345C /* AppearanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6F58B6264FC0900087345C /* AppearanceViewController.swift */; };
 		3A6F58B9264FC4430087345C /* BadgeAppIconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6F58B8264FC4430087345C /* BadgeAppIconViewController.swift */; };
 		3A6F58BB264FC5CB0087345C /* SwipeActionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6F58BA264FC5CB0087345C /* SwipeActionsViewController.swift */; };
@@ -422,7 +422,6 @@
 		3AD932A81FB884F5005289B5 /* MediaTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD932A71FB884F5005289B5 /* MediaTableViewCell.swift */; };
 		3AD932AA1FB9E885005289B5 /* TraktAPIService+Sample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD932A91FB9E885005289B5 /* TraktAPIService+Sample.swift */; };
 		3AD94BDB23A0D5EE0092C294 /* ListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD94BD923A0D0AB0092C294 /* ListViewController.swift */; };
-		09D261502F76B2200536D40 /* ListReorderingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D261512F76B2200536D40 /* ListReorderingViewController.swift */; };
 		3AD94BDD23A0EF670092C294 /* ListFormViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD94BDC23A0EF670092C294 /* ListFormViewController.swift */; };
 		3AD9FAFB2129760D00ADDF7F /* EpisodeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD9FAFA2129760A00ADDF7F /* EpisodeTableViewCell.swift */; };
 		3AD9FAFC2129761200ADDF7F /* EpisodeTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AD9FAF92129760A00ADDF7F /* EpisodeTableViewCell.xib */; };
@@ -560,7 +559,9 @@
 		09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Collection.swift"; sourceTree = "<group>"; };
 		09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Watchlist.swift"; sourceTree = "<group>"; };
 		09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Recommended.swift"; sourceTree = "<group>"; };
+		09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsTabViewController.swift; sourceTree = "<group>"; };
 		09D261392F76B1B000536D3D /* ListItemsMarkerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItemsMarkerManager.swift; sourceTree = "<group>"; };
+		09D261512F76B2200536D40 /* ListReorderingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListReorderingViewController.swift; sourceTree = "<group>"; };
 		09DA10562F4C990200DD80F5 /* CONTRIBUTING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CONTRIBUTING.md; sourceTree = "<group>"; };
 		09DA10572F4C990F00DD80F5 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		09DA10582F4C990F00DD80F5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -704,7 +705,6 @@
 		3A541CF02A606C0300E1A153 /* CommentsBrowseTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CommentsBrowseTableViewCell.xib; sourceTree = "<group>"; };
 		3A541CF22A606C0A00E1A153 /* CommentsBrowseTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsBrowseTableViewCell.swift; sourceTree = "<group>"; };
 		3A541CF42A612C6700E1A153 /* CommentsBrowseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsBrowseViewController.swift; sourceTree = "<group>"; };
-		09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsTabViewController.swift; sourceTree = "<group>"; };
 		3A541CF62A61334000E1A153 /* HistoryBrowseCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryBrowseCollectionViewCell.swift; sourceTree = "<group>"; };
 		3A541CF82A61334C00E1A153 /* HistoryBrowseCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HistoryBrowseCollectionViewCell.xib; sourceTree = "<group>"; };
 		3A5869C02892A5770005A5D6 /* LiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivity.swift; sourceTree = "<group>"; };
@@ -757,7 +757,6 @@
 		3A6DB4282D3B9B33007A7BA2 /* G1BrowseCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = G1BrowseCollectionViewCell.xib; sourceTree = "<group>"; };
 		3A6DB42A2D3B9ED5007A7BA2 /* LandscapeBrowseTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LandscapeBrowseTableViewCell.xib; sourceTree = "<group>"; };
 		3A6DB42C2D3BA54D007A7BA2 /* G1BrowseCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = G1BrowseCollectionViewCell.swift; sourceTree = "<group>"; };
-		3A6F58B4264FBBB40087345C /* ExperimentalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperimentalViewController.swift; sourceTree = "<group>"; };
 		3A6F58B6264FC0900087345C /* AppearanceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceViewController.swift; sourceTree = "<group>"; };
 		3A6F58B8264FC4430087345C /* BadgeAppIconViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeAppIconViewController.swift; sourceTree = "<group>"; };
 		3A6F58BA264FC5CB0087345C /* SwipeActionsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeActionsViewController.swift; sourceTree = "<group>"; };
@@ -958,7 +957,6 @@
 		3AD932A71FB884F5005289B5 /* MediaTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTableViewCell.swift; sourceTree = "<group>"; };
 		3AD932A91FB9E885005289B5 /* TraktAPIService+Sample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIService+Sample.swift"; sourceTree = "<group>"; };
 		3AD94BD923A0D0AB0092C294 /* ListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListViewController.swift; sourceTree = "<group>"; };
-		09D261512F76B2200536D40 /* ListReorderingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListReorderingViewController.swift; sourceTree = "<group>"; };
 		3AD94BDC23A0EF670092C294 /* ListFormViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFormViewController.swift; sourceTree = "<group>"; };
 		3AD9FAF92129760A00ADDF7F /* EpisodeTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EpisodeTableViewCell.xib; sourceTree = "<group>"; };
 		3AD9FAFA2129760A00ADDF7F /* EpisodeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeTableViewCell.swift; sourceTree = "<group>"; };
@@ -1706,7 +1704,6 @@
 				3ADE1DAA2492A15A0066F85D /* NotificationsTroubleshootViewController.swift */,
 				3A588DCF25CD3E4A008A2896 /* CountryWhereToWatchTableViewController.swift */,
 				3AEAA8FD2BDA78DE0054653A /* WhereToWatchSettingsView.swift */,
-				3A6F58B4264FBBB40087345C /* ExperimentalViewController.swift */,
 				3A6F58B6264FC0900087345C /* AppearanceViewController.swift */,
 				3A6F58B8264FC4430087345C /* BadgeAppIconViewController.swift */,
 				3A6F58BA264FC5CB0087345C /* SwipeActionsViewController.swift */,
@@ -3305,7 +3302,6 @@
 				3A72F3BB2B020C6F00AB9383 /* PinnedShowsViewController.swift in Sources */,
 				3AA3B7D1273C52750063C3EB /* DispatchQueue+Dedupe.swift in Sources */,
 				3A9DC0EF28D4965F009C2C27 /* LiveActivityManager.swift in Sources */,
-				3A6F58B5264FBBB40087345C /* ExperimentalViewController.swift in Sources */,
 				3A6232E8239FA9CA00D9D24B /* CustomListsViewController.swift in Sources */,
 				3AEEFC4D1FC6BE7200E8F8E4 /* Media.swift in Sources */,
 				3AE7684223EC6CDE00511BE1 /* MovieToWatchSettingsViewController.swift in Sources */,
