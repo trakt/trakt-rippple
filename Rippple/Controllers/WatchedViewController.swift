@@ -179,12 +179,17 @@ final class WatchedViewController: UITableViewController {
         case shows
     }
 
-    private var service: TraktAPIService = .watched(type: .movies, extended: .full) {
+    private struct WatchedRequest: Equatable {
+        let slug: String
+        let type: WatchedType
+        let extended: Extended?
+    }
+
+    private var watchedRequest = WatchedRequest(slug: "me", type: .movies, extended: .full) {
         didSet {
             reset()
         }
     }
-    private var cancellable: Cancellable?
 
     private let disposeBag = DisposeBag()
 
@@ -232,7 +237,7 @@ final class WatchedViewController: UITableViewController {
                     dataSource.apply(snapshot, animatingDifferences: false)
                     watchlistItems = watchedMovies
                 } else {
-                    service = .watched(slug: user.slug, type: .movies, extended: .full)
+                    watchedRequest = WatchedRequest(slug: user.slug, type: .movies, extended: .full)
                 }
                 navigationItem.title = "Watched Movies"
                 navigationItem.subtitle = "Movies"
@@ -248,7 +253,7 @@ final class WatchedViewController: UITableViewController {
                         watchlistItems = nil
                     }
                 } else {
-                    service = .watched(slug: user.slug, type: .shows, extended: .full)
+                    watchedRequest = WatchedRequest(slug: user.slug, type: .shows, extended: .fullnoseasons)
                 }
                 navigationItem.title = "Watched"
                 navigationItem.subtitle = "Shows"
@@ -388,7 +393,7 @@ final class WatchedViewController: UITableViewController {
     }
 
     private func updateDatasource() {
-        let watchlistedItems = sortedList.filter {
+        let watchlistedItems = sortedList.removingDuplicates().filter {
             if searchQuery.isEmpty { return true }
             if searchQuery == "" { return true }
             if $0.title.localizedCaseInsensitiveContains(searchQuery) { return true }
@@ -534,18 +539,18 @@ final class WatchedViewController: UITableViewController {
             onWatchedShowsChangedReceiver.listen { [weak self] _ in
                 guard let self = self else { return }
                 self.watchedShows = WatchedManager.shared.watchedShowsItems
+                if self.currentFilter == .shows {
+                    self.finishRefreshing()
+                }
             }.disposed(by: disposeBag)
 
             onWatchedMoviesChangedReceiver.listen { [weak self] _ in
                 guard let self = self else { return }
                 self.watchedMovies = WatchedManager.shared.watchedMoviesItems
+                if self.currentFilter == .movies {
+                    self.finishRefreshing()
+                }
             }.disposed(by: disposeBag)
-        }
-    }
-
-    deinit {
-        if let cancellable = cancellable {
-            cancellable.cancel()
         }
     }
 
@@ -565,9 +570,6 @@ final class WatchedViewController: UITableViewController {
     }
 
     private func reset() {
-        if let cancellable = cancellable {
-            cancellable.cancel()
-        }
         retry(self)
     }
 
@@ -576,38 +578,35 @@ final class WatchedViewController: UITableViewController {
             return
         }
 
-        defer {
+        if user.isCurrentUser {
+            switch currentFilter {
+            case .movies:
+                WatchedManager.shared.refreshWatchedMovies()
+            case .shows:
+                WatchedManager.shared.refreshWatchedShows()
+            }
+            return
+        }
+
+        let request = watchedRequest
+        TraktAPIProvider.fetchAllWatchedItems(slug: request.slug,
+                                              type: request.type,
+                                              extended: request.extended) { [weak self] result in
+            guard let self = self, request == self.watchedRequest else { return }
+
             DispatchQueue.main.async {
                 self.refreshControl?.isEnabled = true
                 self.refreshControl?.endRefreshing()
             }
-        }
-
-        cancellable = TraktAPIProvider.provider.request(service, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-            guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let results = Array(Set(try response.map([WatchedItem].self, using: TraktAPIProvider.decoder)))
-
-                    DispatchQueue.main.async {
-                        self.watchlistItems = results
-                    }
-                } catch {
-                    print("Comments request JSON mapping failed! \(error)")
-
-                    var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
-                    snapshot.appendSections([.error])
-                    DispatchQueue.main.async {
-                        self.error = error
-                        self.dataSource.apply(snapshot, animatingDifferences: false)
-                    }
+            case let .success(items):
+                let results = Array(Set(items))
+                DispatchQueue.main.async {
+                    self.watchlistItems = results
                 }
             case let .failure(error):
-                print("Comments request failure \(error)")
+                print("Watched request failure \(error)")
 
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
                 snapshot.appendSections([.error])
@@ -616,6 +615,13 @@ final class WatchedViewController: UITableViewController {
                     self.dataSource.apply(snapshot, animatingDifferences: false)
                 }
             }
+        }
+    }
+
+    private func finishRefreshing() {
+        DispatchQueue.main.async {
+            self.refreshControl?.isEnabled = true
+            self.refreshControl?.endRefreshing()
         }
     }
 

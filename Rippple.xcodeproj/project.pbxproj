@@ -39,6 +39,7 @@
 		09B899062F2A123400DC202D /* TraktAPIProvider+Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */; };
 		09B8990B2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */; };
 		09B8990D2F2A568900DC202D /* TraktAPIProvider+Recommended.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */; };
+		09B8990F2F9F000100DC202D /* TraktAPIProvider+Watched.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990E2F9F000100DC202D /* TraktAPIProvider+Watched.swift */; };
 		09C0DEC22F9ABCD000000001 /* CommentsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */; };
 		09D2613A2F76B1B000536D3D /* ListItemsMarkerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D261392F76B1B000536D3D /* ListItemsMarkerManager.swift */; };
 		09D261502F76B2200536D40 /* ListReorderingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D261512F76B2200536D40 /* ListReorderingViewController.swift */; };
@@ -559,6 +560,7 @@
 		09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Collection.swift"; sourceTree = "<group>"; };
 		09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Watchlist.swift"; sourceTree = "<group>"; };
 		09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Recommended.swift"; sourceTree = "<group>"; };
+		09B8990E2F9F000100DC202D /* TraktAPIProvider+Watched.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Watched.swift"; sourceTree = "<group>"; };
 		09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsTabViewController.swift; sourceTree = "<group>"; };
 		09D261392F76B1B000536D3D /* ListItemsMarkerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItemsMarkerManager.swift; sourceTree = "<group>"; };
 		09D261512F76B2200536D40 /* ListReorderingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListReorderingViewController.swift; sourceTree = "<group>"; };
@@ -2103,6 +2105,7 @@
 				09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */,
 				09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */,
 				09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */,
+				09B8990E2F9F000100DC202D /* TraktAPIProvider+Watched.swift */,
 				3A9119DB1FADDF3A00457D28 /* TraktAPIService.swift */,
 				3AD932A91FB9E885005289B5 /* TraktAPIService+Sample.swift */,
 				3AFD3F0F1FB734630003B966 /* TraktAPIModel.swift */,
@@ -3131,6 +3134,7 @@
 				09B899062F2A123400DC202D /* TraktAPIProvider+Collection.swift in Sources */,
 				09B8990B2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift in Sources */,
 				09B8990D2F2A568900DC202D /* TraktAPIProvider+Recommended.swift in Sources */,
+				09B8990F2F9F000100DC202D /* TraktAPIProvider+Watched.swift in Sources */,
 				3A70632C1FF29A3B00D3B2BB /* ProductManager.swift in Sources */,
 				3A211D1824C824F200930DD3 /* SplitViewController.swift in Sources */,
 				3A44BF451FD2D4920026AADE /* UIWindow+Extension.swift in Sources */,

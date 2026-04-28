@@ -27,7 +27,24 @@ final class WatchedManager {
 
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private var debouncedRefreshWatchedMovies: Debouncer!
+    private var debouncedRefreshWatchedShows: Debouncer!
+    private var debouncedRefreshWatchedEpisodes: Debouncer!
+
+    private init() {
+        debouncedRefreshWatchedMovies = Debouncer(delay: 1.0) { [weak self] in
+            guard let self = self else { return }
+            self.performRefreshWatchedMovies()
+        }
+        debouncedRefreshWatchedShows = Debouncer(delay: 1.0) { [weak self] in
+            guard let self = self else { return }
+            self.performRefreshWatchedShows()
+        }
+        debouncedRefreshWatchedEpisodes = Debouncer(delay: 1.0) { [weak self] in
+            guard let self = self else { return }
+            self.performRefreshWatchedEpisodes()
+        }
+    }
 
     private var lastShowsAndEpisodesCheck: Date = .now
     private var lastMoviesCheck: Date = .now
@@ -189,12 +206,14 @@ final class WatchedManager {
             }
 
             TinyStorage.cache.store(showsHistoryItems, forKey: "WatchedManager.showsHistoryItems")
+            onWatchedShowsChangedTransmitter.broadcast(watchedShows)
         }
     }
     fileprivate var moviesHistoryItems = [WatchedItem]() {
         didSet {
             watchedMovies = Set(moviesHistoryItems.compactMap { $0.movie?.identifiers.trakt })
             TinyStorage.cache.store(moviesHistoryItems, forKey: "WatchedManager.moviesHistoryItems")
+            onWatchedMoviesChangedTransmitter.broadcast(watchedMovies)
         }
     }
 
@@ -206,25 +225,27 @@ final class WatchedManager {
 
     fileprivate var watchedEpisodes = [Int64]()
 
-    fileprivate var watchedShows = Set<Int64>() {
-        didSet {
-            if oldValue == watchedShows { return }
-            onWatchedShowsChangedTransmitter.broadcast(watchedShows)
-        }
-    }
-    fileprivate var watchedMovies = Set<Int64>() {
-        didSet {
-            if oldValue == watchedShows { return }
-            onWatchedMoviesChangedTransmitter.broadcast(watchedMovies)
-        }
-    }
+    fileprivate var watchedShows = Set<Int64>()
+    fileprivate var watchedMovies = Set<Int64>()
 
     fileprivate var rewatchingShows = Set<Int64>()
 }
 
-private extension WatchedManager {
+extension WatchedManager {
 
     private func refreshWatchedEpisodes() {
+        debouncedRefreshWatchedEpisodes.call()
+    }
+
+    func refreshWatchedMovies() {
+        debouncedRefreshWatchedMovies.call()
+    }
+
+    func refreshWatchedShows() {
+        debouncedRefreshWatchedShows.call()
+    }
+
+    private func performRefreshWatchedEpisodes() {
         if SessionManager.shared.isLoggedOut {
             return
         }
@@ -251,54 +272,43 @@ private extension WatchedManager {
         }
     }
 
-    private func refreshWatchedMovies() {
+    private func performRefreshWatchedMovies() {
         if SessionManager.shared.isLoggedOut {
             return
         }
-        TraktAPIProvider.provider.request(.watched(type: .movies,
-                                                   extended: .full),
-                                          callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+        TraktAPIProvider.fetchAllWatchedItems(type: .movies,
+                                              extended: .full) { result in
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder)
-
-                    DispatchQueue.main.async {
-                        self.moviesHistoryItems = items
-                    }
-                } catch {
-                    print("Watched Movies request JSON mapping failed! \(error)")
+            case let .success(items):
+                DispatchQueue.main.async {
+                    self.moviesHistoryItems = items
                 }
             case let .failure(error):
                 print("Watched Movies request failure \(error)")
+                DispatchQueue.main.async {
+                    onWatchedMoviesChangedTransmitter.broadcast(self.watchedMovies)
+                }
             }
         }
     }
 
-    private func refreshWatchedShows() {
+    private func performRefreshWatchedShows() {
         if SessionManager.shared.isLoggedOut {
             return
         }
-        TraktAPIProvider.provider.request(.syncWatched(type: .shows,
-                                                   extended: .full),
-                                          callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+        TraktAPIProvider.fetchAllWatchedItems(slug: "me",
+                                              type: .shows,
+                                              extended: .fullnoseasons) { result in
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder)
-
-                    DispatchQueue.main.async {
-                        self.showsHistoryItems = items
-                    }
-                } catch {
-                    print("Watched Shows request JSON mapping failed! \(error)")
+            case let .success(items):
+                DispatchQueue.main.async {
+                    self.showsHistoryItems = items
                 }
             case let .failure(error):
                 print("Watched Shows request failure \(error)")
+                DispatchQueue.main.async {
+                    onWatchedShowsChangedTransmitter.broadcast(self.watchedShows)
+                }
             }
         }
     }
