@@ -14,7 +14,7 @@ extension TraktAPIProvider {
     static func fetchAllWatchedItems(slug: String = "me",
                                      type: WatchedType,
                                      extended: Extended?,
-                                     limit: Int = 100,
+                                     limit: Int = 1000,
                                      completion: @escaping (Result<[WatchedItem], Error>) -> Void) {
         _Concurrency.Task {
             do {
