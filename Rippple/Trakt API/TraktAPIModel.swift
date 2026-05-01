@@ -1946,6 +1946,30 @@ struct SavedFilter: Codable, Equatable, Hashable {
         }
         return false
     }
+
+    var canSort: Bool {
+        if ["episodes_to_watch",
+            "movies_to_watch",
+            "pinned_to_watch",
+            "unpinned_to_watch",
+            "CompletedShows",
+            "DroppedShows",
+            "PinnedShows",
+            "PinnedMovies"].contains(section) {
+            return false
+        }
+
+        if ["/users/me/watched/movies",
+            "/users/me/watched/shows",
+            "/all/trending"].contains(path) {
+            return false
+        }
+
+        if path.contains("users") || path.contains("sync") {
+            return true
+        }
+        return false
+    }
 }
 
 enum NoteItemType: String, Codable, UnknownDecodable {

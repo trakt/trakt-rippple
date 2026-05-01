@@ -12,6 +12,11 @@ import Receiver
 
 let (onShelfChangedTransmitter, onShelfChangedReceiver) = Receiver<String>.make(with: .warm(upTo: 1))
 
+struct ShelfSortConfiguration: Equatable {
+    let by: String
+    let how: String
+}
+
 extension StringProtocol {
     fileprivate var lines: [SubSequence] { split(whereSeparator: \.isNewline) }
     fileprivate var removingAllExtraNewLines: String { lines.joined(separator: "\n") }
@@ -73,8 +78,9 @@ final class ShelfManager {
     func edit(module: BrowseViewController.ModuleType,
               with newName: String,
               and newModule: String,
-              ignoringWatched: Bool) {
-        shelf = shelfModules.map { "{ \"module\": \"\($0 == module ? newModule : $0.module)\", \($0 == module ? $0.filter.filterString(with: newName, and: ignoringWatched) : $0.filter.filterString) }" }.joined(separator: "\n")
+              ignoringWatched: Bool,
+              sort: ShelfSortConfiguration) {
+        shelf = shelfModules.map { "{ \"module\": \"\($0 == module ? newModule : $0.module)\", \($0 == module ? $0.filter.filterString(with: newName, ignoreWatched: ignoringWatched, sort: sort) : $0.filter.filterString) }" }.joined(separator: "\n")
     }
 
     var shelfModules: [BrowseViewController.ModuleType] {
@@ -161,11 +167,17 @@ extension SavedFilter {
 """
     }
 
-    fileprivate func filterString(with name: String, and ignoreWatched: Bool) -> String {
-        // Prepare updated query by adding/removing ignore_watched parameter based on flag
-        var parts = query.split(separator: "&").map(String.init).filter { !$0.lowercased().hasPrefix("ignore_watched=") }
+    fileprivate func filterString(with name: String, ignoreWatched: Bool, sort: ShelfSortConfiguration) -> String {
+        var parts = query.split(separator: "&").map(String.init).filter {
+            let part = $0.lowercased()
+            return !part.hasPrefix("ignore_watched=") && !part.hasPrefix("sort_by=") && !part.hasPrefix("sort_how=")
+        }
         if ignoreWatched {
             parts.append("ignore_watched=true")
+        }
+        if !sort.by.isEmpty && !sort.how.isEmpty {
+            parts.append("sort_by=\(sort.by)")
+            parts.append("sort_how=\(sort.how)")
         }
         let updatedQuery = parts.joined(separator: "&")
         let escapedName = name.replacingOccurrences(of: "\"", with: "\\\"")
