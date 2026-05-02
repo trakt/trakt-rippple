@@ -17,6 +17,52 @@ struct ShelfSortConfiguration: Equatable {
     let how: String
 }
 
+struct ShelfModuleEditConfiguration {
+    let name: String
+    let module: String
+    let ignoresWatched: Bool
+    let sort: ShelfSortConfiguration
+    let buttonStyle: ShelfBrowseActionButtonStyle
+}
+
+enum ShelfBrowseActionButtonStyle: String, Codable, CaseIterable, Equatable, Hashable {
+    case none
+    case ellipsis
+    case checkmark
+    case play
+    case plus
+
+    var label: String {
+        switch self {
+        case .none:
+            return "No Button"
+        case .ellipsis:
+            return "Track Menu"
+        case .checkmark:
+            return "Mark Watched"
+        case .play:
+            return "Check In"
+        case .plus:
+            return "Mark Watched On..."
+        }
+    }
+
+    var systemImageName: String? {
+        switch self {
+        case .none:
+            return nil
+        case .ellipsis:
+            return "ellipsis"
+        case .checkmark:
+            return "checkmark"
+        case .play:
+            return "play"
+        case .plus:
+            return "plus"
+        }
+    }
+}
+
 extension StringProtocol {
     fileprivate var lines: [SubSequence] { split(whereSeparator: \.isNewline) }
     fileprivate var removingAllExtraNewLines: String { lines.joined(separator: "\n") }
@@ -66,21 +112,29 @@ final class ShelfManager {
     func move(from source: IndexSet, to destination: Int) {
         var modules = shelfModules
         modules.move(fromOffsets: source, toOffset: destination)
-        shelf = modules.map { "{ \"module\": \"\($0.module)\", \($0.filter.filterString) }" }.joined(separator: "\n")
+        shelf = modules.map { $0.shelfLine }.joined(separator: "\n")
     }
 
     func delete(at indexSet: IndexSet) {
         var modules = shelfModules
         modules.remove(atOffsets: indexSet)
-        shelf = modules.map { "{ \"module\": \"\($0.module)\", \($0.filter.filterString) }" }.joined(separator: "\n")
+        shelf = modules.map { $0.shelfLine }.joined(separator: "\n")
     }
 
     func edit(module: BrowseViewController.ModuleType,
-              with newName: String,
-              and newModule: String,
-              ignoringWatched: Bool,
-              sort: ShelfSortConfiguration) {
-        shelf = shelfModules.map { "{ \"module\": \"\($0 == module ? newModule : $0.module)\", \($0 == module ? $0.filter.filterString(with: newName, ignoreWatched: ignoringWatched, sort: sort) : $0.filter.filterString) }" }.joined(separator: "\n")
+              with configuration: ShelfModuleEditConfiguration) {
+        shelf = shelfModules.map {
+            if $0 == module {
+                let filter = $0.filter.updating(name: configuration.name,
+                                                ignoreWatched: configuration.ignoresWatched,
+                                                sort: configuration.sort)
+                return BrowseViewController.ModuleType(module: configuration.module,
+                                                       filter: filter,
+                                                       buttonStyle: configuration.buttonStyle == .none ? nil : configuration.buttonStyle).shelfLine
+            } else {
+                return $0.shelfLine
+            }
+        }.joined(separator: "\n")
     }
 
     var shelfModules: [BrowseViewController.ModuleType] {
@@ -127,6 +181,17 @@ final class ShelfManager {
     }
 }
 
+extension BrowseViewController.ModuleType {
+    fileprivate var shelfLine: String {
+        let encoder = JSONEncoder()
+        guard let data = try? encoder.encode(self),
+              let string = String(data: data, encoding: .utf8) else {
+            return "{ \"module\": \"\(module)\", \(filter.filterString) }"
+        }
+        return string
+    }
+}
+
 extension SavedFilter {
     public func shelf(onTop: Bool, module: String? = "L1") {
         if !PurchaseManager.shared.purchased {
@@ -168,6 +233,10 @@ extension SavedFilter {
     }
 
     fileprivate func filterString(with name: String, ignoreWatched: Bool, sort: ShelfSortConfiguration) -> String {
+        return updating(name: name, ignoreWatched: ignoreWatched, sort: sort).filterString
+    }
+
+    fileprivate func updating(name: String, ignoreWatched: Bool, sort: ShelfSortConfiguration) -> SavedFilter {
         var parts = query.split(separator: "&").map(String.init).filter {
             let part = $0.lowercased()
             return !part.hasPrefix("ignore_watched=") && !part.hasPrefix("sort_by=") && !part.hasPrefix("sort_how=")
@@ -180,10 +249,11 @@ extension SavedFilter {
             parts.append("sort_how=\(sort.how)")
         }
         let updatedQuery = parts.joined(separator: "&")
-        let escapedName = name.replacingOccurrences(of: "\"", with: "\\\"")
-        return """
-"filter": { "section": "\(section)", "name": "\(escapedName)", "path": "\(path)", "query": "\(updatedQuery)" }
-"""
+        return SavedFilter(section: section,
+                           name: name,
+                           path: path,
+                           query: updatedQuery,
+                           limit: limit)
     }
 
     var isShelved: Bool {

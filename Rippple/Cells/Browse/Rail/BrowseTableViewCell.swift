@@ -23,6 +23,14 @@ class BrowseTableViewCell: UITableViewCell {
         }
     }
 
+    var actionButtonStyle: ShelfBrowseActionButtonStyle = .none {
+        didSet {
+            if actionButtonStyle != oldValue {
+                collectionView?.reloadData()
+            }
+        }
+    }
+
     private var task: Task<Void, Error>? {
         willSet {
             task?.cancel()
@@ -663,6 +671,8 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
         if reuseIdentifier == "ToWatch" {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ToWatch", for: indexPath) as! ToWatchBrowseCollectionViewCell
 
+            cell.presentingViewController = presentingViewController
+            cell.actionButtonStyle = actionButtonStyle
             cell.media = media
 
             return cell
@@ -704,6 +714,8 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
         if reuseIdentifier == "G1" {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "G1", for: indexPath) as! G1BrowseCollectionViewCell
 
+            cell.presentingViewController = presentingViewController
+            cell.actionButtonStyle = actionButtonStyle
             cell.media = media
 
             return cell

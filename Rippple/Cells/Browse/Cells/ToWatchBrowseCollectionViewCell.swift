@@ -13,9 +13,25 @@ final class ToWatchBrowseCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var label: UILabel?
     @IBOutlet weak var sublabel: UILabel?
     @IBOutlet weak var pinned: UIImageView?
+    @IBOutlet weak var actionButton: UIButton!
+
+    weak var presentingViewController: UIViewController? {
+        didSet {
+            actionButtonController.controller = presentingViewController
+        }
+    }
+
+    var actionButtonStyle: ShelfBrowseActionButtonStyle = .none {
+        didSet {
+            actionButtonController.style = actionButtonStyle
+        }
+    }
+
+    private let actionButtonController = ShelfBrowseActionButtonController()
 
     var media: MediaModel! {
         didSet {
+            actionButtonController.media = media
             switch media! {
             case .showProgress(let show, let progress):
                 label?.text = show.title
@@ -67,6 +83,8 @@ final class ToWatchBrowseCollectionViewCell: UICollectionViewCell {
         }
 
         maximumContentSizeCategory = .extraExtraExtraLarge
+
+        actionButtonController.configure(button: actionButton)
     }
 }
 

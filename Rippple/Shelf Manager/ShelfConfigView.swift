@@ -216,6 +216,7 @@ struct ShelfRowConfigView: View {
     @State private var ignoreWatched = false
     @State private var sortBy = ""
     @State private var sortHow = ""
+    @State private var buttonStyle: ShelfBrowseActionButtonStyle = .none
 
     private var previewModule: BrowseViewController.ModuleType {
         let updatedName = name
@@ -229,7 +230,24 @@ struct ShelfRowConfigView: View {
                                         query: updatedQuery,
                                         limit: row.filter.limit)
         let moduleId = selectedStyle
-        return BrowseViewController.ModuleType(module: moduleId, filter: updatedFilter)
+        return BrowseViewController.ModuleType(module: moduleId,
+                                               filter: updatedFilter,
+                                               buttonStyle: buttonStyle == .none ? nil : buttonStyle)
+    }
+
+    private var currentConfiguration: ShelfModuleEditConfiguration {
+        ShelfModuleEditConfiguration(name: name,
+                                     module: selectedStyle,
+                                     ignoresWatched: ignoreWatched,
+                                     sort: ShelfSortConfiguration(by: sortBy,
+                                                                  how: sortHow),
+                                     buttonStyle: buttonStyle)
+    }
+
+    private func persistCurrentConfiguration() {
+        let updatedModule = previewModule
+        ShelfManager.shared.edit(module: row, with: currentConfiguration)
+        row = updatedModule
     }
 
     var body: some View {
@@ -271,6 +289,13 @@ struct ShelfRowConfigView: View {
                         }
                     }
                 }
+                if selectedStyle == "G1" || selectedStyle == "ToWatch" {
+                    Picker("Button", selection: $buttonStyle) {
+                        ForEach(ShelfBrowseActionButtonStyle.allCases, id: \.self) { style in
+                            Text(style.label).tag(style)
+                        }
+                    }
+                }
             } header: {
                 VStack(alignment: .leading) {
                     Text("Customize")
@@ -296,6 +321,7 @@ struct ShelfRowConfigView: View {
                 ignoreWatched = queryValues.ignoreWatched
                 sortBy = queryValues.sort.by
                 sortHow = queryValues.sort.how
+                buttonStyle = row.buttonStyle ?? .none
             }
             .onChange(of: sortBy) { _, newValue in
                 if newValue.isEmpty {
@@ -315,15 +341,21 @@ struct ShelfRowConfigView: View {
                     sortBy = shelfSortByOptions.first(where: { !$0.id.isEmpty })?.id ?? "rank"
                 }
             }
+            .onChange(of: buttonStyle) {
+                persistCurrentConfiguration()
+            }
             .onDisappear {
                 let originalQuery = shelfQueryValues(from: row.filter.query)
-                if name != row.filter.name || selectedStyle != row.module || ignoreWatched != originalQuery.ignoreWatched || sortBy != originalQuery.sort.by || sortHow != originalQuery.sort.how {
-                    ShelfManager.shared.edit(module: row,
-                                             with: name,
-                                             and: selectedStyle,
-                                             ignoringWatched: ignoreWatched,
-                                             sort: ShelfSortConfiguration(by: sortBy,
-                                                                          how: sortHow))
+                let originalButtonStyle = row.buttonStyle ?? .none
+                let queryChanged = ignoreWatched != originalQuery.ignoreWatched ||
+                    sortBy != originalQuery.sort.by ||
+                    sortHow != originalQuery.sort.how
+                let rowChanged = name != row.filter.name ||
+                    selectedStyle != row.module ||
+                    buttonStyle != originalButtonStyle
+
+                if rowChanged || queryChanged {
+                    persistCurrentConfiguration()
                 }
             }
     }
@@ -340,6 +372,7 @@ struct ShelfRowQuickConfigView: View {
     @State private var ignoreWatched = false
     @State private var sortBy = ""
     @State private var sortHow = ""
+    @State private var buttonStyle: ShelfBrowseActionButtonStyle = .none
 
     private var previewModule: BrowseViewController.ModuleType {
         let updatedName = debouncedName
@@ -353,7 +386,33 @@ struct ShelfRowQuickConfigView: View {
                                         query: updatedQuery,
                                         limit: row.filter.limit)
         let moduleId = selectedStyle
-        return BrowseViewController.ModuleType(module: moduleId, filter: updatedFilter)
+        return BrowseViewController.ModuleType(module: moduleId,
+                                               filter: updatedFilter,
+                                               buttonStyle: buttonStyle == .none ? nil : buttonStyle)
+    }
+
+    private var currentConfiguration: ShelfModuleEditConfiguration {
+        ShelfModuleEditConfiguration(name: name,
+                                     module: selectedStyle,
+                                     ignoresWatched: ignoreWatched,
+                                     sort: ShelfSortConfiguration(by: sortBy,
+                                                                  how: sortHow),
+                                     buttonStyle: buttonStyle)
+    }
+
+    private func persistCurrentConfiguration() {
+        let updatedModule = BrowseViewController.ModuleType(module: selectedStyle,
+                                                           filter: SavedFilter(section: row.filter.section,
+                                                                               name: name,
+                                                                               path: row.filter.path,
+                                                                               query: updatedShelfQuery(from: row.filter.query,
+                                                                                                         ignoreWatched: ignoreWatched,
+                                                                                                         sort: ShelfSortConfiguration(by: sortBy,
+                                                                                                                                      how: sortHow)),
+                                                                               limit: row.filter.limit),
+                                                           buttonStyle: buttonStyle == .none ? nil : buttonStyle)
+        ShelfManager.shared.edit(module: row, with: currentConfiguration)
+        row = updatedModule
     }
 
     var body: some View {
@@ -399,6 +458,13 @@ struct ShelfRowQuickConfigView: View {
                             }
                         }
                     }
+                    if selectedStyle == "G1" || selectedStyle == "ToWatch" {
+                        Picker("Button", selection: $buttonStyle) {
+                            ForEach(ShelfBrowseActionButtonStyle.allCases, id: \.self) { style in
+                                Text(style.label).tag(style)
+                            }
+                        }
+                    }
                 } footer: {
                     BrowseRowPreview(module: previewModule)
                         .frame(height: 320)
@@ -414,12 +480,7 @@ struct ShelfRowQuickConfigView: View {
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(role: .confirm) {
-                            ShelfManager.shared.edit(module: row,
-                                                     with: name,
-                                                     and: selectedStyle,
-                                                     ignoringWatched: ignoreWatched,
-                                                     sort: ShelfSortConfiguration(by: sortBy,
-                                                                                  how: sortHow))
+                            persistCurrentConfiguration()
                             dismiss()
                         }
                     }
@@ -434,6 +495,7 @@ struct ShelfRowQuickConfigView: View {
             ignoreWatched = queryValues.ignoreWatched
             sortBy = queryValues.sort.by
             sortHow = queryValues.sort.how
+            buttonStyle = row.buttonStyle ?? .none
         }
         .onChange(of: sortBy) { _, newValue in
             if newValue.isEmpty {
@@ -452,6 +514,9 @@ struct ShelfRowQuickConfigView: View {
             } else if sortBy.isEmpty {
                 sortBy = shelfSortByOptions.first(where: { !$0.id.isEmpty })?.id ?? "rank"
             }
+        }
+        .onChange(of: buttonStyle) {
+            persistCurrentConfiguration()
         }
     }
 }

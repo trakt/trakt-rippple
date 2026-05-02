@@ -19,12 +19,20 @@ final class BrowseViewController: UITableViewController {
     struct ModuleType: Codable, Equatable, Hashable {
         let module: String
         let filter: SavedFilter
+        let buttonStyle: ShelfBrowseActionButtonStyle?
+
+        init(module: String, filter: SavedFilter, buttonStyle: ShelfBrowseActionButtonStyle? = nil) {
+            self.module = module
+            self.filter = filter
+            self.buttonStyle = buttonStyle
+        }
     }
 
     var model: String! = BrowseConfigManager.shared.currentConfig {
         didSet {
+            let scrollToTop = !onlyActionButtonStyleChanged(from: oldValue, to: model)
             Task {
-                await reloadData()
+                await reloadData(scrollToTop: scrollToTop)
             }
         }
     }
@@ -57,6 +65,36 @@ final class BrowseViewController: UITableViewController {
         displayedRootModule == "This Week"
     }
 
+    private func onlyActionButtonStyleChanged(from oldModel: String?, to newModel: String?) -> Bool {
+        guard let oldModel, let newModel else { return false }
+
+        do {
+            let oldModules = try modules(from: oldModel)
+            let newModules = try modules(from: newModel)
+            guard oldModules.count == newModules.count else { return false }
+
+            var buttonStyleChanged = false
+            for (oldModule, newModule) in zip(oldModules, newModules) {
+                guard oldModule.module == newModule.module,
+                      oldModule.filter == newModule.filter else {
+                    return false
+                }
+                if oldModule.buttonStyle != newModule.buttonStyle {
+                    buttonStyleChanged = true
+                }
+            }
+            return buttonStyleChanged
+        } catch {
+            return false
+        }
+    }
+
+    private func modules(from model: String) throws -> [ModuleType] {
+        let jsonString = "[\(model.components(separatedBy: .newlines).joined(separator: ","))]"
+        let jsonData = jsonString.data(using: .utf8)!
+        return try JSONDecoder().decode([ModuleType].self, from: jsonData)
+    }
+
     private let contextMenu = ContextMenuHelper()
 
     private let disposeBag = DisposeBag()
@@ -76,7 +114,7 @@ final class BrowseViewController: UITableViewController {
         case empty
         case loading
         case header(String, SavedFilter, ModuleType)
-        case content(String, SavedFilter)
+        case content(String, SavedFilter, ModuleType)
         case inReview
         case weeklyTrackerLink
     }
@@ -125,9 +163,10 @@ final class BrowseViewController: UITableViewController {
             cell.body.text = "Add something to your Shelf, find it back here. \nYou build your Shelf the way you want to, \nyou're in charge!"
             cell.action.isHidden = true
             return cell
-        case .content(let identifier, let filter):
+        case .content(let identifier, let filter, let moduleType):
             if let cell = tableView.dequeueReusableCell(withIdentifier: identifier) as? BrowseTableViewCell {
                 cell.presentingViewController = self
+                cell.actionButtonStyle = moduleType.buttonStyle ?? .none
                 cell.savedFilter = filter
                 return cell
             } else if let cell = tableView.dequeueReusableCell(withIdentifier: identifier) as? GenresBrowseTableViewCell {
@@ -259,7 +298,7 @@ final class BrowseViewController: UITableViewController {
                     var snapshot = self.dataSource.snapshot()
                     for s in snapshot.itemIdentifiers {
                         switch s {
-                        case .content(_, let filter):
+                        case .content(_, let filter, _):
                             if filter.path == "/sync/watchlist" {
                                 snapshot.reloadItems([s])
                             }
@@ -279,7 +318,7 @@ final class BrowseViewController: UITableViewController {
                     var snapshot = self.dataSource.snapshot()
                     for s in snapshot.itemIdentifiers {
                         switch s {
-                        case .content(_, let filter):
+                        case .content(_, let filter, _):
                             if filter.path == "/sync/favorites" {
                                 snapshot.reloadItems([s])
                             }
@@ -299,7 +338,7 @@ final class BrowseViewController: UITableViewController {
                 for list in lists where self.model.localizedStandardContains("/lists/\(list.identifiers.trakt!)") {
                     for s in snapshot.itemIdentifiers {
                         switch s {
-                        case .content(_, let filter):
+                        case .content(_, let filter, _):
                             if filter.path.localizedStandardContains("/lists/\(list.identifiers.trakt!)") {
                                 snapshot.reloadItems([s])
                             }
@@ -319,7 +358,7 @@ final class BrowseViewController: UITableViewController {
                     var snapshot = self.dataSource.snapshot()
                     for s in snapshot.itemIdentifiers {
                         switch s {
-                        case .content(_, let filter):
+                        case .content(_, let filter, _):
                             if filter.path == "/users/me/collection/movies" {
                                 snapshot.reloadItems([s])
                             }
@@ -339,7 +378,7 @@ final class BrowseViewController: UITableViewController {
                     var snapshot = self.dataSource.snapshot()
                     for s in snapshot.itemIdentifiers {
                         switch s {
-                        case .content(_, let filter):
+                        case .content(_, let filter, _):
                             if filter.path == "/users/me/collection/shows" {
                                 snapshot.reloadItems([s])
                             }
@@ -482,8 +521,10 @@ final class BrowseViewController: UITableViewController {
                       children: [home, tv, movie, new, shelf])
     }
 
-    private func reloadData() async {
-        tableView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: false)
+    private func reloadData(scrollToTop: Bool = true) async {
+        if scrollToTop {
+            tableView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: false)
+        }
 
         let firstLoad = dataSource.snapshot().numberOfItems == 0
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
@@ -498,10 +539,8 @@ final class BrowseViewController: UITableViewController {
         snapshot.deleteAllItems()
 
         do {
-            let jsonString = "[\(model.components(separatedBy: .newlines).joined(separator: ","))]"
-            let jsonData = jsonString.data(using: .utf8)!
             // print("JSON browse: \n\(jsonString)")
-            var moduleTypes = try JSONDecoder().decode([ModuleType].self, from: jsonData)
+            var moduleTypes = try modules(from: model)
 
             let first = moduleTypes.remove(at: 0)
             let isShelf = first.module == "Shelf"
@@ -523,13 +562,13 @@ final class BrowseViewController: UITableViewController {
                     if moduleTypes.first != moduleType {
                         snapshot.appendItems([.header(filter.name, filter, moduleType)])
                     }
-                    snapshot.appendItems([.content(moduleType.module, filter)])
+                    snapshot.appendItems([.content(moduleType.module, filter, moduleType)])
                     if self.isDisplayingNewAndHot {
                         snapshot.appendItems([.weeklyTrackerLink])
                     }
                 } else {
                     snapshot.appendItems([.header(filter.name, filter, moduleType)])
-                    snapshot.appendItems([.content(moduleType.module, filter)])
+                    snapshot.appendItems([.content(moduleType.module, filter, moduleType)])
                 }
             }
 

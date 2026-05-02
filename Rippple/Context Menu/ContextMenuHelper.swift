@@ -1672,7 +1672,7 @@ class ContextMenuHelper: NSObject {
         }
     }
 
-    private func markWatched() {
+    func markWatched() {
         guard let navigationController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "Action Navigation Controller") as? UINavigationController else { return }
 
         let markWatchedActionViewController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "Mark Watched") { [weak self] coder -> MarkWatchedActionViewController? in
