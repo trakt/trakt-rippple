@@ -35,7 +35,7 @@ enum ShelfBrowseActionButtonStyle: String, Codable, CaseIterable, Equatable, Has
     var label: String {
         switch self {
         case .none:
-            return "No Button"
+            return "Default"
         case .ellipsis:
             return "Track Menu"
         case .checkmark:

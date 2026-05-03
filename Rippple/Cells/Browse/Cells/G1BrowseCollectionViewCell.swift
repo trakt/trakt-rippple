@@ -189,6 +189,12 @@ final class ShelfBrowseActionButtonController {
         }
     }
 
+    var showsFullMenuForDefaultStyle = false {
+        didSet {
+            updateButton()
+        }
+    }
+
     var media: MediaModel? {
         didSet {
             updateButton()
@@ -216,7 +222,9 @@ final class ShelfBrowseActionButtonController {
         guard let button else { return }
 
         let actionMedia = actionableMedia
-        button.isHidden = style == .none || actionMedia == nil
+        let usesDefaultStyle = style == .none
+        let showsDefaultButton = usesDefaultStyle && showsFullMenuForDefaultStyle
+        button.isHidden = (usesDefaultStyle && !showsFullMenuForDefaultStyle) || actionMedia == nil
         button.menu = nil
         button.showsMenuAsPrimaryAction = false
         button.removeAction(identifiedBy: checkmarkActionIdentifier, for: .primaryActionTriggered)
@@ -224,7 +232,7 @@ final class ShelfBrowseActionButtonController {
         button.removeAction(identifiedBy: plusActionIdentifier, for: .primaryActionTriggered)
 
         guard let actionMedia = actionMedia,
-              let systemImageName = style.systemImageName else {
+              let systemImageName = style.systemImageName ?? (showsDefaultButton ? "ellipsis" : nil) else {
             return
         }
 
@@ -245,7 +253,8 @@ final class ShelfBrowseActionButtonController {
 
         switch style {
         case .none:
-            break
+            button.menu = contextMenu.menu
+            button.showsMenuAsPrimaryAction = true
         case .ellipsis:
             button.menu = menu(for: actionMedia)
             button.showsMenuAsPrimaryAction = true

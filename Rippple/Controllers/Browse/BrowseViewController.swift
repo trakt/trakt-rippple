@@ -243,6 +243,7 @@ final class BrowseViewController: UITableViewController {
         tableView.register(UINib(nibName: "L3BrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "L3")
         tableView.register(UINib(nibName: "CarouselBrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "C1")
         tableView.register(UINib(nibName: "TopBrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "T1")
+        tableView.register(ListBrowseTableViewCell.self, forCellReuseIdentifier: "List")
         tableView.register(UINib(nibName: "ToWatchBrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "ToWatch")
         tableView.register(UINib(nibName: "HistoryBrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "History")
         tableView.register(UINib(nibName: "GenresBrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "Genres")

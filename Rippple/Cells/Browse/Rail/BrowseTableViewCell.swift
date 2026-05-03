@@ -54,11 +54,21 @@ class BrowseTableViewCell: UITableViewCell {
     private let disposeBag = DisposeBag()
 
     private let contextMenu = ContextMenuHelper()
+    private var didConfigureCollectionView = false
 
     override func awakeFromNib() {
         super.awakeFromNib()
 
+        configureCollectionViewIfNeeded()
+    }
+
+    func configureCollectionViewIfNeeded() {
+        guard !didConfigureCollectionView, collectionView != nil else { return }
+        didConfigureCollectionView = true
+
         collectionView?.allowsFocus = false
+        collectionView?.delegate = self
+        collectionView?.dataSource = self
         collectionView?.dragDelegate = self
 
         if reuseIdentifier == "C1" {
@@ -70,6 +80,8 @@ class BrowseTableViewCell: UITableViewCell {
             collectionView.collectionViewLayout = LSection()
         } else if reuseIdentifier == "G1" {
             collectionView.collectionViewLayout = GSection()
+        } else if reuseIdentifier == "List" {
+            collectionView.collectionViewLayout = listSection()
         }
 
         collectionView?.dragInteractionEnabled = UserDefaults.standard.bool(forKey: "GeneralSettings.dragging")
@@ -86,6 +98,7 @@ class BrowseTableViewCell: UITableViewCell {
         collectionView.register(UINib(nibName: "StandardHistoryBrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "History")
         collectionView.register(UINib(nibName: "L2BrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "cell with notes")
         collectionView.register(UINib(nibName: "G1BrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "G1")
+        collectionView.register(ListBrowseCollectionViewCell.self, forCellWithReuseIdentifier: "List")
 
         if let pageControl = pageControl {
             pageControl.numberOfPages = items?.count ?? 0
@@ -493,6 +506,40 @@ class BrowseTableViewCell: UITableViewCell {
         return layout
     }
 
+    private func listSection() -> UICollectionViewLayout {
+        let layout = UICollectionViewCompositionalLayout { _, environment in
+            let width = environment.container.effectiveContentSize.width
+            let isCompact = environment.traitCollection.horizontalSizeClass == .compact
+            let groupWidth: CGFloat
+
+            if isCompact {
+                groupWidth = max(280, width - 64)
+            } else {
+                let twoColumnWidth = floor((width - 56) / 2)
+                groupWidth = min(430, max(340, twoColumnWidth))
+            }
+
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
+                                                  heightDimension: .fractionalHeight(1.0 / 3.0))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+
+            let groupSize = NSCollectionLayoutSize(widthDimension: .absolute(groupWidth),
+                                                   heightDimension: .fractionalHeight(1))
+            let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize,
+                                                         repeatingSubitem: item,
+                                                         count: 3)
+
+            let section = NSCollectionLayoutSection(group: group)
+            section.orthogonalScrollingBehavior = isCompact ? .groupPaging : .continuous
+            section.interGroupSpacing = isCompact ? 16 : 32
+            section.contentInsets = .init(top: 0, leading: 12, bottom: 0, trailing: 12)
+
+            return section
+        }
+
+        return layout
+    }
+
     override func prepareForReuse() {
         super.prepareForReuse()
 
@@ -625,6 +672,17 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
             })
         }
 
+        if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
+            contextMenu.cell = cell
+            contextMenu.controller = presentingViewController
+
+            return UIContextMenuConfiguration(identifier: nil, previewProvider: {
+                return self.contextMenu.previewViewController
+            }, actionProvider: { _ in
+                return self.contextMenu.menu
+            })
+        }
+
         return nil
     }
 
@@ -720,6 +778,16 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
 
             return cell
         }
+        if reuseIdentifier == "List" {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "List", for: indexPath) as! ListBrowseCollectionViewCell
+
+            cell.presentingViewController = presentingViewController
+            cell.actionButtonStyle = actionButtonStyle
+            cell.media = media
+            cell.showsSeparator = indexPath.row % 3 != 2 && indexPath.row + 1 < (items?.count ?? 0)
+
+            return cell
+        }
         if let notes = notes {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell with notes", for: indexPath) as! L1BrowseCollectionViewCell
 
@@ -741,6 +809,8 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
         }
 
         guard let media = items?[indexPath.row] else { return }
+        let zoomSourceView = zoomSourceView(in: collectionView, at: indexPath)
+        let showProgressZoomSourceView = reuseIdentifier == "List" ? zoomSourceView : nil
 
         if case let .showProgress(show, progress) = media {
             if let nextToRewatch = progress.nextToRewatch {
@@ -756,38 +826,56 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
                             let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
 
                             DispatchQueue.main.async {
-                                presentingViewController.performSegue(withIdentifier: "details",
-                                                                      sender: episode.mediaModel(given: show))
+                                self.present(media: episode.mediaModel(given: show),
+                                             from: presentingViewController,
+                                             zoomSourceView: showProgressZoomSourceView)
                             }
                         } catch {
                             print("Error fetching episode \(error)")
                             DispatchQueue.main.async {
-                                presentingViewController.performSegue(withIdentifier: "details",
-                                                                      sender: show.mediaModel)
+                                self.present(media: show.mediaModel,
+                                             from: presentingViewController,
+                                             zoomSourceView: showProgressZoomSourceView)
                             }
                         }
                     case let .failure(error):
                         print("Failed fetching episode \(error)")
                         DispatchQueue.main.async {
-                            presentingViewController.performSegue(withIdentifier: "details",
-                                                                  sender: show.mediaModel)
+                            self.present(media: show.mediaModel,
+                                         from: presentingViewController,
+                                         zoomSourceView: showProgressZoomSourceView)
                         }
                     }
                 }
             } else if let episode = progress.nextEpisodeToWatch {
-                presentingViewController.performSegue(withIdentifier: "details",
-                                                      sender: episode.mediaModel(given: show))
+                present(media: episode.mediaModel(given: show),
+                        from: presentingViewController,
+                        zoomSourceView: showProgressZoomSourceView)
             } else {
-                presentingViewController.performSegue(withIdentifier: "details",
-                                                      sender: show.mediaModel)
+                present(media: show.mediaModel,
+                        from: presentingViewController,
+                        zoomSourceView: showProgressZoomSourceView)
             }
             return
         }
 
-        if UIDevice.current.userInterfaceIdiom == .phone {
+        present(media: media,
+                from: presentingViewController,
+                zoomSourceView: zoomSourceView)
+    }
+
+    private func zoomSourceView(in collectionView: UICollectionView, at indexPath: IndexPath) -> UIView? {
+        if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
+            return cell.poster
+        }
+        return collectionView.cellForItem(at: indexPath)
+    }
+
+    private func present(media: MediaModel, from presentingViewController: UIViewController, zoomSourceView: UIView?) {
+        if UIDevice.current.userInterfaceIdiom == .phone, let zoomSourceView {
             presentingViewController.performSegue(withIdentifier: "details-zoom",
                                                   sender: MediaSegueObject(media: media,
-                                                                           zoomSourceView: collectionView.cellForItem(at: indexPath)))
+                                                                           zoomSourceView: zoomSourceView))
         } else {
             presentingViewController.performSegue(withIdentifier: "details", sender: media)
         }
@@ -796,8 +884,15 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
 
 extension BrowseTableViewCell: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell else { return [] }
-        guard let media = cell.media else { return [] }
+        let media: MediaModel?
+        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
+            media = cell.media
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
+            media = cell.media
+        } else {
+            media = nil
+        }
+        guard let media else { return [] }
 
         let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
         let dragItem = UIDragItem(itemProvider: itemProvider)
@@ -807,8 +902,15 @@ extension BrowseTableViewCell: UICollectionViewDragDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell else { return [] }
-        guard let media = cell.media else { return [] }
+        let media: MediaModel?
+        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
+            media = cell.media
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
+            media = cell.media
+        } else {
+            media = nil
+        }
+        guard let media else { return [] }
 
         let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
         let dragItem = UIDragItem(itemProvider: itemProvider)
@@ -818,12 +920,23 @@ extension BrowseTableViewCell: UICollectionViewDragDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell else { return nil }
-        guard let poster = cell.poster else { return nil }
+        let poster: PosterImageView?
+        let previewCell: UICollectionViewCell?
+        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
+            poster = cell.poster
+            previewCell = cell
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
+            poster = cell.poster
+            previewCell = cell
+        } else {
+            poster = nil
+            previewCell = nil
+        }
+        guard let poster, let previewCell else { return nil }
 
         let parameters = UIDragPreviewParameters()
         parameters.backgroundColor = .clear
-        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.frame, to: cell), cornerRadius: poster.layer.cornerRadius)
+        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.bounds, to: previewCell), cornerRadius: poster.layer.cornerRadius)
         return parameters
     }
 }

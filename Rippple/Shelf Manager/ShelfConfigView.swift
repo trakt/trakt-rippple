@@ -123,6 +123,10 @@ struct ShelfConfigView: View {
                                         Text("Widget Style")
                                             .foregroundStyle(.secondary)
                                             .font(.caption)
+                                    case "List":
+                                        Text("List Style")
+                                            .foregroundStyle(.secondary)
+                                            .font(.caption)
                                     case "ToWatch":
                                         Text("To Watch Style")
                                             .foregroundStyle(.secondary)
@@ -262,7 +266,7 @@ struct ShelfRowConfigView: View {
                         Text("Widget").tag("G1")
                     }
                 } else {
-                    if selectedStyle == "L1" || selectedStyle == "L2" || selectedStyle == "L3" || selectedStyle == "T1" || selectedStyle == "C1" || selectedStyle == "G1" {
+                    if selectedStyle == "L1" || selectedStyle == "L2" || selectedStyle == "L3" || selectedStyle == "T1" || selectedStyle == "C1" || selectedStyle == "G1" || selectedStyle == "List" {
                         Picker("Style", selection: $selectedStyle) {
                             Text("Standard").tag("L1")
                             Text("Bigger").tag("L2")
@@ -270,6 +274,7 @@ struct ShelfRowConfigView: View {
                             Text("Top").tag("T1")
                             Text("Carousel").tag("C1")
                             Text("Widget").tag("G1")
+                            Text("List").tag("List")
                         }
                     }
                 }
@@ -289,7 +294,7 @@ struct ShelfRowConfigView: View {
                         }
                     }
                 }
-                if selectedStyle == "G1" || selectedStyle == "ToWatch" {
+                if selectedStyle == "G1" || selectedStyle == "ToWatch" || selectedStyle == "List" {
                     Picker("Button", selection: $buttonStyle) {
                         ForEach(ShelfBrowseActionButtonStyle.allCases, id: \.self) { style in
                             Text(style.label).tag(style)
@@ -431,7 +436,7 @@ struct ShelfRowQuickConfigView: View {
                             Text("Widget").tag("G1")
                         }
                     } else {
-                        if selectedStyle == "L1" || selectedStyle == "L2" || selectedStyle == "L3" || selectedStyle == "T1" || selectedStyle == "C1" || selectedStyle == "G1" {
+                        if selectedStyle == "L1" || selectedStyle == "L2" || selectedStyle == "L3" || selectedStyle == "T1" || selectedStyle == "C1" || selectedStyle == "G1" || selectedStyle == "List" {
                             Picker("Style", selection: $selectedStyle) {
                                 Text("Standard").tag("L1")
                                 Text("Bigger").tag("L2")
@@ -439,6 +444,7 @@ struct ShelfRowQuickConfigView: View {
                                 Text("Top").tag("T1")
                                 Text("Carousel").tag("C1")
                                 Text("Widget").tag("G1")
+                                Text("List").tag("List")
                             }
                         }
                     }
@@ -458,7 +464,7 @@ struct ShelfRowQuickConfigView: View {
                             }
                         }
                     }
-                    if selectedStyle == "G1" || selectedStyle == "ToWatch" {
+                    if selectedStyle == "G1" || selectedStyle == "ToWatch" || selectedStyle == "List" {
                         Picker("Button", selection: $buttonStyle) {
                             ForEach(ShelfBrowseActionButtonStyle.allCases, id: \.self) { style in
                                 Text(style.label).tag(style)

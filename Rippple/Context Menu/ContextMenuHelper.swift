@@ -100,6 +100,10 @@ class ContextMenuHelper: NSObject {
                 self.media = collectionViewCell.media
             }
 
+            if let collectionViewCell = cell as? ListBrowseCollectionViewCell {
+                self.media = collectionViewCell.media
+            }
+
             if let collectionViewCell = cell as? TopBrowseCollectionViewCell {
                 self.media = collectionViewCell.media
             }
@@ -180,6 +184,10 @@ class ContextMenuHelper: NSObject {
 
         if let collectionViewCell = cell as? G1BrowseCollectionViewCell {
             return collectionViewCell.contentView
+        }
+
+        if let collectionViewCell = cell as? ListBrowseCollectionViewCell {
+            return collectionViewCell.poster
         }
 
         if let cell = cell as? LastWatchedTableViewCell {
