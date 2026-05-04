@@ -1094,7 +1094,9 @@ final class ActivityHeaderTableViewCell: UITableViewCell {
         chevron?.isHidden = true
         button?.contentHorizontalAlignment = .right
         selectionStyle = .none
-        backgroundColor = .systemBackground
+
+        backgroundColor = .clear
+        title.textColor = .label
 
         maximumContentSizeCategory = .extraExtraExtraLarge
         button?.maximumContentSizeCategory = .extraExtraExtraLarge

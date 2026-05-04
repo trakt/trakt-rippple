@@ -62,7 +62,7 @@ final class ListBrowseTableViewCell: BrowseTableViewCell {
 
         selectionStyle = .none
         backgroundColor = .systemBackground
-        contentView.backgroundColor = .systemBackground
+        contentView.backgroundColor = .clear
 
         let collectionView = HorizontalOnlyCollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
         collectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -148,7 +148,7 @@ final class ListBrowseCollectionViewCell: UICollectionViewCell {
     }
 
     private func setup() {
-        contentView.backgroundColor = .systemBackground
+        contentView.backgroundColor = .clear
 
         poster.translatesAutoresizingMaskIntoConstraints = false
         poster.layer.cornerRadius = ViewRadius.small.rawValue

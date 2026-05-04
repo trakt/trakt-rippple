@@ -71,6 +71,9 @@ class BrowseTableViewCell: UITableViewCell {
         collectionView?.dataSource = self
         collectionView?.dragDelegate = self
 
+        backgroundColor = .clear
+        collectionView.backgroundColor = .clear
+
         if reuseIdentifier == "C1" {
             collectionView.collectionViewLayout = carouselBannerSection()
             collectionView.prefetchDataSource = self

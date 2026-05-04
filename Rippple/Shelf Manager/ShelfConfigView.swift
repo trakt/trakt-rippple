@@ -313,7 +313,8 @@ struct ShelfRowConfigView: View {
                     .padding(.trailing, 50)
             } footer: {
                 BrowseRowPreview(module: previewModule)
-                    .frame(height: 320)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(height: BrowseRowPreview.height(for: previewModule))
                     .padding(.top, 20)
                     .padding(.leading, -25)
             }
@@ -473,9 +474,10 @@ struct ShelfRowQuickConfigView: View {
                     }
                 } footer: {
                     BrowseRowPreview(module: previewModule)
-                        .frame(height: 320)
+                        .frame(height: BrowseRowPreview.height(for: previewModule))
                         .padding(.top, 20)
-                        .padding(.leading, -25)
+                        .padding(.leading, -40)
+                        .padding(.trailing, -40)
                 }
             }.listStyle(.insetGrouped)
                 .toolbar {
@@ -528,20 +530,66 @@ struct ShelfRowQuickConfigView: View {
 }
 
 struct BrowseRowPreview: UIViewControllerRepresentable {
+    @Environment(\.colorScheme) private var colorScheme
+
     var module: BrowseViewController.ModuleType
 
+    static func height(for module: BrowseViewController.ModuleType) -> CGFloat {
+        let contentHeight: CGFloat = switch module.module {
+        case "L1":
+            150
+        case "L2", "L3":
+            250
+        case "T1":
+            200
+        case "C1":
+            198
+        case "G1":
+            220
+        case "List":
+            240
+        case "ToWatch", "History":
+            171
+        default:
+            220
+        }
+
+        return contentHeight + 50 // 50 to be safe
+    }
+
     func makeUIViewController(context: Context) -> BrowseViewController {
-        let vc = BrowseViewController()
-        vc.view.isUserInteractionEnabled = false
-        vc.view.clipsToBounds = false
-        vc.tableView.isScrollEnabled = false
-        vc.tableView.separatorStyle = .none
-        vc.model = modelString(for: module)
-        return vc
+        let viewController = BrowseViewController()
+        viewController.view.isUserInteractionEnabled = false
+        viewController.view.clipsToBounds = true
+        viewController.tableView.isScrollEnabled = false
+        viewController.tableView.separatorStyle = .none
+        viewController.view.backgroundColor = .clear
+        viewController.tableView.backgroundColor = .clear
+        applyAppearance(to: viewController)
+        viewController.model = modelString(for: module)
+        return viewController
     }
 
     func updateUIViewController(_ uiViewController: BrowseViewController, context: Context) {
+        applyAppearance(to: uiViewController)
         uiViewController.model = modelString(for: module)
+    }
+
+    private func applyAppearance(to viewController: BrowseViewController) {
+        viewController.overrideUserInterfaceStyle = resolvedUserInterfaceStyle
+        viewController.view.overrideUserInterfaceStyle = resolvedUserInterfaceStyle
+        viewController.tableView.overrideUserInterfaceStyle = resolvedUserInterfaceStyle
+    }
+
+    private var resolvedUserInterfaceStyle: UIUserInterfaceStyle {
+        switch colorScheme {
+        case .dark:
+            return .dark
+        case .light:
+            return .light
+        @unknown default:
+            return .unspecified
+        }
     }
 
     private func modelString(for module: BrowseViewController.ModuleType) -> String {
