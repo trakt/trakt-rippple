@@ -667,8 +667,8 @@ final class ActivityViewController: UITableViewController {
         shouldUpdateDataSource = true
 
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
-        snapshot.appendSections([.loading(PageInfo.firstPage(with: 10))])
-        snapshot.appendItems([.loading(PageInfo.firstPage(with: 10))])
+        snapshot.appendSections([.loading(PageInfo.firstPage(with: 50))])
+        snapshot.appendItems([.loading(PageInfo.firstPage(with: 50))])
         dataSource.apply(snapshot, animatingDifferences: false)
     }
 
