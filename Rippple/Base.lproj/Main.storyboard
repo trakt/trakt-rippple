@@ -1342,6 +1342,7 @@ Keeping things private for private users...</string>
                         <segue destination="ioV-zc-UU0" kind="show" identifier="people" id="lms-Vj-xll"/>
                         <segue destination="Zqa-6j-kaq" kind="show" identifier="lists" id="frn-AU-ku0"/>
                         <segue destination="oHT-rP-8qn" kind="presentation" identifier="smartSearch" id="Kiv-Dp-uxJ"/>
+                        <segue destination="crF-lO-TE2" kind="show" identifier="details" id="vYh-Je-i9H"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="AHH-at-gkS" userLabel="First Responder" sceneMemberID="firstResponder"/>

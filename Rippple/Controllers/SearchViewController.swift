@@ -222,6 +222,44 @@ final class SearchViewController: UITableViewController {
         return .middle
     }
 
+    private func baseSuggestionTitle(for item: TMDbResult) -> String {
+        return item.title ?? item.name ?? ""
+    }
+
+    private func suggestionTitle(for item: TMDbResult, in collection: [TMDbResult]) -> String {
+        let title = baseSuggestionTitle(for: item)
+        guard item.mediaType == "movie" || item.mediaType == "tv" else { return title }
+
+        let matchingTitleCount = collection.filter {
+            $0.mediaType == item.mediaType && baseSuggestionTitle(for: $0) == title
+        }.count
+
+        guard matchingTitleCount > 1 else { return title }
+
+        var titleElements = [String]()
+        if item.mediaType == "tv",
+           let firstAirDate = item.firstAirDate,
+           firstAirDate.isEmpty == false {
+            titleElements.append(String(firstAirDate.prefix(4)))
+        }
+        if item.mediaType == "movie",
+           let releaseDate = item.releaseDate,
+           releaseDate.isEmpty == false {
+            titleElements.append(String(releaseDate.prefix(4)))
+        }
+        if item.mediaType == "tv",
+           let originCountry = item.originCountry?.first,
+           let country = Locale(identifier: "en_US").localizedString(forRegionCode: originCountry) {
+            titleElements.append(country)
+        }
+
+        if titleElements.isEmpty {
+            return title
+        }
+
+        return "\(title) · \(titleElements.joined(separator: " · "))"
+    }
+
     private func updateDatasource() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
 
@@ -291,21 +329,21 @@ final class SearchViewController: UITableViewController {
                 snapshot.appendSections([.suggestions])
                 for trendingItem in suggestions {
                     if trendingItem.mediaType == "movie" {
-                        snapshot.appendItems([.suggestion(CellConfig(identifier: "\(trendingItem.title!) in Movies",
+                        snapshot.appendItems([.suggestion(CellConfig(identifier: "\(trendingItem.id)",
                                                                      cardType: cardType(for: trendingItem, in: suggestions),
-                                                                     title: trendingItem.title!,
+                                                                     title: suggestionTitle(for: trendingItem, in: suggestions),
                                                                      subtitle: " in Movies",
                                                                      query: nil,
                                                                      segue: "results"), trendingItem)])
                     } else if trendingItem.mediaType == "tv" {
-                        snapshot.appendItems([.suggestion(CellConfig(identifier: "\(trendingItem.name!) in TV",
+                        snapshot.appendItems([.suggestion(CellConfig(identifier: "\(trendingItem.id)",
                                                                      cardType: cardType(for: trendingItem, in: suggestions),
-                                                                     title: trendingItem.name!,
+                                                                     title: suggestionTitle(for: trendingItem, in: suggestions),
                                                                      subtitle: " in TV",
                                                                      query: nil,
                                                                      segue: "results"), trendingItem)])
                     } else {
-                        snapshot.appendItems([.suggestion(CellConfig(identifier: "\(trendingItem.name!) in People",
+                        snapshot.appendItems([.suggestion(CellConfig(identifier: "\(trendingItem.id)",
                                                                      cardType: cardType(for: trendingItem, in: suggestions),
                                                                      title: trendingItem.name!,
                                                                      subtitle: " in People",
@@ -456,10 +494,22 @@ final class SearchViewController: UITableViewController {
             cell.setup(with: config.title, and: config.subtitle, searchQuery: config.query)
 
             return cell
-        case .savedFilter(let config, _), .search(let config, _), .suggestion(let config, _):
+        case .savedFilter(let config, _), .search(let config, _):
             let cell = tableView.dequeueReusableCell(withIdentifier: "search") as! SearchTableViewCell
 
             cell.shouldShowActivityIndicator = false
+
+            cell.card.alpha = 1.0
+            cell.chevron.alpha = 1.0
+
+            cell.card.cardType = config.cardType
+            cell.setup(with: config.title, and: config.subtitle, searchQuery: config.query)
+
+            return cell
+        case .suggestion(let config, let tmdbResult):
+            let cell = tableView.dequeueReusableCell(withIdentifier: "search") as! SearchTableViewCell
+
+            cell.shouldShowActivityIndicator = tmdbResult.mediaType == "movie" || tmdbResult.mediaType == "tv"
 
             cell.card.alpha = 1.0
             cell.chevron.alpha = 1.0
@@ -596,7 +646,7 @@ final class SearchViewController: UITableViewController {
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                    let results = try response.map(TMDbResults.self, using: TmdbAPIProvider.decoder).results.filter { $0.mediaType == "movie" || $0.mediaType == "tv" || $0.mediaType == "person" }.removingDuplicates()
+                    let results = try response.map(TMDbResults.self, using: TmdbAPIProvider.decoder).results.filter { $0.mediaType == "movie" || $0.mediaType == "tv" || $0.mediaType == "person" }
 
                     DispatchQueue.main.async {
                         self.suggestions = results
@@ -775,7 +825,12 @@ final class SearchViewController: UITableViewController {
             fetchUser(with: searchQuery.lowercased())
             return // don't deselectRow to show loading indicator
         case .suggestion(let config, let tmdbResult):
-            performSegue(withIdentifier: config.segue, sender: tmdbResult)
+            if tmdbResult.mediaType == "movie" || tmdbResult.mediaType == "tv" {
+                lookupSuggestion(tmdbResult, fallbackSegue: config.segue)
+                return // don't deselectRow to show loading indicator
+            } else {
+                performSegue(withIdentifier: config.segue, sender: tmdbResult)
+            }
         case .recentSearch(let config, let recentSearch):
             RecentSearchManager.shared.recentSearches.insert(recentSearch, at: 0)
             performSegue(withIdentifier: config.segue, sender: recentSearch)
@@ -786,6 +841,76 @@ final class SearchViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
+    }
+
+    private func lookupSuggestion(_ tmdbResult: TMDbResult, fallbackSegue: String) {
+        let lookupType: TmdbType
+        switch tmdbResult.mediaType {
+        case "movie":
+            lookupType = .movie
+        case "tv":
+            lookupType = .show
+        default:
+            performSegue(withIdentifier: fallbackSegue, sender: tmdbResult)
+            return
+        }
+
+        if let request = request {
+            request.cancel()
+        }
+        request = TraktAPIProvider.provider.request(.lookup(tmdbID: String(tmdbResult.id),
+                                                            type: lookupType),
+                                                    callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+            guard let self = self else { return }
+
+            defer {
+                DispatchQueue.main.async {
+                    guard let indexPathForSelectedRows = self.tableView.indexPathsForSelectedRows else { return }
+                    for indexPath in indexPathForSelectedRows {
+                        self.tableView.deselectRow(at: indexPath, animated: true)
+                    }
+                }
+            }
+
+            let fallback = {
+                DispatchQueue.main.async {
+                    self.request = nil
+                    self.performSegue(withIdentifier: fallbackSegue, sender: tmdbResult)
+                }
+            }
+
+            switch result {
+            case let .success(moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+                    let searchResults = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
+
+                    let media: MediaModel?
+                    switch lookupType {
+                    case .movie:
+                        media = searchResults.first(where: { $0.movie != nil })?.movie.map { .movie($0) }
+                    case .show:
+                        media = searchResults.first(where: { $0.show != nil })?.show.map { .show($0) }
+                    case .episode, .person:
+                        media = nil
+                    }
+
+                    guard let media = media else {
+                        fallback()
+                        return
+                    }
+
+                    DispatchQueue.main.async {
+                        self.request = nil
+                        self.performSegue(withIdentifier: "details", sender: media)
+                    }
+                } catch {
+                    fallback()
+                }
+            case .failure:
+                fallback()
+            }
+        }
     }
 
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -942,6 +1067,13 @@ final class SearchViewController: UITableViewController {
                 destination.aSmartSearch = smartSearch
                 return
             }
+        }
+
+        if segue.identifier == "details",
+           let destination = segue.destination as? MediaViewController,
+           let media = sender as? MediaModel {
+            destination.media = media
+            return
         }
 
         if let service = sender as? TraktAPIService {
