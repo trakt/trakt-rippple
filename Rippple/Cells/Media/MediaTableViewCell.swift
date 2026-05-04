@@ -517,8 +517,6 @@ final class MediaTableViewCell: UITableViewCell {
     }
 
     private func setupShowProgress(episode: Episode?, show: Show, progress: ShowProgress) {
-        submeta?.isHiddenInStackView = false
-        submeta?.text = ""
         if let episode = episode {
             title.text = show.title
 
@@ -550,7 +548,10 @@ final class MediaTableViewCell: UITableViewCell {
             }
 
             if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = episode.title {
+                submeta?.isHiddenInStackView = false
                 submeta?.text = title
+            } else {
+                submeta?.isHiddenInStackView = true
             }
 
             if progress.toRewatchCount > 0 {

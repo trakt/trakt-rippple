@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <accessibilityOverrides dynamicTypePreference="10"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24743"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -29,53 +29,53 @@
                             <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="pQI-eq-EFi">
                                 <rect key="frame" x="0.0" y="0.0" width="437" height="164"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="q67-m9-fq8" customClass="PosterButton" customModule="Rippple" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="66.5" height="100"/>
+                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="q67-m9-fq8" customClass="PosterButton" customModule="Rippple" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="68" height="102"/>
                                         <color key="backgroundColor" systemColor="tertiarySystemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="q67-m9-fq8" secondAttribute="height" multiplier="1:1.5" id="CJG-fm-b0X"/>
-                                            <constraint firstAttribute="height" constant="100" id="hNo-zg-gMP"/>
+                                            <constraint firstAttribute="width" constant="68" id="g9S-Ky-2UI"/>
                                         </constraints>
                                         <connections>
                                             <action selector="posterAction:" destination="53m-ST-ukI" eventType="touchUpInside" id="FH0-N2-HIJ"/>
                                         </connections>
                                     </button>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="1U6-Za-IYT">
-                                        <rect key="frame" x="76.5" y="0.0" width="360.5" height="130.5"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" axis="vertical" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="1U6-Za-IYT">
+                                        <rect key="frame" x="78" y="0.0" width="359" height="130.5"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="uGh-Ez-Nr5">
-                                                <rect key="frame" x="0.0" y="0.0" width="360.5" height="87.5"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" alignment="top" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="uGh-Ez-Nr5">
+                                                <rect key="frame" x="0.0" y="0.0" width="359" height="87.5"/>
                                                 <subviews>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="hdB-40-f68">
-                                                        <rect key="frame" x="0.0" y="0.0" width="314.5" height="87.5"/>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" axis="vertical" alignment="top" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="hdB-40-f68">
+                                                        <rect key="frame" x="0.0" y="0.0" width="313" height="87.5"/>
                                                         <subviews>
-                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rm9-L3-eMe">
-                                                                <rect key="frame" x="0.0" y="0.0" width="314.5" height="2"/>
+                                                            <view contentMode="scaleToFill" horizontalHuggingPriority="252" verticalHuggingPriority="252" verticalCompressionResistancePriority="999" translatesAutoresizingMaskIntoConstraints="NO" id="Rm9-L3-eMe">
+                                                                <rect key="frame" x="0.0" y="0.0" width="313" height="2"/>
                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="2" id="pgM-zD-di7"/>
                                                                 </constraints>
                                                             </view>
-                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iyj-Q4-XJ0">
-                                                                <rect key="frame" x="0.0" y="5" width="43.5" height="20.5"/>
+                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iyj-Q4-XJ0">
+                                                                <rect key="frame" x="0.0" y="5" width="313" height="20.5"/>
                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
-                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cRg-Le-J30">
-                                                                <rect key="frame" x="0.0" y="28.5" width="37.5" height="18"/>
+                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="999" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cRg-Le-J30">
+                                                                <rect key="frame" x="0.0" y="28.5" width="313" height="18"/>
                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DTX-9a-vbB" customClass="LinkEnabledLabel" customModule="Rippple" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="49.5" width="33" height="16"/>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="999" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DTX-9a-vbB" customClass="LinkEnabledLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="49.5" width="313" height="16"/>
                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                                 <nil key="textColor"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
-                                                            <stackView opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" distribution="fillEqually" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="LYQ-Hh-DCo">
+                                                            <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" verticalCompressionResistancePriority="999" distribution="fillEqually" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="LYQ-Hh-DCo">
                                                                 <rect key="frame" x="0.0" y="68.5" width="229" height="19"/>
                                                                 <subviews>
                                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Km2-Zi-8og" customClass="PinnedImageView" customModule="Rippple" customModuleProvider="target">
@@ -170,13 +170,16 @@
                                                             </stackView>
                                                         </subviews>
                                                         <constraints>
+                                                            <constraint firstAttribute="trailing" secondItem="DTX-9a-vbB" secondAttribute="trailing" id="CFh-1Q-lBF"/>
                                                             <constraint firstItem="Rm9-L3-eMe" firstAttribute="leading" secondItem="hdB-40-f68" secondAttribute="leading" id="UZQ-d1-KdQ"/>
+                                                            <constraint firstAttribute="trailing" secondItem="iyj-Q4-XJ0" secondAttribute="trailing" id="WTS-C5-zUB"/>
                                                             <constraint firstItem="Rm9-L3-eMe" firstAttribute="top" secondItem="hdB-40-f68" secondAttribute="top" id="dh0-kh-yO1"/>
+                                                            <constraint firstAttribute="trailing" secondItem="cRg-Le-J30" secondAttribute="trailing" id="kZP-ep-VBm"/>
                                                             <constraint firstAttribute="trailing" secondItem="Rm9-L3-eMe" secondAttribute="trailing" id="keo-Qa-Iyx"/>
                                                         </constraints>
                                                     </stackView>
-                                                    <view contentMode="right" translatesAutoresizingMaskIntoConstraints="NO" id="j5u-ZR-p6l">
-                                                        <rect key="frame" x="316.5" y="0.0" width="44" height="34"/>
+                                                    <view contentMode="right" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="j5u-ZR-p6l">
+                                                        <rect key="frame" x="315" y="0.0" width="44" height="34"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="34" id="5pV-Km-ctq"/>
@@ -185,17 +188,17 @@
                                                     </view>
                                                 </subviews>
                                             </stackView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="duo-gU-7lD">
-                                                <rect key="frame" x="0.0" y="93.5" width="360.5" height="37"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="duo-gU-7lD">
+                                                <rect key="frame" x="0.0" y="93.5" width="359" height="37"/>
                                                 <subviews>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="sap-2b-Pon">
-                                                        <rect key="frame" x="0.0" y="0.0" width="350.5" height="37"/>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" axis="vertical" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="sap-2b-Pon">
+                                                        <rect key="frame" x="0.0" y="0.0" width="349" height="37"/>
                                                         <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wc0-5z-1UG">
-                                                                <rect key="frame" x="0.0" y="0.0" width="350.5" height="10"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="349" height="10"/>
                                                                 <subviews>
                                                                     <view contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="bMi-9p-nUO" customClass="ShowProgressBar" customModule="Rippple" customModuleProvider="target">
-                                                                        <rect key="frame" x="0.0" y="5" width="350.5" height="3"/>
+                                                                        <rect key="frame" x="0.0" y="5" width="349" height="3"/>
                                                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="height" constant="3" id="6PF-KP-udV"/>
@@ -211,17 +214,17 @@
                                                                 </constraints>
                                                             </view>
                                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="gqG-3G-ur8">
-                                                                <rect key="frame" x="0.0" y="13" width="350.5" height="24"/>
+                                                                <rect key="frame" x="0.0" y="13" width="349" height="24"/>
                                                                 <subviews>
-                                                                    <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ksN-fF-ZPC" customClass="CommentCountLabel" customModule="Rippple" customModuleProvider="target">
+                                                                    <label userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ksN-fF-ZPC" customClass="CommentCountLabel" customModule="Rippple" customModuleProvider="target">
                                                                         <rect key="frame" x="0.0" y="0.0" width="0.0" height="24"/>
                                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                                                         <color key="textColor" systemColor="secondaryLabelColor"/>
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
-                                                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qf5-OE-f86">
-                                                                        <rect key="frame" x="281" y="0.0" width="69.5" height="24"/>
+                                                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="qf5-OE-f86">
+                                                                        <rect key="frame" x="279.5" y="0.0" width="69.5" height="24"/>
                                                                         <subviews>
                                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" preferredBehavioralStyle="pad" translatesAutoresizingMaskIntoConstraints="NO" id="jR5-JU-OfX">
                                                                                 <rect key="frame" x="0.0" y="0.0" width="45.5" height="24"/>
@@ -245,8 +248,8 @@
                                                             </stackView>
                                                         </subviews>
                                                     </stackView>
-                                                    <view contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="cmI-PZ-VSX">
-                                                        <rect key="frame" x="350.5" y="0.0" width="10" height="37"/>
+                                                    <view contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="cmI-PZ-VSX">
+                                                        <rect key="frame" x="349" y="0.0" width="10" height="37"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" constant="10" id="zPx-ZQ-RsM"/>
@@ -256,7 +259,7 @@
                                             </stackView>
                                         </subviews>
                                         <constraints>
-                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="100" id="wSg-Sf-X7N"/>
+                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" priority="999" constant="100" id="wSg-Sf-X7N"/>
                                         </constraints>
                                     </stackView>
                                 </subviews>
@@ -271,7 +274,7 @@
                         </constraints>
                     </view>
                     <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bkt-CD-A8u">
-                        <rect key="frame" x="98.5" y="63.5" width="33" height="16"/>
+                        <rect key="frame" x="100" y="63.5" width="313" height="16"/>
                         <state key="normal" title="Button"/>
                         <buttonConfiguration key="configuration" style="plain"/>
                     </button>
@@ -332,16 +335,16 @@
         <image name="plus.circle" catalog="system" width="128" height="123"/>
         <image name="star.circle" catalog="system" width="128" height="123"/>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondarySystemBackgroundColor">
-            <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="tertiarySystemFillColor">
-            <color red="0.46274509800000002" green="0.46274509800000002" blue="0.50196078430000002" alpha="0.12" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.46274509803921571" green="0.46274509803921571" blue="0.50196078431372548" alpha="0.12" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
