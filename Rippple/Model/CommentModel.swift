@@ -315,17 +315,6 @@ extension CommentModel {
             }
         }
 
-        if comment.parentIdentifier != 0, comment.user.isCurrentUser {
-            // reply from current user
-            markdownParser.strike.color = .white
-            markdownParser.highlight.color = .white
-            markdownParser.highlight.highlightColor = UIColor.white.withAlphaComponent(0.4)
-            markdownParser.spoiler.color = .white
-            markdownParser.allSpoiler.color = .white
-            markdownParser.displaySpoiler.color = .white
-            markdownParser.mention.color = .white
-        }
-
         return markdownParser.parse(comment.body.htmlDecoded.emojiUnescapedString)
     }
 }
