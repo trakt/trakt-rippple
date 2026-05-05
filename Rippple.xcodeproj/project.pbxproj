@@ -2968,7 +2968,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = /bin/sh;
-			shellScript = "git=`sh /etc/profile; which git`\n\nappVersion=26.6\n\nbaseBuild=2864\ncommitCount=`\"$git\" rev-list --all |wc -l`\nappBuild=$((baseBuild + commitCount))\n\n#xcrun agvtool new-marketing-version $appVersion\n#xcrun agvtool new-version -all $appBuild\n";
+			shellScript = "git=`sh /etc/profile; which git`\n\nappVersion=26.7\n\nbaseBuild=2864\ncommitCount=`\"$git\" rev-list --all |wc -l`\nappBuild=$((baseBuild + commitCount))\n\n#xcrun agvtool new-marketing-version $appVersion\n#xcrun agvtool new-version -all $appBuild\n";
 		};
 		3AFD13AD2F6F2B4C00D1E2F6 /* Run Script (Secrets Check) */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -3456,7 +3456,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.6;
+				MARKETING_VERSION = 26.7;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.notificationservice;
@@ -3494,7 +3494,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.6;
+				MARKETING_VERSION = 26.7;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.notificationservice;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3533,7 +3533,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.6;
+				MARKETING_VERSION = 26.7;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.widget;
@@ -3573,7 +3573,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.6;
+				MARKETING_VERSION = 26.7;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3628,7 +3628,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2888;
+				CURRENT_PROJECT_VERSION = 2946;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 9FFHQH95BG;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -3663,7 +3663,7 @@
 				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 26.6;
+				MARKETING_VERSION = 26.7;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				"OTHER_SWIFT_FLAGS[sdk=iphonesimulator*]" = "-D IOS_SIMULATOR";
@@ -3715,7 +3715,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2888;
+				CURRENT_PROJECT_VERSION = 2946;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 9FFHQH95BG;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -3744,7 +3744,7 @@
 				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 26.6;
+				MARKETING_VERSION = 26.7;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -3785,7 +3785,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.6;
+				MARKETING_VERSION = 26.7;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" -DDEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3830,7 +3830,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.6;
+				MARKETING_VERSION = 26.7;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3865,7 +3865,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.6;
+				MARKETING_VERSION = 26.7;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.widgetintent;
@@ -3902,7 +3902,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.6;
+				MARKETING_VERSION = 26.7;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.widgetintent;
 				PRODUCT_NAME = "$(TARGET_NAME)";
