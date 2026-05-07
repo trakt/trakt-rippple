@@ -103,7 +103,7 @@ final class BrowseConfigManager {
 
     let freeConfig = """
             { "module": "Browse", "filter": { "section": "", "name": "", "path": "", "query": "" } }
-            { "module": "C1", "filter": { "section": "movies,shows", "name": "", "path": "/all/trending", "query": "" } }
+            { "module": "C1", "filter": { "section": "movies,shows", "name": "", "path": "/media/trending", "query": "" } }
             { "module": "Comments", "filter": { "section": "comments", "name": "Comments", "path": "", "query": "" } }
             { "module": "Services", "filter": { "section": "services", "name": "Streaming On", "path": "", "query": "" } }
             { "module": "L1", "filter": { "section": "shows", "name": "Trending TV Shows", "path": "/shows/trending", "query": "" } }
@@ -116,7 +116,7 @@ final class BrowseConfigManager {
 
     let defaultConfig = """
             { "module": "Browse", "filter": { "section": "", "name": "", "path": "", "query": "" } }
-            { "module": "C1", "filter": { "section": "movies,shows", "name": "", "path": "/all/trending", "query": "" } }
+            { "module": "C1", "filter": { "section": "movies,shows", "name": "", "path": "/media/trending", "query": "" } }
             { "module": "Comments", "filter": { "section": "comments", "name": "Comments", "path": "", "query": "" } }
             { "module": "ToWatch", "filter": { "section": "episodes_to_watch", "name": "Up Next", "path": "", "query": "" } }
             { "module": "L3", "filter": { "section": "watchlist", "name": "Your Watchlist", "path": "/sync/watchlist", "query": "", "limit": 50 } }

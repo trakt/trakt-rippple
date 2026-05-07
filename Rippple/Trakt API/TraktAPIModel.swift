@@ -1940,6 +1940,15 @@ struct SavedFilter: Codable, Equatable, Hashable {
     let query: String
     let limit: Int?
 
+    var normalized: SavedFilter {
+        if path != "/all/trending" { return self }
+        return SavedFilter(section: section,
+                           name: name,
+                           path: "/media/trending",
+                           query: query,
+                           limit: limit)
+    }
+
     var canFilterWatched: Bool {
         if ["movies", "shows", "search"].contains(section) {
             return true
@@ -1961,6 +1970,7 @@ struct SavedFilter: Codable, Equatable, Hashable {
 
         if ["/users/me/watched/movies",
             "/users/me/watched/shows",
+            "/media/trending",
             "/all/trending"].contains(path) {
             return false
         }

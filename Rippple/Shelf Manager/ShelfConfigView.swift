@@ -735,10 +735,10 @@ struct SheetView: View {
                                        query: "",
                                        limit: nil)
 
-    // { "module": "C1", "filter": { "section": "movies,shows", "name": "", "path": "/all/trending", "query": "" } }
+    // { "module": "C1", "filter": { "section": "movies,shows", "name": "", "path": "/media/trending", "query": "" } }
     private let allTrending = SavedFilter(section: "movies,shows",
                                        name: "Trending TV Shows & Movies",
-                                       path: "/all/trending",
+                                       path: "/media/trending",
                                        query: "",
                                        limit: nil)
 

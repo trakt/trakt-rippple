@@ -495,6 +495,7 @@ final class GridViewController: UICollectionViewController {
 
     private var nextPage: PageInfo?
     private func fetch(filter: SavedFilter, pageInfo: PageInfo) async throws -> [MediaItem] {
+        let filter = filter.normalized
         let result: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
             cancellable = TraktAPIProvider.provider.request(.savedFilter(section: filter.section,
                                                                          path: filter.path,

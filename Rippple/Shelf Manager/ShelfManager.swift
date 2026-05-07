@@ -211,16 +211,9 @@ extension SavedFilter {
     }
 
     public func unshelf() {
-        let pathAndQuery = """
-"path": "\(path)", "query": "\(query)"
-"""
-        let section = """
-"section": "\(section)"
-"""
-
         let lines = ShelfManager.shared.shelf.components(separatedBy: "\n")
         var newShelf = ""
-        for line in lines where !(line.localizedStandardContains(pathAndQuery) && line.localizedStandardContains(section)) {
+        for line in lines where !matchesShelf(line: line) {
             newShelf += "\(line)\n"
         }
         ShelfManager.shared.shelf = newShelf.trimmingCharacters(in: .newlines)
@@ -257,12 +250,30 @@ extension SavedFilter {
     }
 
     var isShelved: Bool {
-        let pathAndQuery = """
-"path": "\(path)", "query": "\(query)"
-"""
+        return ShelfManager.shared.shelf
+            .components(separatedBy: "\n")
+            .contains { matchesShelf(line: $0) }
+    }
+
+    private var shelfPaths: [String] {
+        if path == "/media/trending" {
+            return ["/media/trending", "/all/trending"]
+        }
+        if path == "/all/trending" {
+            return ["/all/trending", "/media/trending"]
+        }
+        return [path]
+    }
+
+    private func matchesShelf(line: String) -> Bool {
         let section = """
 "section": "\(section)"
 """
-        return ShelfManager.shared.shelf.localizedStandardContains(pathAndQuery) && ShelfManager.shared.shelf.localizedStandardContains(section)
+        return line.localizedStandardContains(section) && shelfPaths.contains { shelfPath in
+            let pathAndQuery = """
+"path": "\(shelfPath)", "query": "\(query)"
+"""
+            return line.localizedStandardContains(pathAndQuery)
+        }
     }
 }

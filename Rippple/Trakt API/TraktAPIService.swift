@@ -377,6 +377,7 @@ enum TraktAPIService {
     case resetProgress(id: Int64)
     case undoResetProgress(id: Int64)
 
+    case trendingMedia(filters: [String: String], extended: Extended, pageInfo: PageInfo)
     case trendingMovies(filters: [String: String], extended: Extended, pageInfo: PageInfo)
     case trendingShows(filters: [String: String], extended: Extended, pageInfo: PageInfo)
 
@@ -644,6 +645,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/search/\(type.rawValue)"
         case .lookup(let tmdb, _):
             return "/search/tmdb/\(tmdb)"
+        case .trendingMedia:
+            return "/media/trending"
         case .trendingMovies:
             return "/movies/trending"
         case .trendingShows:
@@ -1024,6 +1027,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .lookup:
             return .get
+        case .trendingMedia:
+            return .get
         case .trendingShows:
             return .get
         case .trendingMovies:
@@ -1338,7 +1343,8 @@ extension TraktAPIService: AuthorizedTargetType {
         case .lookup(_, let type):
             return .requestParameters(parameters: ["extended": "full", "type": type],
                                       encoding: URLEncoding.default)
-        case .trendingMovies(let parameters, let extended, let pageInfo),
+        case .trendingMedia(let parameters, let extended, let pageInfo),
+                .trendingMovies(let parameters, let extended, let pageInfo),
                 .trendingShows(let parameters, let extended, let pageInfo):
             var params: [String: String] = ["extended": extended.rawValue,
                           "page": String(pageInfo.page),
@@ -1913,7 +1919,8 @@ extension TraktAPIService: AuthorizedTargetType {
     }
     var needsAuth: Bool {
         switch self {
-        case .trendingMovies(let filters, _, _),
+        case .trendingMedia(let filters, _, _),
+                .trendingMovies(let filters, _, _),
                 .anticipatedMovies(let filters, _, _),
                 .popularMovies(let filters, _, _),
                 .boxoffice(let filters, _, _),

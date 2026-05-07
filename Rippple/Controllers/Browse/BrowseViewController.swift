@@ -134,7 +134,9 @@ final class BrowseViewController: UITableViewController {
             cell.title.textColor = .label
 
             if (savedFilter.path.isEmpty ||
-                self.isDisplayingNewAndHot || savedFilter.section == "movies,shows") &&
+                self.isDisplayingNewAndHot ||
+                (savedFilter.section == "movies,shows" &&
+                 !["/media/trending", "/all/trending"].contains(savedFilter.path))) &&
                 savedFilter.section != "episodes_to_watch" &&
                 savedFilter.section != "movies_to_watch" &&
                 savedFilter.section != "pinned_to_watch" &&
@@ -836,7 +838,8 @@ extension BrowseViewController {
         }
         if savedFilter.path.isEmpty { return }
         if isDisplayingNewAndHot { return }
-        if savedFilter.section == "movies,shows" { return }
+        if savedFilter.section == "movies,shows",
+           !["/media/trending", "/all/trending"].contains(savedFilter.path) { return }
         performSegue(withIdentifier: "grid", sender: savedFilter)
     }
 }

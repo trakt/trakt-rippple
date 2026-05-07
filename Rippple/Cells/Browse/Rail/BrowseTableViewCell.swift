@@ -235,12 +235,7 @@ class BrowseTableViewCell: UITableViewCell {
         }
         task = Task {
             var items: [MediaModel]?
-            if filter.path == "/all/trending" {
-                items = try await self.fetchAllTrending(filter: filter).compactMap { MediaModel(item: $0) }
-                if Task.isCancelled { return }
-                self.notes = nil
-                self.items = items
-            } else if filter.path.localizedStandardContains("27798283") || filter.path.localizedStandardContains("27798281") || filter.path.localizedStandardContains("27798291") || filter.path.localizedStandardContains("27798288") || filter.path.localizedStandardContains("27798292") {
+            if filter.path.localizedStandardContains("27798283") || filter.path.localizedStandardContains("27798281") || filter.path.localizedStandardContains("27798291") || filter.path.localizedStandardContains("27798288") || filter.path.localizedStandardContains("27798292") {
                 let mediaItems = try await self.fetch(filter: filter)
                 items = mediaItems.compactMap { MediaModel(item: $0) }
                 if Task.isCancelled { return }
@@ -283,6 +278,7 @@ class BrowseTableViewCell: UITableViewCell {
     }
 
     private func fetch(filter: SavedFilter) async throws -> [MediaItem] {
+        let filter = filter.normalized
         let result: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.savedFilter(section: filter.section,
                                                            path: filter.path,
@@ -325,57 +321,6 @@ class BrowseTableViewCell: UITableViewCell {
             }
         }
         return result
-    }
-
-    private func fetchAllTrending(filter: SavedFilter) async throws -> [MediaItem] {
-        let movies: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
-            TraktAPIProvider.provider.request(.savedFilter(section: "movies",
-                                                           path: "/movies/trending",
-                                                           query: "",
-                                                           pageInfo: PageInfo.firstPage(with: 15)),
-                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
-
-                switch result {
-                case let .success(moyaResponse):
-                    do {
-                        let response = try moyaResponse.filterSuccessfulStatusCodes()
-                        let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in
-                            media.movie != nil || media.season != nil || media.episode != nil || media.show != nil
-                        })
-                        continuation.resume(returning: items)
-                    } catch {
-                        continuation.resume(throwing: error)
-                    }
-                case let .failure(error):
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
-        let shows: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
-            TraktAPIProvider.provider.request(.savedFilter(section: "shows",
-                                                           path: "/shows/trending",
-                                                           query: "",
-                                                           pageInfo: PageInfo.firstPage(with: 15)),
-                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
-
-                switch result {
-                case let .success(moyaResponse):
-                    do {
-                        let response = try moyaResponse.filterSuccessfulStatusCodes()
-                        let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in
-                            media.movie != nil || media.season != nil || media.episode != nil || media.show != nil
-                        })
-                        continuation.resume(returning: items)
-                    } catch {
-                        continuation.resume(throwing: error)
-                    }
-                case let .failure(error):
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
-        let items = Array(zip(shows, movies).flatMap { [$0, $1] })
-        return items
     }
 
     override func didMoveToSuperview() {
