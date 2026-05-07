@@ -22,6 +22,7 @@
 		0960BCBC2E52591400A93556 /* YouTubePlayerKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0960BCBB2E52591400A93556 /* YouTubePlayerKit */; };
 		09632CBC2F640BA8006780BC /* ImageCacheSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09632CBB2F640BA8006780BC /* ImageCacheSettingsView.swift */; };
 		0970258D2EBE48B3005E91B4 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 0970258C2EBE48B3005E91B4 /* Kingfisher */; };
+		09A1B2C32FB3C4D500E6F701 /* SFSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 09A1B2C22FB3C4D500E6F701 /* SFSymbols */; };
 		0987CB542EA2889600F98967 /* PendingFollowingRequestsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0987CB532EA2889600F98967 /* PendingFollowingRequestsViewController.swift */; };
 		0990B1CA2E17DFDF00D523D0 /* SpacerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0990B1C92E17DFDF00D523D0 /* SpacerTableViewCell.swift */; };
 		0990B1CC2E17E0E200D523D0 /* SpacerTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0990B1CB2E17E0E200D523D0 /* SpacerTableViewCell.xib */; };
@@ -1042,6 +1043,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				09A1B2C32FB3C4D500E6F701 /* SFSymbols in Frameworks */,
 				3A8E8B412DBBB8DD00D89756 /* Toast in Frameworks */,
 				09F275D02E055A670059D7CD /* LRUCache in Frameworks */,
 				0960BCBC2E52591400A93556 /* YouTubePlayerKit in Frameworks */,
@@ -2764,6 +2766,7 @@
 				09F275CE2E055A670059D7CD /* XCRemoteSwiftPackageReference "LRUCache" */,
 				0960BCBA2E52591400A93556 /* XCRemoteSwiftPackageReference "YouTubePlayerKit" */,
 				0970258B2EBE48B3005E91B4 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				09A1B2C12FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "SFSymbols" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3A9119C51FADC7EB00457D28 /* Products */;
@@ -3985,6 +3988,14 @@
 				minimumVersion = 8.6.1;
 			};
 		};
+		09A1B2C12FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "SFSymbols" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/simonbs/SFSymbols.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		09F275CE2E055A670059D7CD /* XCRemoteSwiftPackageReference "LRUCache" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/nicklockwood/LRUCache.git";
@@ -4053,6 +4064,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0970258B2EBE48B3005E91B4 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		09A1B2C22FB3C4D500E6F701 /* SFSymbols */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09A1B2C12FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "SFSymbols" */;
+			productName = SFSymbols;
 		};
 		09F275CF2E055A670059D7CD /* LRUCache */ = {
 			isa = XCSwiftPackageProductDependency;

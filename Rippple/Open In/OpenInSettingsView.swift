@@ -9,6 +9,7 @@
 import SwiftUI
 
 import Receiver
+import SFSymbols
 
 struct OpenInSettingsView: View {
     @State private var customActions: [CustomOpenAction] = []
@@ -61,7 +62,10 @@ struct OpenInSettingsView: View {
 
                     HStack(alignment: .center) {
                         Button {
-                            editorState = EditorState(action: CustomOpenAction(name: "", urlTemplate: "", mediaTypes: []), isNew: true)
+                            editorState = EditorState(action: CustomOpenAction(name: "",
+                                                                              urlTemplate: "",
+                                                                              mediaTypes: Set(OpenActionMediaType.allCases)),
+                                                      isNew: true)
                         } label: {
                             HStack {
                                 Image(systemName: "plus.circle.fill")
@@ -211,23 +215,45 @@ struct OpenInItemEditView: View {
     @State private var urlTemplateSelection: TextSelection?
     @State private var mediaTypes: Set<OpenActionMediaType> = []
     @State private var systemImageName: String = "arrow.up.forward"
+    @State private var isShowingSymbolPicker = false
     @Environment(\.dismiss) private var dismiss
     @State private var isShowingDeleteConfirmation = false
-
-    private let suggestedSymbols = [
-        "link", "safari", "arrow.up.forward", "play.circle.fill", "tv",
-        "film", "rectangle.on.rectangle", "square.and.arrow.up", "play.tv", "arrow.down.circle"
-    ]
 
     private let suggestedStrings = [
         "https://", "movie", "show", "series", "tv", "episode", "season", "search", "=", "&", "/", "?"
     ]
 
+    private var optionalSystemImageNameBinding: Binding<String?> {
+        Binding<String?>(
+            get: { systemImageName },
+            set: { newValue in
+                guard let newValue, !newValue.isEmpty else { return }
+                systemImageName = newValue
+            }
+        )
+    }
+
     var body: some View {
         NavigationStack {
             Form {
-                Section("Open in...") {
-                    TextField("Name", text: $name, prompt: Text("What?"))
+                Section {
+                    HStack(spacing: 12) {
+                        TextField("Name", text: $name, prompt: Text("What?"))
+                        Button {
+                            isShowingSymbolPicker = true
+                        } label: {
+                            Image(systemName: systemImageName)
+                                .font(.title3)
+                                .foregroundStyle(Color(uiColor: UIColor(asset: .globalTint)))
+                                .frame(width: 32, height: 32)
+                        }.buttonStyle(.plain)
+                            .sfSymbolPicker(isPresented: $isShowingSymbolPicker, selection: optionalSystemImageNameBinding)
+                            .sfSymbolPickerForegroundStyle(Color(uiColor: UIColor(asset: .globalTint)))
+                    }
+                } header: {
+                    Text("Open in...")
+                } footer: {
+                    Text("Give your action a name and choose Symbol to help identify it in the Open In list.")
                 }
 
                 Section("URL template") {
@@ -263,29 +289,6 @@ struct OpenInItemEditView: View {
                                              set: { if $0 { mediaTypes.insert(type) } else { mediaTypes.remove(type) } })
                         ).tint(Color(uiColor: UIColor(asset: .globalTint)))
                             .toggleStyle(.switch)
-                    }
-                }
-
-                Section("Icon") {
-                    HStack(spacing: 12) {
-                        Image(systemName: systemImageName)
-                            .font(.title)
-                            .foregroundStyle(Color(uiColor: UIColor(asset: .globalTint)))
-                            .frame(width: 44, height: 44)
-                        TextField("SF Symbol name", text: $systemImageName, prompt: Text("Symbol name"))
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                    }
-                    FlowLayout(spacing: 8) {
-                        ForEach(suggestedSymbols, id: \.self) { symbol in
-                            Button {
-                                systemImageName = symbol
-                            } label: {
-                                Image(systemName: symbol)
-                                    .frame(width: 24, height: 24)
-                            }.buttonStyle(.bordered)
-                                .frame(height: 36)
-                        }
                     }
                 }
 
@@ -333,6 +336,11 @@ struct OpenInItemEditView: View {
                 urlTemplate = action.urlTemplate
                 mediaTypes = action.mediaTypes
                 systemImageName = action.systemImageName
+            }
+            .onChange(of: systemImageName) { _, _ in
+                if isShowingSymbolPicker {
+                    isShowingSymbolPicker = false
+                }
             }
             .alert("Sure you want to Delete?", isPresented: $isShowingDeleteConfirmation) {
                 Button("Delete", role: .destructive) {
