@@ -264,6 +264,7 @@ struct ShelfRowConfigView: View {
                     Picker("Style", selection: $selectedStyle) {
                         Text("To Watch").tag("ToWatch")
                         Text("Widget").tag("G1")
+                        Text("List").tag("List")
                     }
                 } else {
                     if selectedStyle == "L1" || selectedStyle == "L2" || selectedStyle == "L3" || selectedStyle == "T1" || selectedStyle == "C1" || selectedStyle == "G1" || selectedStyle == "List" {
@@ -435,6 +436,7 @@ struct ShelfRowQuickConfigView: View {
                         Picker("Style", selection: $selectedStyle) {
                             Text("To Watch").tag("ToWatch")
                             Text("Widget").tag("G1")
+                            Text("List").tag("List")
                         }
                     } else {
                         if selectedStyle == "L1" || selectedStyle == "L2" || selectedStyle == "L3" || selectedStyle == "T1" || selectedStyle == "C1" || selectedStyle == "G1" || selectedStyle == "List" {
