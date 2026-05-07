@@ -711,13 +711,11 @@ final class BrowseViewController: UITableViewController {
 
         #if targetEnvironment(macCatalyst)
         navigationItem.leftBarButtonItem = nil
-        return
         #else
         if UIDevice.current.userInterfaceIdiom == .pad {
             navigationItem.leftBarButtonItem = nil
             return
         }
-        #endif
 
         let profileButton = ProfileButton()
         let profileAction = UIAction(handler: { [weak self] _ in
@@ -729,6 +727,7 @@ final class BrowseViewController: UITableViewController {
         profileButton.addAction(profileAction, for: .touchUpInside)
         profileButton.setImage(UIImage(imageLiteralResourceName: "bg_placeholder_avatar_small"), for: .normal)
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: profileButton)
+        #endif
     }
 
     override func viewDidLayoutSubviews() {
