@@ -12,6 +12,14 @@ import Receiver
 import SFSymbols
 
 struct OpenInSettingsView: View {
+
+    enum PresentationStyle {
+        case modal
+        case pushed
+    }
+
+    let presentationStyle: PresentationStyle
+
     @State private var customActions: [CustomOpenAction] = []
     @State private var builtInActions: [BuiltInOpenAction] = []
 
@@ -30,9 +38,22 @@ struct OpenInSettingsView: View {
         let isNew: Bool
     }
 
+    init(presentationStyle: PresentationStyle = .modal) {
+        self.presentationStyle = presentationStyle
+    }
+
     var body: some View {
-        NavigationStack {
-            SwiftUI.List {
+        if presentationStyle == .modal {
+            NavigationStack {
+                content
+            }
+        } else {
+            content
+        }
+    }
+
+    private var content: some View {
+        SwiftUI.List {
                 Section {
                     Text("Manage your \"Open In\" actions. You can create new custom actions that appear on movie, show, season, and episode detail screens. Each action uses a URL template with variables like \(OpenActionVariable.tmdbId.placeholder) or \(OpenActionVariable.title.placeholder).")
                         .font(.subheadline)
@@ -91,11 +112,13 @@ struct OpenInSettingsView: View {
             .navigationTitle("Open In")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
+                if presentationStyle == .modal {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                        }
                     }
                 }
             }
@@ -148,7 +171,6 @@ struct OpenInSettingsView: View {
                 .frame(minWidth: 620, minHeight: 720)
 #endif
             }
-        }
     }
 
     private func builtInRow(for action: BuiltInOpenAction, isEnabled: Binding<Bool>) -> some View {

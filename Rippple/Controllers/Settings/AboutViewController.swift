@@ -43,6 +43,7 @@ final class AboutViewController: UITableViewController {
         case swipeOptions
         case automations
         case deeplinks
+        case openIn
     }
 
     @IBOutlet var barButtonItem: UIBarButtonItem!
@@ -211,6 +212,12 @@ final class AboutViewController: UITableViewController {
                 tableView.deselectRow(at: indexPath, animated: true)
             } else if indexPath.row == SettingsSection.appIconBadge.rawValue {
                 performSegue(withIdentifier: "badge", sender: nil)
+                tableView.deselectRow(at: indexPath, animated: true)
+            } else if indexPath.row == SettingsSection.openIn.rawValue {
+                let view = OpenInSettingsView(presentationStyle: .pushed)
+                let controller = UIHostingController(rootView: view)
+                controller.title = "Open In"
+                navigationController?.pushViewController(controller, animated: true)
                 tableView.deselectRow(at: indexPath, animated: true)
             }
         case .account:
