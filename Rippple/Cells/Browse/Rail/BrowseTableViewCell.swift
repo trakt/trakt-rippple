@@ -233,15 +233,6 @@ class BrowseTableViewCell: UITableViewCell {
             items = PinnedMoviesManager.shared.pinnedMovies.compactMap { $0.mediaModel }
             return
         }
-        if filter.path == "/users/me/watched/movies" {
-            items = WatchedManager.shared.watchedMoviesMediaModels
-            return
-        }
-        if filter.path == "/users/me/watched/shows" {
-            items = WatchedManager.shared.watchedShowsMediaModels
-            return
-        }
-
         task = Task {
             var items: [MediaModel]?
             if filter.path == "/all/trending" {
@@ -317,7 +308,7 @@ class BrowseTableViewCell: UITableViewCell {
                             let items = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else if filter.section == "WatchedItem" {
-                            let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder).sorted { $0.lastWatchedAt > $1.lastWatchedAt }.map { MediaItem(movie: $0.movie, show: $0.show, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
+                            let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0.movie, show: $0.show, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else {
                             let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in
