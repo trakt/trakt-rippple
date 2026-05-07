@@ -87,11 +87,11 @@ extension GenresBrowseTableViewCell: UICollectionViewDataSource, UICollectionVie
 
 extension Genre {
     var moviesSavedFilter: SavedFilter {
-        return SavedFilter(section: "search", name: "\(name)", path: "/search/movie", query: "genres=+\(slug)", limit: 100)
+        return SavedFilter(section: "search", name: "\(name)", path: "/search/movie", query: "genres=\(slug)", limit: 100)
     }
 
     var showsSavedFilter: SavedFilter {
-        return SavedFilter(section: "search", name: "\(name)", path: "/search/show", query: "genres=+\(slug)", limit: 100)
+        return SavedFilter(section: "search", name: "\(name)", path: "/search/show", query: "genres=\(slug)", limit: 100)
     }
 
     var emoji: String {
