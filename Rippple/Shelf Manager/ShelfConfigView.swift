@@ -316,8 +316,10 @@ struct ShelfRowConfigView: View {
                 BrowseRowPreview(module: previewModule)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .frame(height: BrowseRowPreview.height(for: previewModule))
+                    .ignoresSafeArea()
                     .padding(.top, 20)
-                    .padding(.leading, -25)
+                    .padding(.leading, -40)
+                    .padding(.trailing, -40)
             }
         }.listStyle(.insetGrouped)
             .headerProminence(.increased)
@@ -476,7 +478,9 @@ struct ShelfRowQuickConfigView: View {
                     }
                 } footer: {
                     BrowseRowPreview(module: previewModule)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .frame(height: BrowseRowPreview.height(for: previewModule))
+                        .ignoresSafeArea()
                         .padding(.top, 20)
                         .padding(.leading, -40)
                         .padding(.trailing, -40)
