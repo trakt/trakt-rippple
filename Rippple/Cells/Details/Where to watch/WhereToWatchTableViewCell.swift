@@ -453,7 +453,7 @@ final class WhereToWatchTableViewCell: UITableViewCell, UICollectionViewDelegate
                     favorites.contains(where: { $0 == provider })
                 })
             }
-            self.data = data.sorted { $0.computedPriority < $1.computedPriority }
+            self.data = data.sortedByProviderPriority()
             collectionView.reloadData()
         }
     }

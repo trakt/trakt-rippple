@@ -173,7 +173,7 @@ final class WhereToWatchImageView: UIImageView {
                     favorites.contains(where: { $0 == provider })
                 })
             }
-            self.providers = data.sorted { $0.computedPriority < $1.computedPriority }
+            self.providers = data.sortedByProviderPriority()
         }
     }
 
