@@ -1949,7 +1949,15 @@ struct SavedFilter: Codable, Equatable, Hashable {
                            limit: limit)
     }
 
+    private var isCombinedTrending: Bool {
+        ["/media/trending", "/all/trending"].contains(path)
+    }
+
     var canFilterWatched: Bool {
+        if isCombinedTrending {
+            return true
+        }
+
         if ["movies", "shows", "search"].contains(section) {
             return true
         }
@@ -1969,9 +1977,8 @@ struct SavedFilter: Codable, Equatable, Hashable {
         }
 
         if ["/users/me/watched/movies",
-            "/users/me/watched/shows",
-            "/media/trending",
-            "/all/trending"].contains(path) {
+            "/users/me/watched/shows"].contains(path) ||
+            isCombinedTrending {
             return false
         }
 
