@@ -41,7 +41,7 @@ class BrowseTableViewCell: UITableViewCell {
         task?.cancel()
     }
 
-    var notes: [String]?
+    var notes: [String?]?
     private var items: [MediaModel]? {
         didSet {
             DispatchQueue.main.async {
@@ -55,6 +55,16 @@ class BrowseTableViewCell: UITableViewCell {
 
     private let contextMenu = ContextMenuHelper()
     private var didConfigureCollectionView = false
+
+    private func note(at indexPath: IndexPath) -> String? {
+        guard let notes = notes, notes.indices.contains(indexPath.row) else { return nil }
+        return notes[indexPath.row]
+    }
+
+    private func media(at indexPath: IndexPath) -> MediaModel? {
+        guard let items = items, items.indices.contains(indexPath.row) else { return nil }
+        return items[indexPath.row]
+    }
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -194,6 +204,8 @@ class BrowseTableViewCell: UITableViewCell {
     }
 
     private func fetchItems() {
+        notes = nil
+
         if reuseIdentifier == "History" {
             fetchHistory()
             return
@@ -239,7 +251,7 @@ class BrowseTableViewCell: UITableViewCell {
                 let mediaItems = try await self.fetch(filter: filter)
                 items = mediaItems.compactMap { MediaModel(item: $0) }
                 if Task.isCancelled { return }
-                self.notes = mediaItems.compactMap { $0.notes }
+                self.notes = mediaItems.map { $0.notes }
                 self.items = items
             } else {
                 items = try await self.fetch(filter: filter).compactMap { MediaModel(item: $0) }
@@ -482,6 +494,7 @@ class BrowseTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
 
+        notes = nil
         items = nil
 
         task?.cancel()
@@ -660,7 +673,7 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
-        guard indexPath.row < items?.count ?? 0, let media = items?[indexPath.row] else {
+        guard let media = media(at: indexPath) else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! L1BrowseCollectionViewCell
             return cell
         }
@@ -686,11 +699,7 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
         if reuseIdentifier == "T1" {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "T1", for: indexPath) as! TopBrowseCollectionViewCell
 
-            if let notes = notes {
-                cell.notes = notes[indexPath.row]
-            } else {
-                cell.notes = nil
-            }
+            cell.notes = note(at: indexPath)
             cell.media = media
             cell.rank?.text = "\(indexPath.row + 1)"
 
@@ -699,11 +708,7 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
         if reuseIdentifier == "C1" {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "C2", for: indexPath) as! C1BrowseCollectionViewCell
 
-            if let notes = notes {
-                cell.notes = notes[indexPath.row]
-            } else {
-                cell.notes = nil
-            }
+            cell.notes = note(at: indexPath)
             cell.media = media
 
             return cell
@@ -727,10 +732,10 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
 
             return cell
         }
-        if let notes = notes {
+        if notes != nil {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell with notes", for: indexPath) as! L1BrowseCollectionViewCell
 
-            cell.notes = notes[indexPath.row]
+            cell.notes = note(at: indexPath)
             cell.media = media
 
             return cell
@@ -747,7 +752,7 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
             return
         }
 
-        guard let media = items?[indexPath.row] else { return }
+        guard let media = media(at: indexPath) else { return }
         let zoomSourceView = zoomSourceView(in: collectionView, at: indexPath)
         let showProgressZoomSourceView = reuseIdentifier == "List" ? zoomSourceView : nil
 
