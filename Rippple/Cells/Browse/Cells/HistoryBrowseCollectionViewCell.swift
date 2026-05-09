@@ -8,6 +8,8 @@
 
 import UIKit
 
+import Kingfisher
+
 import Receiver
 
 import RPCircularProgress
@@ -27,37 +29,26 @@ final class HistoryBrowseCollectionViewCell: UICollectionViewCell {
         case emoji(label: String, emoji: String)
         case media(media: MediaModel)
     }
-    var content: Content! {
+    var content: Content? {
         didSet {
             switch content {
             case .emoji(let label, let emoji):
-                self.emoji.isHidden = false
-                sublabel.isHidden = true
-                progress.isHidden = true
-                poster.image = nil
-                commentCount.superview!.isHidden = true
-
-                self.label.text = label
-                self.emoji.text = emoji
+                configureEmoji(label: label, emoji: emoji)
             case .media(let media):
-                emoji.isHidden = true
-                sublabel.isHidden = false
-                progress.isHidden = false
-                commentCount.superview!.isHidden = false
-
-                self.media = media
+                configureMedia(media)
             case .none:
-                // do nothing
-                break
+                resetContent()
             }
         }
     }
 
-    var media: MediaModel! {
+    var media: MediaModel? {
         didSet {
+            guard let media = media else { return }
+
             commentCount.mode = .alone
             commentCount.media = media
-            switch media! {
+            switch media {
             case .movie(let movie):
                 poster.movie = movie
                 label.text = movie.title
@@ -77,6 +68,12 @@ final class HistoryBrowseCollectionViewCell: UICollectionViewCell {
             }
             update(watchingItem: WatchingManager.shared.watchingItem)
         }
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+
+        content = nil
     }
 
     override func layoutSubviews() {
@@ -110,7 +107,9 @@ final class HistoryBrowseCollectionViewCell: UICollectionViewCell {
     }
 
     private func update(watchingItem: WatchingItem?) {
-        guard let watchingItem = watchingItem, let checkinModel = MediaModel(item: watchingItem) else {
+        guard let media = media,
+              let watchingItem = watchingItem,
+              let checkinModel = MediaModel(item: watchingItem) else {
             progress.isHidden = true
             return
         }
@@ -119,5 +118,48 @@ final class HistoryBrowseCollectionViewCell: UICollectionViewCell {
         } else {
             progress.isHidden = true
         }
+    }
+
+    private func configureEmoji(label: String, emoji: String) {
+        media = nil
+        commentCount.media = nil
+        resetPoster()
+        progress.isHidden = true
+        sublabel.isHidden = true
+        commentCount.superview!.isHidden = true
+        self.emoji.isHidden = false
+
+        self.label.text = label
+        self.sublabel.text = nil
+        self.emoji.text = emoji
+    }
+
+    private func configureMedia(_ media: MediaModel) {
+        emoji.isHidden = true
+        sublabel.isHidden = false
+        commentCount.superview!.isHidden = false
+
+        self.media = media
+    }
+
+    private func resetContent() {
+        media = nil
+        commentCount.media = nil
+        resetPoster()
+        label.text = nil
+        sublabel.text = nil
+        emoji.text = nil
+        emoji.isHidden = true
+        sublabel.isHidden = true
+        progress.isHidden = true
+        commentCount.superview!.isHidden = true
+    }
+
+    private func resetPoster() {
+        poster.kf.cancelDownloadTask()
+        poster.movie = nil
+        poster.show = nil
+        poster.season = nil
+        poster.image = nil
     }
 }
