@@ -21,7 +21,7 @@ struct OpenInSettingsView: View {
     let presentationStyle: PresentationStyle
 
     @State private var customActions: [CustomOpenAction] = []
-    @State private var builtInActions: [BuiltInOpenAction] = []
+    @State private var openActionItems: [OpenActionItem] = []
 
     @State private var editorState: EditorState?
     @State private var editMode: EditMode = .inactive
@@ -52,160 +52,174 @@ struct OpenInSettingsView: View {
         }
     }
 
-    private var content: some View {
-        SwiftUI.List {
-                Section {
-                    Text("Manage your \"Open In\" actions. You can create new custom actions that appear on movie, show, season, and episode detail screens. Each action uses a URL template with variables like \(OpenActionVariable.tmdbId.placeholder) or \(OpenActionVariable.title.placeholder).")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                Section("Built-in Actions") {
-                    ForEach(builtInActions.indices, id: \.self) { index in
-                        let action = builtInActions[index]
-                        builtInRow(for: action, isEnabled: $builtInActions[index].enabled)
-                    }
-                }
-
-                Section {
-                    ForEach(customActions) { action in
-                        Button {
-                            editorState = EditorState(action: action, isNew: false)
-                        } label: {
-                            customRow(for: action)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
-                        }.buttonStyle(.plain)
-                            .contentShape(Rectangle())
-                    }
-                    .onDelete(perform: deleteItems)
-                    .onMove(perform: moveItems)
-
-                    HStack(alignment: .center) {
-                        Button {
-                            editorState = EditorState(action: CustomOpenAction(name: "",
-                                                                              urlTemplate: "",
-                                                                              mediaTypes: Set(OpenActionMediaType.allCases)),
-                                                      isNew: true)
-                        } label: {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                Text("New Action")
-                            }
-                        }.buttonStyle(.bordered)
-                    }
-                } header: {
-                    HStack {
-                        Text("Custom Actions")
-                        Spacer()
-                        if !customActions.isEmpty {
-                            Button(editMode.isEditing ? "Done" : "Edit") {
-                                withAnimation {
-                                    editMode = editMode.isEditing ? .inactive : .active
-                                }
-                            }.font(.callout)
-                                .buttonStyle(.plain)
-                        }
-                    }
-                }
-            }
-            .navigationTitle("Open In")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if presentationStyle == .modal {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button {
-                            dismiss()
-                        } label: {
-                            Image(systemName: "xmark")
-                        }
-                    }
-                }
-            }
-            .onAppear {
-                customActions = OpenActionManager.shared.customOpenActions
-                builtInActions = BuiltInOpenAction.allCases
-            }
-            .task {
-                onCustomOpenActionsChangedReceiver.listen { _ in
-                    DispatchQueue.main.async {
-                        self.customActions = OpenActionManager.shared.customOpenActions
-                        self.builtInActions = BuiltInOpenAction.allCases
-                    }
-                }.disposed(by: disposeBag)
-
-                onBuiltInOpenActionsChangedReceiver.listen { _ in
-                    DispatchQueue.main.async {
-                        self.customActions = OpenActionManager.shared.customOpenActions
-                        self.builtInActions = BuiltInOpenAction.allCases
-                    }
-                }.disposed(by: disposeBag)
-            }
-            .onChange(of: customActions) { _, newValue in
-                OpenActionManager.shared.customOpenActions = newValue
-            }
-            .environment(\.editMode, $editMode)
-            .alert("Sure you want to Delete?", isPresented: $isShowingDeleteConfirmation, presenting: pendingDeletionOffsets) { offsets in
-                Button("Delete", role: .destructive) {
-                    customActions.remove(atOffsets: offsets)
-                }
-                Button("Cancel", role: .cancel) { }
-            } message: { _ in
-                Text("This will delete the custom \"Open In\" action. This cannot be undone.")
-            }
-            .sheet(item: $editorState) { state in
-                OpenInItemEditView(action: state.action,
-                                   isNew: state.isNew,
-                                   onSave: { updated in
-                    if state.isNew {
-                        customActions.append(updated)
-                        return
-                    }
-                    if let idx = customActions.firstIndex(where: { $0.id == updated.id }) {
-                        customActions[idx] = updated
-                    }
-                }, onDelete: {
-                    customActions.removeAll { $0.id == state.action.id }
-                })
-#if targetEnvironment(macCatalyst)
-                .frame(minWidth: 620, minHeight: 720)
-#endif
-            }
+    private var availableBuiltInActions: [BuiltInOpenAction] {
+        let selectedBuiltInActions = Set(openActionItems.compactMap(\.builtInAction))
+        return BuiltInOpenAction.allCases.filter { !selectedBuiltInActions.contains($0) }
     }
 
-    private func builtInRow(for action: BuiltInOpenAction, isEnabled: Binding<Bool>) -> some View {
-        Toggle(isOn: isEnabled) {
-            HStack(spacing: 12) {
-                Image(systemName: action.systemImageName)
-                    .font(.title2)
-                    .foregroundStyle(Color(uiColor: UIColor(asset: .globalTint)))
-                    .frame(width: 32, alignment: .center)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(action.title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
-                    Text(action.subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
+    private var content: some View {
+        SwiftUI.List {
+            Section {
+                Text("Manage your \"Open In\" actions. Reorder built-in and custom actions for movie, show, season, and episode detail screens. Custom actions use a URL template with variables like \(OpenActionVariable.tmdbId.placeholder) or \(OpenActionVariable.title.placeholder).")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            if !availableBuiltInActions.isEmpty {
+                Section("Built-in Actions") {
+                    ForEach(availableBuiltInActions) { action in
+                        availableBuiltInRow(for: action)
+                    }
                 }
             }
-        }.tint(Color(uiColor: UIColor(asset: .globalTint)))
-            .toggleStyle(.switch)
+
+            Section {
+                ForEach(openActionItems) { item in
+                    actionRow(for: item)
+                }
+                .onDelete(perform: deleteItems)
+                .onMove(perform: moveItems)
+
+                HStack(alignment: .center) {
+                    Button {
+                        editorState = EditorState(action: CustomOpenAction(name: "",
+                                                                          urlTemplate: "",
+                                                                          mediaTypes: Set(OpenActionMediaType.allCases)),
+                                                  isNew: true)
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("New Action")
+                        }
+                    }.buttonStyle(.bordered)
+                }
+            } header: {
+                HStack {
+                    Text("Actions")
+                    Spacer()
+                    if !openActionItems.isEmpty {
+                        Button(editMode.isEditing ? "Done" : "Edit") {
+                            withAnimation {
+                                editMode = editMode.isEditing ? .inactive : .active
+                            }
+                        }.font(.callout)
+                            .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+        .navigationTitle("Open In")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if presentationStyle == .modal {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                }
+            }
+        }
+        .onAppear {
+            reloadActions()
+        }
+        .task {
+            onCustomOpenActionsChangedReceiver.listen { _ in
+                DispatchQueue.main.async {
+                    self.reloadActions()
+                }
+            }.disposed(by: disposeBag)
+
+            onBuiltInOpenActionsChangedReceiver.listen { _ in
+                DispatchQueue.main.async {
+                    self.reloadActions()
+                }
+            }.disposed(by: disposeBag)
+        }
+        .environment(\.editMode, $editMode)
+        .alert("Sure you want to Delete?", isPresented: $isShowingDeleteConfirmation, presenting: pendingDeletionOffsets) { offsets in
+            Button("Delete", role: .destructive) {
+                removeActionItems(at: offsets, shouldDeleteCustomActions: true)
+                pendingDeletionOffsets = nil
+            }
+            Button("Cancel", role: .cancel) {
+                pendingDeletionOffsets = nil
+            }
+        } message: { offsets in
+            Text(deleteConfirmationMessage(for: offsets))
+        }
+        .sheet(item: $editorState) { state in
+            OpenInItemEditView(action: state.action,
+                               isNew: state.isNew,
+                               onSave: { updated in
+                saveCustomAction(updated, isNew: state.isNew)
+            }, onDelete: {
+                deleteCustomAction(id: state.action.id)
+            })
+#if targetEnvironment(macCatalyst)
+            .frame(minWidth: 620, minHeight: 720)
+#endif
+        }
+    }
+
+    @ViewBuilder
+    private func actionRow(for item: OpenActionItem) -> some View {
+        if let builtInAction = item.builtInAction {
+            builtInRow(for: builtInAction)
+        } else if let customAction = customAction(for: item) {
+            Button {
+                editorState = EditorState(action: customAction, isNew: false)
+            } label: {
+                customRow(for: customAction)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+        }
+    }
+
+    private func availableBuiltInRow(for action: BuiltInOpenAction) -> some View {
+        HStack(spacing: 12) {
+            builtInRow(for: action)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Spacer(minLength: 12)
+            Button {
+                addBuiltInAction(action)
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "plus.circle.fill")
+                    Text("Add")
+                }
+            }
+            .buttonStyle(.bordered)
+        }
+    }
+
+    private func builtInRow(for action: BuiltInOpenAction) -> some View {
+        openActionRow(title: action.title,
+                      subtitle: action.subtitle,
+                      systemImageName: action.systemImageName)
     }
 
     private func customRow(for item: CustomOpenAction) -> some View {
+        openActionRow(title: item.name,
+                      subtitle: item.urlTemplate,
+                      systemImageName: item.systemImageName)
+    }
+
+    private func openActionRow(title: String, subtitle: String, systemImageName: String) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: item.systemImageName)
+            Image(systemName: systemImageName)
                 .font(.title2)
                 .foregroundStyle(Color(uiColor: UIColor(asset: .globalTint)))
                 .frame(width: 32, alignment: .center)
             VStack(alignment: .leading, spacing: 2) {
-                Text(item.name)
+                Text(title)
                     .font(.body)
                     .foregroundStyle(.primary)
-                Text(item.urlTemplate)
+                Text(subtitle)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -215,12 +229,117 @@ struct OpenInSettingsView: View {
     }
 
     private func deleteItems(at offsets: IndexSet) {
-        pendingDeletionOffsets = offsets
-        isShowingDeleteConfirmation = true
+        let items = actionItems(at: offsets)
+        guard !items.isEmpty else { return }
+
+        if items.contains(where: { $0.customActionID != nil }) {
+            pendingDeletionOffsets = offsets
+            isShowingDeleteConfirmation = true
+            return
+        }
+
+        removeActionItems(at: offsets, shouldDeleteCustomActions: false)
     }
 
     private func moveItems(from source: IndexSet, to destination: Int) {
-        customActions.move(fromOffsets: source, toOffset: destination)
+        openActionItems.move(fromOffsets: source, toOffset: destination)
+        saveOpenActionItems()
+    }
+
+    private func addBuiltInAction(_ action: BuiltInOpenAction) {
+        let item = OpenActionItem(builtInAction: action)
+        guard !openActionItems.contains(item) else { return }
+        openActionItems.append(item)
+        saveOpenActionItems()
+    }
+
+    private func saveCustomAction(_ action: CustomOpenAction, isNew: Bool) {
+        if isNew {
+            customActions.append(action)
+            openActionItems.append(OpenActionItem(customActionID: action.id))
+            saveCustomActions()
+            saveOpenActionItems()
+            return
+        }
+
+        if let idx = customActions.firstIndex(where: { $0.id == action.id }) {
+            customActions[idx] = action
+            saveCustomActions()
+        }
+    }
+
+    private func deleteCustomAction(id: UUID) {
+        performWithoutListAnimation {
+            customActions.removeAll { $0.id == id }
+            openActionItems.removeAll { $0.customActionID == id }
+            saveCustomActions()
+            saveOpenActionItems()
+        }
+    }
+
+    private func removeActionItems(at offsets: IndexSet, shouldDeleteCustomActions: Bool) {
+        performWithoutListAnimation {
+            let removedItems = actionItems(at: offsets)
+            let removedCustomActionIDs = Set(removedItems.compactMap(\.customActionID))
+
+            if shouldDeleteCustomActions, !removedCustomActionIDs.isEmpty {
+                customActions.removeAll { removedCustomActionIDs.contains($0.id) }
+                saveCustomActions()
+            }
+
+            openActionItems.remove(atOffsets: offsets)
+            saveOpenActionItems()
+        }
+    }
+
+    private func performWithoutListAnimation(_ updates: () -> Void) {
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+
+        withTransaction(transaction) {
+            updates()
+        }
+    }
+
+    private func actionItems(at offsets: IndexSet) -> [OpenActionItem] {
+        offsets.compactMap { index in
+            guard openActionItems.indices.contains(index) else { return nil }
+            return openActionItems[index]
+        }
+    }
+
+    private func customAction(for item: OpenActionItem) -> CustomOpenAction? {
+        guard let customActionID = item.customActionID else { return nil }
+        return customActions.first { $0.id == customActionID }
+    }
+
+    private func deleteConfirmationMessage(for offsets: IndexSet?) -> String {
+        guard let offsets else {
+            return "This cannot be undone."
+        }
+
+        let items = actionItems(at: offsets)
+        let includesBuiltInAction = items.contains { $0.builtInAction != nil }
+        let includesCustomAction = items.contains { $0.customActionID != nil }
+
+        if includesBuiltInAction, includesCustomAction {
+            return "This will remove the built-in action from the list and delete the custom action. Custom actions cannot be restored."
+        }
+
+        return "This will delete the custom \"Open In\" action. This cannot be undone."
+    }
+
+    private func reloadActions() {
+        customActions = OpenActionManager.shared.customOpenActions
+        openActionItems = OpenActionManager.shared.openActionItems
+    }
+
+    private func saveCustomActions() {
+        OpenActionManager.shared.customOpenActions = customActions
+    }
+
+    private func saveOpenActionItems() {
+        OpenActionManager.shared.openActionItems = openActionItems
     }
 }
 
@@ -242,7 +361,7 @@ struct OpenInItemEditView: View {
     @State private var isShowingDeleteConfirmation = false
 
     private let suggestedStrings = [
-        "https://", "movie", "show", "series", "tv", "episode", "season", "search", "=", "&", "/", "?"
+        "https://", "movie", "show", "series", "tv", "episode", "season", "search", "=", "&", "/", "?", "%20", "s"
     ]
 
     private var optionalSystemImageNameBinding: Binding<String?> {
@@ -253,6 +372,26 @@ struct OpenInItemEditView: View {
                 systemImageName = newValue
             }
         )
+    }
+
+    private var trimmedName: String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedURLTemplate: String {
+        urlTemplate.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var urlTemplateValidationMessage: String? {
+        OpenActionURLTemplateValidator.validationMessage(for: trimmedURLTemplate)
+    }
+
+    private var shouldShowURLTemplateValidationMessage: Bool {
+        !trimmedURLTemplate.isEmpty && urlTemplateValidationMessage != nil
+    }
+
+    private var canSave: Bool {
+        !trimmedName.isEmpty && urlTemplateValidationMessage == nil
     }
 
     var body: some View {
@@ -278,10 +417,12 @@ struct OpenInItemEditView: View {
                     Text("Give your action a name and choose Symbol to help identify it in the Open In list.")
                 }
 
-                Section("URL template") {
+                Section {
                     TextField("URL with variables", text: $urlTemplate, selection: $urlTemplateSelection, prompt: Text("How?"))
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .keyboardType(.URL)
+                        .textContentType(.URL)
 
                     FlowLayout(spacing: 6) {
                         ForEach(suggestedStrings, id: \.self) { string in
@@ -301,6 +442,14 @@ struct OpenInItemEditView: View {
                             .font(.caption)
                             .buttonStyle(.bordered)
                         }
+                    }
+                } header: {
+                    Text("URL template")
+                } footer: {
+                    if shouldShowURLTemplateValidationMessage,
+                       let urlTemplateValidationMessage {
+                        Text(urlTemplateValidationMessage)
+                            .foregroundStyle(.red)
                     }
                 }
 
@@ -337,20 +486,17 @@ struct OpenInItemEditView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(role: .confirm) {
-                        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-                        let trimmedTemplate = urlTemplate.trimmingCharacters(in: .whitespacesAndNewlines)
-                        guard !trimmedName.isEmpty, !trimmedTemplate.isEmpty else { return }
+                        guard canSave else { return }
 
                         let updated = CustomOpenAction(id: action.id,
                                                        name: trimmedName,
-                                                       urlTemplate: trimmedTemplate,
+                                                       urlTemplate: trimmedURLTemplate,
                                                        mediaTypes: mediaTypes,
                                                        systemImageName: systemImageName.isEmpty ? "arrow.up.forward" : systemImageName)
                         onSave(updated)
                         dismiss()
                     }
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                              urlTemplate.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(!canSave)
                 }
             }
             .onAppear {
@@ -390,6 +536,102 @@ struct OpenInItemEditView: View {
         urlTemplateSelection = TextSelection(insertionPoint: insertedEnd)
     }
 
+}
+
+private enum OpenActionURLTemplateValidator {
+    static func validationMessage(for template: String) -> String? {
+        guard !template.isEmpty else {
+            return "Enter a URL template."
+        }
+
+        guard template.rangeOfCharacter(from: .whitespacesAndNewlines) == nil else {
+            return "URLs cannot contain spaces. Use %20 for fixed spaces."
+        }
+
+        if let placeholderValidationMessage = validatePlaceholders(in: template) {
+            return placeholderValidationMessage
+        }
+
+        let sampleResolvedTemplate = sampleResolvedTemplate(for: template)
+        guard let components = URLComponents(string: sampleResolvedTemplate),
+              let scheme = components.scheme,
+              !scheme.isEmpty else {
+            return "Add a URL scheme like https:// or an app scheme."
+        }
+
+        guard URL(string: sampleResolvedTemplate)?.scheme != nil else {
+            return "Enter a valid URL template."
+        }
+
+        if ["http", "https"].contains(scheme.lowercased()),
+           components.host?.isEmpty ?? true {
+            return "HTTP URLs need a host, like example.com."
+        }
+
+        let hasDestination = components.host?.isEmpty == false ||
+            components.path.isEmpty == false ||
+            components.query?.isEmpty == false
+        guard hasDestination else {
+            return "Add a host or path after the URL scheme."
+        }
+
+        return nil
+    }
+
+    private static func validatePlaceholders(in template: String) -> String? {
+        let validVariableNames = Set(OpenActionVariable.allCases.map(\.rawValue))
+        var index = template.startIndex
+
+        while index < template.endIndex {
+            switch template[index] {
+            case "{":
+                let variableStart = template.index(after: index)
+                guard let closingBraceIndex = template[variableStart...].firstIndex(of: "}") else {
+                    return "Close the variable placeholder with }."
+                }
+
+                let variableName = String(template[variableStart..<closingBraceIndex])
+                guard validVariableNames.contains(variableName) else {
+                    if variableName.isEmpty {
+                        return "Remove the empty variable placeholder."
+                    }
+                    return "Unknown variable {\(variableName)}. Use one of the variable chips."
+                }
+
+                index = template.index(after: closingBraceIndex)
+            case "}":
+                return "Remove the unmatched closing brace."
+            default:
+                index = template.index(after: index)
+            }
+        }
+
+        return nil
+    }
+
+    private static func sampleResolvedTemplate(for template: String) -> String {
+        var resolvedTemplate = template
+        for variable in OpenActionVariable.allCases {
+            resolvedTemplate = resolvedTemplate.replacingOccurrences(of: variable.placeholder,
+                                                                     with: sampleValue(for: variable))
+        }
+        return resolvedTemplate
+    }
+
+    private static func sampleValue(for variable: OpenActionVariable) -> String {
+        switch variable {
+        case .title:
+            return "Sample%20Title"
+        case .showTitle:
+            return "Sample%20Show"
+        case .slug:
+            return "sample-title"
+        case .traktId, .tmdbId, .showTmdbId, .showTraktId, .year, .season, .episode:
+            return "123"
+        case .imdbId, .showImdbId:
+            return "tt1234567"
+        }
+    }
 }
 
 // MARK: - Flow layout for chips

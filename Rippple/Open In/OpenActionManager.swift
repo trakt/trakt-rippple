@@ -16,6 +16,9 @@ final class OpenActionManager {
 
     static let shared = OpenActionManager()
 
+    private let customOpenActionsKey = "OpenAction.custom.actions"
+    private let openActionItemsKey = "OpenAction.items"
+
     private init() { }
 
     func setup() {
@@ -33,15 +36,12 @@ final class OpenActionManager {
         guard let keys = notification.userInfo?[NSUbiquitousKeyValueStoreChangedKeysKey] as? [String] else {
             return
         }
-        for changedKey in keys where changedKey == "OpenAction.custom.actions" {
-            let ubiquitousStore = NSUbiquitousKeyValueStore.default
-            if let data = ubiquitousStore.data(forKey: "OpenAction.custom.actions"),
-               let decoded = try? JSONDecoder().decode([CustomOpenAction].self, from: data) {
-                self.customOpenActions = decoded
-            } else {
-                self.customOpenActions = []
-            }
-            break
+        if keys.contains(customOpenActionsKey) {
+            onCustomOpenActionsChangedTransmitter.broadcast(customOpenActions)
+        }
+
+        if keys.contains(openActionItemsKey) {
+            onBuiltInOpenActionsChangedTransmitter.broadcast(BuiltInOpenAction.allCases)
         }
     }
 
@@ -49,7 +49,7 @@ final class OpenActionManager {
 
     var customOpenActions: [CustomOpenAction] {
         get {
-            guard let data = NSUbiquitousKeyValueStore.default.data(forKey: "OpenAction.custom.actions"),
+            guard let data = NSUbiquitousKeyValueStore.default.data(forKey: customOpenActionsKey),
                   let decoded = try? JSONDecoder().decode([CustomOpenAction].self, from: data) else {
                 return []
             }
@@ -57,7 +57,7 @@ final class OpenActionManager {
         }
         set {
             if let data = try? JSONEncoder().encode(newValue) {
-                NSUbiquitousKeyValueStore.default.set(data, forKey: "OpenAction.custom.actions")
+                NSUbiquitousKeyValueStore.default.set(data, forKey: customOpenActionsKey)
             }
             onCustomOpenActionsChangedTransmitter.broadcast(newValue)
         }
@@ -73,6 +73,108 @@ final class OpenActionManager {
         }
     }
 
+    // MARK: - Ordered actions
+
+    var openActionItems: [OpenActionItem] {
+        get {
+            openActionItems(for: customOpenActions)
+        }
+        set {
+            let normalized = normalizedOpenActionItems(newValue,
+                                                       customActions: customOpenActions,
+                                                       shouldAppendMissingCustomActions: false)
+            if let data = try? JSONEncoder().encode(normalized) {
+                NSUbiquitousKeyValueStore.default.set(data, forKey: openActionItemsKey)
+            }
+            onBuiltInOpenActionsChangedTransmitter.broadcast(BuiltInOpenAction.allCases)
+        }
+    }
+
+    func actions(for media: MediaModel) -> [(action: CustomOpenAction, url: URL)] {
+        guard let mediaType = media.openActionMediaType else { return [] }
+
+        let currentCustomActions = customOpenActions
+        var customActionsByID: [UUID: CustomOpenAction] = [:]
+        for customAction in currentCustomActions where customActionsByID[customAction.id] == nil {
+            customActionsByID[customAction.id] = customAction
+        }
+
+        return openActionItems(for: currentCustomActions).compactMap { item in
+            if let builtInAction = item.builtInAction {
+                return builtInAction.actions(for: media)
+            }
+
+            guard let customActionID = item.customActionID,
+                  let customAction = customActionsByID[customActionID],
+                  customAction.mediaTypes.contains(mediaType),
+                  let url = OpenActionURLResolver.resolve(template: customAction.urlTemplate, for: media) else {
+                return nil
+            }
+
+            return (customAction, url)
+        }
+    }
+
+    private func openActionItems(for customActions: [CustomOpenAction]) -> [OpenActionItem] {
+        guard let storedItems = storedOpenActionItems else {
+            return defaultOpenActionItems(for: customActions)
+        }
+
+        return normalizedOpenActionItems(storedItems,
+                                         customActions: customActions,
+                                         shouldAppendMissingCustomActions: true)
+    }
+
+    private var storedOpenActionItems: [OpenActionItem]? {
+        guard let data = NSUbiquitousKeyValueStore.default.data(forKey: openActionItemsKey),
+              let decoded = try? JSONDecoder().decode([OpenActionItem].self, from: data) else {
+            return nil
+        }
+
+        return decoded
+    }
+
+    private func defaultOpenActionItems(for customActions: [CustomOpenAction]) -> [OpenActionItem] {
+        let builtInItems = BuiltInOpenAction.allCases
+            .filter { $0.enabled }
+            .map(OpenActionItem.init(builtInAction:))
+        let customItems = customActions.map { OpenActionItem(customActionID: $0.id) }
+
+        return builtInItems + customItems
+    }
+
+    private func normalizedOpenActionItems(_ items: [OpenActionItem],
+                                           customActions: [CustomOpenAction],
+                                           shouldAppendMissingCustomActions: Bool) -> [OpenActionItem] {
+        let customActionIDs = Set(customActions.map(\.id))
+        var seenIDs = Set<String>()
+        var normalized: [OpenActionItem] = []
+
+        for item in items {
+            let isValid: Bool
+            switch item.kind {
+            case .builtIn:
+                isValid = item.builtInAction != nil
+            case .custom:
+                isValid = item.customActionID.map { customActionIDs.contains($0) } ?? false
+            }
+
+            guard isValid, seenIDs.insert(item.id).inserted else { continue }
+            normalized.append(item)
+        }
+
+        if shouldAppendMissingCustomActions {
+            for customAction in customActions {
+                let item = OpenActionItem(customActionID: customAction.id)
+                if seenIDs.insert(item.id).inserted {
+                    normalized.append(item)
+                }
+            }
+        }
+
+        return normalized
+    }
+
     // MARK: - Built-in actions
 
     func builtInActions(for media: MediaModel) -> [(action: CustomOpenAction, url: URL)] {
@@ -83,6 +185,40 @@ final class OpenActionManager {
 }
 
 // MARK: - Models
+
+struct OpenActionItem: Codable, Identifiable, Hashable {
+    enum Kind: String, Codable {
+        case builtIn
+        case custom
+    }
+
+    let kind: Kind
+    let rawValue: String
+
+    var id: String {
+        "\(kind.rawValue):\(rawValue)"
+    }
+
+    var builtInAction: BuiltInOpenAction? {
+        guard kind == .builtIn else { return nil }
+        return BuiltInOpenAction(rawValue: rawValue)
+    }
+
+    var customActionID: UUID? {
+        guard kind == .custom else { return nil }
+        return UUID(uuidString: rawValue)
+    }
+
+    init(builtInAction: BuiltInOpenAction) {
+        self.kind = .builtIn
+        self.rawValue = builtInAction.rawValue
+    }
+
+    init(customActionID: UUID) {
+        self.kind = .custom
+        self.rawValue = customActionID.uuidString
+    }
+}
 
 enum BuiltInOpenAction: String, CaseIterable, Identifiable, Hashable {
     case trakt
@@ -326,7 +462,7 @@ enum OpenActionURLResolver {
                 "imdbId": stringValue(movie.identifiers.imdb),
                 "traktId": stringValue(movie.identifiers.trakt),
                 "slug": stringValue(movie.identifiers.slug),
-                "title": movie.officialTitle,
+                "title": urlEscapedString(movie.officialTitle),
                 "year": stringValue(movie.releaseYear)
             ]
         case .show(let show):
@@ -338,7 +474,7 @@ enum OpenActionURLResolver {
                 "imdbId": stringValue(show.identifiers.imdb),
                 "traktId": stringValue(show.identifiers.trakt),
                 "slug": stringValue(show.identifiers.slug),
-                "title": show.officialTitle,
+                "title": urlEscapedString(show.officialTitle),
                 "year": stringValue(show.releaseYear)
             ]
         case .season(let season, let show):
@@ -350,9 +486,9 @@ enum OpenActionURLResolver {
                 "imdbId": firstNonEmptyString(season.identifiers.imdb, show.identifiers.imdb),
                 "traktId": stringValue(season.identifiers.trakt),
                 "slug": firstNonEmptyString(season.identifiers.slug, show.identifiers.slug),
-                "title": "\(show.officialTitle) \(season.localizedSeasonNumber)",
+                "title": urlEscapedString("\(show.officialTitle) \(season.localizedSeasonNumber)"),
                 "season": String(season.number),
-                "showTitle": show.officialTitle
+                "showTitle": urlEscapedString(show.officialTitle)
             ]
         case .episode(let episode, let show):
             return [
@@ -363,15 +499,19 @@ enum OpenActionURLResolver {
                 "imdbId": firstNonEmptyString(episode.identifiers.imdb, show.identifiers.imdb),
                 "traktId": stringValue(episode.identifiers.trakt),
                 "slug": firstNonEmptyString(episode.identifiers.slug, show.identifiers.slug),
-                "title": "\(show.officialTitle) \(episode.localizedEpisodeNumber)",
+                "title": urlEscapedString("\(show.officialTitle) \(episode.localizedEpisodeNumber)"),
                 "year": stringValue(show.releaseYear),
                 "season": String(episode.season),
                 "episode": String(episode.number),
-                "showTitle": show.officialTitle
+                "showTitle": urlEscapedString(show.officialTitle)
             ]
         case .list, .showProgress:
             return [:]
         }
+    }
+
+    private static func urlEscapedString(_ value: String) -> String {
+        value.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? ""
     }
 
     private static func stringValue<T: CustomStringConvertible>(_ value: T?) -> String {

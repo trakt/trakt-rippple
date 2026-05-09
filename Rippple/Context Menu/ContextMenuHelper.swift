@@ -1434,9 +1434,7 @@ class ContextMenuHelper: NSObject {
     }
 
     private func makeOpenInSubmenu(for media: MediaModel) -> UIMenu {
-        let builtIn = OpenActionManager.shared.builtInActions(for: media)
-        let custom = OpenActionManager.shared.customActions(for: media)
-        let entries = builtIn + custom
+        let entries = OpenActionManager.shared.actions(for: media)
 
         let actions: [UIAction] = entries.map { entry in
             UIAction(title: entry.action.name,
