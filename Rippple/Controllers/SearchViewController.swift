@@ -260,6 +260,60 @@ final class SearchViewController: UITableViewController {
         return "\(title) · \(titleElements.joined(separator: " · "))"
     }
 
+    private func recentSearchPath(for service: TraktAPIService?) -> String {
+        if let service = service,
+           case .search(let type, _) = service {
+            return "/search/\(type.rawValue)"
+        }
+
+        return "/search/\(SearchType.moviesAndShow.rawValue)"
+    }
+
+    private func recentSearchPath(for item: TMDbResult) -> String {
+        switch item.mediaType {
+        case "movie":
+            return "/search/\(SearchType.movie.rawValue)"
+        case "tv":
+            return "/search/\(SearchType.show.rawValue)"
+        case "person":
+            return "/search/\(SearchType.person.rawValue)"
+        default:
+            return "/search/\(SearchType.moviesAndShow.rawValue)"
+        }
+    }
+
+    private func saveRecentSearch(title: String, query: String, path: String = "/search/\(SearchType.moviesAndShow.rawValue)") {
+        RecentSearchManager.shared.save(title: title, query: query, path: path)
+    }
+
+    private func saveRecentSearch(config: CellConfig, service: TraktAPIService? = nil) {
+        let query = config.query ?? config.title
+        saveRecentSearch(title: query,
+                         query: query,
+                         path: recentSearchPath(for: service))
+    }
+
+    private func applyRecentSearch(_ recentSearch: RecentSearch) {
+        let query = recentSearch.searchFieldQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard query.isEmpty == false else { return }
+
+        searchController.isActive = true
+        searchController.searchBar.searchTextField.text = query
+        suggestions.removeAll()
+        searchQuery = query
+        RecentSearchManager.shared.recentSearches.insert(recentSearch, at: 0)
+        fetchSuggestions()
+
+        DispatchQueue.main.async {
+            self.searchController.searchBar.becomeFirstResponder()
+            self.tableView.scrollRectToVisible(CGRect(x: 0,
+                                                      y: 0,
+                                                      width: 1,
+                                                      height: 1),
+                                               animated: true)
+        }
+    }
+
     private func updateDatasource() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
 
@@ -810,30 +864,42 @@ final class SearchViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        searchController.searchBar.resignFirstResponder()
-
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
 
         switch item {
         case .smartSearch(let config, let smartSearch):
+            searchController.searchBar.resignFirstResponder()
+            saveRecentSearch(config: config)
             performSegue(withIdentifier: config.segue, sender: smartSearch)
         case .savedFilter(let config, let savedFilter):
+            searchController.searchBar.resignFirstResponder()
+            saveRecentSearch(config: config)
             performSegue(withIdentifier: config.segue, sender: savedFilter)
         case .search(let config, let service):
+            searchController.searchBar.resignFirstResponder()
+            saveRecentSearch(config: config, service: service)
             performSegue(withIdentifier: config.segue, sender: service)
         case .user:
-            fetchUser(with: searchQuery.lowercased())
+            searchController.searchBar.resignFirstResponder()
+            let username = searchQuery.lowercased()
+            saveRecentSearch(title: "@\(username)", query: username)
+            fetchUser(with: username)
             return // don't deselectRow to show loading indicator
         case .suggestion(let config, let tmdbResult):
+            searchController.searchBar.resignFirstResponder()
+            saveRecentSearch(title: config.title,
+                             query: config.title,
+                             path: recentSearchPath(for: tmdbResult))
             if tmdbResult.mediaType == "movie" || tmdbResult.mediaType == "tv" {
                 lookupSuggestion(tmdbResult, fallbackSegue: config.segue)
                 return // don't deselectRow to show loading indicator
             } else {
                 performSegue(withIdentifier: config.segue, sender: tmdbResult)
             }
-        case .recentSearch(let config, let recentSearch):
-            RecentSearchManager.shared.recentSearches.insert(recentSearch, at: 0)
-            performSegue(withIdentifier: config.segue, sender: recentSearch)
+        case .recentSearch(_, let recentSearch):
+            applyRecentSearch(recentSearch)
+            tableView.deselectRow(at: indexPath, animated: true)
+            return
         }
 
         tableView.deselectRow(at: indexPath, animated: true)
@@ -1248,6 +1314,9 @@ extension SearchViewController: UISearchBarDelegate {
         let service: TraktAPIService = .search(type: searchType, query: searchQuery)
 
         searchController.searchBar.resignFirstResponder()
+        saveRecentSearch(title: searchQuery,
+                         query: searchQuery,
+                         path: "/search/\(searchType.rawValue)")
 
         performSegue(withIdentifier: "results", sender: service)
     }
