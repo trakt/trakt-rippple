@@ -726,6 +726,7 @@ final class PosterImageView: UIImageView {
     var scale: CGFloat = 1.0
     var isRounded = false
     var isBlurred = false
+    var transitionDuration: TimeInterval?
 
     var completion: ((Bool) -> Void)?
     var overrideBackgroundColor: UIColor?
@@ -803,6 +804,36 @@ final class PosterImageView: UIImageView {
         backgroundColor = overrideBackgroundColor ?? UIColor.tertiarySystemFill
     }
 
+    private var imageOptions: KingfisherOptionsInfo {
+        var options: KingfisherOptionsInfo = [
+            .processor(filter),
+            .loadDiskFileSynchronously
+        ]
+
+        if let transitionDuration = transitionDuration {
+            options.append(.forceTransition)
+            options.append(.transition(.fade(transitionDuration)))
+        }
+
+        return ImagesManager.shared.options(adding: options)
+    }
+
+    private func setPosterImage(with imageURL: URL, ifCurrent isCurrent: @escaping () -> Bool) {
+        kf.setImage(with: imageURL,
+                    placeholder: nil,
+                    options: imageOptions) { [weak self] result in
+            guard let self = self, isCurrent() else { return }
+
+            switch result {
+            case .success:
+                if let completion = self.completion { completion(true) }
+            case .failure(let error):
+                if error.isTaskCancelled || error.isNotCurrentTask { return }
+                if let completion = self.completion { completion(false) }
+            }
+        }
+    }
+
     private func loadMoviePoster() {
         setup()
 
@@ -817,10 +848,9 @@ final class PosterImageView: UIImageView {
 
         if let imageURL = ImagesManager.shared.cachedMoviePoster(with: movie.identifiers,
                                                                  for: size) {
-            kf.setImage(with: imageURL,
-                        placeholder: nil,
-                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
-            if let completion = completion { completion(true) }
+            setPosterImage(with: imageURL) { [weak self] in
+                movie == self?.movie
+            }
             return
         }
 
@@ -854,11 +884,8 @@ final class PosterImageView: UIImageView {
 
                     DispatchQueue.main.async {
                         if movie != self.movie { return }
-                        self.kf.setImage(with: imageURL,
-                                         placeholder: nil,
-                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)])) { [weak self] _ in
-                            guard let self = self else { return }
-                            if let completion = self.completion { completion(true) }
+                        self.setPosterImage(with: imageURL) { [weak self] in
+                            movie == self?.movie
                         }
                     }
 
@@ -895,10 +922,9 @@ final class PosterImageView: UIImageView {
 
         if let imageURL = ImagesManager.shared.cachedShowPoster(with: show.identifiers,
                                                                 for: size) {
-            kf.setImage(with: imageURL,
-                        placeholder: nil,
-                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
-            if let completion = completion { completion(true) }
+            setPosterImage(with: imageURL) { [weak self] in
+                show == self?.show
+            }
             return
         }
 
@@ -932,11 +958,8 @@ final class PosterImageView: UIImageView {
 
                     DispatchQueue.main.async {
                         if show != self.show { return }
-                        self.kf.setImage(with: imageURL,
-                                         placeholder: nil,
-                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)])) { [weak self] _ in
-                            guard let self = self else { return }
-                            if let completion = self.completion { completion(true) }
+                        self.setPosterImage(with: imageURL) { [weak self] in
+                            show == self?.show
                         }
                     }
 
@@ -974,10 +997,9 @@ final class PosterImageView: UIImageView {
         if let imageURL = ImagesManager.shared.cachedSeasonPoster(with: season.0.identifiers,
                                                                   season: season.1.number,
                                                                   for: size) {
-            kf.setImage(with: imageURL,
-                        placeholder: nil,
-                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
-            if let completion = completion { completion(true) }
+            setPosterImage(with: imageURL) { [weak self] in
+                season.0 == self?.season?.0 && season.1 == self?.season?.1
+            }
             return
         }
 
@@ -1011,11 +1033,8 @@ final class PosterImageView: UIImageView {
 
                     DispatchQueue.main.async {
                         if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
-                        self.kf.setImage(with: imageURL,
-                                         placeholder: nil,
-                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)])) { [weak self] _ in
-                            guard let self = self else { return }
-                            if let completion = self.completion { completion(true) }
+                        self.setPosterImage(with: imageURL) { [weak self] in
+                            season.0 == self?.season?.0 && season.1 == self?.season?.1
                         }
                     }
 

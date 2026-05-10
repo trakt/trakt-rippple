@@ -19,6 +19,7 @@ final class MediaPosterTableViewCell: UITableViewCell {
         didSet {
             previewPosterImageView.scale = 0.5
             blurryPosterImageView.scale = 0.25
+            posterImageView.isUserInteractionEnabled = false
             switch media! {
             case .movie(let movie):
                 previewPosterImageView.movie = movie
@@ -74,6 +75,7 @@ final class MediaPosterTableViewCell: UITableViewCell {
         posterImageView.layer.cornerCurve = .continuous
         posterImageView.layer.masksToBounds = true
         posterImageView.overrideBackgroundColor = UIColor.clear
+        posterImageView.transitionDuration = 0.25
 
         posterImageView.isUserInteractionEnabled = false
         posterImageView.completion = { [weak self] result in
