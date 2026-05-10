@@ -77,10 +77,17 @@ extension GenresBrowseTableViewCell: UICollectionViewDataSource, UICollectionVie
             return
         }
 
+        let filter: SavedFilter
         if service?.path.localizedStandardContains("shows") ?? false {
-            presentingViewController.performSegue(withIdentifier: "browse", sender: items[indexPath.row].showsSavedFilter)
+            filter = items[indexPath.row].showsSavedFilter
         } else {
-            presentingViewController.performSegue(withIdentifier: "browse", sender: items[indexPath.row].moviesSavedFilter)
+            filter = items[indexPath.row].moviesSavedFilter
+        }
+
+        if let browseViewController = presentingViewController as? BrowseViewController {
+            browseViewController.showBrowse(with: filter)
+        } else {
+            presentingViewController.performSegue(withIdentifier: "browse", sender: filter)
         }
     }
 }

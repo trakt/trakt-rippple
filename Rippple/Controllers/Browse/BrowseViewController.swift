@@ -747,6 +747,20 @@ final class BrowseViewController: UITableViewController {
         }
     }
 
+    func showBrowse(with filter: SavedFilter) {
+        let browseViewController = UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(identifier: "standalone browse") as! BrowseViewController
+        browseViewController.model = browseModel(for: filter)
+        show(browseViewController, sender: self)
+    }
+
+    private func browseModel(for filter: SavedFilter) -> String {
+        if filter.query.localizedStandardContains("watchnow") {
+            return BrowseConfigManager.shared.serviceConfiguration(for: filter)
+        } else {
+            return BrowseConfigManager.shared.genreConfiguration(for: filter)
+        }
+    }
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let mediaViewController = segue.destination as? MediaViewController,
            let media = sender as? MediaSegueObject {
@@ -780,11 +794,7 @@ final class BrowseViewController: UITableViewController {
 
         if let browseViewController = segue.destination as? BrowseViewController,
            let filter = sender as? SavedFilter {
-            if filter.query.localizedStandardContains("watchnow") {
-                browseViewController.model = BrowseConfigManager.shared.serviceConfiguration(for: filter)
-            } else {
-                browseViewController.model = BrowseConfigManager.shared.genreConfiguration(for: filter)
-            }
+            browseViewController.model = browseModel(for: filter)
         }
 
         if segue.identifier == "search" {
