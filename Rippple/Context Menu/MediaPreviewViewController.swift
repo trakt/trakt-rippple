@@ -31,6 +31,9 @@ final class MediaPreviewViewController: UIViewController {
         super.viewWillAppear(animated)
 
         tinyPosterImageView.scale = 0.2
+        tinyPosterImageView.overrideBackgroundColor = .clear
+        posterImageView.overrideBackgroundColor = .clear
+        posterImageView.transitionDuration = 0.25
 
         if let movie = media.movie {
             tinyPosterImageView.movie = movie
@@ -67,6 +70,7 @@ final class PeoplePreviewViewController: UIViewController {
         super.viewWillAppear(animated)
 
         tinyAvatarImageView.scale = 0.2
+        avatarImageView.transitionDuration = 0.25
 
         tinyAvatarImageView.person = person
         tinyAvatarImageView.backgroundColor = .clear
@@ -114,6 +118,12 @@ final class EpisodePreviewViewController: UIViewController {
 
         backPreviewBackdropImageView.scale = 0.3
         frontPreviewBackdropImageView.scale = 0.3
+        backPreviewBackdropImageView.overrideBackgroundColor = .clear
+        backBackdropImageView.overrideBackgroundColor = .clear
+        frontPreviewBackdropImageView.overrideBackgroundColor = .clear
+        frontBackdropImageView.overrideBackgroundColor = .clear
+        backBackdropImageView.transitionDuration = 0.25
+        frontBackdropImageView.transitionDuration = 0.25
 
         switch media! {
         case .episode(let episode, let show):

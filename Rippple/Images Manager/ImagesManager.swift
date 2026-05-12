@@ -1159,6 +1159,7 @@ final class BigPeopleProfileImageView: UIImageView {
     private var size: CGSize!
 
     var scale: CGFloat = 1.0
+    var transitionDuration: TimeInterval?
 
     var person: Person? {
         didSet {
@@ -1179,6 +1180,34 @@ final class BigPeopleProfileImageView: UIImageView {
         backgroundColor = UIColor.tertiarySystemFill
     }
 
+    private var imageOptions: KingfisherOptionsInfo {
+        var options: KingfisherOptionsInfo = [
+            .processor(filter),
+            .loadDiskFileSynchronously
+        ]
+
+        if let transitionDuration = transitionDuration {
+            options.append(.forceTransition)
+            options.append(.transition(.fade(transitionDuration)))
+        }
+
+        return ImagesManager.shared.options(adding: options)
+    }
+
+    private func setProfileImage(with imageURL: URL, ifCurrent isCurrent: @escaping () -> Bool) {
+        kf.setImage(with: imageURL,
+                    placeholder: nil,
+                    options: imageOptions) { [weak self] result in
+            guard let self = self, isCurrent() else { return }
+
+            if case .failure(let error) = result,
+               !error.isTaskCancelled,
+               !error.isNotCurrentTask {
+                self.image = nil
+            }
+        }
+    }
+
     private func loadProfileImage() {
         setup()
 
@@ -1189,9 +1218,9 @@ final class BigPeopleProfileImageView: UIImageView {
         guard let tmdbId = person.ids.tmdb else { return }
 
         if let imageURL = ImagesManager.shared.cachedPeopleImage(with: person.ids, for: size) {
-            kf.setImage(with: imageURL,
-                        placeholder: nil,
-                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
+            setProfileImage(with: imageURL) { [weak self] in
+                person.ids == self?.person?.ids
+            }
             return
         }
 
@@ -1223,9 +1252,9 @@ final class BigPeopleProfileImageView: UIImageView {
 
                     DispatchQueue.main.async {
                         if person.ids != self.person?.ids { return }
-                        self.kf.setImage(with: imageURL,
-                                         placeholder: nil,
-                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)]))
+                        self.setProfileImage(with: imageURL) { [weak self] in
+                            person.ids == self?.person?.ids
+                        }
                     }
 
                 } catch {
@@ -1579,6 +1608,7 @@ final class BackdropImageView: UIImageView {
 
     var scale: CGFloat = 1.0
     var isRounded = false
+    var transitionDuration: TimeInterval?
 
     var completion: ((Bool) -> Void)?
     var overrideBackgroundColor: UIColor?
@@ -1629,6 +1659,38 @@ final class BackdropImageView: UIImageView {
         backgroundColor = overrideBackgroundColor ?? UIColor.tertiarySystemFill
     }
 
+    private func imageOptions(defaultTransitionDuration: TimeInterval? = nil) -> KingfisherOptionsInfo {
+        var options: KingfisherOptionsInfo = [
+            .processor(filter),
+            .loadDiskFileSynchronously
+        ]
+
+        if let duration = transitionDuration ?? defaultTransitionDuration {
+            options.append(.forceTransition)
+            options.append(.transition(.fade(duration)))
+        }
+
+        return ImagesManager.shared.options(adding: options)
+    }
+
+    private func setBackdropImage(with imageURL: URL,
+                                  defaultTransitionDuration: TimeInterval? = nil,
+                                  ifCurrent isCurrent: @escaping () -> Bool) {
+        kf.setImage(with: imageURL,
+                    placeholder: nil,
+                    options: imageOptions(defaultTransitionDuration: defaultTransitionDuration)) { [weak self] result in
+            guard let self = self, isCurrent() else { return }
+
+            switch result {
+            case .success:
+                if let completion = self.completion { completion(true) }
+            case .failure(let error):
+                if error.isTaskCancelled || error.isNotCurrentTask { return }
+                if let completion = self.completion { completion(false) }
+            }
+        }
+    }
+
     private func loadMovieBackdrop() {
         setup()
 
@@ -1643,10 +1705,9 @@ final class BackdropImageView: UIImageView {
 
         if let imageURL = ImagesManager.shared.cachedMovieBackdrop(with: movie.identifiers,
                                                                    for: size) {
-            kf.setImage(with: imageURL,
-                        placeholder: nil,
-                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
-            if let completion = completion { completion(true) }
+            setBackdropImage(with: imageURL) { [weak self] in
+                movie == self?.media?.movie
+            }
             return
         }
 
@@ -1680,11 +1741,8 @@ final class BackdropImageView: UIImageView {
 
                     DispatchQueue.main.async {
                         if movie != self.media?.movie { return }
-                        self.kf.setImage(with: imageURL,
-                                         placeholder: nil,
-                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)])) { [weak self] _ in
-                            guard let self = self else { return }
-                            if let completion = self.completion { completion(true) }
+                        self.setBackdropImage(with: imageURL) { [weak self] in
+                            movie == self?.media?.movie
                         }
                     }
 
@@ -1721,10 +1779,9 @@ final class BackdropImageView: UIImageView {
 
         if let imageURL = ImagesManager.shared.cachedShowBackdrop(with: show.identifiers,
                                                                   for: size) {
-            kf.setImage(with: imageURL,
-                        placeholder: nil,
-                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
-            if let completion = completion { completion(true) }
+            setBackdropImage(with: imageURL) { [weak self] in
+                show == self?.media?.show
+            }
             return
         }
 
@@ -1758,10 +1815,9 @@ final class BackdropImageView: UIImageView {
 
                     DispatchQueue.main.async {
                         if show != self.media?.show { return }
-                        self.kf.setImage(with: imageURL,
-                                         placeholder: nil,
-                                         options: ImagesManager.shared.options(adding: [.processor(self.filter)]))
-                        if let completion = self.completion { completion(true) }
+                        self.setBackdropImage(with: imageURL) { [weak self] in
+                            show == self?.media?.show
+                        }
                     }
 
                 } catch {
@@ -1797,10 +1853,10 @@ final class BackdropImageView: UIImageView {
 
         if let imageURL = ImagesManager.shared.cachedEpisodeImage(with: episode.identifiers,
                                                                   for: size) {
-            kf.setImage(with: imageURL,
-                        placeholder: nil,
-                        options: ImagesManager.shared.options(adding: [.processor(filter)]))
-            if let completion = completion { completion(true) }
+            setBackdropImage(with: imageURL,
+                             defaultTransitionDuration: 0.6) { [weak self] in
+                episode == self?.media?.episode
+            }
             return
         }
 
@@ -1830,11 +1886,9 @@ final class BackdropImageView: UIImageView {
 
                     DispatchQueue.main.async {
                         if episode != self.media?.episode { return }
-                        self.kf.setImage(with: imageURL,
-                                         placeholder: nil,
-                                         options: ImagesManager.shared.options(adding: [.processor(self.filter), .transition(.fade(0.6))])) { [weak self] _ in
-                            guard let self = self else { return }
-                            if let completion = self.completion { completion(true) }
+                        self.setBackdropImage(with: imageURL,
+                                              defaultTransitionDuration: 0.6) { [weak self] in
+                            episode == self?.media?.episode
                         }
                     }
 
