@@ -380,6 +380,12 @@ final class PeopleViewController: UITableViewController {
             case let .success(moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
+                    if response.statusCode == 204 {
+                        DispatchQueue.main.async {
+                            self.knownFor = []
+                        }
+                        return
+                    }
 
                     let knownFor = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
 
@@ -410,6 +416,12 @@ final class PeopleViewController: UITableViewController {
                                             case let .success(moyaResponse):
                                                 do {
                                                     let response = try moyaResponse.filterSuccessfulStatusCodes()
+                                                    if response.statusCode == 204 {
+                                                        DispatchQueue.main.async {
+                                                            self.movies = People(cast: [], crew: nil, guestStars: nil)
+                                                        }
+                                                        return
+                                                    }
 
                                                     let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
@@ -440,6 +452,12 @@ final class PeopleViewController: UITableViewController {
                                             case let .success(moyaResponse):
                                                 do {
                                                     let response = try moyaResponse.filterSuccessfulStatusCodes()
+                                                    if response.statusCode == 204 {
+                                                        DispatchQueue.main.async {
+                                                            self.shows = People(cast: [], crew: nil, guestStars: nil)
+                                                        }
+                                                        return
+                                                    }
 
                                                     let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
