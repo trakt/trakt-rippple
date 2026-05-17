@@ -148,7 +148,10 @@ private extension FollowManager {
             case let .success(moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
-                    self.following = try response.map([Follow].self, using: TraktAPIProvider.decoder).reversed().map { $0.user }
+                    let following = try response.map([Follow].self, using: TraktAPIProvider.decoder).reversed().map { $0.user }
+                    DispatchQueue.main.async {
+                        self.following = following
+                    }
                 } catch {
                     print("Following request JSON mapping failed! \(error)")
                 }
@@ -163,7 +166,10 @@ private extension FollowManager {
             case let .success(moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
-                    self.pendingFollowing = try response.map([Follow].self, using: TraktAPIProvider.decoder).reversed().map { $0.user }
+                    let pendingFollowing = try response.map([Follow].self, using: TraktAPIProvider.decoder).reversed().map { $0.user }
+                    DispatchQueue.main.async {
+                        self.pendingFollowing = pendingFollowing
+                    }
                 } catch {
                     print("Pending following request JSON mapping failed! \(error)")
                 }
