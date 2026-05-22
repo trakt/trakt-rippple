@@ -1,18 +1,20 @@
 # Third-Party Notices
 
-This project uses third-party open source components, via both CocoaPods and Swift Package Manager.  
-The lists below are generated from the CocoaPods configuration (`Podfile` / `Podfile.lock`) and the SwiftPM `Package.resolved` in the Xcode workspace.  
-For each dependency, license terms and full copyright notices are available in the linked upstream or package repository.  
-For the exact versions in use, refer to the Xcode project’s dependency settings.  
+This project uses third-party open source components via CocoaPods, Swift Package Manager, and checked-in developer tooling packages.
+The lists below are generated from the CocoaPods configuration (`Podfile` / `Podfile.lock`), the SwiftPM `Package.resolved` files, and `BuildTools/Package.swift`.
+For each dependency, license terms and full copyright notices are available in the linked upstream or package repository.
+For the exact versions in use, refer to the Xcode project’s dependency settings and the relevant `Package.resolved` file.
 If you add, remove, or migrate dependencies, please update this file.
 
 ---
 
-## CocoaPods dependencies
+## Developer tooling
 
-- **SwiftLint** (`SwiftLint`)
-  - **Description**: Tool to enforce Swift style and conventions.
-  - **Source**: https://github.com/realm/SwiftLint
+- **SwiftFormat** (`SwiftFormat`)
+  - **Description**: Tool to format and lint Swift source code.
+  - **Source**: https://github.com/nicklockwood/SwiftFormat
+
+## CocoaPods dependencies
 
 - **Haring** (`Haring`)
   - **Description**: Markdown parsing and rendering library for iOS.

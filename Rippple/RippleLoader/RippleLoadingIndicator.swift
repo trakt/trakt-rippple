@@ -5,17 +5,14 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import NVActivityIndicatorView
 import UIKit
 
-import NVActivityIndicatorView
-
-// swiftlint:disable:next class_delegate_protocol
 protocol NVActivityIndicatorAnimationDelegate {
     func setUpAnimation(in layer: CALayer, size: CGSize, color: UIColor)
 }
 
 class RipppleOriginalLoadingIndicator: NVActivityIndicatorAnimationDelegate {
-
     func setUpAnimation(in layer: CALayer, size: CGSize, color: UIColor) {
         let duration: CFTimeInterval = 1.25
         let beginTime = CACurrentMediaTime()
@@ -45,14 +42,14 @@ class RipppleOriginalLoadingIndicator: NVActivityIndicatorAnimationDelegate {
         animation.isRemovedOnCompletion = false
 
         // Draw balls
-        for index in 0 ..< 3 {
+        for index in 0..<3 {
             let circle = circleLayerWith(size: size, color: color)
             let frame = CGRect(x: (layer.bounds.size.width - size.width) / 2,
                                y: (layer.bounds.size.height - size.height) / 2,
                                width: size.width,
                                height: size.height)
 
-            animation.beginTime = beginTime + (beginTimes[index]*1.5)
+            animation.beginTime = beginTime + (beginTimes[index] * 1.5)
             circle.frame = frame
             circle.opacity = 0
             circle.add(animation, forKey: "animation")
@@ -61,8 +58,8 @@ class RipppleOriginalLoadingIndicator: NVActivityIndicatorAnimationDelegate {
     }
 
     func circleLayerWith(size: CGSize, color: UIColor) -> CALayer {
-        let layer: CAShapeLayer = CAShapeLayer()
-        let path: UIBezierPath = UIBezierPath()
+        let layer = CAShapeLayer()
+        let path = UIBezierPath()
 
         path.addArc(withCenter: CGPoint(x: size.width / 2, y: size.height / 2),
                     radius: size.width / 2,
@@ -80,7 +77,6 @@ class RipppleOriginalLoadingIndicator: NVActivityIndicatorAnimationDelegate {
 }
 
 class RipppleLinesLoadingIndicator: NVActivityIndicatorAnimationDelegate {
-
     func setUpAnimation(in layer: CALayer, size: CGSize, color: UIColor) {
         let duration: CFTimeInterval = 1.25
         let beginTime = CACurrentMediaTime()
@@ -135,8 +131,8 @@ class RipppleLinesLoadingIndicator: NVActivityIndicatorAnimationDelegate {
     }
 
     func ringLayerWith(size: CGSize, color: UIColor, lineWidth: CGFloat) -> CALayer {
-        let layer: CAShapeLayer = CAShapeLayer()
-        let path: UIBezierPath = UIBezierPath()
+        let layer = CAShapeLayer()
+        let path = UIBezierPath()
 
         path.addArc(withCenter: CGPoint(x: size.width / 2, y: size.height / 2),
                     radius: size.width / 2,
@@ -155,9 +151,8 @@ class RipppleLinesLoadingIndicator: NVActivityIndicatorAnimationDelegate {
     }
 }
 
-extension NVActivityIndicatorView {
-
-    public override func tintColorDidChange() {
+public extension NVActivityIndicatorView {
+    override func tintColorDidChange() {
         let animation = RipppleOriginalLoadingIndicator()
         var animationRect = frame.inset(by: UIEdgeInsets(top: padding, left: padding, bottom: padding, right: padding))
         let minEdge = min(animationRect.width, animationRect.height)
@@ -168,7 +163,7 @@ extension NVActivityIndicatorView {
         animation.setUpAnimation(in: layer, size: animationRect.size, color: color)
     }
 
-    public override func didMoveToSuperview() {
+    override func didMoveToSuperview() {
         guard superview != nil else { return }
 
         let animation = RipppleOriginalLoadingIndicator()

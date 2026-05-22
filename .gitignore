@@ -21,6 +21,8 @@ playground.xcworkspace
 # Swift Package Manager (inside this repo)
 .build/
 .swiftpm/
+BuildTools/.build/
+BuildTools/.swiftpm/
 
 # CocoaPods
 Pods/

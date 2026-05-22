@@ -1,0 +1,15 @@
+--min-version 0.61.1
+--swift-version 5.0
+
+--exclude Pods,BuildTools/.build,BuildTools/.swiftpm,build,Rippple/Secrets.swift
+
+--binary-grouping none
+--decimal-grouping none
+--hex-grouping none
+--ifdef no-indent
+--no-space-operators ...,..<
+--octal-grouping none
+--pattern-let inline
+--strip-unused-args closure-only
+--trailing-commas never
+--wrap-parameters after-first

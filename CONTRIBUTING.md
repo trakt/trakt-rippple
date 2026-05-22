@@ -47,7 +47,7 @@ Use **Issues** for bugs (with steps to reproduce) and for well-defined feature r
 
 - **Xcode**: Use the latest stable Xcode that supports the project’s minimum iOS version.
 - **Swift**: Follow the project’s existing style.
-- **SwiftLint**: The project uses [SwiftLint](https://github.com/realm/SwiftLint), which runs as an Xcode build phase. You normally don’t need to run it manually, but builds must pass without new SwiftLint violations. Rules are in [`.swiftlint.yml`](.swiftlint.yml).
+- **SwiftFormat**: The project uses [SwiftFormat](https://github.com/nicklockwood/SwiftFormat), pinned in [`BuildTools/Package.swift`](BuildTools/Package.swift). Xcode runs it as a lenient lint build phase against changed Swift files, so formatting issues appear as local warnings without rewriting files or blocking your run. The build phase skips with a warning if the pinned tool has not been built yet; run `Scripts/swiftformat.sh --lint --changed` once to prepare it. Use `Scripts/swiftformat.sh --format` to apply formatting to changed files, `Scripts/swiftformat.sh --format --all` for the whole codebase, or `Scripts/swiftformat.sh --lint --strict --changed` to enforce your current changes before opening a PR.
 - **Dependencies**: Do not add new dependencies without discussion, and keep the dependency set minimal.
 - **Tests**: The project has no tests. The approach is to keep the code simple and easy to understand and maintain. It should remain that way.
 

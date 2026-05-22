@@ -2666,6 +2666,7 @@
 				446431FD91F095F90D3214F6 /* [CP] Check Pods Manifest.lock */,
 				3A6908432A3AFD8F00501A19 /* Run Script (version) */,
 				3AFD13AD2F6F2B4C00D1E2F6 /* Run Script (Secrets Check) */,
+				09B1F33A2FBD123400A1B2C3 /* Run Script (SwiftFormat) */,
 				3A9119C01FADC7EB00457D28 /* Sources */,
 				3A9119C11FADC7EB00457D28 /* Frameworks */,
 				3A9119C21FADC7EB00457D28 /* Resources */,
@@ -2959,6 +2960,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "SECRETS_FILE=\"${SRCROOT}/Rippple/Secrets.swift\"\n\nif [ ! -f \"$SECRETS_FILE\" ]; then\n  echo \"error: Missing Secrets.swift file. Copy Secrets-Template.swift to Secrets.swift, fill in the required values, and include the file in all needed targets.\" >&2\n  exit 1\nfi\n\nFILTERED=$(grep -v '^[[:space:]]*//' \"$SECRETS_FILE\")\nif echo \"$FILTERED\" | grep -q '<#'; then\n  echo \"error: Secrets.swift contains template placeholders. Fill in all the required values.\" >&2\n  exit 1\nfi\n\nif echo \"$FILTERED\" | grep -E -q '=[[:space:]]*\"\"'; then\n  echo \"error: Secrets.swift contains empty string values. Fill in all the required values.\" >&2\n  exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		09B1F33A2FBD123400A1B2C3 /* Run Script (SwiftFormat) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/.swiftformat",
+				"${SRCROOT}/BuildTools/Package.swift",
+				"${SRCROOT}/Scripts/swiftformat.sh",
+			);
+			name = "Run Script (SwiftFormat)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Scripts/swiftformat.sh\" --lint --changed --xcode-build-phase\n";
 			showEnvVarsInLog = 0;
 		};
 		446431FD91F095F90D3214F6 /* [CP] Check Pods Manifest.lock */ = {
