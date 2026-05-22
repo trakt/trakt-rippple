@@ -79,7 +79,11 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
     fileprivate var mainWindow: UIWindow?
 
     fileprivate var confettiWindow: UIWindow? {
-        return UIApplication.shared.connectedScenes.first { $0.activationState == .foregroundActive }.map { $0 as? UIWindowScene }.map { $0?.windows.first } ?? UIApplication.shared.delegate?.window ?? nil
+        return UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }?
+            .windows
+            .first ?? mainWindow
     }
 
     fileprivate var currentUserInterfaceStyle: UIUserInterfaceStyle? {
