@@ -177,7 +177,6 @@
 		3A541CF72A61334000E1A153 /* HistoryBrowseCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A541CF62A61334000E1A153 /* HistoryBrowseCollectionViewCell.swift */; };
 		3A541CF92A61334C00E1A153 /* HistoryBrowseCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A541CF82A61334C00E1A153 /* HistoryBrowseCollectionViewCell.xib */; };
 		3A588DD025CD3E4A008A2896 /* CountryWhereToWatchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A588DCF25CD3E4A008A2896 /* CountryWhereToWatchTableViewController.swift */; };
-		3A59D98721D63D1A00305819 /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 3A59D98621D63D1900305819 /* .swiftlint.yml */; };
 		3A59D98A21DA2A1A00305819 /* TmdbAPIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A59D98921DA2A1A00305819 /* TmdbAPIProvider.swift */; };
 		3A59D98C21DA2A2700305819 /* TmdbAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A59D98B21DA2A2700305819 /* TmdbAPIService.swift */; };
 		3A59D98E21DA2A3800305819 /* TmdbAPIService+Sample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A59D98D21DA2A3800305819 /* TmdbAPIService+Sample.swift */; };
@@ -716,7 +715,6 @@
 		3A5869C32892A6870005A5D6 /* LiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
 		3A588DCF25CD3E4A008A2896 /* CountryWhereToWatchTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryWhereToWatchTableViewController.swift; sourceTree = "<group>"; };
 		3A5938CA28B24E07007D5F46 /* ActivityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ActivityKit.framework; path = System/Library/Frameworks/ActivityKit.framework; sourceTree = SDKROOT; };
-		3A59D98621D63D1900305819 /* .swiftlint.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .swiftlint.yml; sourceTree = SOURCE_ROOT; };
 		3A59D98921DA2A1A00305819 /* TmdbAPIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TmdbAPIProvider.swift; sourceTree = "<group>"; };
 		3A59D98B21DA2A2700305819 /* TmdbAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TmdbAPIService.swift; sourceTree = "<group>"; };
 		3A59D98D21DA2A3800305819 /* TmdbAPIService+Sample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TmdbAPIService+Sample.swift"; sourceTree = "<group>"; };
@@ -2052,7 +2050,6 @@
 				3A9119D31FADC7EB00457D28 /* Info.plist */,
 				3A65AC1A2019E10900FF24A8 /* Rippple.entitlements */,
 				3A77A85629FC193B0006177D /* RipppleDebug.entitlements */,
-				3A59D98621D63D1900305819 /* .swiftlint.yml */,
 				3A68078624D437DA00EBF3F6 /* Configuration.storekit */,
 				3AE3FB262BB465FB0017CA13 /* PrivacyInfo.xcprivacy */,
 				3A4342822BDF945400FD85FE /* Notifications */,
@@ -2641,8 +2638,6 @@
 			dependencies = (
 			);
 			name = NotificationService;
-			packageProductDependencies = (
-			);
 			productName = NotificationService;
 			productReference = 3A77A84929FC18050006177D /* NotificationService.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -2660,8 +2655,6 @@
 			dependencies = (
 			);
 			name = WidgetExtension;
-			packageProductDependencies = (
-			);
 			productName = SingleWidgetExtension;
 			productReference = 3A903139287B032600FA27D4 /* WidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -2672,7 +2665,6 @@
 			buildPhases = (
 				446431FD91F095F90D3214F6 /* [CP] Check Pods Manifest.lock */,
 				3A6908432A3AFD8F00501A19 /* Run Script (version) */,
-				3A59D98321D62AF800305819 /* Run Script (SwiftLint) */,
 				3AFD13AD2F6F2B4C00D1E2F6 /* Run Script (Secrets Check) */,
 				3A9119C01FADC7EB00457D28 /* Sources */,
 				3A9119C11FADC7EB00457D28 /* Frameworks */,
@@ -2689,8 +2681,6 @@
 				3A77A84F29FC18050006177D /* PBXTargetDependency */,
 			);
 			name = Rippple;
-			packageProductDependencies = (
-			);
 			productName = Ripple;
 			productReference = 3A9119C41FADC7EB00457D28 /* Rippple.app */;
 			productType = "com.apple.product-type.application";
@@ -2708,8 +2698,6 @@
 			dependencies = (
 			);
 			name = WidgetIntent;
-			packageProductDependencies = (
-			);
 			productName = WidgetIntent;
 			productReference = 3AD15CE0287C245A00FD0B2F /* WidgetIntent.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -2823,7 +2811,6 @@
 				3A77899A220EEA9B005CC195 /* Actions.storyboard in Resources */,
 				3A7B6DB02345332D0014A0D8 /* PeopleInfoTableViewCell.xib in Resources */,
 				3A9119CF1FADC7EB00457D28 /* Assets.xcassets in Resources */,
-				3A59D98721D63D1A00305819 /* .swiftlint.yml in Resources */,
 				3A44BF3E1FD2C5AB0026AADE /* Initial.storyboard in Resources */,
 				3A93BC9E251E16B70097EBC8 /* StatsTableViewCell.xib in Resources */,
 				0996F33C2F68133000BE58C7 /* OpenActionsTableViewCell.xib in Resources */,
@@ -2934,26 +2921,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		3A59D98321D62AF800305819 /* Run Script (SwiftLint) */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script (SwiftLint)";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if which \"${PODS_ROOT}/SwiftLint/swiftlint\" >/dev/null;\nthen\n    \"${PODS_ROOT}/SwiftLint/swiftlint\" --fix && \"${PODS_ROOT}/SwiftLint/swiftlint\"\nelse\n    echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
-			showEnvVarsInLog = 0;
-		};
 		3A6908432A3AFD8F00501A19 /* Run Script (version) */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;

@@ -14,8 +14,6 @@ post_install do |installer|
 end
 
 target 'Rippple' do
-
-    pod 'SwiftLint'
     
     pod 'Haring', :git => 'https://github.com/kevincador/Haring.git'
     
