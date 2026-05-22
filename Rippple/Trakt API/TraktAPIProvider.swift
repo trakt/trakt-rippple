@@ -76,7 +76,7 @@ final class TraktAPIProvider {
     }
 
     private static func setupJSONDecoder() -> JSONDecoder {
-        let decoder = JSONDecoder()
+        let decoder = TraktJSONDecoder()
         decoder.dateDecodingStrategy = .custom { decoder -> Date in
             let container = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)
@@ -92,6 +92,67 @@ final class TraktAPIProvider {
                                                    debugDescription: "Cannot decode date string \(dateString)")
         }
         return decoder
+    }
+}
+
+private final class TraktJSONDecoder: JSONDecoder, @unchecked Sendable {
+    override func decode<T>(_ type: T.Type, from data: Data) throws -> T where T: Decodable {
+        if type == [Comment].self {
+            return try super.decode(LossyCommentArray<Comment>.self, from: data).elements as! T
+        }
+
+        if type == [CommentItem].self {
+            return try super.decode(LossyCommentArray<CommentItem>.self, from: data).elements as! T
+        }
+
+        return try super.decode(type, from: data)
+    }
+}
+
+private struct LossyCommentArray<Element: Decodable>: Decodable {
+    let elements: [Element]
+
+    init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        var elements = [Element]()
+
+        while container.isAtEnd == false {
+            let decodedElement = try container.decode(LossyDecodableElement<Element>.self)
+            if let element = decodedElement.value {
+                elements.append(element)
+            } else if let error = decodedElement.error, Self.shouldSkip(error) == false {
+                throw error
+            }
+        }
+
+        self.elements = elements
+    }
+
+    private static func shouldSkip(_ error: Error) -> Bool {
+        switch error {
+        case DecodingError.keyNotFound(let key, _):
+            return key.stringValue == "comment"
+        case DecodingError.valueNotFound(_, let context),
+             DecodingError.typeMismatch(_, let context):
+            return context.codingPath.last?.stringValue == "comment"
+        default:
+            return false
+        }
+    }
+}
+
+private struct LossyDecodableElement<Element: Decodable>: Decodable {
+    let value: Element?
+    let error: Error?
+
+    init(from decoder: Decoder) {
+        do {
+            value = try Element(from: decoder)
+            error = nil
+        } catch {
+            value = nil
+            self.error = error
+        }
     }
 }
 

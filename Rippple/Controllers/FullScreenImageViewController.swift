@@ -18,6 +18,12 @@ final class FullScreenImageViewController: UIViewController {
     var images: [ImageItem] = []
     var currentIndex: Int = 0
     var imageURLProvider: ((ImageItem, CGSize) -> URL?)?
+    var previewImageProvider: ((ImageItem) -> UIImage?)?
+
+    var currentImageItem: ImageItem? {
+        guard images.indices.contains(currentIndex) else { return nil }
+        return images[currentIndex]
+    }
 
     // MARK: - Private Properties
 
@@ -42,6 +48,7 @@ final class FullScreenImageViewController: UIViewController {
         static let buttonHorizontalPadding: CGFloat = 16.0
         static let pageControlBottomPadding: CGFloat = 20.0
         static let animationDuration: TimeInterval = 0.2
+        static let imageFadeDuration: TimeInterval = 0.25
         static let minimumZoomScale: CGFloat = 1.0
         static let maximumZoomScale: CGFloat = 4.0
         static let shadowOffset = CGSize(width: 0, height: 2)
@@ -75,9 +82,11 @@ final class FullScreenImageViewController: UIViewController {
         }
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        cleanup()
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if isBeingDismissed {
+            cleanup()
+        }
     }
 
     deinit {
@@ -309,8 +318,11 @@ final class FullScreenImageViewController: UIViewController {
             zoomScrollView.bottomAnchor.constraint(equalTo: placeholderView.bottomAnchor)
         ])
 
+        let previewImage = previewImageProvider?(imageItem)
         if let url = imageURLProvider?(imageItem, imageSize) {
-            zoomScrollView.loadImage(url: url, isLogo: imageItem.type == .logo)
+            zoomScrollView.loadImage(url: url, isLogo: imageItem.type == .logo, previewImage: previewImage)
+        } else if let previewImage {
+            zoomScrollView.displayPreviewImage(previewImage, isLogo: imageItem.type == .logo)
         }
     }
 
@@ -375,6 +387,49 @@ final class FullScreenImageViewController: UIViewController {
         guard let image = getCurrentImage() else { return }
         let activityViewController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
         UIApplication.shared.present(activityViewController)
+    }
+
+    // MARK: - Zoom Transition
+
+    func shouldBeginInteractiveDismiss(location: CGPoint, velocity: CGVector, willBegin: Bool) -> Bool {
+        guard let currentView = loadedViews[currentIndex],
+              currentView.zoomScale <= currentView.minimumZoomScale + 0.01 else {
+            return false
+        }
+
+        let isDraggingDown = velocity.dy > 0
+        let isMostlyVertical = abs(velocity.dy) > abs(velocity.dx)
+        return willBegin || (isDraggingDown && isMostlyVertical)
+    }
+
+    func zoomTransitionAlignmentRect() -> CGRect? {
+        view.layoutIfNeeded()
+
+        guard let currentView = loadedViews[currentIndex] else {
+            return view.bounds
+        }
+
+        guard let image = currentView.imageView.image else {
+            return currentView.imageView.convert(currentView.imageView.bounds, to: view)
+        }
+
+        let imageRect = aspectFitRect(for: image.size, in: currentView.imageView.bounds)
+        return currentView.imageView.convert(imageRect, to: view)
+    }
+
+    private func aspectFitRect(for imageSize: CGSize, in bounds: CGRect) -> CGRect {
+        guard imageSize.width > 0, imageSize.height > 0,
+              bounds.width > 0, bounds.height > 0 else {
+            return bounds
+        }
+
+        let scale = min(bounds.width / imageSize.width, bounds.height / imageSize.height)
+        let size = CGSize(width: imageSize.width * scale, height: imageSize.height * scale)
+        let origin = CGPoint(
+            x: bounds.midX - size.width / 2.0,
+            y: bounds.midY - size.height / 2.0
+        )
+        return CGRect(origin: origin, size: size)
     }
 
     // MARK: - Cleanup
@@ -464,7 +519,32 @@ final class ZoomableScrollView: UIScrollView {
         addGestureRecognizer(doubleTap)
     }
 
-    func loadImage(url: URL, isLogo: Bool = false) {
+    func loadImage(url: URL, isLogo: Bool = false, previewImage: UIImage? = nil) {
+        configureAppearance(isLogo: isLogo)
+
+        imageView.kf.cancelDownloadTask()
+        imageView.image = previewImage
+        imageView.alpha = previewImage == nil ? 0.0 : 1.0
+
+        let options: KingfisherOptionsInfo = previewImage == nil ? [] : [
+            .forceTransition,
+            .transition(.fade(FullScreenImageViewController.Constants.imageFadeDuration))
+        ]
+        imageView.kf.setImage(with: url, placeholder: previewImage, options: options) { [weak self] result in
+            guard previewImage == nil,
+                  case .success = result else { return }
+            self?.fadeImageIn()
+        }
+    }
+
+    func displayPreviewImage(_ image: UIImage, isLogo: Bool = false) {
+        configureAppearance(isLogo: isLogo)
+        imageView.kf.cancelDownloadTask()
+        imageView.image = image
+        imageView.alpha = 1.0
+    }
+
+    private func configureAppearance(isLogo: Bool) {
         if isLogo {
             imageView.backgroundColor = .clear
             backgroundColor = .secondarySystemBackground
@@ -478,13 +558,23 @@ final class ZoomableScrollView: UIScrollView {
             imageView.layer.shadowOpacity = 0
             imageView.layer.masksToBounds = true
         }
+    }
 
-        imageView.kf.setImage(with: url, placeholder: nil)
+    private func fadeImageIn() {
+        imageView.alpha = 0.0
+        UIView.animate(
+            withDuration: FullScreenImageViewController.Constants.imageFadeDuration,
+            delay: 0,
+            options: [.curveEaseIn, .allowUserInteraction, .beginFromCurrentState]
+        ) {
+            self.imageView.alpha = 1.0
+        }
     }
 
     func clearImage() {
         imageView.kf.cancelDownloadTask()
         imageView.image = nil
+        imageView.alpha = 1.0
         imageView.layer.shadowOpacity = 0
         resetZoom()
     }

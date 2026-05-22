@@ -116,11 +116,6 @@ final class WatchlistViewController: UITableViewController {
                 navigationItem.title = "\(user.username)'s Watchlist"
             }
 
-            if let button = filterButtonItem.customView as? UIButton {
-                button.setImage(filterButtonItem.image?.withConfiguration(UIImage.SymbolConfiguration(scale: .large)),
-                                for: .normal)
-            }
-
             searchController.searchBar.placeholder = "Search \(navigationItem.title ?? "")"
         }
     }
@@ -150,13 +145,40 @@ final class WatchlistViewController: UITableViewController {
     }
 
     private func configureFloatingButton() {
-        navigationItem.rightBarButtonItems = [UIBarButtonItem(image: UIImage(systemName: "rectangle.grid.3x2"),
-                                                              primaryAction: UIAction { [weak self] _ in
+        if user.isCurrentUser {
+            navigationItem.rightBarButtonItems = [UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu()),
+                                                  .fixedSpace(),
+                                                  filterButtonItem]
+        } else {
+            navigationItem.rightBarButtonItems = [UIBarButtonItem(image: UIImage(systemName: "rectangle.grid.3x2"),
+                                                                  primaryAction: UIAction { [weak self] _ in
+                guard let self = self else { return }
+                self.performSegue(withIdentifier: "grid", sender: nil)
+            }),
+                                                  .fixedSpace(),
+                                                  filterButtonItem]
+        }
+    }
+
+    private func menu() -> UIMenu {
+        let browseAsGrid = UIAction(title: "Show in Grid",
+                                    image: UIImage(systemName: "rectangle.grid.3x2")) { [weak self] _ in
             guard let self = self else { return }
             self.performSegue(withIdentifier: "grid", sender: nil)
-         }),
-                                              .fixedSpace(),
-                                              filterButtonItem]
+        }
+        let reorder = UIAction(title: "Reorder Items",
+                               image: UIImage(systemName: "arrow.up.arrow.down")) { [weak self] _ in
+            guard let self = self else { return }
+            let listReorderingViewController = ListReorderingViewController(destination: .watchlist,
+                                                                            items: watchlistItems ?? []) { [weak self] in
+                self?.fetch()
+            }
+            let navigation = UINavigationController(rootViewController: listReorderingViewController)
+            navigation.modalPresentationStyle = .pageSheet
+            present(navigation, animated: true)
+        }
+
+        return UIMenu(children: [UIMenu(options: .displayInline, children: [reorder]), UIMenu(options: .displayInline, children: [browseAsGrid])])
     }
 
     private enum Section: Hashable {
@@ -409,19 +431,8 @@ final class WatchlistViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
-        #if targetEnvironment(macCatalyst)
-        let filterButton = UIButton()
-        filterButton.setImage(filterButtonItem.image?.withConfiguration(UIImage.SymbolConfiguration(scale: .large)),
-                              for: .normal)
-        filterButton.tintColor = .gray
-        filterButton.showsMenuAsPrimaryAction = true
-        filterButton.menu = filterMenu()
-        filterButtonItem.customView = filterButton
-        filterButton.sizeToFit()
-        #else
         filterButtonItem.primaryAction = nil
         filterButtonItem.menu = filterMenu()
-        #endif
 
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false

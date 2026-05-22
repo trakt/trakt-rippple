@@ -192,6 +192,7 @@ final class MediaViewController: UITableViewController {
         snapshot.appendItems([.openIn])
 
         if let officialList = officialList {
+            snapshot.appendItems([.spacer(1.0)])
             snapshot.appendItems([.collection(officialList)])
         }
 

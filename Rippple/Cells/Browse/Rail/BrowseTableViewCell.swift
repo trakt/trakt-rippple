@@ -23,6 +23,14 @@ class BrowseTableViewCell: UITableViewCell {
         }
     }
 
+    var actionButtonStyle: ShelfBrowseActionButtonStyle = .none {
+        didSet {
+            if actionButtonStyle != oldValue {
+                collectionView?.reloadData()
+            }
+        }
+    }
+
     private var task: Task<Void, Error>? {
         willSet {
             task?.cancel()
@@ -33,7 +41,7 @@ class BrowseTableViewCell: UITableViewCell {
         task?.cancel()
     }
 
-    var notes: [String]?
+    var notes: [String?]?
     private var items: [MediaModel]? {
         didSet {
             DispatchQueue.main.async {
@@ -46,12 +54,35 @@ class BrowseTableViewCell: UITableViewCell {
     private let disposeBag = DisposeBag()
 
     private let contextMenu = ContextMenuHelper()
+    private var didConfigureCollectionView = false
+
+    private func note(at indexPath: IndexPath) -> String? {
+        guard let notes = notes, notes.indices.contains(indexPath.row) else { return nil }
+        return notes[indexPath.row]
+    }
+
+    private func media(at indexPath: IndexPath) -> MediaModel? {
+        guard let items = items, items.indices.contains(indexPath.row) else { return nil }
+        return items[indexPath.row]
+    }
 
     override func awakeFromNib() {
         super.awakeFromNib()
 
+        configureCollectionViewIfNeeded()
+    }
+
+    func configureCollectionViewIfNeeded() {
+        guard !didConfigureCollectionView, collectionView != nil else { return }
+        didConfigureCollectionView = true
+
         collectionView?.allowsFocus = false
+        collectionView?.delegate = self
+        collectionView?.dataSource = self
         collectionView?.dragDelegate = self
+
+        backgroundColor = .clear
+        collectionView.backgroundColor = .clear
 
         if reuseIdentifier == "C1" {
             collectionView.collectionViewLayout = carouselBannerSection()
@@ -62,6 +93,8 @@ class BrowseTableViewCell: UITableViewCell {
             collectionView.collectionViewLayout = LSection()
         } else if reuseIdentifier == "G1" {
             collectionView.collectionViewLayout = GSection()
+        } else if reuseIdentifier == "List" {
+            collectionView.collectionViewLayout = listSection()
         }
 
         collectionView?.dragInteractionEnabled = UserDefaults.standard.bool(forKey: "GeneralSettings.dragging")
@@ -78,6 +111,7 @@ class BrowseTableViewCell: UITableViewCell {
         collectionView.register(UINib(nibName: "StandardHistoryBrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "History")
         collectionView.register(UINib(nibName: "L2BrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "cell with notes")
         collectionView.register(UINib(nibName: "G1BrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "G1")
+        collectionView.register(ListBrowseCollectionViewCell.self, forCellWithReuseIdentifier: "List")
 
         if let pageControl = pageControl {
             pageControl.numberOfPages = items?.count ?? 0
@@ -170,6 +204,8 @@ class BrowseTableViewCell: UITableViewCell {
     }
 
     private func fetchItems() {
+        notes = nil
+
         if reuseIdentifier == "History" {
             fetchHistory()
             return
@@ -209,27 +245,13 @@ class BrowseTableViewCell: UITableViewCell {
             items = PinnedMoviesManager.shared.pinnedMovies.compactMap { $0.mediaModel }
             return
         }
-        if filter.path == "/users/me/watched/movies" {
-            items = WatchedManager.shared.watchedMoviesMediaModels
-            return
-        }
-        if filter.path == "/users/me/watched/shows" {
-            items = WatchedManager.shared.watchedShowsMediaModels
-            return
-        }
-
         task = Task {
             var items: [MediaModel]?
-            if filter.path == "/all/trending" {
-                items = try await self.fetchAllTrending(filter: filter).compactMap { MediaModel(item: $0) }
-                if Task.isCancelled { return }
-                self.notes = nil
-                self.items = items
-            } else if filter.path.localizedStandardContains("27798283") || filter.path.localizedStandardContains("27798281") || filter.path.localizedStandardContains("27798291") || filter.path.localizedStandardContains("27798288") || filter.path.localizedStandardContains("27798292") {
+            if filter.path.localizedStandardContains("27798283") || filter.path.localizedStandardContains("27798281") || filter.path.localizedStandardContains("27798291") || filter.path.localizedStandardContains("27798288") || filter.path.localizedStandardContains("27798292") {
                 let mediaItems = try await self.fetch(filter: filter)
                 items = mediaItems.compactMap { MediaModel(item: $0) }
                 if Task.isCancelled { return }
-                self.notes = mediaItems.compactMap { $0.notes }
+                self.notes = mediaItems.map { $0.notes }
                 self.items = items
             } else {
                 items = try await self.fetch(filter: filter).compactMap { MediaModel(item: $0) }
@@ -268,6 +290,7 @@ class BrowseTableViewCell: UITableViewCell {
     }
 
     private func fetch(filter: SavedFilter) async throws -> [MediaItem] {
+        let filter = filter.normalized
         let result: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.savedFilter(section: filter.section,
                                                            path: filter.path,
@@ -293,7 +316,7 @@ class BrowseTableViewCell: UITableViewCell {
                             let items = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else if filter.section == "WatchedItem" {
-                            let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder).sorted { $0.lastWatchedAt > $1.lastWatchedAt }.map { MediaItem(movie: $0.movie, show: $0.show, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
+                            let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0.movie, show: $0.show, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else {
                             let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in
@@ -310,57 +333,6 @@ class BrowseTableViewCell: UITableViewCell {
             }
         }
         return result
-    }
-
-    private func fetchAllTrending(filter: SavedFilter) async throws -> [MediaItem] {
-        let movies: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
-            TraktAPIProvider.provider.request(.savedFilter(section: "movies",
-                                                           path: "/movies/trending",
-                                                           query: "",
-                                                           pageInfo: PageInfo.firstPage(with: 15)),
-                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
-
-                switch result {
-                case let .success(moyaResponse):
-                    do {
-                        let response = try moyaResponse.filterSuccessfulStatusCodes()
-                        let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in
-                            media.movie != nil || media.season != nil || media.episode != nil || media.show != nil
-                        })
-                        continuation.resume(returning: items)
-                    } catch {
-                        continuation.resume(throwing: error)
-                    }
-                case let .failure(error):
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
-        let shows: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
-            TraktAPIProvider.provider.request(.savedFilter(section: "shows",
-                                                           path: "/shows/trending",
-                                                           query: "",
-                                                           pageInfo: PageInfo.firstPage(with: 15)),
-                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
-
-                switch result {
-                case let .success(moyaResponse):
-                    do {
-                        let response = try moyaResponse.filterSuccessfulStatusCodes()
-                        let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in
-                            media.movie != nil || media.season != nil || media.episode != nil || media.show != nil
-                        })
-                        continuation.resume(returning: items)
-                    } catch {
-                        continuation.resume(throwing: error)
-                    }
-                case let .failure(error):
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
-        let items = Array(zip(shows, movies).flatMap { [$0, $1] })
-        return items
     }
 
     override func didMoveToSuperview() {
@@ -485,9 +457,44 @@ class BrowseTableViewCell: UITableViewCell {
         return layout
     }
 
+    private func listSection() -> UICollectionViewLayout {
+        let layout = UICollectionViewCompositionalLayout { _, environment in
+            let width = environment.container.effectiveContentSize.width
+            let isCompact = environment.traitCollection.horizontalSizeClass == .compact
+            let groupWidth: CGFloat
+
+            if isCompact {
+                groupWidth = max(280, width - 64)
+            } else {
+                let twoColumnWidth = floor((width - 56) / 2)
+                groupWidth = min(430, max(340, twoColumnWidth))
+            }
+
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
+                                                  heightDimension: .fractionalHeight(1.0 / 3.0))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+
+            let groupSize = NSCollectionLayoutSize(widthDimension: .absolute(groupWidth),
+                                                   heightDimension: .fractionalHeight(1))
+            let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize,
+                                                         repeatingSubitem: item,
+                                                         count: 3)
+
+            let section = NSCollectionLayoutSection(group: group)
+            section.orthogonalScrollingBehavior = isCompact ? .groupPaging : .continuous
+            section.interGroupSpacing = isCompact ? 16 : 32
+            section.contentInsets = .init(top: 0, leading: 12, bottom: 0, trailing: 12)
+
+            return section
+        }
+
+        return layout
+    }
+
     override func prepareForReuse() {
         super.prepareForReuse()
 
+        notes = nil
         items = nil
 
         task?.cancel()
@@ -617,6 +624,17 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
             })
         }
 
+        if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
+            contextMenu.cell = cell
+            contextMenu.controller = presentingViewController
+
+            return UIContextMenuConfiguration(identifier: nil, previewProvider: {
+                return self.contextMenu.previewViewController
+            }, actionProvider: { _ in
+                return self.contextMenu.menu
+            })
+        }
+
         return nil
     }
 
@@ -655,7 +673,7 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
-        guard indexPath.row < items?.count ?? 0, let media = items?[indexPath.row] else {
+        guard let media = media(at: indexPath) else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! L1BrowseCollectionViewCell
             return cell
         }
@@ -663,6 +681,8 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
         if reuseIdentifier == "ToWatch" {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ToWatch", for: indexPath) as! ToWatchBrowseCollectionViewCell
 
+            cell.presentingViewController = presentingViewController
+            cell.actionButtonStyle = actionButtonStyle
             cell.media = media
 
             return cell
@@ -679,11 +699,7 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
         if reuseIdentifier == "T1" {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "T1", for: indexPath) as! TopBrowseCollectionViewCell
 
-            if let notes = notes {
-                cell.notes = notes[indexPath.row]
-            } else {
-                cell.notes = nil
-            }
+            cell.notes = note(at: indexPath)
             cell.media = media
             cell.rank?.text = "\(indexPath.row + 1)"
 
@@ -692,11 +708,7 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
         if reuseIdentifier == "C1" {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "C2", for: indexPath) as! C1BrowseCollectionViewCell
 
-            if let notes = notes {
-                cell.notes = notes[indexPath.row]
-            } else {
-                cell.notes = nil
-            }
+            cell.notes = note(at: indexPath)
             cell.media = media
 
             return cell
@@ -704,14 +716,26 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
         if reuseIdentifier == "G1" {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "G1", for: indexPath) as! G1BrowseCollectionViewCell
 
+            cell.presentingViewController = presentingViewController
+            cell.actionButtonStyle = actionButtonStyle
             cell.media = media
 
             return cell
         }
-        if let notes = notes {
+        if reuseIdentifier == "List" {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "List", for: indexPath) as! ListBrowseCollectionViewCell
+
+            cell.presentingViewController = presentingViewController
+            cell.actionButtonStyle = actionButtonStyle
+            cell.media = media
+            cell.showsSeparator = indexPath.row % 3 != 2 && indexPath.row + 1 < (items?.count ?? 0)
+
+            return cell
+        }
+        if notes != nil {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell with notes", for: indexPath) as! L1BrowseCollectionViewCell
 
-            cell.notes = notes[indexPath.row]
+            cell.notes = note(at: indexPath)
             cell.media = media
 
             return cell
@@ -728,7 +752,9 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
             return
         }
 
-        guard let media = items?[indexPath.row] else { return }
+        guard let media = media(at: indexPath) else { return }
+        let zoomSourceView = zoomSourceView(in: collectionView, at: indexPath)
+        let showProgressZoomSourceView = reuseIdentifier == "List" ? zoomSourceView : nil
 
         if case let .showProgress(show, progress) = media {
             if let nextToRewatch = progress.nextToRewatch {
@@ -744,38 +770,56 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
                             let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
 
                             DispatchQueue.main.async {
-                                presentingViewController.performSegue(withIdentifier: "details",
-                                                                      sender: episode.mediaModel(given: show))
+                                self.present(media: episode.mediaModel(given: show),
+                                             from: presentingViewController,
+                                             zoomSourceView: showProgressZoomSourceView)
                             }
                         } catch {
                             print("Error fetching episode \(error)")
                             DispatchQueue.main.async {
-                                presentingViewController.performSegue(withIdentifier: "details",
-                                                                      sender: show.mediaModel)
+                                self.present(media: show.mediaModel,
+                                             from: presentingViewController,
+                                             zoomSourceView: showProgressZoomSourceView)
                             }
                         }
                     case let .failure(error):
                         print("Failed fetching episode \(error)")
                         DispatchQueue.main.async {
-                            presentingViewController.performSegue(withIdentifier: "details",
-                                                                  sender: show.mediaModel)
+                            self.present(media: show.mediaModel,
+                                         from: presentingViewController,
+                                         zoomSourceView: showProgressZoomSourceView)
                         }
                     }
                 }
             } else if let episode = progress.nextEpisodeToWatch {
-                presentingViewController.performSegue(withIdentifier: "details",
-                                                      sender: episode.mediaModel(given: show))
+                present(media: episode.mediaModel(given: show),
+                        from: presentingViewController,
+                        zoomSourceView: showProgressZoomSourceView)
             } else {
-                presentingViewController.performSegue(withIdentifier: "details",
-                                                      sender: show.mediaModel)
+                present(media: show.mediaModel,
+                        from: presentingViewController,
+                        zoomSourceView: showProgressZoomSourceView)
             }
             return
         }
 
-        if UIDevice.current.userInterfaceIdiom == .phone {
+        present(media: media,
+                from: presentingViewController,
+                zoomSourceView: zoomSourceView)
+    }
+
+    private func zoomSourceView(in collectionView: UICollectionView, at indexPath: IndexPath) -> UIView? {
+        if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
+            return cell.poster
+        }
+        return collectionView.cellForItem(at: indexPath)
+    }
+
+    private func present(media: MediaModel, from presentingViewController: UIViewController, zoomSourceView: UIView?) {
+        if UIDevice.current.userInterfaceIdiom == .phone, let zoomSourceView {
             presentingViewController.performSegue(withIdentifier: "details-zoom",
                                                   sender: MediaSegueObject(media: media,
-                                                                           zoomSourceView: collectionView.cellForItem(at: indexPath)))
+                                                                           zoomSourceView: zoomSourceView))
         } else {
             presentingViewController.performSegue(withIdentifier: "details", sender: media)
         }
@@ -784,8 +828,15 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
 
 extension BrowseTableViewCell: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell else { return [] }
-        guard let media = cell.media else { return [] }
+        let media: MediaModel?
+        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
+            media = cell.media
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
+            media = cell.media
+        } else {
+            media = nil
+        }
+        guard let media else { return [] }
 
         let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
         let dragItem = UIDragItem(itemProvider: itemProvider)
@@ -795,8 +846,15 @@ extension BrowseTableViewCell: UICollectionViewDragDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell else { return [] }
-        guard let media = cell.media else { return [] }
+        let media: MediaModel?
+        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
+            media = cell.media
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
+            media = cell.media
+        } else {
+            media = nil
+        }
+        guard let media else { return [] }
 
         let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
         let dragItem = UIDragItem(itemProvider: itemProvider)
@@ -806,12 +864,23 @@ extension BrowseTableViewCell: UICollectionViewDragDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell else { return nil }
-        guard let poster = cell.poster else { return nil }
+        let poster: PosterImageView?
+        let previewCell: UICollectionViewCell?
+        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
+            poster = cell.poster
+            previewCell = cell
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
+            poster = cell.poster
+            previewCell = cell
+        } else {
+            poster = nil
+            previewCell = nil
+        }
+        guard let poster, let previewCell else { return nil }
 
         let parameters = UIDragPreviewParameters()
         parameters.backgroundColor = .clear
-        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.frame, to: cell), cornerRadius: poster.layer.cornerRadius)
+        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.bounds, to: previewCell), cornerRadius: poster.layer.cornerRadius)
         return parameters
     }
 }

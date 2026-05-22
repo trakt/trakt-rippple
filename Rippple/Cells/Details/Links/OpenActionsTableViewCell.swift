@@ -66,10 +66,7 @@ final class OpenActionsTableViewCell: UITableViewCell, UICollectionViewDataSourc
             return
         }
 
-        let builtIn = OpenActionManager.shared.builtInActions(for: media)
-        let custom = OpenActionManager.shared.customActions(for: media)
-
-        openInEntries = builtIn + custom
+        openInEntries = OpenActionManager.shared.actions(for: media)
         collectionView.reloadData()
     }
 

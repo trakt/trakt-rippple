@@ -10,6 +10,73 @@ import SwiftUI
 
 import Receiver
 
+private struct ShelfSortOption: Hashable {
+    let id: String
+    let label: String
+}
+
+private struct ShelfQueryValues {
+    let ignoreWatched: Bool
+    let sort: ShelfSortConfiguration
+}
+
+private let shelfSortByOptions: [ShelfSortOption] = [
+    ShelfSortOption(id: "", label: "Default"),
+    ShelfSortOption(id: "rank", label: "Rank"),
+    ShelfSortOption(id: "added", label: "Added"),
+    ShelfSortOption(id: "my_rating", label: "My Rating"),
+    ShelfSortOption(id: "watched", label: "Watched"),
+    ShelfSortOption(id: "title", label: "Title"),
+    ShelfSortOption(id: "released", label: "Released"),
+    ShelfSortOption(id: "runtime", label: "Runtime"),
+    ShelfSortOption(id: "popularity", label: "Popularity"),
+    ShelfSortOption(id: "random", label: "Random"),
+    ShelfSortOption(id: "percentage", label: "Percentage"),
+    ShelfSortOption(id: "imdb_rating", label: "IMDb Rating"),
+    ShelfSortOption(id: "tmdb_rating", label: "TMDb Rating"),
+    ShelfSortOption(id: "rt_tomatometer", label: "RT Tomatometer"),
+    ShelfSortOption(id: "rt_audience", label: "RT Audience"),
+    ShelfSortOption(id: "metascore", label: "Metascore"),
+    ShelfSortOption(id: "votes", label: "Votes"),
+    ShelfSortOption(id: "imdb_votes", label: "IMDb Votes"),
+    ShelfSortOption(id: "tmdb_votes", label: "TMDb Votes")
+]
+
+private let shelfSortHowOptions = ["", "asc", "desc"]
+
+private func shelfQueryValues(from query: String) -> ShelfQueryValues {
+    let values = query.split(separator: "&").reduce(into: [String: String]()) { dict, part in
+        let pieces = part.split(separator: "=", maxSplits: 1).map(String.init)
+        guard let key = pieces.first?.lowercased() else { return }
+        dict[key] = pieces.count > 1 ? pieces[1] : ""
+    }
+    let sortBy = values["sort_by"].flatMap { raw in
+        shelfSortByOptions.contains(where: { $0.id == raw }) ? raw : nil
+    } ?? ""
+    let sortHow = values["sort_how"].flatMap { raw in
+        shelfSortHowOptions.contains(raw) ? raw : nil
+    } ?? ""
+    return ShelfQueryValues(ignoreWatched: values["ignore_watched"] == "true",
+                            sort: ShelfSortConfiguration(by: sortBy, how: sortHow))
+}
+
+private func updatedShelfQuery(from base: String,
+                               ignoreWatched: Bool,
+                               sort: ShelfSortConfiguration) -> String {
+    var parts = base.split(separator: "&").map(String.init).filter {
+        let part = $0.lowercased()
+        return !part.hasPrefix("ignore_watched=") && !part.hasPrefix("sort_by=") && !part.hasPrefix("sort_how=")
+    }
+    if ignoreWatched {
+        parts.append("ignore_watched=true")
+    }
+    if !sort.by.isEmpty && !sort.how.isEmpty {
+        parts.append("sort_by=\(sort.by)")
+        parts.append("sort_how=\(sort.how)")
+    }
+    return parts.joined(separator: "&")
+}
+
 struct ShelfConfigView: View {
     @State var shelf = ShelfManager.shared.shelfModules
 
@@ -54,6 +121,10 @@ struct ShelfConfigView: View {
                                             .font(.caption)
                                     case "G1":
                                         Text("Widget Style")
+                                            .foregroundStyle(.secondary)
+                                            .font(.caption)
+                                    case "List":
+                                        Text("List Style")
                                             .foregroundStyle(.secondary)
                                             .font(.caption)
                                     case "ToWatch":
@@ -147,25 +218,40 @@ struct ShelfRowConfigView: View {
     @State private var name = ""
     @State private var selectedStyle = ""
     @State private var ignoreWatched = false
+    @State private var sortBy = ""
+    @State private var sortHow = ""
+    @State private var buttonStyle: ShelfBrowseActionButtonStyle = .none
 
     private var previewModule: BrowseViewController.ModuleType {
         let updatedName = name
-        let updatedQuery = updatedQuery(from: row.filter.query, ignoreWatched: ignoreWatched)
+        let updatedQuery = updatedShelfQuery(from: row.filter.query,
+                                             ignoreWatched: ignoreWatched,
+                                             sort: ShelfSortConfiguration(by: sortBy,
+                                                                          how: sortHow))
         let updatedFilter = SavedFilter(section: row.filter.section,
                                         name: updatedName,
                                         path: row.filter.path,
                                         query: updatedQuery,
                                         limit: row.filter.limit)
         let moduleId = selectedStyle
-        return BrowseViewController.ModuleType(module: moduleId, filter: updatedFilter)
+        return BrowseViewController.ModuleType(module: moduleId,
+                                               filter: updatedFilter,
+                                               buttonStyle: buttonStyle == .none ? nil : buttonStyle)
     }
 
-    private func updatedQuery(from base: String, ignoreWatched: Bool) -> String {
-        var parts = base.split(separator: "&").map(String.init).filter { !$0.lowercased().hasPrefix("ignore_watched=") }
-        if ignoreWatched {
-            parts.append("ignore_watched=true")
-        }
-        return parts.joined(separator: "&")
+    private var currentConfiguration: ShelfModuleEditConfiguration {
+        ShelfModuleEditConfiguration(name: name,
+                                     module: selectedStyle,
+                                     ignoresWatched: ignoreWatched,
+                                     sort: ShelfSortConfiguration(by: sortBy,
+                                                                  how: sortHow),
+                                     buttonStyle: buttonStyle)
+    }
+
+    private func persistCurrentConfiguration() {
+        let updatedModule = previewModule
+        ShelfManager.shared.edit(module: row, with: currentConfiguration)
+        row = updatedModule
     }
 
     var body: some View {
@@ -178,9 +264,10 @@ struct ShelfRowConfigView: View {
                     Picker("Style", selection: $selectedStyle) {
                         Text("To Watch").tag("ToWatch")
                         Text("Widget").tag("G1")
+                        Text("List").tag("List")
                     }
                 } else {
-                    if selectedStyle == "L1" || selectedStyle == "L2" || selectedStyle == "L3" || selectedStyle == "T1" || selectedStyle == "C1" || selectedStyle == "G1" {
+                    if selectedStyle == "L1" || selectedStyle == "L2" || selectedStyle == "L3" || selectedStyle == "T1" || selectedStyle == "C1" || selectedStyle == "G1" || selectedStyle == "List" {
                         Picker("Style", selection: $selectedStyle) {
                             Text("Standard").tag("L1")
                             Text("Bigger").tag("L2")
@@ -188,12 +275,32 @@ struct ShelfRowConfigView: View {
                             Text("Top").tag("T1")
                             Text("Carousel").tag("C1")
                             Text("Widget").tag("G1")
+                            Text("List").tag("List")
                         }
                     }
                 }
                 if row.filter.canFilterWatched {
                     Toggle("Filter Watched", isOn: $ignoreWatched)
                         .tint(.accentColor)
+                }
+                if row.filter.canSort {
+                    Picker("Sort by", selection: $sortBy) {
+                        ForEach(shelfSortByOptions, id: \.self) { option in
+                            Text(option.label).tag(option.id)
+                        }
+                    }
+                    Picker("Sort order", selection: $sortHow) {
+                        ForEach(shelfSortHowOptions, id: \.self) { option in
+                            Text(option == "" ? "Default" : (option == "asc" ? "Ascending" : "Descending")).tag(option)
+                        }
+                    }
+                }
+                if selectedStyle == "G1" || selectedStyle == "ToWatch" || selectedStyle == "List" {
+                    Picker("Button", selection: $buttonStyle) {
+                        ForEach(ShelfBrowseActionButtonStyle.allCases, id: \.self) { style in
+                            Text(style.label).tag(style)
+                        }
+                    }
                 }
             } header: {
                 VStack(alignment: .leading) {
@@ -207,20 +314,57 @@ struct ShelfRowConfigView: View {
                     .padding(.trailing, 50)
             } footer: {
                 BrowseRowPreview(module: previewModule)
-                    .frame(height: 320)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(height: BrowseRowPreview.height(for: previewModule))
+                    .ignoresSafeArea()
                     .padding(.top, 20)
-                    .padding(.leading, -25)
+                    .padding(.leading, -40)
+                    .padding(.trailing, -40)
             }
         }.listStyle(.insetGrouped)
             .headerProminence(.increased)
             .onAppear {
                 name = row.filter.name
                 selectedStyle = row.module
-                ignoreWatched = row.filter.query.contains("ignore_watched=true")
+                let queryValues = shelfQueryValues(from: row.filter.query)
+                ignoreWatched = queryValues.ignoreWatched
+                sortBy = queryValues.sort.by
+                sortHow = queryValues.sort.how
+                buttonStyle = row.buttonStyle ?? .none
+            }
+            .onChange(of: sortBy) { _, newValue in
+                if newValue.isEmpty {
+                    if !sortHow.isEmpty {
+                        sortHow = ""
+                    }
+                } else if sortHow.isEmpty {
+                    sortHow = shelfSortHowOptions.first(where: { !$0.isEmpty }) ?? "asc"
+                }
+            }
+            .onChange(of: sortHow) { _, newValue in
+                if newValue.isEmpty {
+                    if !sortBy.isEmpty {
+                        sortBy = ""
+                    }
+                } else if sortBy.isEmpty {
+                    sortBy = shelfSortByOptions.first(where: { !$0.id.isEmpty })?.id ?? "rank"
+                }
+            }
+            .onChange(of: buttonStyle) {
+                persistCurrentConfiguration()
             }
             .onDisappear {
-                if name != row.filter.name || selectedStyle != row.module || ignoreWatched != row.filter.query.contains("ignore_watched=true") {
-                    ShelfManager.shared.edit(module: row, with: name, and: selectedStyle, ignoringWatched: ignoreWatched)
+                let originalQuery = shelfQueryValues(from: row.filter.query)
+                let originalButtonStyle = row.buttonStyle ?? .none
+                let queryChanged = ignoreWatched != originalQuery.ignoreWatched ||
+                    sortBy != originalQuery.sort.by ||
+                    sortHow != originalQuery.sort.how
+                let rowChanged = name != row.filter.name ||
+                    selectedStyle != row.module ||
+                    buttonStyle != originalButtonStyle
+
+                if rowChanged || queryChanged {
+                    persistCurrentConfiguration()
                 }
             }
     }
@@ -235,25 +379,49 @@ struct ShelfRowQuickConfigView: View {
     @State private var debouncedName = ""
     @State private var selectedStyle = ""
     @State private var ignoreWatched = false
+    @State private var sortBy = ""
+    @State private var sortHow = ""
+    @State private var buttonStyle: ShelfBrowseActionButtonStyle = .none
 
     private var previewModule: BrowseViewController.ModuleType {
         let updatedName = debouncedName
-        let updatedQuery = updatedQuery(from: row.filter.query, ignoreWatched: ignoreWatched)
+        let updatedQuery = updatedShelfQuery(from: row.filter.query,
+                                             ignoreWatched: ignoreWatched,
+                                             sort: ShelfSortConfiguration(by: sortBy,
+                                                                          how: sortHow))
         let updatedFilter = SavedFilter(section: row.filter.section,
                                         name: updatedName,
                                         path: row.filter.path,
                                         query: updatedQuery,
                                         limit: row.filter.limit)
         let moduleId = selectedStyle
-        return BrowseViewController.ModuleType(module: moduleId, filter: updatedFilter)
+        return BrowseViewController.ModuleType(module: moduleId,
+                                               filter: updatedFilter,
+                                               buttonStyle: buttonStyle == .none ? nil : buttonStyle)
     }
 
-    private func updatedQuery(from base: String, ignoreWatched: Bool) -> String {
-        var parts = base.split(separator: "&").map(String.init).filter { !$0.lowercased().hasPrefix("ignore_watched=") }
-        if ignoreWatched {
-            parts.append("ignore_watched=true")
-        }
-        return parts.joined(separator: "&")
+    private var currentConfiguration: ShelfModuleEditConfiguration {
+        ShelfModuleEditConfiguration(name: name,
+                                     module: selectedStyle,
+                                     ignoresWatched: ignoreWatched,
+                                     sort: ShelfSortConfiguration(by: sortBy,
+                                                                  how: sortHow),
+                                     buttonStyle: buttonStyle)
+    }
+
+    private func persistCurrentConfiguration() {
+        let updatedModule = BrowseViewController.ModuleType(module: selectedStyle,
+                                                           filter: SavedFilter(section: row.filter.section,
+                                                                               name: name,
+                                                                               path: row.filter.path,
+                                                                               query: updatedShelfQuery(from: row.filter.query,
+                                                                                                         ignoreWatched: ignoreWatched,
+                                                                                                         sort: ShelfSortConfiguration(by: sortBy,
+                                                                                                                                      how: sortHow)),
+                                                                               limit: row.filter.limit),
+                                                           buttonStyle: buttonStyle == .none ? nil : buttonStyle)
+        ShelfManager.shared.edit(module: row, with: currentConfiguration)
+        row = updatedModule
     }
 
     var body: some View {
@@ -270,9 +438,10 @@ struct ShelfRowQuickConfigView: View {
                         Picker("Style", selection: $selectedStyle) {
                             Text("To Watch").tag("ToWatch")
                             Text("Widget").tag("G1")
+                            Text("List").tag("List")
                         }
                     } else {
-                        if selectedStyle == "L1" || selectedStyle == "L2" || selectedStyle == "L3" || selectedStyle == "T1" || selectedStyle == "C1" || selectedStyle == "G1" {
+                        if selectedStyle == "L1" || selectedStyle == "L2" || selectedStyle == "L3" || selectedStyle == "T1" || selectedStyle == "C1" || selectedStyle == "G1" || selectedStyle == "List" {
                             Picker("Style", selection: $selectedStyle) {
                                 Text("Standard").tag("L1")
                                 Text("Bigger").tag("L2")
@@ -280,6 +449,7 @@ struct ShelfRowQuickConfigView: View {
                                 Text("Top").tag("T1")
                                 Text("Carousel").tag("C1")
                                 Text("Widget").tag("G1")
+                                Text("List").tag("List")
                             }
                         }
                     }
@@ -287,11 +457,33 @@ struct ShelfRowQuickConfigView: View {
                         Toggle("Filter Watched", isOn: $ignoreWatched)
                             .tint(.accentColor)
                     }
+                    if row.filter.canSort {
+                        Picker("Sort by", selection: $sortBy) {
+                            ForEach(shelfSortByOptions, id: \.self) { option in
+                                Text(option.label).tag(option.id)
+                            }
+                        }
+                        Picker("Sort order", selection: $sortHow) {
+                            ForEach(shelfSortHowOptions, id: \.self) { option in
+                                Text(option == "" ? "Default" : (option == "asc" ? "Ascending" : "Descending")).tag(option)
+                            }
+                        }
+                    }
+                    if selectedStyle == "G1" || selectedStyle == "ToWatch" || selectedStyle == "List" {
+                        Picker("Button", selection: $buttonStyle) {
+                            ForEach(ShelfBrowseActionButtonStyle.allCases, id: \.self) { style in
+                                Text(style.label).tag(style)
+                            }
+                        }
+                    }
                 } footer: {
                     BrowseRowPreview(module: previewModule)
-                        .frame(height: 320)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(height: BrowseRowPreview.height(for: previewModule))
+                        .ignoresSafeArea()
                         .padding(.top, 20)
-                        .padding(.leading, -25)
+                        .padding(.leading, -40)
+                        .padding(.trailing, -40)
                 }
             }.listStyle(.insetGrouped)
                 .toolbar {
@@ -302,7 +494,7 @@ struct ShelfRowQuickConfigView: View {
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(role: .confirm) {
-                            ShelfManager.shared.edit(module: row, with: name, and: selectedStyle, ignoringWatched: ignoreWatched)
+                            persistCurrentConfiguration()
                             dismiss()
                         }
                     }
@@ -313,26 +505,97 @@ struct ShelfRowQuickConfigView: View {
             name = row.filter.name
             debouncedName = row.filter.name
             selectedStyle = row.module
-            ignoreWatched = row.filter.query.contains("ignore_watched=true")
+            let queryValues = shelfQueryValues(from: row.filter.query)
+            ignoreWatched = queryValues.ignoreWatched
+            sortBy = queryValues.sort.by
+            sortHow = queryValues.sort.how
+            buttonStyle = row.buttonStyle ?? .none
+        }
+        .onChange(of: sortBy) { _, newValue in
+            if newValue.isEmpty {
+                if !sortHow.isEmpty {
+                    sortHow = ""
+                }
+            } else if sortHow.isEmpty {
+                sortHow = shelfSortHowOptions.first(where: { !$0.isEmpty }) ?? "asc"
+            }
+        }
+        .onChange(of: sortHow) { _, newValue in
+            if newValue.isEmpty {
+                if !sortBy.isEmpty {
+                    sortBy = ""
+                }
+            } else if sortBy.isEmpty {
+                sortBy = shelfSortByOptions.first(where: { !$0.id.isEmpty })?.id ?? "rank"
+            }
+        }
+        .onChange(of: buttonStyle) {
+            persistCurrentConfiguration()
         }
     }
 }
 
 struct BrowseRowPreview: UIViewControllerRepresentable {
+    @Environment(\.colorScheme) private var colorScheme
+
     var module: BrowseViewController.ModuleType
 
+    static func height(for module: BrowseViewController.ModuleType) -> CGFloat {
+        let contentHeight: CGFloat = switch module.module {
+        case "L1":
+            150
+        case "L2", "L3":
+            250
+        case "T1":
+            200
+        case "C1":
+            198
+        case "G1":
+            220
+        case "List":
+            240
+        case "ToWatch", "History":
+            171
+        default:
+            220
+        }
+
+        return contentHeight + 50 // 50 to be safe
+    }
+
     func makeUIViewController(context: Context) -> BrowseViewController {
-        let vc = BrowseViewController()
-        vc.view.isUserInteractionEnabled = false
-        vc.view.clipsToBounds = false
-        vc.tableView.isScrollEnabled = false
-        vc.tableView.separatorStyle = .none
-        vc.model = modelString(for: module)
-        return vc
+        let viewController = BrowseViewController()
+        viewController.view.isUserInteractionEnabled = false
+        viewController.view.clipsToBounds = true
+        viewController.tableView.isScrollEnabled = false
+        viewController.tableView.separatorStyle = .none
+        viewController.view.backgroundColor = .clear
+        viewController.tableView.backgroundColor = .clear
+        applyAppearance(to: viewController)
+        viewController.model = modelString(for: module)
+        return viewController
     }
 
     func updateUIViewController(_ uiViewController: BrowseViewController, context: Context) {
+        applyAppearance(to: uiViewController)
         uiViewController.model = modelString(for: module)
+    }
+
+    private func applyAppearance(to viewController: BrowseViewController) {
+        viewController.overrideUserInterfaceStyle = resolvedUserInterfaceStyle
+        viewController.view.overrideUserInterfaceStyle = resolvedUserInterfaceStyle
+        viewController.tableView.overrideUserInterfaceStyle = resolvedUserInterfaceStyle
+    }
+
+    private var resolvedUserInterfaceStyle: UIUserInterfaceStyle {
+        switch colorScheme {
+        case .dark:
+            return .dark
+        case .light:
+            return .light
+        @unknown default:
+            return .unspecified
+        }
     }
 
     private func modelString(for module: BrowseViewController.ModuleType) -> String {
@@ -476,10 +739,10 @@ struct SheetView: View {
                                        query: "",
                                        limit: nil)
 
-    // { "module": "C1", "filter": { "section": "movies,shows", "name": "", "path": "/all/trending", "query": "" } }
+    // { "module": "C1", "filter": { "section": "movies,shows", "name": "", "path": "/media/trending", "query": "" } }
     private let allTrending = SavedFilter(section: "movies,shows",
                                        name: "Trending TV Shows & Movies",
-                                       path: "/all/trending",
+                                       path: "/media/trending",
                                        query: "",
                                        limit: nil)
 

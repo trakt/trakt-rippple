@@ -308,14 +308,23 @@
                     </tableView>
                     <navigationItem key="navigationItem" title="Browse" id="Cf2-Hr-mkx"/>
                     <connections>
-                        <outlet property="animationViewContainer" destination="cIs-13-R7W" id="DMl-uR-THf"/>
-                        <outlet property="loadingView" destination="SeU-Yw-Tzy" id="UuY-IR-saV"/>
-                        <segue destination="CSg-0m-F9g" kind="show" identifier="comments" id="gJE-cr-oUe"/>
+                        <outlet property="animationViewContainer" destination="0oc-SJ-MZE" id="DMl-uR-THf"/>
+                        <outlet property="loadingView" destination="Hdi-fC-goO" id="UuY-IR-saV"/>
+                        <segue destination="CSg-0m-F9g" kind="show" identifier="Comments" id="gJE-cr-oUe"/>
                         <segue destination="4Wf-Gr-k1P" kind="show" identifier="Media Comments" id="if0-hL-c4D"/>
                         <segue destination="CUs-aj-9lS" kind="show" identifier="grid" id="SSi-cV-2bN"/>
+                        <segue destination="eYA-3B-20r" kind="show" identifier="purchase" id="bb2-PC-9sZ"/>
+                        <segue destination="ffo-Ly-qTV" kind="presentation" identifier="customizeShelf" id="bb2-CS-d7Q"/>
                         <segue destination="utg-uA-Rz3" kind="show" identifier="details" id="aWs-H5-Ahb"/>
                         <segue destination="SDZ-rJ-558" kind="show" identifier="to watch episodes" id="JsG-9w-lwh"/>
                         <segue destination="p91-oN-tl1" kind="show" identifier="history" id="QO6-qB-ebJ"/>
+                        <segue destination="lKN-aT-6WS" kind="presentation" identifier="search" id="bb2-SR-0pk"/>
+                        <segue destination="vmj-ZX-9GU" kind="show" identifier="lists" id="bb2-LS-5jj"/>
+                        <segue destination="wUq-9K-YXp" kind="show" identifier="to watch" id="bb2-TW-3ha"/>
+                        <segue destination="Vnw-mh-ihu" kind="show" identifier="calendar" id="bb2-CL-8sm"/>
+                        <segue destination="iWS-t8-kA2" kind="show" identifier="seasons" id="bb2-SN-6kw"/>
+                        <segue destination="wUq-9K-YXp" kind="show" identifier="movies to watch" id="bb2-MW-4rc"/>
+                        <segue destination="wUq-9K-YXp" kind="show" identifier="episodes to watch" id="bb2-EW-1bn"/>
                         <segue destination="utg-uA-Rz3" kind="show" identifier="details-zoom" id="4JF-6m-69x"/>
                     </connections>
                 </tableViewController>

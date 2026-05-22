@@ -117,7 +117,7 @@ final class ListActionViewController: UITableViewController {
 
         let result: [List]? = await withCheckedContinuation { continuation in
             TraktAPIProvider.noChacheProvider.request(service,
-                                                    callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+                                                      callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
                 case let .success(moyaResponse):
                     do {
@@ -125,11 +125,17 @@ final class ListActionViewController: UITableViewController {
                         let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
                         continuation.resume(returning: lists)
                     } catch {
-                        print("Listed request JSON mapping failed! \(error)")
+                        DispatchQueue.main.async {
+                            print("Listed request JSON mapping failed! \(error)")
+                            SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                        }
                         continuation.resume(returning: nil)
                     }
                 case let .failure(error):
-                    print("Listed request failure \(error)")
+                    DispatchQueue.main.async {
+                        print("Listed request failure \(error)")
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
                     continuation.resume(returning: nil)
                 }
             }

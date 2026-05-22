@@ -235,11 +235,6 @@ final class CollectionViewController: UITableViewController {
                 navigationItem.title = "\(user.username)'s Library"
             }
 
-            if let button = filterButtonItem.customView as? UIButton {
-                button.setImage(filterButtonItem.image?.withConfiguration(UIImage.SymbolConfiguration(scale: .large)),
-                                for: .normal)
-            }
-
             searchController.searchBar.placeholder = "Search \(navigationItem.title ?? "")"
         }
     }
@@ -484,19 +479,8 @@ final class CollectionViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
-        #if targetEnvironment(macCatalyst)
-        let filterButton = UIButton()
-        filterButton.setImage(filterButtonItem.image?.withConfiguration(UIImage.SymbolConfiguration(scale: .large)),
-                              for: .normal)
-        filterButton.tintColor = .gray
-        filterButton.showsMenuAsPrimaryAction = true
-        filterButton.menu = filterMenu()
-        filterButtonItem.customView = filterButton
-        filterButton.sizeToFit()
-        #else
         filterButtonItem.primaryAction = nil
         filterButtonItem.menu = filterMenu()
-        #endif
 
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false

@@ -202,19 +202,12 @@ final class GridViewController: UICollectionViewController {
         reloadMenu()
 
         navigationItem.subtitle = "Loading..."
+        nextPage = nil
 
         _Concurrency.Task.init {
             do {
-                if savedFilter.path == "/users/me/watched/movies" {
-                    let mediaCollection = WatchedManager.shared.watchedMoviesMediaModels
-                    self.rebuildDatasource(with: mediaCollection, appending: false)
-                } else if savedFilter.path == "/users/me/watched/shows" {
-                    let mediaCollection = WatchedManager.shared.watchedShowsMediaModels
-                    self.rebuildDatasource(with: mediaCollection, appending: false)
-                } else {
-                    let mediaCollection = try await self.fetch(filter: savedFilter, pageInfo: PageInfo.firstPage(with: 100)).compactMap { MediaModel(item: $0) }
-                    self.rebuildDatasource(with: mediaCollection, appending: false)
-                }
+                let mediaCollection = try await self.fetch(filter: savedFilter, pageInfo: PageInfo.firstPage(with: 100)).compactMap { MediaModel(item: $0) }
+                self.rebuildDatasource(with: mediaCollection, appending: false)
                 navigationItem.subtitle = savedFilter.name
             } catch {
                 print("error fetching : \(error)")
@@ -502,6 +495,7 @@ final class GridViewController: UICollectionViewController {
 
     private var nextPage: PageInfo?
     private func fetch(filter: SavedFilter, pageInfo: PageInfo) async throws -> [MediaItem] {
+        let filter = filter.normalized
         let result: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
             cancellable = TraktAPIProvider.provider.request(.savedFilter(section: filter.section,
                                                                          path: filter.path,
@@ -533,7 +527,7 @@ final class GridViewController: UICollectionViewController {
                             let items = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else if filter.section == "WatchedItem" {
-                            let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder).sorted { $0.lastWatchedAt > $1.lastWatchedAt }.map { MediaItem(movie: $0.movie, show: $0.show, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
+                            let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0.movie, show: $0.show, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else {
                             let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in

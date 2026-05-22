@@ -101,6 +101,11 @@ extension ServicesBrowseTableViewCell: UICollectionViewDataSource, UICollectionV
             return
         }
 
-        presentingViewController.performSegue(withIdentifier: "browse", sender: items[indexPath.row].filter)
+        let filter = items[indexPath.row].filter
+        if let browseViewController = presentingViewController as? BrowseViewController {
+            browseViewController.showBrowse(with: filter)
+        } else {
+            presentingViewController.performSegue(withIdentifier: "browse", sender: filter)
+        }
     }
 }

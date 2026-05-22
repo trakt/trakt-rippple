@@ -13,7 +13,7 @@ final class SpacerTableViewCell: UITableViewCell {
 
     var space: Float = 0.0 {
         didSet {
-            constraint.constant = CGFloat(space)
+            constraint.constant = CGFloat(space.rounded(.down))
         }
     }
 
@@ -27,7 +27,7 @@ final class SpacerTableViewCell: UITableViewCell {
         spacer.translatesAutoresizingMaskIntoConstraints = false
         addSubview(spacer)
 
-        constraint = spacer.heightAnchor.constraint(equalToConstant: CGFloat(space))
+        constraint = spacer.heightAnchor.constraint(equalToConstant: CGFloat(space.rounded(.down)))
         NSLayoutConstraint.activate([
             constraint,
             spacer.leadingAnchor.constraint(equalTo: self.leadingAnchor),

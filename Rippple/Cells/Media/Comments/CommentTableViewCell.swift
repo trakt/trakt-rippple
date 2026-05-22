@@ -145,11 +145,6 @@ final class CommentTableViewCell: UITableViewCell {
             poster.addInteraction(interaction)
         }
 
-        sentimentEnabledReceiver.listen { [weak self] _ in
-            guard let self = self else { return }
-            self.setupRatingAndSpoiler()
-        }.disposed(by: disposeBag)
-
         maximumContentSizeCategory = .extraExtraExtraLarge
         likeButton?.maximumContentSizeCategory = .extraExtraExtraLarge
         replyButton?.maximumContentSizeCategory = .extraExtraExtraLarge

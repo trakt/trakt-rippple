@@ -90,22 +90,13 @@ private extension ListsManager {
         if SessionManager.shared.isLoggedOut {
             return
         }
-        TraktAPIProvider.noChacheProvider.request(.customLists(),
-                                          callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
+        TraktAPIProvider.fetchAllCustomLists(provider: TraktAPIProvider.noChacheProvider) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
-
-                    DispatchQueue.main.async {
-                        self.lists = lists
-                    }
-                } catch {
-                    print("customLists request JSON mapping failed! \(error)")
+            case let .success(lists):
+                DispatchQueue.main.async {
+                    self.lists = lists
                 }
             case let .failure(error):
                 print("customLists request failure \(error)")

@@ -14,9 +14,26 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var title: UILabel!
     @IBOutlet weak var subtitle: UILabel!
     @IBOutlet weak var meta: UILabel!
+    @IBOutlet weak var actionButton: UIButton!
+
+    weak var presentingViewController: UIViewController? {
+        didSet {
+            actionButtonController.controller = presentingViewController
+        }
+    }
+
+    var actionButtonStyle: ShelfBrowseActionButtonStyle = .none {
+        didSet {
+            actionButtonController.style = actionButtonStyle
+            secondGradientLayer.isHidden = actionButtonStyle == .none
+        }
+    }
+
+    private let actionButtonController = ShelfBrowseActionButtonController()
 
     var media: MediaModel! {
         didSet {
+            actionButtonController.media = media
             switch media! {
             case .movie(let movie):
                 backdrop.media = media
@@ -103,6 +120,8 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
         }
     }
 
+    private let secondGradientLayer = CAGradientLayer()
+
     override func awakeFromNib() {
         super.awakeFromNib()
 
@@ -114,7 +133,7 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
         backdrop.layer.borderColor = UIColor.tertiarySystemFill.cgColor
 
         let colorEnd =  UIColor.clear.cgColor
-        let colorStart = UIColor.black.withAlphaComponent(0.9).cgColor
+        let colorStart = UIColor.black.withAlphaComponent(0.85).cgColor
 
         let gradientLayer = CAGradientLayer()
         gradientLayer.colors = [colorStart, colorEnd]
@@ -122,7 +141,13 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
         gradientLayer.endPoint = CGPoint(x: 0.5, y: 0.5)
         gradientLayer.frame = backdrop.bounds
 
+        secondGradientLayer.colors = [colorStart, colorEnd]
+        secondGradientLayer.startPoint = CGPoint(x: 1.0, y: 1.0)
+        secondGradientLayer.endPoint = CGPoint(x: 0.5, y: 0.5)
+        secondGradientLayer.frame = backdrop.bounds
+
         backdrop.layer.addSublayer(gradientLayer)
+        backdrop.layer.addSublayer(secondGradientLayer)
 
         title.layer.shadowColor = UIColor.black.cgColor
         title.layer.shadowRadius = 2.0
@@ -141,5 +166,156 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
         meta.layer.shadowOpacity = 0.7
         meta.layer.shadowOffset = .zero
         meta.layer.masksToBounds = false
+
+        actionButtonController.configure(button: actionButton, appearance: .white)
+    }
+}
+
+final class ShelfBrowseActionButtonController {
+    enum Appearance {
+        case tinted
+        case white
+    }
+
+    weak var controller: UIViewController? {
+        didSet {
+            contextMenu.controller = controller
+        }
+    }
+
+    var style: ShelfBrowseActionButtonStyle = .none {
+        didSet {
+            updateButton()
+        }
+    }
+
+    var showsFullMenuForDefaultStyle = false {
+        didSet {
+            updateButton()
+        }
+    }
+
+    var media: MediaModel? {
+        didSet {
+            updateButton()
+        }
+    }
+
+    private weak var button: UIButton?
+    private var appearance: Appearance = .tinted
+    private let contextMenu = MediaContextMenuInteractionDelegate()
+    private let checkmarkActionIdentifier = UIAction.Identifier("ShelfBrowseActionButton.checkmark")
+    private let playActionIdentifier = UIAction.Identifier("ShelfBrowseActionButton.play")
+    private let plusActionIdentifier = UIAction.Identifier("ShelfBrowseActionButton.plus")
+
+    func configure(button: UIButton, appearance: Appearance = .tinted) {
+        self.button = button
+        self.appearance = appearance
+        button.preferredBehavioralStyle = .pad
+        button.isPointerInteractionEnabled = true
+        button.maximumContentSizeCategory = .accessibilityExtraExtraLarge
+        button.backgroundColor = .clear
+        updateButton()
+    }
+
+    private func updateButton() {
+        guard let button else { return }
+
+        let actionMedia = actionableMedia
+        let usesDefaultStyle = style == .none
+        let showsDefaultButton = usesDefaultStyle && showsFullMenuForDefaultStyle
+        button.isHidden = (usesDefaultStyle && !showsFullMenuForDefaultStyle) || actionMedia == nil
+        button.menu = nil
+        button.showsMenuAsPrimaryAction = false
+        button.removeAction(identifiedBy: checkmarkActionIdentifier, for: .primaryActionTriggered)
+        button.removeAction(identifiedBy: playActionIdentifier, for: .primaryActionTriggered)
+        button.removeAction(identifiedBy: plusActionIdentifier, for: .primaryActionTriggered)
+
+        guard let actionMedia = actionMedia,
+              let systemImageName = style.systemImageName ?? (showsDefaultButton ? "ellipsis" : nil) else {
+            return
+        }
+
+        contextMenu.media = actionMedia
+        contextMenu.controller = controller
+
+        var configuration = button.configuration ?? UIButton.Configuration.tinted()
+        configuration.cornerStyle = .capsule
+        configuration.indicator = .automatic
+        configuration.image = UIImage(systemName: systemImageName)
+        configuration.baseForegroundColor = foregroundColor
+        configuration.baseBackgroundColor = backgroundColor
+        configuration.title = ""
+        configuration.imagePadding = 4.0
+
+        button.configuration = configuration
+        button.accessibilityLabel = style.label
+
+        switch style {
+        case .none:
+            button.menu = contextMenu.menu
+            button.showsMenuAsPrimaryAction = true
+        case .ellipsis:
+            button.menu = menu(for: actionMedia)
+            button.showsMenuAsPrimaryAction = true
+        case .checkmark:
+            button.addAction(UIAction(title: "", image: nil, identifier: checkmarkActionIdentifier) { [weak self] _ in
+                self?.actionableMedia?.markWatched()
+                self?.animateButton()
+            }, for: .primaryActionTriggered)
+        case .play:
+            button.addAction(UIAction(title: "", image: nil, identifier: playActionIdentifier) { [weak self] _ in
+                self?.actionableMedia?.checkin()
+                self?.animateButton()
+            }, for: .primaryActionTriggered)
+        case .plus:
+            button.addAction(UIAction(title: "", image: nil, identifier: plusActionIdentifier) { [weak self] _ in
+                self?.contextMenu.markWatched()
+                self?.animateButton()
+            }, for: .primaryActionTriggered)
+        }
+    }
+
+    private var foregroundColor: UIColor {
+        switch appearance {
+        case .tinted:
+            return UIColor(asset: .globalTint)
+        case .white:
+            return .white
+        }
+    }
+
+    private var backgroundColor: UIColor {
+        switch appearance {
+        case .tinted:
+            return UIColor(asset: .safeGlobalTint).withAlphaComponent(0.5)
+        case .white:
+            return UIColor.white.withAlphaComponent(0.5)
+        }
+    }
+
+    private var actionableMedia: MediaModel? {
+        guard let media else { return nil }
+
+        if case let .showProgress(show, progress) = media,
+           let episode = progress.nextEpisodeToWatch {
+            return episode.mediaModel(given: show)
+        }
+
+        return media
+    }
+
+    private func menu(for media: MediaModel) -> UIMenu {
+        switch media {
+        case .movie, .show, .season, .episode:
+            return contextMenu.quickTrackMenu
+        case .list, .showProgress:
+            return UIMenu(title: "")
+        }
+    }
+
+    private func animateButton() {
+        UISelectionFeedbackGenerator().selectionChanged()
+        button?.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
     }
 }

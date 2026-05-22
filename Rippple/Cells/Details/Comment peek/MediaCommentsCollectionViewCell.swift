@@ -78,11 +78,6 @@ final class MediaCommentsCollectionViewCell: UICollectionViewCell {
             self.setupRatingAndSpoiler()
         }.disposed(by: disposeBag)
 
-        sentimentEnabledReceiver.listen { [weak self] _ in
-            guard let self = self else { return }
-            self.setupRatingAndSpoiler()
-        }.disposed(by: disposeBag)
-
         maximumContentSizeCategory = .large
     }
 

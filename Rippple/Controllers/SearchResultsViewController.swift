@@ -150,17 +150,6 @@ class SearchResultsViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
-        if let service = service {
-            if case .search(let type, let query) = service {
-                let recent = RecentSearch(section: "recent",
-                                          name: title ?? query,
-                                          path: "/search/\(type.rawValue)",
-                                          query: "query=\(query)",
-                                          limit: 50)
-                RecentSearchManager.shared.recentSearches.insert(recent, at: 0)
-            }
-        }
-
         if aSmartSearch != nil || savedFilter != nil {
             configureFloatingButton()
         }

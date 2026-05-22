@@ -259,16 +259,31 @@ struct TMDbResult: Codable, Hashable {
     let title: String? // movie
     let name: String? // tv or person
 
+    let firstAirDate: String? // first air for tv
+    let releaseDate: String? // release date for movies
+
+    let originCountry: [String]? // for tv only
+
+    let id: Int64
+
     enum CodingKeys: String, CodingKey {
         case mediaType = "media_type"
         case title
         case name
+        case id
+        case firstAirDate = "first_air_date"
+        case releaseDate = "release_date"
+        case originCountry = "origin_country"
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(mediaType)
         hasher.combine(title)
         hasher.combine(name)
+        hasher.combine(firstAirDate)
+        hasher.combine(releaseDate)
+        hasher.combine(originCountry)
+        hasher.combine(id)
     }
 }
 

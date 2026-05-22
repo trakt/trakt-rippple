@@ -712,8 +712,33 @@ extension ImageBrowserViewController: UICollectionViewDelegate {
         fullScreenVC.imageURLProvider = { [weak self] imageItem, size in
             self?.imageURL(for: imageItem, size: size)
         }
+        fullScreenVC.previewImageProvider = { [weak self] imageItem in
+            self?.zoomPreviewImage(for: imageItem)
+        }
+
+        let zoomOptions = UIViewController.Transition.ZoomOptions()
+        zoomOptions.interactiveDismissShouldBegin = { [weak fullScreenVC] context in
+            fullScreenVC?.shouldBeginInteractiveDismiss(
+                location: context.location,
+                velocity: context.velocity,
+                willBegin: context.willBegin
+            ) ?? context.willBegin
+        }
+        zoomOptions.alignmentRectProvider = { context in
+            guard let fullScreenVC = context.zoomedViewController as? FullScreenImageViewController else {
+                return nil
+            }
+            return fullScreenVC.zoomTransitionAlignmentRect()
+        }
 
         fullScreenVC.modalPresentationStyle = .fullScreen
+        fullScreenVC.preferredTransition = .zoom(options: zoomOptions, sourceViewProvider: { [weak self] context in
+            guard let fullScreenVC = context.zoomedViewController as? FullScreenImageViewController,
+                  let imageItem = fullScreenVC.currentImageItem else {
+                return nil
+            }
+            return self?.zoomSourceView(for: imageItem)
+        })
         present(fullScreenVC, animated: true)
     }
 
@@ -795,6 +820,37 @@ extension ImageBrowserViewController: UICollectionViewDelegate {
         return UITargetedPreview(view: previewView, parameters: UIPreviewParameters())
     }
      */
+}
+
+// MARK: - Zoom Transition
+
+extension ImageBrowserViewController {
+    private func zoomSourceView(for imageItem: ImageItem) -> UIView? {
+        zoomSourceCell(for: imageItem)
+    }
+
+    private func zoomPreviewImage(for imageItem: ImageItem) -> UIImage? {
+        guard let cell = zoomSourceCell(for: imageItem) else { return nil }
+
+        if let imageCell = cell as? ImageBrowserCell {
+            return imageCell.imageView.image
+        } else if let logoCell = cell as? LogoImageBrowserCell {
+            return logoCell.imageView.image
+        } else {
+            return nil
+        }
+    }
+
+    private func zoomSourceCell(for imageItem: ImageItem) -> UICollectionViewCell? {
+        guard let indexPath = dataSource.indexPath(for: .content(imageItem)) else { return nil }
+
+        if collectionView.cellForItem(at: indexPath) == nil {
+            collectionView.scrollToItem(at: indexPath, at: .centeredVertically, animated: false)
+            collectionView.layoutIfNeeded()
+        }
+
+        return collectionView.cellForItem(at: indexPath)
+    }
 }
 
 // MARK: - FilterHeaderView

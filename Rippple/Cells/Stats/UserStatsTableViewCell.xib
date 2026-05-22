@@ -20,13 +20,13 @@
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rng-fP-Ysm" customClass="CardView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="12" y="4" width="440" height="131"/>
                         <subviews>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aaD-Oq-2Ty">
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aaD-Oq-2Ty">
                                 <rect key="frame" x="1" y="0.0" width="438" height="131"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vUQ-t0-vOR">
                                         <rect key="frame" x="0.0" y="0.0" width="625" height="131"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="center" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="caW-xd-Ivc">
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fill" alignment="center" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="caW-xd-Ivc">
                                                 <rect key="frame" x="18" y="12" width="592" height="107"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" alignment="bottom" translatesAutoresizingMaskIntoConstraints="NO" id="Jqf-oN-HRN">
@@ -194,11 +194,12 @@
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="Tvz-dz-yQd" firstAttribute="width" secondItem="vUQ-t0-vOR" secondAttribute="width" id="9wm-Ae-Q9G"/>
-                                    <constraint firstAttribute="bottom" secondItem="vUQ-t0-vOR" secondAttribute="bottom" id="A3S-zM-vMe"/>
-                                    <constraint firstAttribute="trailing" secondItem="vUQ-t0-vOR" secondAttribute="trailing" id="Pha-SR-3tM"/>
+                                    <constraint firstItem="vUQ-t0-vOR" firstAttribute="bottom" secondItem="Tvz-dz-yQd" secondAttribute="bottom" id="CLG-bt-4vQ"/>
+                                    <constraint firstItem="vUQ-t0-vOR" firstAttribute="leading" secondItem="Tvz-dz-yQd" secondAttribute="leading" id="CLG-le-4vQ"/>
+                                    <constraint firstItem="vUQ-t0-vOR" firstAttribute="trailing" secondItem="Tvz-dz-yQd" secondAttribute="trailing" id="CLG-tr-4vQ"/>
+                                    <constraint firstItem="vUQ-t0-vOR" firstAttribute="top" secondItem="Tvz-dz-yQd" secondAttribute="top" id="CLG-tp-4vQ"/>
                                     <constraint firstItem="Guo-AR-ZjR" firstAttribute="height" secondItem="vUQ-t0-vOR" secondAttribute="height" id="efp-lV-4DQ"/>
                                     <constraint firstItem="Tvz-dz-yQd" firstAttribute="height" secondItem="vUQ-t0-vOR" secondAttribute="height" id="ej4-5k-ZLW"/>
-                                    <constraint firstItem="vUQ-t0-vOR" firstAttribute="leading" secondItem="aaD-Oq-2Ty" secondAttribute="leading" id="rws-co-wU6"/>
                                 </constraints>
                                 <viewLayoutGuide key="contentLayoutGuide" id="Tvz-dz-yQd"/>
                                 <viewLayoutGuide key="frameLayoutGuide" id="Guo-AR-ZjR"/>
@@ -222,6 +223,7 @@
                 </constraints>
             </tableViewCellContentView>
             <connections>
+                <outlet property="statsColumnsStack" destination="caW-xd-Ivc" id="b7K-2n-XqL"/>
                 <outlet property="comments" destination="Exi-DP-pl3" id="Js4-QI-kr2"/>
                 <outlet property="episodesPlays" destination="3dE-mj-yna" id="gc9-un-dqS"/>
                 <outlet property="minutes" destination="WRs-xZ-cZB" id="qoP-X9-Lv8"/>

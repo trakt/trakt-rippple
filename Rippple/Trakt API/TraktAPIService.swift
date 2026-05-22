@@ -156,7 +156,7 @@ enum SearchType: String {
 enum Extended: String {
     case full
     case noseasons
-    case fullnoseasons = "noseasons,full"
+    case fullnoseasons = "full,noseasons"
     case guestStars = "guest_stars"
     case min
 }
@@ -333,7 +333,7 @@ enum TraktAPIService {
     case peopleShows(id: Int64)
     case knownFor(id: Int64)
 
-    case customLists(slug: String = "me")
+    case customLists(slug: String = "me", pageInfo: PageInfo = PageInfo.firstPage(with: 100))
     case customList(userSlug: String, listSlug: String)
     case collaborations(slug: String = "me")
     case listItems(slug: String?, id: Int64, type: ListMediaType?, extended: Extended?, pageInfo: PageInfo, marker: String)
@@ -344,11 +344,13 @@ enum TraktAPIService {
 
     case addToList(slug: String? = "me", id: Int64, item: WatchlistedItem)
     case removeFromList(slug: String? = "me", id: Int64, item: WatchlistedItem)
+    case reorderListItems(slug: String? = "me", id: Int64, ids: [Int64])
+    case reorderWatchlistItems(ids: [Int64])
+    case reorderFavoriteItems(ids: [Int64])
 
     case addToListWithNotes(slug: String? = "me", id: Int64, item: WatchlistedItemWithNotes)
 
-    case watched(slug: String = "me", type: WatchedType, extended: Extended?)
-    case syncWatched(type: WatchedType, extended: Extended?)
+    case watched(slug: String = "me", type: WatchedType, extended: Extended?, pageInfo: PageInfo = PageInfo.firstPage(with: 1000))
 
     case showsCalendar(startDate: Date, days: Int, filters: [String: String])
     case premiereCalendar(startDate: Date, days: Int)
@@ -375,6 +377,7 @@ enum TraktAPIService {
     case resetProgress(id: Int64)
     case undoResetProgress(id: Int64)
 
+    case trendingMedia(filters: [String: String], extended: Extended, pageInfo: PageInfo)
     case trendingMovies(filters: [String: String], extended: Extended, pageInfo: PageInfo)
     case trendingShows(filters: [String: String], extended: Extended, pageInfo: PageInfo)
 
@@ -642,6 +645,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/search/\(type.rawValue)"
         case .lookup(let tmdb, _):
             return "/search/tmdb/\(tmdb)"
+        case .trendingMedia:
+            return "/media/trending"
         case .trendingMovies:
             return "/movies/trending"
         case .trendingShows:
@@ -766,7 +771,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/people/\(peopleId)/movies"
         case .peopleShows(let peopleId):
             return "/people/\(peopleId)/shows"
-        case .customLists(let slug):
+        case .customLists(let slug, _):
             return "/users/\(slug)/lists"
         case .customList(let userSlug, let listSlug):
             return "/users/\(userSlug)/lists/\(listSlug)"
@@ -806,10 +811,14 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/\(slug!)/lists/\(listId)/items"
         case .removeFromList(let slug, let listId, _):
             return "/users/\(slug!)/lists/\(listId)/items/remove"
-        case .watched(let slug, let type, _):
+        case .reorderListItems(let slug, let listId, _):
+            return "/users/\(slug!)/lists/\(listId)/items/reorder"
+        case .reorderWatchlistItems:
+            return "/sync/watchlist/reorder"
+        case .reorderFavoriteItems:
+            return "/sync/favorites/reorder"
+        case .watched(let slug, let type, _, _):
             return "/users/\(slug)/watched/\(type)"
-        case .syncWatched(let type, _):
-            return "/sync/watched/\(type)"
         case .addEpisodeToHistory, .addMovieToHistory, .addSeasonToHistory, .addShowToHistory, .addEpisodesToHistory:
             return "/sync/history"
         case .showsCalendar(let startDate, let days, _):
@@ -1018,6 +1027,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .lookup:
             return .get
+        case .trendingMedia:
+            return .get
         case .trendingShows:
             return .get
         case .trendingMovies:
@@ -1090,7 +1101,9 @@ extension TraktAPIService: AuthorizedTargetType {
             return .put
         case .addToList, .removeFromList, .addToListWithNotes:
             return .post
-        case .watched, .syncWatched:
+        case .reorderListItems, .reorderWatchlistItems, .reorderFavoriteItems:
+            return .post
+        case .watched:
             return .get
         case .addMovieToHistory, .addEpisodeToHistory, .addShowToHistory, .addSeasonToHistory, .addEpisodesToHistory:
             return .post
@@ -1286,7 +1299,7 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: URLEncoding.default)
         case .show(_, let extended):
             if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended],
+                return .requestParameters(parameters: ["extended": extended.rawValue],
                                           encoding: URLEncoding.default)
             } else {
                 return .requestPlain
@@ -1295,7 +1308,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .requestPlain
         case .movie(_, let extended):
             if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended],
+                return .requestParameters(parameters: ["extended": extended.rawValue],
                                           encoding: URLEncoding.default)
             } else {
                 return .requestPlain
@@ -1330,7 +1343,8 @@ extension TraktAPIService: AuthorizedTargetType {
         case .lookup(_, let type):
             return .requestParameters(parameters: ["extended": "full", "type": type],
                                       encoding: URLEncoding.default)
-        case .trendingMovies(let parameters, let extended, let pageInfo),
+        case .trendingMedia(let parameters, let extended, let pageInfo),
+                .trendingMovies(let parameters, let extended, let pageInfo),
                 .trendingShows(let parameters, let extended, let pageInfo):
             var params: [String: String] = ["extended": extended.rawValue,
                           "page": String(pageInfo.page),
@@ -1381,7 +1395,7 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: URLEncoding.default)
         case .rated(_, _, let extended):
             if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended],
+                return .requestParameters(parameters: ["extended": extended.rawValue],
                                           encoding: URLEncoding.default)
             } else {
                 return .requestPlain
@@ -1467,7 +1481,7 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: URLEncoding.default)
         case .collection(_, _, let extended, _, let pageInfo):
             if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended,
+                return .requestParameters(parameters: ["extended": extended.rawValue,
                                                        "page": "\(pageInfo.page)",
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
@@ -1535,8 +1549,10 @@ extension TraktAPIService: AuthorizedTargetType {
         case .people, .peopleSlug, .peopleShows, .peopleMovies:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
-        case .customLists:
-            return .requestPlain
+        case .customLists(_, let pageInfo):
+            return .requestParameters(parameters: ["page": "\(pageInfo.page)",
+                                                   "limit": "\(pageInfo.limit)"],
+                                      encoding: URLEncoding.default)
         case .customList:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
@@ -1545,7 +1561,7 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: URLEncoding.default)
         case .listItems(_, _, _, let extended, let pageInfo, let marker):
             if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended,
+                return .requestParameters(parameters: ["extended": extended.rawValue,
                                                        "page": "\(pageInfo.page)",
                                                        "limit": "\(pageInfo.limit)",
                                                        "marker": marker],
@@ -1577,21 +1593,21 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: JSONEncoding.default)
         case .addToList(_, _, let item), .removeFromList(_, _, let item):
             return .requestJSONEncodable(item)
+        case .reorderListItems(_, _, let ids), .reorderWatchlistItems(let ids), .reorderFavoriteItems(let ids):
+            return .requestParameters(parameters: ["rank": ids],
+                                      encoding: JSONEncoding.default)
         case .addToListWithNotes(_, _, let item):
             return .requestJSONEncodable(item)
-        case .watched(_, _, let extended):
+        case .watched(_, _, let extended, let pageInfo):
             if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended],
+                return .requestParameters(parameters: ["extended": extended.rawValue,
+                                                       "page": "\(pageInfo.page)",
+                                                       "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             } else {
-                return .requestPlain
-            }
-        case .syncWatched( _, let extended):
-            if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended],
+                return .requestParameters(parameters: ["page": "\(pageInfo.page)",
+                                                       "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
-            } else {
-                return .requestPlain
             }
         case .addMovieToHistory(let traktId, let watchedAt):
             let formatter = DateFormatter()
@@ -1679,7 +1695,7 @@ extension TraktAPIService: AuthorizedTargetType {
         case .hidden(_, let type, let extended, let pageInfo):
             if let type = type, let extended = extended {
                 return .requestParameters(parameters: ["type": "\(type)",
-                                                       "extended": extended,
+                                                       "extended": extended.rawValue,
                                                        "page": "\(pageInfo.page)",
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
@@ -1689,7 +1705,7 @@ extension TraktAPIService: AuthorizedTargetType {
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             } else if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended,
+                return .requestParameters(parameters: ["extended": extended.rawValue,
                                                        "page": "\(pageInfo.page)",
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
@@ -1780,7 +1796,7 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: JSONEncoding.default)
         case .notes(_, _, let extended, let pageInfo):
             if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended,
+                return .requestParameters(parameters: ["extended": extended.rawValue,
                                                        "page": "\(pageInfo.page)",
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
@@ -1903,7 +1919,8 @@ extension TraktAPIService: AuthorizedTargetType {
     }
     var needsAuth: Bool {
         switch self {
-        case .trendingMovies(let filters, _, _),
+        case .trendingMedia(let filters, _, _),
+                .trendingMovies(let filters, _, _),
                 .anticipatedMovies(let filters, _, _),
                 .popularMovies(let filters, _, _),
                 .boxoffice(let filters, _, _),

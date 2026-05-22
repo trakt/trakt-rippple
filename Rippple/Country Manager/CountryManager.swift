@@ -245,18 +245,69 @@ final class CountryManager {
     }
 }
 
+extension Array where Element == ProviderType {
+    func sortedByProviderPriority() -> [ProviderType] {
+        let favoriteProviders = CountryManager.shared.favoriteProviders
+
+        return sorted {
+            $0.isOrderedBefore($1, favoriteProviders: favoriteProviders)
+        }
+    }
+}
+
 extension ProviderType {
-    var computedPriority: Int {
-        var priority = priority ?? Int.max
-        if type?.contains(where: { $0 == "Stream" }) == true {
-            priority -= 10000
+    private static let streamPriorityBoost = 10_000
+    private static let freePriorityBoost = 20_000
+    private static let maximumLinkPriorityBoost = streamPriorityBoost + freePriorityBoost
+    private static let missingDisplayPriority = Int.max - maximumLinkPriorityBoost
+
+    fileprivate func isOrderedBefore(_ provider: ProviderType, favoriteProviders: [ProviderType]) -> Bool {
+        let sortKey = prioritySortKey(favoriteProviders: favoriteProviders)
+        let otherSortKey = provider.prioritySortKey(favoriteProviders: favoriteProviders)
+
+        if sortKey.favoriteRank != otherSortKey.favoriteRank {
+            return sortKey.favoriteRank < otherSortKey.favoriteRank
         }
-        if type?.contains(where: { $0 == "Free"}) == true {
-            priority -= 20000
+
+        if sortKey.adjustedDisplayPriority != otherSortKey.adjustedDisplayPriority {
+            return sortKey.adjustedDisplayPriority < otherSortKey.adjustedDisplayPriority
         }
-        if let index = CountryManager.shared.favoriteProviders.firstIndex(where: { $0 == self }) {
-            priority -= 100000 + index
+
+        if let name = name, let otherName = provider.name {
+            let comparison = name.localizedStandardCompare(otherName)
+            if comparison != .orderedSame {
+                return comparison == .orderedAscending
+            }
+        } else if name != nil {
+            return true
+        } else if provider.name != nil {
+            return false
         }
-        return priority
+
+        return (identifier ?? Int.max) < (provider.identifier ?? Int.max)
+    }
+
+    private func prioritySortKey(favoriteProviders: [ProviderType]) -> (favoriteRank: Int, adjustedDisplayPriority: Int) {
+        // Favorites get separate ranks so display priority cannot override the user's order.
+        let favoriteRank = favoriteProviders.firstIndex(where: { $0 == self }) ?? favoriteProviders.count
+
+        return (favoriteRank, typeAdjustedDisplayPriority)
+    }
+
+    private var typeAdjustedDisplayPriority: Int {
+        let displayPriority = max(priority ?? ProviderType.missingDisplayPriority, 0)
+
+        return displayPriority - linkPriorityBoost
+    }
+
+    private var linkPriorityBoost: Int {
+        var boost = 0
+        if type?.contains("Stream") == true {
+            boost += ProviderType.streamPriorityBoost
+        }
+        if type?.contains("Free") == true {
+            boost += ProviderType.freePriorityBoost
+        }
+        return boost
     }
 }

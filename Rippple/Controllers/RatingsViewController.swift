@@ -203,19 +203,8 @@ final class RatingsViewController: UITableViewController {
 
         refreshControl?.isEnabled = false
 
-        #if targetEnvironment(macCatalyst)
-        let filterButton = UIButton()
-        filterButton.setImage(filterButtonItem.image?.withConfiguration(UIImage.SymbolConfiguration(scale: .large)),
-                              for: .normal)
-        filterButton.tintColor = .gray
-        filterButton.showsMenuAsPrimaryAction = true
-        filterButton.menu = filterMenu()
-        filterButtonItem.customView = filterButton
-        filterButton.sizeToFit()
-        #else
         filterButtonItem.primaryAction = nil
         filterButtonItem.menu = filterMenu()
-        #endif
 
         #if !targetEnvironment(macCatalyst)
         self.refreshControl = UIRefreshControl()

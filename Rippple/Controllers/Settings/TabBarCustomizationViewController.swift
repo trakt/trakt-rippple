@@ -150,6 +150,12 @@ final class TabBarCustomizationViewController: UITableViewController {
         case .browse:
             content.text = "Browse"
             content.image = UIImage(systemName: "sparkles.rectangle.stack")
+        case .shelf:
+            content.text = "Shelf"
+            content.image = UIImage(systemName: "square.grid.3x1.below.line.grid.1x2")
+        case .comments:
+            content.text = "Comments"
+            content.image = UIImage(systemName: "text.bubble")
         }
         cell.contentConfiguration = content
 

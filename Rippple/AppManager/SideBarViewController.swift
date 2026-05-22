@@ -182,14 +182,19 @@ class SidebarViewController: UIViewController {
     }
 
     private func updatePurchasedState() {
+        let shelfViewController = UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(identifier: "standalone browse") as! BrowseViewController
+        shelfViewController.followsShelfConfig = true
+
         secondaryViewControllers = [
             UIStoryboard(name: "Browse", bundle: nil).instantiateInitialViewController()!,
-            UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(withIdentifier: "wall"),
             UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "To Watch"),
             UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "Activities"),
             UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "Lists"),
+            UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "Search"),
+            StyledNavigationController(rootViewController: CommentsTabViewController()),
             UIStoryboard(name: "Calendar", bundle: nil).instantiateInitialViewController()!,
-            UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "Search")
+            StyledNavigationController(rootViewController: shelfViewController),
+            UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(withIdentifier: "wall")
         ]
     }
 
@@ -209,20 +214,20 @@ class SidebarViewController: UIViewController {
         collectionView.selectItem(at: indexPath,
                                       animated: false,
                                       scrollPosition: UICollectionView.ScrollPosition.centeredVertically)
-        if section == 2 {
+        if indexPath.section == 3 {
             // if it's a list, we check the number of lists
-            if row <= lists.count {
+            if indexPath.row <= lists.count {
                 collectionView(collectionView,
-                               didSelectItemAt: IndexPath(row: row, section: section))
+                               didSelectItemAt: indexPath)
             } else {
                 collectionView(collectionView,
                                didSelectItemAt: IndexPath(row: 3, section: 0))
             }
-        } else if section == 3 {
+        } else if indexPath.section == 4 {
             // if it's a liked list, we check the number of likedLists
-            if row <= likedLists.count {
+            if indexPath.row <= likedLists.count {
                 collectionView(collectionView,
-                               didSelectItemAt: IndexPath(row: row, section: section))
+                               didSelectItemAt: indexPath)
             } else {
                 collectionView(collectionView,
                                didSelectItemAt: IndexPath(row: 3, section: 0))
@@ -287,7 +292,7 @@ extension SidebarViewController {
     private func createLayout() -> UICollectionViewLayout {
         return UICollectionViewCompositionalLayout { section, layoutEnvironment in
             var config = UICollectionLayoutListConfiguration(appearance: .sidebar)
-            config.headerMode = section == 0 ? .none : .firstItemInSection
+            config.headerMode = section <= 1 ? .none : .firstItemInSection
             config.showsSeparators = false
             return NSCollectionLayoutSection.list(using: config, layoutEnvironment: layoutEnvironment)
         }
@@ -370,7 +375,7 @@ extension SidebarViewController {
         // Creating the datasource
 
         dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) { (collectionView: UICollectionView, indexPath: IndexPath, item: Item) -> UICollectionViewCell? in
-            if indexPath.item == 0 && indexPath.section != 0 {
+            if indexPath.item == 0 && indexPath.section > 1 {
                 return collectionView.dequeueConfiguredReusableCell(using: headerRegistration, for: indexPath, item: item)
             } else {
                 return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
@@ -379,23 +384,23 @@ extension SidebarViewController {
 
         dataSource.sectionSnapshotHandlers.willExpandItem = { item in
             let indexPath = self.dataSource.indexPath(for: item)
-            if indexPath?.section == 1 { UserDefaults.standard.set(true, forKey: "LibrarySideBarExpanded") }
-            if indexPath?.section == 2 { UserDefaults.standard.set(true, forKey: "ListsSideBarExpanded") }
-            if indexPath?.section == 3 { UserDefaults.standard.set(true, forKey: "LikedListsSideBarExpanded") }
+            if indexPath?.section == 2 { UserDefaults.standard.set(true, forKey: "LibrarySideBarExpanded") }
+            if indexPath?.section == 3 { UserDefaults.standard.set(true, forKey: "ListsSideBarExpanded") }
+            if indexPath?.section == 4 { UserDefaults.standard.set(true, forKey: "LikedListsSideBarExpanded") }
             UserDefaults.standard.synchronize()
         }
 
         dataSource.sectionSnapshotHandlers.willCollapseItem = { item in
             let indexPath = self.dataSource.indexPath(for: item)
-            if indexPath?.section == 1 { UserDefaults.standard.set(false, forKey: "LibrarySideBarExpanded") }
-            if indexPath?.section == 2 { UserDefaults.standard.set(false, forKey: "ListsSideBarExpanded") }
-            if indexPath?.section == 3 { UserDefaults.standard.set(false, forKey: "LikedListsSideBarExpanded") }
+            if indexPath?.section == 2 { UserDefaults.standard.set(false, forKey: "LibrarySideBarExpanded") }
+            if indexPath?.section == 3 { UserDefaults.standard.set(false, forKey: "ListsSideBarExpanded") }
+            if indexPath?.section == 4 { UserDefaults.standard.set(false, forKey: "LikedListsSideBarExpanded") }
             UserDefaults.standard.synchronize()
         }
 
         // Creating and applying snapshots
 
-        let sections: [Section] = [.tabs, .lists, .customLists, .likedLists]
+        let sections: [Section] = [.tabs, .moreTabs, .lists, .customLists, .likedLists]
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         snapshot.appendSections(sections)
         dataSource.apply(snapshot, animatingDifferences: false)
@@ -405,6 +410,10 @@ extension SidebarViewController {
             case .tabs:
                 var sectionSnapshot = NSDiffableDataSourceSectionSnapshot<Item>()
                 sectionSnapshot.append(tabsItems)
+                dataSource.apply(sectionSnapshot, to: section)
+            case .moreTabs:
+                var sectionSnapshot = NSDiffableDataSourceSectionSnapshot<Item>()
+                sectionSnapshot.append(moreTabsItems)
                 dataSource.apply(sectionSnapshot, to: section)
             case .lists:
                 let headerItem = Item(title: section.rawValue, subtitle: nil, image: nil)
@@ -442,9 +451,9 @@ extension SidebarViewController {
 extension SidebarViewController: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, canFocusItemAt indexPath: IndexPath) -> Bool {
-        if indexPath.section == 1 && indexPath.row == 0 { return false }
         if indexPath.section == 2 && indexPath.row == 0 { return false }
         if indexPath.section == 3 && indexPath.row == 0 { return false }
+        if indexPath.section == 4 && indexPath.row == 0 { return false }
         return true
     }
 
@@ -459,19 +468,19 @@ extension SidebarViewController: UICollectionViewDelegate {
         if indexPath.section == 0 {
             if let navigationController = splitViewController?.viewController(for: column) as? UINavigationController,
                navigationController == secondaryViewControllers[indexPath.row] {
-                if indexPath.row == 6 {
-                    ShortcutManager.shared.shouldHandle(shortcut: ShortcutManager.shared.searchAndKeyboardShortcutItem)
-                    if SessionManager.shared.isLoggedIn,
-                        DeeplinkManager.shared.shouldOpenDeeplink() {
-                        UIApplication.shared.switchToDeeplink()
-                    }
-                } else {
-                    navigationController.popToRootViewController(animated: true)
-                }
+                handleReselection(of: navigationController, secondaryViewControllerIndex: indexPath.row)
             } else {
                 setSupplementaryView(index: indexPath.row)
             }
         } else if indexPath.section == 1 {
+            let secondaryViewControllerIndex = tabsItems.count + indexPath.row
+            if let navigationController = splitViewController?.viewController(for: column) as? UINavigationController,
+               navigationController == secondaryViewControllers[secondaryViewControllerIndex] {
+                handleReselection(of: navigationController, secondaryViewControllerIndex: secondaryViewControllerIndex)
+            } else {
+                setSupplementaryView(index: secondaryViewControllerIndex)
+            }
+        } else if indexPath.section == 2 {
             if indexPath.row == 1 {
                 UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
                 UserDefaults.standard.set("watchlist", forKey: "CustomListsViewController.standardList")
@@ -498,7 +507,7 @@ extension SidebarViewController: UICollectionViewDelegate {
             navigationController.topViewController?.loadViewIfNeeded()
             splitViewController?.setViewController(listsViewController, for: column)
             navigationController.topViewController?.navigationItem.hidesBackButton = true
-        } else if indexPath.section == 2 {
+        } else if indexPath.section == 3 {
             let list = lists[indexPath.row - 1]
             if let encoded = try? JSONEncoder().encode(list) {
                 UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
@@ -510,7 +519,7 @@ extension SidebarViewController: UICollectionViewDelegate {
             navigationController.topViewController?.loadViewIfNeeded()
             splitViewController?.setViewController(listsViewController, for: column)
             navigationController.topViewController?.navigationItem.hidesBackButton = true
-        } else if indexPath.section == 3 {
+        } else if indexPath.section == 4 {
             let list = likedLists[indexPath.row - 1]
             if let encoded = try? JSONEncoder().encode(list) {
                 UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
@@ -522,6 +531,81 @@ extension SidebarViewController: UICollectionViewDelegate {
             navigationController.topViewController?.loadViewIfNeeded()
             splitViewController?.setViewController(listsViewController, for: column)
             navigationController.topViewController?.navigationItem.hidesBackButton = true
+        }
+    }
+
+    private func handleReselection(of navigationController: UINavigationController, secondaryViewControllerIndex: Int) {
+        switch secondaryViewControllerIndex {
+        case 0:
+            if shouldScrollToTop(view: navigationController.view) {
+                scrollToTop(view: navigationController.view)
+            } else {
+                cycleBrowseConfig()
+            }
+        case 1:
+            if shouldScrollToTop(view: navigationController.view) {
+                scrollToTop(view: navigationController.view)
+            } else if let toWatchViewController = navigationController.topViewController as? ToWatchViewController {
+                switch toWatchViewController.currentType {
+                case .episodes:
+                    toWatchViewController.currentType = .movies
+                case .movies:
+                    toWatchViewController.currentType = .episodes
+                }
+            } else {
+                navigationController.popToRootViewController(animated: true)
+            }
+        case 4:
+            ShortcutManager.shared.shouldHandle(shortcut: ShortcutManager.shared.searchAndKeyboardShortcutItem)
+            if SessionManager.shared.isLoggedIn,
+                DeeplinkManager.shared.shouldOpenDeeplink() {
+                UIApplication.shared.switchToDeeplink()
+            }
+        case 6:
+            if let calendarViewController = navigationController.topViewController as? CalendarViewController {
+                calendarViewController.scrollToClosestToNow(animated: true)
+            } else {
+                navigationController.popToRootViewController(animated: true)
+            }
+        default:
+            navigationController.popToRootViewController(animated: true)
+        }
+    }
+
+    private func cycleBrowseConfig() {
+        if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.freeConfig {
+            // do nothing
+        } else if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.defaultConfig {
+            BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.showsConfig
+        } else if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.showsConfig {
+            BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.moviesConfig
+        } else if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.moviesConfig {
+            BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.newAndHot
+        } else if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.newAndHot {
+            BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.shelfConfig
+        } else if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.shelfConfig {
+            BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.defaultConfig
+        }
+    }
+
+    private func shouldScrollToTop(view: UIView) -> Bool {
+        if let scrollView = view as? UIScrollView {
+            return (scrollView.adjustedContentInset.top + scrollView.contentOffset.y) != 0
+        } else {
+            for subview in view.subviews {
+                return shouldScrollToTop(view: subview)
+            }
+            return false
+        }
+    }
+
+    private func scrollToTop(view: UIView) {
+        if let scrollView = view as? UIScrollView {
+            scrollView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: true)
+            return
+        }
+        for subview in view.subviews {
+            scrollToTop(view: subview)
         }
     }
 }
@@ -536,12 +620,15 @@ struct Item: Hashable {
 }
 
 let tabsItems = [Item(title: "Browse", subtitle: nil, image: UIImage(systemName: "sparkles.rectangle.stack")),
-                 Item(title: "Wall", subtitle: nil, image: UIImage(systemName: "rectangle.grid.3x2")),
                  Item(title: "To Watch", subtitle: nil, image: UIImage(systemName: "checklist")),
                  Item(title: "History", subtitle: nil, image: UIImage(systemName: "memories")),
                  Item(title: "Lists", subtitle: nil, image: UIImage(systemName: "text.justify.left")),
-                 Item(title: "Calendar", subtitle: nil, image: UIImage(systemName: "calendar.day.timeline.left")),
                  Item(title: "Search", subtitle: nil, image: UIImage(systemName: "magnifyingglass"))]
+
+let moreTabsItems = [Item(title: "Comments", subtitle: nil, image: UIImage(systemName: "text.bubble")),
+                     Item(title: "Calendar", subtitle: nil, image: UIImage(systemName: "calendar.day.timeline.left")),
+                     Item(title: "Shelf", subtitle: nil, image: UIImage(systemName: "square.grid.3x1.below.line.grid.1x2")),
+                     Item(title: "Wall", subtitle: nil, image: UIImage(systemName: "rectangle.grid.3x2"))]
 
 let listItems = [Item(title: "Watchlist", subtitle: nil, image: UIImage(systemName: "bookmark")),
                  Item(title: "Favorites", subtitle: nil, image: UIImage(systemName: "star")),
@@ -551,6 +638,7 @@ let listItems = [Item(title: "Watchlist", subtitle: nil, image: UIImage(systemNa
 
 private enum Section: String {
     case tabs
+    case moreTabs
     case lists = "Your Lists"
     case customLists = "Custom Lists"
     case likedLists = "Liked Lists"
@@ -559,7 +647,7 @@ private enum Section: String {
 extension SidebarViewController: UICollectionViewDropDelegate {
 
     func collectionView(_ collectionView: UICollectionView, shouldSpringLoadItemAt indexPath: IndexPath, with context: UISpringLoadedInteractionContext) -> Bool {
-        if indexPath.section == 1 && indexPath.row == 5 {
+        if indexPath.section == 2 && indexPath.row == 5 {
             return true
         }
         return false
@@ -583,17 +671,20 @@ extension SidebarViewController: UICollectionViewDropDelegate {
         if destinationIndexPath.section == 0 {
             return UICollectionViewDropProposal(operation: .cancel)
         }
+        if destinationIndexPath.section == 1 {
+            return UICollectionViewDropProposal(operation: .cancel)
+        }
 
         // Watched (can't drop)
-        if destinationIndexPath.section == 1 && destinationIndexPath.row == 4 {
+        if destinationIndexPath.section == 2 && destinationIndexPath.row == 4 {
             return UICollectionViewDropProposal(operation: .cancel)
         }
         // Collaborations (can't drop)
-        if destinationIndexPath.section == 1 && destinationIndexPath.row == 5 {
+        if destinationIndexPath.section == 2 && destinationIndexPath.row == 5 {
             return UICollectionViewDropProposal(operation: .cancel)
         }
         // Liked Lists section header row (can't drop)
-        if destinationIndexPath.section == 3 && destinationIndexPath.row == 0 {
+        if destinationIndexPath.section == 4 && destinationIndexPath.row == 0 {
             return UICollectionViewDropProposal(operation: .cancel)
         }
 
@@ -608,7 +699,7 @@ extension SidebarViewController: UICollectionViewDropDelegate {
 
         guard let destinationIndexPath = coordinator.destinationIndexPath else { return }
 
-        if destinationIndexPath.section == 1 {
+        if destinationIndexPath.section == 2 {
             if destinationIndexPath.row == 1 {
                 addToWatchlist(models: coordinator.items.compactMap { $0.dragItem.localObject as? MediaModel })
             } else if destinationIndexPath.row == 2 {
@@ -617,10 +708,10 @@ extension SidebarViewController: UICollectionViewDropDelegate {
                 addToCollection(models: coordinator.items.compactMap { $0.dragItem.localObject as? MediaModel })
             }
         }
-        if destinationIndexPath.section == 2 {
+        if destinationIndexPath.section == 3 {
             add(models: coordinator.items.compactMap { $0.dragItem.localObject as? MediaModel }, to: lists[destinationIndexPath.row - 1])
         }
-        if destinationIndexPath.section == 3 {
+        if destinationIndexPath.section == 4 {
             // Do nothing, can't add to liked lists
         }
     }

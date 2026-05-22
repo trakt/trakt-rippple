@@ -100,6 +100,10 @@ class ContextMenuHelper: NSObject {
                 self.media = collectionViewCell.media
             }
 
+            if let collectionViewCell = cell as? ListBrowseCollectionViewCell {
+                self.media = collectionViewCell.media
+            }
+
             if let collectionViewCell = cell as? TopBrowseCollectionViewCell {
                 self.media = collectionViewCell.media
             }
@@ -182,6 +186,10 @@ class ContextMenuHelper: NSObject {
             return collectionViewCell.contentView
         }
 
+        if let collectionViewCell = cell as? ListBrowseCollectionViewCell {
+            return collectionViewCell.poster
+        }
+
         if let cell = cell as? LastWatchedTableViewCell {
             return cell.poster
         }
@@ -227,6 +235,7 @@ class ContextMenuHelper: NSObject {
     var menu: UIMenu {
 
         guard let media = media else { return UIMenu(title: "Somthing wrong happened. Try again.", children: []) }
+        let openInSubmenu = makeOpenInSubmenu(for: media)
 
         let share = UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
             guard let self = self else { return }
@@ -378,9 +387,10 @@ class ContextMenuHelper: NSObject {
             let watchSubmenu = UIMenu(title: "", options: .displayInline, children: watchActions)
             let listsSubmenu = UIMenu(title: "", options: .displayInline, children: listsActions)
             let shareSubmenu = UIMenu(title: "", options: .displayInline, children: shareActions)
+            let sharingSubmenu = UIMenu(title: "", options: .displayInline, children: [share, openInSubmenu])
             let toWatchSubmenu = UIMenu(title: "", options: .displayInline, children: toWatchActions)
 
-            return UIMenu(title: "\(movie.title)", children: [watchSubmenu, toWatchSubmenu, listsSubmenu, media.rateMenu, shareSubmenu, share])
+            return UIMenu(title: "\(movie.title)", children: [watchSubmenu, toWatchSubmenu, listsSubmenu, media.rateMenu, shareSubmenu, sharingSubmenu])
         case let .show(show):
             var watchActions = [UIAction]()
             var listsActions = [UIMenuElement]()
@@ -570,9 +580,10 @@ class ContextMenuHelper: NSObject {
             let watchSubmenu = UIMenu(title: "", options: .displayInline, children: watchActions)
             let listsSubmenu = UIMenu(title: "", options: .displayInline, children: listsActions)
             let shareSubmenu = UIMenu(title: "", options: .displayInline, children: shareActions)
+            let sharingSubmenu = UIMenu(title: "", options: .displayInline, children: [share, openInSubmenu])
             let toWatchSubmenu = UIMenu(title: "", options: .displayInline, children: toWatchActions)
 
-            return UIMenu(title: "\(show.title)", children: [watchSubmenu, toWatchSubmenu, listsSubmenu, media.rateMenu, shareSubmenu, share])
+            return UIMenu(title: "\(show.title)", children: [watchSubmenu, toWatchSubmenu, listsSubmenu, media.rateMenu, shareSubmenu, sharingSubmenu])
         case let .episode(episode, show):
             var watchActions = [UIAction]()
             var listsActions = [UIMenuElement]()
@@ -687,8 +698,9 @@ class ContextMenuHelper: NSObject {
             let watchSubmenu = UIMenu(title: "", options: .displayInline, children: watchActions)
             let listsSubmenu = UIMenu(title: "", options: .displayInline, children: listsActions)
             let shareSubmenu = UIMenu(title: "", options: .displayInline, children: shareActions)
+            let sharingSubmenu = UIMenu(title: "", options: .displayInline, children: [share, openInSubmenu])
 
-            return UIMenu(title: "\(show.title) \(episode.localizedEpisodeNumber)", children: [watchSubmenu, listsSubmenu, media.rateMenu, shareSubmenu, share])
+            return UIMenu(title: "\(show.title) \(episode.localizedEpisodeNumber)", children: [watchSubmenu, listsSubmenu, media.rateMenu, shareSubmenu, sharingSubmenu])
         case .season(let season, let show):
             var watchActions = [UIAction]()
             var listsActions = [UIMenuElement]()
@@ -785,8 +797,9 @@ class ContextMenuHelper: NSObject {
             let toWatchSubmenu = UIMenu(title: "", options: .displayInline, children: toWatchActions)
             let listsSubmenu = UIMenu(title: "", options: .displayInline, children: listsActions)
             let shareSubmenu = UIMenu(title: "", options: .displayInline, children: shareActions)
+            let sharingSubmenu = UIMenu(title: "", options: .displayInline, children: [share, openInSubmenu])
 
-            return UIMenu(title: "\(show.title) Season \(season.number)", children: [watchSubmenu, toWatchSubmenu, listsSubmenu, media.rateMenu, shareSubmenu, share])
+            return UIMenu(title: "\(show.title) Season \(season.number)", children: [watchSubmenu, toWatchSubmenu, listsSubmenu, media.rateMenu, shareSubmenu, sharingSubmenu])
         case .list:
             fatalError()
         case .showProgress:
@@ -1418,11 +1431,32 @@ class ContextMenuHelper: NSObject {
         guard let sharedURL = media.traktWebsiteMediaLink else { return }
         let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
         UIApplication.shared.present(activityViewController)
+    }
 
-        /*
-        guard let sharingViewController = UIStoryboard(name: "Sharing", bundle: nil).instantiateInitialViewController() else { return }
-        UIApplication.shared.present(sharingViewController)
-         */
+    private func makeOpenInSubmenu(for media: MediaModel) -> UIMenu {
+        let entries = OpenActionManager.shared.actions(for: media)
+
+        let actions: [UIAction] = entries.map { entry in
+            UIAction(title: entry.action.name,
+                     image: UIImage(systemName: entry.action.systemImageName)) { [weak self] _ in
+                self?.openIn(entry.url)
+            }
+        }
+
+        return UIMenu(title: "Open In",
+                      image: UIImage(systemName: "arrow.up.forward"),
+                      children: actions)
+    }
+
+    private func openIn(_ url: URL) {
+        if url.scheme?.lowercased() == "infuse",
+           UIApplication.shared.canOpenURL(url) == false,
+           let appStoreURL = URL(string: "https://apps.apple.com/app/id1136220934") {
+            UIApplication.shared.open(appStoreURL)
+            return
+        }
+
+        UIApplication.shared.open(url)
     }
 
     private func presentNextEpisode(media: MediaModel) {
@@ -1543,7 +1577,7 @@ class ContextMenuHelper: NSObject {
                                                             DispatchQueue.main.async {
                                                                 RecommendedManager.shared.refresh()
                                                                 AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "⭐️ Added to Favorited")
+                                                                SwiftMessages.show(message: "⭐️ Added to Favorites")
                                                             }
 
                                                         } catch {
@@ -1672,7 +1706,7 @@ class ContextMenuHelper: NSObject {
         }
     }
 
-    private func markWatched() {
+    func markWatched() {
         guard let navigationController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "Action Navigation Controller") as? UINavigationController else { return }
 
         let markWatchedActionViewController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "Mark Watched") { [weak self] coder -> MarkWatchedActionViewController? in

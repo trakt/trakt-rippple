@@ -34,12 +34,17 @@ final class CommentsViewController: UITableViewController {
             if coordinator.type.isPreview || coordinator.type.isReplies {
                 coordinator.fetchFirst()
             }
+
+            if isViewLoaded {
+                updateHeaderForCurrentListType()
+            }
         }
     }
 
     private let contextMenu = ContextMenuHelper()
 
     private let disposeBag = DisposeBag()
+    private var isListeningForFollowingChanges = false
 
     @IBOutlet var loadingView: UIView!
     @IBOutlet weak var animationViewContainer: NVActivityIndicatorView!
@@ -350,15 +355,7 @@ final class CommentsViewController: UITableViewController {
             sortActionButtonItem.primaryAction = nil
             sortActionButtonItem.menu = sortMenu()
         case .forYou:
-            updateHeaderForFollowing()
-
-            FollowManager.shared.onFollowingChangedReceiver.listen { [weak self] _ in
-                guard let self = self else { return }
-                DispatchQueue.main.async {
-                    self.updateHeaderForFollowing()
-                }
-            }.disposed(by: disposeBag)
-
+            updateHeaderForCurrentListType()
             navigationItem.rightBarButtonItems = nil
         case .feed, .trending:
             navigationItem.rightBarButtonItems = nil
@@ -647,11 +644,42 @@ final class CommentsViewController: UITableViewController {
     }
 
     private func updateHeaderForFollowing() {
-        if FollowManager.shared.followingCount != 0 {
-            tableView.tableHeaderView = followingView
-        } else {
-            tableView.tableHeaderView = placeholderHeaderView
+        guard let type = coordinator?.type, type.isForYou else {
+            tableView.tableHeaderView = nil
+            return
         }
+
+        if FollowManager.shared.followingCount != 0 {
+            if tableView.tableHeaderView !== followingView {
+                tableView.tableHeaderView = followingView
+            }
+        } else {
+            if tableView.tableHeaderView !== placeholderHeaderView {
+                tableView.tableHeaderView = placeholderHeaderView
+            }
+        }
+    }
+
+    private func updateHeaderForCurrentListType() {
+        guard let type = coordinator?.type, type.isForYou else {
+            tableView.tableHeaderView = nil
+            return
+        }
+
+        startListeningForFollowingChangesIfNeeded()
+        updateHeaderForFollowing()
+    }
+
+    private func startListeningForFollowingChangesIfNeeded() {
+        guard !isListeningForFollowingChanges else { return }
+
+        isListeningForFollowingChanges = true
+
+        FollowManager.shared.onFollowingChangedReceiver.listen { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateHeaderForCurrentListType()
+            }
+        }.disposed(by: disposeBag)
     }
 }
 

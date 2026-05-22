@@ -1940,8 +1940,49 @@ struct SavedFilter: Codable, Equatable, Hashable {
     let query: String
     let limit: Int?
 
+    var normalized: SavedFilter {
+        if path != "/all/trending" { return self }
+        return SavedFilter(section: section,
+                           name: name,
+                           path: "/media/trending",
+                           query: query,
+                           limit: limit)
+    }
+
+    private var isCombinedTrending: Bool {
+        ["/media/trending", "/all/trending"].contains(path)
+    }
+
     var canFilterWatched: Bool {
+        if isCombinedTrending {
+            return true
+        }
+
         if ["movies", "shows", "search"].contains(section) {
+            return true
+        }
+        return false
+    }
+
+    var canSort: Bool {
+        if ["episodes_to_watch",
+            "movies_to_watch",
+            "pinned_to_watch",
+            "unpinned_to_watch",
+            "CompletedShows",
+            "DroppedShows",
+            "PinnedShows",
+            "PinnedMovies"].contains(section) {
+            return false
+        }
+
+        if ["/users/me/watched/movies",
+            "/users/me/watched/shows"].contains(path) ||
+            isCombinedTrending {
+            return false
+        }
+
+        if path.contains("users") || path.contains("sync") {
             return true
         }
         return false

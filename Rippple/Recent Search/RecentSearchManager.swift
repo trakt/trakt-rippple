@@ -14,6 +14,25 @@ typealias RecentSearch = SavedFilter
 
 let (onRecentSearchChangedTransmitter, onRecentSearchChangedReceiver) = Receiver<[RecentSearch]>.make(with: .warm(upTo: 1))
 
+extension RecentSearch {
+    var searchFieldQuery: String {
+        var components = URLComponents()
+        components.percentEncodedQuery = query
+        if let value = components.queryItems?.first(where: { $0.name == "query" })?.value,
+           value.isEmpty == false {
+            return value
+        }
+
+        let queryKey = "query="
+        if query.lowercased().hasPrefix(queryKey) {
+            let value = String(query.dropFirst(queryKey.count))
+            return value.removingPercentEncoding ?? value
+        }
+
+        return name
+    }
+}
+
 final class RecentSearchManager {
 
     private let disposeBag = DisposeBag()
@@ -52,7 +71,29 @@ final class RecentSearchManager {
         }
     }
 
+    public func save(title: String,
+                     query: String,
+                     path: String = "/search/movie,show",
+                     limit: Int = 50) {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard query.isEmpty == false else { return }
+
+        let recent = RecentSearch(section: "recent",
+                                  name: title.isEmpty ? query : title,
+                                  path: path,
+                                  query: encodedQuery(for: query),
+                                  limit: limit)
+        recentSearches.insert(recent, at: 0)
+    }
+
     public func removeAll() {
         recentSearches = [RecentSearch]()
+    }
+
+    private func encodedQuery(for query: String) -> String {
+        var components = URLComponents()
+        components.queryItems = [URLQueryItem(name: "query", value: query)]
+        return components.percentEncodedQuery ?? "query=\(query)"
     }
 }

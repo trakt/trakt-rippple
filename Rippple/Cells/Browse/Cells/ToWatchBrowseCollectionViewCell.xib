@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23094" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23084"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24743"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="collection view cell content view" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -20,7 +20,7 @@
                     <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="khm-iu-JMk" customClass="BackdropImageView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="421" height="238.66666666666666"/>
                     </imageView>
-                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="k4L-ok-VxK">
+                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="k4L-ok-VxK">
                         <rect key="frame" x="4" y="246.66666666666666" width="413" height="33.333333333333343"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" alignment="top" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="YLl-FT-c5b">
@@ -52,6 +52,15 @@
                                     </label>
                                 </subviews>
                             </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" preferredBehavioralStyle="pad" translatesAutoresizingMaskIntoConstraints="NO" id="ueT-Aw-Hmm">
+                                <rect key="frame" x="0.0" y="-0.33333333333331439" width="45.333333333333314" height="34.333333333333336"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="tinted" image="heart" catalog="system">
+                                    <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="font" scale="medium" weight="bold">
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                    </preferredSymbolConfiguration>
+                                </buttonConfiguration>
+                            </button>
                         </subviews>
                     </stackView>
                 </subviews>
@@ -67,6 +76,7 @@
             </collectionViewCellContentView>
             <size key="customSize" width="551" height="304"/>
             <connections>
+                <outlet property="actionButton" destination="ueT-Aw-Hmm" id="PfH-WW-QVw"/>
                 <outlet property="backdrop" destination="khm-iu-JMk" id="wVS-hS-mUP"/>
                 <outlet property="label" destination="oKH-iK-74p" id="s7w-Dt-oji"/>
                 <outlet property="pinned" destination="XHa-uK-pHf" id="eUf-u1-num"/>
@@ -76,6 +86,7 @@
         </collectionViewCell>
     </objects>
     <resources>
+        <image name="heart" catalog="system" width="128" height="107"/>
         <image name="pin" catalog="system" width="116" height="128"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

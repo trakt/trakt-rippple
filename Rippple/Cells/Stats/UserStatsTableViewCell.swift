@@ -26,10 +26,18 @@ final class UserStatsTableViewCell: UITableViewCell {
 
     @IBOutlet weak var yirButton: UIButton!
 
+    @IBOutlet private weak var statsColumnsStack: UIStackView!
+
     private let disposeBag = DisposeBag()
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cancelCancellable()
+    }
 
     override func awakeFromNib() {
         super.awakeFromNib()
+        configureStatsColumnsPriorities()
 
         RatingsManager.shared.onRatedItemsChangedReceiver.skip(count: 1).listen { [weak self] _ in
             guard let self = self else { return }
@@ -59,6 +67,13 @@ final class UserStatsTableViewCell: UITableViewCell {
             self.cancelCancellable()
             self.cancellable = self.fetchStatsFor(type: .user(slug: self.user.slug))
         }.disposed(by: disposeBag)
+    }
+
+    private func configureStatsColumnsPriorities() {
+        statsColumnsStack.arrangedSubviews.forEach { column in
+            column.setContentHuggingPriority(.required, for: .horizontal)
+            column.setContentCompressionResistancePriority(.required, for: .horizontal)
+        }
     }
 
     var user: User! {
@@ -195,6 +210,7 @@ final class UserStatsTableViewCell: UITableViewCell {
                     let stats = try response.map(UserStats.self, using: TraktAPIProvider.decoder)
 
                     DispatchQueue.main.async {
+                        if case .user(let slug) = type, self.user.slug != slug { return }
                         self.updateRatingsWith(ratings: stats.ratings)
                         self.updatePlaysWith(plays: stats.plays)
                         self.updateMinutesWith(minutes: stats.minutes)
@@ -224,6 +240,7 @@ final class UserStatsTableViewCell: UITableViewCell {
                         let allHTTPHeaders = response.allHeaderFields
                         if let itemCount = allHTTPHeaders["x-pagination-item-count"] as? String {
                             DispatchQueue.main.async {
+                                if case .user(let slug) = type, self.user.slug != slug { return }
                                 self.updateCommentsWith(comments: Int(itemCount))
                             }
                         }

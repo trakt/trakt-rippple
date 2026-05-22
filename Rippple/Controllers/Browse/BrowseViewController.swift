@@ -19,14 +19,80 @@ final class BrowseViewController: UITableViewController {
     struct ModuleType: Codable, Equatable, Hashable {
         let module: String
         let filter: SavedFilter
+        let buttonStyle: ShelfBrowseActionButtonStyle?
+
+        init(module: String, filter: SavedFilter, buttonStyle: ShelfBrowseActionButtonStyle? = nil) {
+            self.module = module
+            self.filter = filter
+            self.buttonStyle = buttonStyle
+        }
     }
 
     var model: String! = BrowseConfigManager.shared.currentConfig {
         didSet {
+            let scrollToTop = !onlyActionButtonStyleChanged(from: oldValue, to: model)
             Task {
-                await reloadData()
+                await reloadData(scrollToTop: scrollToTop)
             }
         }
+    }
+
+    var followsShelfConfig = false {
+        didSet {
+            if followsShelfConfig {
+                model = BrowseConfigManager.shared.shelfConfig
+            }
+        }
+    }
+
+    private var displayedRootModule: String? {
+        guard let model else { return nil }
+
+        do {
+            let jsonString = "[\(model.components(separatedBy: .newlines).joined(separator: ","))]"
+            let jsonData = jsonString.data(using: .utf8)!
+            return try JSONDecoder().decode([ModuleType].self, from: jsonData).first?.module
+        } catch {
+            return nil
+        }
+    }
+
+    private var isDisplayingShelf: Bool {
+        displayedRootModule == "Shelf"
+    }
+
+    private var isDisplayingNewAndHot: Bool {
+        displayedRootModule == "This Week"
+    }
+
+    private func onlyActionButtonStyleChanged(from oldModel: String?, to newModel: String?) -> Bool {
+        guard let oldModel, let newModel else { return false }
+
+        do {
+            let oldModules = try modules(from: oldModel)
+            let newModules = try modules(from: newModel)
+            guard oldModules.count == newModules.count else { return false }
+
+            var buttonStyleChanged = false
+            for (oldModule, newModule) in zip(oldModules, newModules) {
+                guard oldModule.module == newModule.module,
+                      oldModule.filter == newModule.filter else {
+                    return false
+                }
+                if oldModule.buttonStyle != newModule.buttonStyle {
+                    buttonStyleChanged = true
+                }
+            }
+            return buttonStyleChanged
+        } catch {
+            return false
+        }
+    }
+
+    private func modules(from model: String) throws -> [ModuleType] {
+        let jsonString = "[\(model.components(separatedBy: .newlines).joined(separator: ","))]"
+        let jsonData = jsonString.data(using: .utf8)!
+        return try JSONDecoder().decode([ModuleType].self, from: jsonData)
     }
 
     private let contextMenu = ContextMenuHelper()
@@ -48,7 +114,7 @@ final class BrowseViewController: UITableViewController {
         case empty
         case loading
         case header(String, SavedFilter, ModuleType)
-        case content(String, SavedFilter)
+        case content(String, SavedFilter, ModuleType)
         case inReview
         case weeklyTrackerLink
     }
@@ -68,7 +134,9 @@ final class BrowseViewController: UITableViewController {
             cell.title.textColor = .label
 
             if (savedFilter.path.isEmpty ||
-                BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.newAndHot || savedFilter.section == "movies,shows") &&
+                self.isDisplayingNewAndHot ||
+                (savedFilter.section == "movies,shows" &&
+                 !["/media/trending", "/all/trending"].contains(savedFilter.path))) &&
                 savedFilter.section != "episodes_to_watch" &&
                 savedFilter.section != "movies_to_watch" &&
                 savedFilter.section != "pinned_to_watch" &&
@@ -79,7 +147,7 @@ final class BrowseViewController: UITableViewController {
                 cell.chevron?.isHidden = false
             }
 
-            if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.shelfConfig {
+            if self.isDisplayingShelf {
                 if cell.gestureRecognizers?.contains(where: { $0 is BrowseLongPressGestureRecognizer }) != true {
                     let longPress = BrowseLongPressGestureRecognizer(target: self, action: #selector(self.headerLongPressed(_:)))
                     longPress.minimumPressDuration = 0.5
@@ -97,9 +165,10 @@ final class BrowseViewController: UITableViewController {
             cell.body.text = "Add something to your Shelf, find it back here. \nYou build your Shelf the way you want to, \nyou're in charge!"
             cell.action.isHidden = true
             return cell
-        case .content(let identifier, let filter):
+        case .content(let identifier, let filter, let moduleType):
             if let cell = tableView.dequeueReusableCell(withIdentifier: identifier) as? BrowseTableViewCell {
                 cell.presentingViewController = self
+                cell.actionButtonStyle = moduleType.buttonStyle ?? .none
                 cell.savedFilter = filter
                 return cell
             } else if let cell = tableView.dequeueReusableCell(withIdentifier: identifier) as? GenresBrowseTableViewCell {
@@ -162,7 +231,10 @@ final class BrowseViewController: UITableViewController {
 
         navigationItem.style = .browser
         title = "Browse"
-        navigationItem.subtitle = "Loading..."
+        if menuBarButtonItem != nil {
+            navigationItem.subtitle = "Loading..."
+        }
+        configureProfileBarButtonItem()
 
         tableView.allowsFocus = false
         tableView.register(UINib(nibName: "BrowseHeaderTableViewCell", bundle: nil), forCellReuseIdentifier: "header")
@@ -173,6 +245,7 @@ final class BrowseViewController: UITableViewController {
         tableView.register(UINib(nibName: "L3BrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "L3")
         tableView.register(UINib(nibName: "CarouselBrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "C1")
         tableView.register(UINib(nibName: "TopBrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "T1")
+        tableView.register(ListBrowseTableViewCell.self, forCellReuseIdentifier: "List")
         tableView.register(UINib(nibName: "ToWatchBrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "ToWatch")
         tableView.register(UINib(nibName: "HistoryBrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "History")
         tableView.register(UINib(nibName: "GenresBrowseTableViewCell", bundle: nil), forCellReuseIdentifier: "Genres")
@@ -196,10 +269,20 @@ final class BrowseViewController: UITableViewController {
 
         onBrowseConfigChangedReceiver.skipRepeats().listen { [weak self] model in
             guard let self = self else { return }
+            if self.followsShelfConfig {
+                return
+            }
+
             // Only change Browse config if it's the main browse, not if it's a sub browse
             if menuBarButtonItem == nil { return }
             self.model = model
             self.menuBarButtonItem?.menu = menu()
+        }.disposed(by: disposeBag)
+
+        onShelfChangedReceiver.skipRepeats().listen { [weak self] shelf in
+            guard let self = self else { return }
+            if !self.followsShelfConfig { return }
+            self.model = BrowseConfigManager.shared.shelfConfiguration(for: shelf)
         }.disposed(by: disposeBag)
 
         configureSearchButton()
@@ -218,7 +301,7 @@ final class BrowseViewController: UITableViewController {
                     var snapshot = self.dataSource.snapshot()
                     for s in snapshot.itemIdentifiers {
                         switch s {
-                        case .content(_, let filter):
+                        case .content(_, let filter, _):
                             if filter.path == "/sync/watchlist" {
                                 snapshot.reloadItems([s])
                             }
@@ -238,7 +321,7 @@ final class BrowseViewController: UITableViewController {
                     var snapshot = self.dataSource.snapshot()
                     for s in snapshot.itemIdentifiers {
                         switch s {
-                        case .content(_, let filter):
+                        case .content(_, let filter, _):
                             if filter.path == "/sync/favorites" {
                                 snapshot.reloadItems([s])
                             }
@@ -258,7 +341,7 @@ final class BrowseViewController: UITableViewController {
                 for list in lists where self.model.localizedStandardContains("/lists/\(list.identifiers.trakt!)") {
                     for s in snapshot.itemIdentifiers {
                         switch s {
-                        case .content(_, let filter):
+                        case .content(_, let filter, _):
                             if filter.path.localizedStandardContains("/lists/\(list.identifiers.trakt!)") {
                                 snapshot.reloadItems([s])
                             }
@@ -278,7 +361,7 @@ final class BrowseViewController: UITableViewController {
                     var snapshot = self.dataSource.snapshot()
                     for s in snapshot.itemIdentifiers {
                         switch s {
-                        case .content(_, let filter):
+                        case .content(_, let filter, _):
                             if filter.path == "/users/me/collection/movies" {
                                 snapshot.reloadItems([s])
                             }
@@ -298,7 +381,7 @@ final class BrowseViewController: UITableViewController {
                     var snapshot = self.dataSource.snapshot()
                     for s in snapshot.itemIdentifiers {
                         switch s {
-                        case .content(_, let filter):
+                        case .content(_, let filter, _):
                             if filter.path == "/users/me/collection/shows" {
                                 snapshot.reloadItems([s])
                             }
@@ -395,7 +478,7 @@ final class BrowseViewController: UITableViewController {
         // Only act on the initial press
         guard gesture.state == .began else { return }
 
-        if BrowseConfigManager.shared.currentConfig != BrowseConfigManager.shared.shelfConfig { return }
+        if !isDisplayingShelf { return }
 
         // Determine which header cell was long-pressed
         let location = gesture.location(in: tableView)
@@ -441,8 +524,10 @@ final class BrowseViewController: UITableViewController {
                       children: [home, tv, movie, new, shelf])
     }
 
-    private func reloadData() async {
-        tableView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: false)
+    private func reloadData(scrollToTop: Bool = true) async {
+        if scrollToTop {
+            tableView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: false)
+        }
 
         let firstLoad = dataSource.snapshot().numberOfItems == 0
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
@@ -457,13 +542,17 @@ final class BrowseViewController: UITableViewController {
         snapshot.deleteAllItems()
 
         do {
-            let jsonString = "[\(model.components(separatedBy: .newlines).joined(separator: ","))]"
-            let jsonData = jsonString.data(using: .utf8)!
             // print("JSON browse: \n\(jsonString)")
-            var moduleTypes = try JSONDecoder().decode([ModuleType].self, from: jsonData)
+            var moduleTypes = try modules(from: model)
 
             let first = moduleTypes.remove(at: 0)
-            navigationItem.subtitle = first.module == "Browse" ? "Home" : first.module
+            let isShelf = first.module == "Shelf"
+            if isShelf, menuBarButtonItem == nil {
+                navigationItem.title = "Shelf"
+                navigationItem.subtitle = nil
+            } else {
+                navigationItem.subtitle = first.module == "Browse" ? "Home" : first.module
+            }
 
             snapshot.appendSections([.content])
             for moduleType in moduleTypes {
@@ -476,17 +565,17 @@ final class BrowseViewController: UITableViewController {
                     if moduleTypes.first != moduleType {
                         snapshot.appendItems([.header(filter.name, filter, moduleType)])
                     }
-                    snapshot.appendItems([.content(moduleType.module, filter)])
-                    if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.newAndHot {
+                    snapshot.appendItems([.content(moduleType.module, filter, moduleType)])
+                    if self.isDisplayingNewAndHot {
                         snapshot.appendItems([.weeklyTrackerLink])
                     }
                 } else {
                     snapshot.appendItems([.header(filter.name, filter, moduleType)])
-                    snapshot.appendItems([.content(moduleType.module, filter)])
+                    snapshot.appendItems([.content(moduleType.module, filter, moduleType)])
                 }
             }
 
-            if navigationItem.subtitle == "Shelf", moduleTypes.isEmpty {
+            if isShelf, moduleTypes.isEmpty {
                 snapshot.appendItems([.empty])
             }
 
@@ -497,19 +586,26 @@ final class BrowseViewController: UITableViewController {
             print("\(error)")
         }
 
-        if navigationItem.subtitle == "Shelf" {
-            navigationItem.setRightBarButtonItems([.init(image: UIImage(systemName: "slider.horizontal.3"),
-                                                         primaryAction: UIAction { [weak self] _ in
+        if navigationItem.title == "Shelf" || navigationItem.subtitle == "Shelf" {
+            let customizeShelf = UIBarButtonItem(image: UIImage(systemName: "slider.horizontal.3"),
+                                                 primaryAction: UIAction { [weak self] _ in
                 guard let self = self else { return }
                 if PurchaseManager.shared.purchased {
-                    self.performSegue(withIdentifier: "customizeShelf", sender: nil)
+                    if self.menuBarButtonItem == nil {
+                        self.present(UIHostingController(rootView: ShelfConfigView()), animated: true)
+                    } else {
+                        self.performSegue(withIdentifier: "customizeShelf", sender: nil)
+                    }
                 } else {
                     UIApplication.shared.switchToPurchase()
                 }
-             }),
-                                                   .fixedSpace(),
-                                                   menuBarButtonItem!],
-                                                  animated: true)
+             })
+            if let menuBarButtonItem = menuBarButtonItem {
+                navigationItem.setRightBarButtonItems([customizeShelf, .fixedSpace(), menuBarButtonItem],
+                                                      animated: true)
+            } else {
+                navigationItem.setRightBarButtonItems([customizeShelf], animated: true)
+            }
         } else if let menuBarButtonItem = menuBarButtonItem {
             navigationItem.setRightBarButtonItems([menuBarButtonItem], animated: true)
         }
@@ -610,6 +706,32 @@ final class BrowseViewController: UITableViewController {
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
     }
 
+    private func configureProfileBarButtonItem() {
+        if menuBarButtonItem != nil { return }
+        if tabBarController == nil { return }
+        if navigationController?.viewControllers.first != self { return }
+
+        #if targetEnvironment(macCatalyst)
+        navigationItem.leftBarButtonItem = nil
+        #else
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            navigationItem.leftBarButtonItem = nil
+            return
+        }
+
+        let profileButton = ProfileButton()
+        let profileAction = UIAction(handler: { [weak self] _ in
+            guard let self = self else { return }
+            let profileViewController = UIStoryboard(name: "Profile", bundle: nil).instantiateInitialViewController()!
+            self.present(profileViewController, animated: true)
+            UISelectionFeedbackGenerator().selectionChanged()
+        })
+        profileButton.addAction(profileAction, for: .touchUpInside)
+        profileButton.setImage(UIImage(imageLiteralResourceName: "bg_placeholder_avatar_small"), for: .normal)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: profileButton)
+        #endif
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
@@ -622,6 +744,20 @@ final class BrowseViewController: UITableViewController {
             searchButton?.isHidden = false
 
             tableView.bottomEdgeEffect.style = .soft
+        }
+    }
+
+    func showBrowse(with filter: SavedFilter) {
+        let browseViewController = UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(identifier: "standalone browse") as! BrowseViewController
+        browseViewController.model = browseModel(for: filter)
+        show(browseViewController, sender: self)
+    }
+
+    private func browseModel(for filter: SavedFilter) -> String {
+        if filter.query.localizedStandardContains("watchnow") {
+            return BrowseConfigManager.shared.serviceConfiguration(for: filter)
+        } else {
+            return BrowseConfigManager.shared.genreConfiguration(for: filter)
         }
     }
 
@@ -658,11 +794,7 @@ final class BrowseViewController: UITableViewController {
 
         if let browseViewController = segue.destination as? BrowseViewController,
            let filter = sender as? SavedFilter {
-            if filter.query.localizedStandardContains("watchnow") {
-                browseViewController.model = BrowseConfigManager.shared.serviceConfiguration(for: filter)
-            } else {
-                browseViewController.model = BrowseConfigManager.shared.genreConfiguration(for: filter)
-            }
+            browseViewController.model = browseModel(for: filter)
         }
 
         if segue.identifier == "search" {
@@ -715,8 +847,9 @@ extension BrowseViewController {
             return
         }
         if savedFilter.path.isEmpty { return }
-        if BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.newAndHot { return }
-        if savedFilter.section == "movies,shows" { return }
+        if isDisplayingNewAndHot { return }
+        if savedFilter.section == "movies,shows",
+           !["/media/trending", "/all/trending"].contains(savedFilter.path) { return }
         performSegue(withIdentifier: "grid", sender: savedFilter)
     }
 }
