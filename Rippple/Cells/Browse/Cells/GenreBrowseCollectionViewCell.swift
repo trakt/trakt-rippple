@@ -9,14 +9,14 @@
 import UIKit
 
 final class GenreBrowseCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var backgroundContainer: UIView!
-    @IBOutlet weak var label: UILabel?
-    @IBOutlet weak var emoji: UILabel?
+    @IBOutlet var backgroundContainer: UIView!
+    @IBOutlet var label: UILabel?
+    @IBOutlet var emoji: UILabel?
 
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        backgroundContainer.layer.cornerRadius = backgroundContainer.bounds.height/2.0
+        backgroundContainer.layer.cornerRadius = backgroundContainer.bounds.height / 2.0
         backgroundContainer.layer.masksToBounds = true
         backgroundContainer.backgroundColor = UIColor.secondarySystemBackground
         backgroundContainer.layer.borderWidth = 1

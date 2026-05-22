@@ -6,14 +6,11 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import Receiver
-
-import NVActivityIndicatorView
-
 final class CommentsViewController: UITableViewController {
-
     enum ViewControllerSegue: String {
         case user
         case replies
@@ -47,16 +44,16 @@ final class CommentsViewController: UITableViewController {
     private var isListeningForFollowingChanges = false
 
     @IBOutlet var loadingView: UIView!
-    @IBOutlet weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet var animationViewContainer: NVActivityIndicatorView!
 
     @IBOutlet var emptyView: UIView!
-    @IBOutlet weak var emptyLabel: UILabel!
+    @IBOutlet var emptyLabel: UILabel!
 
     @IBOutlet var errorView: UIView!
-    @IBOutlet weak var errorLabel: UILabel!
+    @IBOutlet var errorLabel: UILabel!
 
     @IBOutlet var footnoteView: UIView!
-    @IBOutlet weak var footnoteLabel: UILabel!
+    @IBOutlet var footnoteLabel: UILabel!
 
     @IBOutlet var placeholderHeaderView: UIView!
 
@@ -65,7 +62,7 @@ final class CommentsViewController: UITableViewController {
     private var sentiments: CommentsSentiments? {
         didSet {
             guard let sentiments = sentiments else { return }
-            var snapshot = self.dataSource.snapshot()
+            var snapshot = dataSource.snapshot()
             // if there's no head, no need to try to update it
             if snapshot.indexOfSection(.header) == nil { return }
             if snapshot.itemIdentifiers(inSection: .header).first(where: { $0 == .sentiments(sentiments) }) == nil {
@@ -75,8 +72,8 @@ final class CommentsViewController: UITableViewController {
         }
     }
 
-    @IBOutlet weak var moreActionsButtonItem: UIBarButtonItem!
-    @IBOutlet weak var sortActionButtonItem: UIBarButtonItem!
+    @IBOutlet var moreActionsButtonItem: UIBarButtonItem!
+    @IBOutlet var sortActionButtonItem: UIBarButtonItem!
 
     private enum Section: Int {
         case header
@@ -308,9 +305,9 @@ final class CommentsViewController: UITableViewController {
             } else {
                 let reply = UIBarButtonItem(image: UIImage(systemName: "arrowshape.turn.up.left"),
                                             primaryAction: .init(handler: { _ in
-                    self.showComposer(for: self.commentReply(for: commentModel.comment),
-                                      media: commentModel.media)
-                }))
+                                                self.showComposer(for: self.commentReply(for: commentModel.comment),
+                                                                  media: commentModel.media)
+                                            }))
                 reply.tintColor = UIColor(asset: .globalTint)
                 reply.style = .prominent
                 navigationItem.rightBarButtonItems = [reply,
@@ -345,8 +342,8 @@ final class CommentsViewController: UITableViewController {
             footnoteLabel.text = "New comments may appear with a delay due to caching."
             let compose = UIBarButtonItem(image: UIImage(systemName: "square.and.pencil"),
                                           primaryAction: .init(handler: { _ in
-                self.showNewCommentComposer(for: media)
-            }))
+                                              self.showNewCommentComposer(for: media)
+                                          }))
             compose.tintColor = UIColor(asset: .globalTint)
             compose.style = .prominent
             navigationItem.rightBarButtonItems = [compose,
@@ -377,9 +374,9 @@ final class CommentsViewController: UITableViewController {
         }
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         commandReceiver.listen { [weak self] keyCommand in
             guard let self = self else { return }
@@ -625,19 +622,19 @@ final class CommentsViewController: UITableViewController {
                 fatalError()
             }
         } else if let followersViewController = segue.destination as? FollowersViewController {
-            if case let .user(user) = coordinator.type {
+            if case .user(let user) = coordinator.type {
                 followersViewController.user = user
             }
         } else if let followersViewController = segue.destination as? FollowingViewController {
-            if case let .user(user) = coordinator.type {
+            if case .user(let user) = coordinator.type {
                 followersViewController.user = user
             }
         } else if let followersViewController = segue.destination as? FriendsViewController {
-            if case let .user(user) = coordinator.type {
+            if case .user(let user) = coordinator.type {
                 followersViewController.user = user
             }
         } else if let ratingsViewController = segue.destination as? RatingsViewController {
-            if case let .user(user) = coordinator.type {
+            if case .user(let user) = coordinator.type {
                 ratingsViewController.user = user
             }
         }
@@ -706,9 +703,7 @@ extension CommentsViewController {
         }
     }
 
-    @IBAction func unwindFromCommentComposer(segue: UIStoryboardSegue) {
-
-    }
+    @IBAction func unwindFromCommentComposer(segue: UIStoryboardSegue) {}
 
     private func moreMenu() -> UIMenu? {
         switch coordinator.type! {
@@ -775,28 +770,28 @@ extension CommentsViewController {
     }
 
     private func sortMenu() -> UIMenu {
-        let newest = UIAction(title: "Newest First", state: (coordinator.sort == .newest ? .on : .off)) { [weak self] _ in
+        let newest = UIAction(title: "Newest First", state: coordinator.sort == .newest ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             self.coordinator.sort = CommentsSort.newest
             self.sortActionButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
             self.sortActionButtonItem.menu = self.sortMenu()
         }
 
-        let oldest = UIAction(title: "Oldest First", state: (coordinator.sort == .oldest ? .on : .off)) { [weak self] _ in
+        let oldest = UIAction(title: "Oldest First", state: coordinator.sort == .oldest ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             self.coordinator.sort = CommentsSort.oldest
             self.sortActionButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
             self.sortActionButtonItem.menu = self.sortMenu()
         }
 
-        let likes = UIAction(title: "Most Reacted First", state: (coordinator.sort == .likes ? .on : .off)) { [weak self] _ in
+        let likes = UIAction(title: "Most Reacted First", state: coordinator.sort == .likes ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             self.coordinator.sort = CommentsSort.likes
             self.sortActionButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
             self.sortActionButtonItem.menu = self.sortMenu()
         }
 
-        let reply = UIAction(title: "Most Replied First", state: (coordinator.sort == .replies ? .on : .off)) { [weak self] _ in
+        let reply = UIAction(title: "Most Replied First", state: coordinator.sort == .replies ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             self.coordinator.sort = CommentsSort.replies
             self.sortActionButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
@@ -895,7 +890,7 @@ extension CommentsViewController {
             let cell = tableView.cellForRow(at: indexPath) as! LastWatchedTableViewCell
             if let media = cell.media {
                 let share = UIContextualAction(style: .normal,
-                                              title: "Share") { _, _, boolValue in
+                                               title: "Share") { _, _, boolValue in
                     guard let sharedURL = media.traktWebsiteMediaLink else { return }
                     let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
                     UIApplication.shared.present(activityViewController)
@@ -914,7 +909,7 @@ extension CommentsViewController {
                 comment.image = UIImage(systemName: "pencil.circle.fill")
 
                 let notes = UIContextualAction(style: .normal,
-                                                 title: "Notes") { _, _, boolValue in
+                                               title: "Notes") { _, _, boolValue in
                     NotesManager.shared.showNotes(for: media)
                     boolValue(true)
                 }
@@ -942,7 +937,7 @@ extension CommentsViewController {
             let cell = tableView.cellForRow(at: indexPath) as! LastWatchedTableViewCell
             if let media = cell.media, let show = media.show {
                 let next = UIContextualAction(style: .normal,
-                                                 title: "Next") { _, _, boolValue in
+                                              title: "Next") { _, _, boolValue in
                     let nextEpisodeToWatchNavigationController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "next episode") as! UINavigationController
 
                     if let nextEpisodeViewController = nextEpisodeToWatchNavigationController.topViewController as? MediaShowNextLoadingViewController {
@@ -956,7 +951,7 @@ extension CommentsViewController {
                 next.backgroundColor = UIColor(resource: .ripppleGray).lighter()
 
                 let episodes = UIContextualAction(style: .normal,
-                                                 title: "Episodes") { _, _, boolValue in
+                                                  title: "Episodes") { _, _, boolValue in
                     self.performSegue(withIdentifier: ViewControllerSegue.seasons.rawValue, sender: show)
                     boolValue(true)
                 }
@@ -982,17 +977,17 @@ extension CommentsViewController {
         case .media(let mediaModel, _):
             switch mediaModel {
             case .movie, .episode, .season, .show:
-                self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                  sender: mediaModel)
+                performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                             sender: mediaModel)
             case .list:
                 fatalError()
             case .showProgress:
                 fatalError()
             }
         case .comment(let commentModel):
-            if coordinator.type.isPreview == false &&
-                coordinator.type.isPreviewReply == false &&
-                coordinator.type.isReplies == false {
+            if coordinator.type.isPreview == false,
+               coordinator.type.isPreviewReply == false,
+               coordinator.type.isReplies == false {
                 let media = commentModel.media
                 let nextType = CommentsCoordinator.ListType.media(media)
                 if nextType != coordinator.type {
@@ -1007,7 +1002,6 @@ extension CommentsViewController {
                 performSegue(withIdentifier: ViewControllerSegue.media.rawValue,
                              sender: nextType)
             }
-
         case .rating:
             return
         case .user:
@@ -1028,8 +1022,8 @@ extension CommentsViewController {
             guard let media = cell.media else { return }
             switch media {
             case .movie, .episode, .show:
-                self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                  sender: media)
+                performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                             sender: media)
             case .season:
                 // do nothing
                 break
@@ -1047,33 +1041,32 @@ extension CommentsViewController {
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
         if coordinator.type.isPreviewReply { return nil }
         if coordinator.type.isPreview { return nil }
 
         if let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell {
-            if coordinator.type.isPreview == false && coordinator.type.isPreviewReply == false {
+            if coordinator.type.isPreview == false, coordinator.type.isPreviewReply == false {
                 contextMenu.cell = cell
                 contextMenu.controller = self
             }
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return self.contextMenu.previewViewController
+                self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
 
         if let cell = tableView.cellForRow(at: indexPath) as? CommentTableViewCell,
-            let poster = cell.poster,
-            poster.isHidden == false {
+           let poster = cell.poster,
+           poster.isHidden == false {
             contextMenu.cell = cell
             contextMenu.controller = self
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return self.contextMenu.previewViewController
+                self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
 
@@ -1083,14 +1076,13 @@ extension CommentsViewController {
             contextMenu.controller = self
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return self.contextMenu.previewViewController
+                self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
 
         if let cell = tableView.cellForRow(at: indexPath) as? SentimentsTableViewCell {
-
             contextMenu.cell = cell
             contextMenu.controller = nil
 
@@ -1134,22 +1126,22 @@ extension CommentsViewController: MediaTableViewCellDelegate {
 
         // POSTER ACTION
         if action == .details {
-            if indexPath.section == Section.header.rawValue && indexPath.row == 0 {
+            if indexPath.section == Section.header.rawValue, indexPath.row == 0 {
                 switch coordinator.type! {
                 case .media(let mediaModel):
                     switch mediaModel {
                     case .movie:
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: mediaModel)
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: mediaModel)
                     case .episode(_, let show):
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: MediaModel.show(show))
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: MediaModel.show(show))
                     case .season(_, let show):
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: MediaModel.show(show))
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: MediaModel.show(show))
                     case .show:
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: mediaModel)
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: mediaModel)
                     case .list:
                         fatalError()
                     case .showProgress:
@@ -1187,8 +1179,8 @@ extension CommentsViewController: CommentTableViewCellDelegate {
 
         let delete = UIAlertAction(title: "Delete Comment", style: .destructive) { _ in
             let confirmationAlertController = UIAlertController(title: nil,
-                                                    message: "Are you sure you want to delete this comment?",
-                                                    preferredStyle: .alert)
+                                                                message: "Are you sure you want to delete this comment?",
+                                                                preferredStyle: .alert)
 
             let cancel = UIAlertAction(title: "Cancel", style: .cancel)
             confirmationAlertController.addAction(cancel)
@@ -1198,7 +1190,7 @@ extension CommentsViewController: CommentTableViewCellDelegate {
                                                   callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                     guard let self = self else { return }
                     switch result {
-                    case let .success(moyaResponse):
+                    case .success(let moyaResponse):
                         do {
                             if moyaResponse.statusCode == 409 {
                                 DispatchQueue.main.async {
@@ -1223,7 +1215,7 @@ extension CommentsViewController: CommentTableViewCellDelegate {
                                 SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
                             }
                         }
-                    case let .failure(error):
+                    case .failure(let error):
                         DispatchQueue.main.async {
                             SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
                         }
@@ -1262,7 +1254,7 @@ extension CommentsViewController: CommentTableViewCellDelegate {
     func cell(_ cell: CommentTableViewCell, action: CommentTableViewCell.Action) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
 
-        if indexPath.section == 0, case let .replies(commentModel, _) = coordinator.type! {
+        if indexPath.section == 0, case .replies(let commentModel, _) = coordinator.type! {
             switch action {
             case .presentAuthor:
                 let comment = commentModel.comment
@@ -1289,12 +1281,12 @@ extension CommentsViewController: CommentTableViewCellDelegate {
                 switch commentModel.media {
                 case .movie(let movie):
                     let media = MediaModel.movie(movie)
-                    self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                      sender: media)
+                    performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                 sender: media)
                 case .season(_, let show), .show(let show), .episode(_, let show):
                     let media = MediaModel.show(show)
-                    self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                      sender: media)
+                    performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                 sender: media)
                 case .list:
                     fatalError()
                 case .showProgress:
@@ -1339,20 +1331,20 @@ extension CommentsViewController: CommentTableViewCellDelegate {
                     switch commentModel.media {
                     case .movie(let movie):
                         let media = MediaModel.movie(movie)
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: media)
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: media)
                     case .episode(_, let show):
                         let media = MediaModel.show(show)
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: media)
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: media)
                     case .season(_, let show):
                         let media = MediaModel.show(show)
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: media)
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: media)
                     case .show(let show):
                         let media = MediaModel.show(show)
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: media)
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: media)
                     case .list:
                         fatalError()
                     case .showProgress:
@@ -1398,20 +1390,20 @@ extension CommentsViewController: CommentTableViewCellDelegate {
                     switch commentModel.media {
                     case .movie(let movie):
                         let media = MediaModel.movie(movie)
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: media)
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: media)
                     case .episode(_, let show):
                         let media = MediaModel.show(show)
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: media)
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: media)
                     case .season(_, let show):
                         let media = MediaModel.show(show)
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: media)
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: media)
                     case .show(let show):
                         let media = MediaModel.show(show)
-                        self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                          sender: media)
+                        performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                     sender: media)
                     case .list:
                         fatalError()
                     case .showProgress:
@@ -1463,8 +1455,8 @@ extension CommentsViewController: LastWatchedTableViewCellDelegate {
                     performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
                                  sender: show.mediaModel)
                 } else {
-                    self.performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                                      sender: media)
+                    performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                                 sender: media)
                 }
             }
             return

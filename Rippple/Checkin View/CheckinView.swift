@@ -6,20 +6,17 @@
 //  Copyright © 2025 Trakt. All rights reserved.
 //
 
+import Receiver
+import RPCircularProgress
 import UIKit
 
-import RPCircularProgress
-
-import Receiver
-
 final class CheckinView: UIView {
-
     private let poster: PosterImageView = {
         let imageView = PosterImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.isRounded = true
         imageView.backgroundColor = .tertiarySystemBackground
-        imageView.layer.cornerRadius = 36.0/2.0
+        imageView.layer.cornerRadius = 36.0 / 2.0
         imageView.layer.cornerCurve = .circular
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 1
@@ -154,7 +151,7 @@ final class CheckinView: UIView {
         button.addAction(UIAction(handler: { _ in
             UIApplication.shared.switchToCurrentlyWatching(zoomSourceView: self)
         }),
-                         for: .touchUpInside)
+        for: .touchUpInside)
 
         update(watchingItem: WatchingManager.shared.watchingItem)
 

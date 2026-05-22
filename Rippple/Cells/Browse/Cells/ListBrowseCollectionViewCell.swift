@@ -265,7 +265,7 @@ final class ListBrowseCollectionViewCell: UICollectionViewCell {
     private func showMetadata(_ show: Show) -> String {
         var info = [String]()
         if let airedEpisodes = show.airedEpisodes, airedEpisodes != 0 {
-            info.append("\(airedEpisodes) episode\((airedEpisodes > 1 ? "s" : ""))")
+            info.append("\(airedEpisodes) episode\(airedEpisodes > 1 ? "s" : "")")
         } else if let release = show.releaseYear {
             info.append("\(release)")
         }

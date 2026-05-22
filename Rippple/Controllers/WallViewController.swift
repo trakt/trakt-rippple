@@ -6,15 +6,14 @@
 //  Copyright © 2025 Trakt. All rights reserved.
 //
 
-import UIKit
 import Receiver
+import UIKit
 
 final class WallViewController: StyledNavigationController {
-
     private let disposeBag = DisposeBag()
 
-    // The SavedFilter used to configure the embedded GridViewController.
-    // If not provided, a default will be used and persisted.
+    /// The SavedFilter used to configure the embedded GridViewController.
+    /// If not provided, a default will be used and persisted.
     var savedFilter: SavedFilter? {
         didSet {
             guard let savedFilter = savedFilter else { return }

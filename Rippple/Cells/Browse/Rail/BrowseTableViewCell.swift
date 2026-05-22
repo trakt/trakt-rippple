@@ -1,19 +1,18 @@
 //
-//  L1BrowseTableViewCell.swift
+//  BrowseTableViewCell.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 16/06/2023.
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 class BrowseTableViewCell: UITableViewCell {
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet var collectionView: UICollectionView!
 
-    @IBOutlet weak var pageControl: UIPageControl?
+    @IBOutlet var pageControl: UIPageControl?
 
     weak var presentingViewController: UIViewController?
 
@@ -271,7 +270,7 @@ class BrowseTableViewCell: UITableViewCell {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -283,7 +282,7 @@ class BrowseTableViewCell: UITableViewCell {
                 } catch {
                     print("Error Fetching History \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Error Fetching History \(error)")
             }
         }
@@ -291,15 +290,14 @@ class BrowseTableViewCell: UITableViewCell {
 
     private func fetch(filter: SavedFilter) async throws -> [MediaItem] {
         let filter = filter.normalized
-        let result: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.savedFilter(section: filter.section,
                                                            path: filter.path,
                                                            query: filter.query,
                                                            pageInfo: PageInfo.firstPage(with: filter.limit ?? 30)),
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
-
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -319,20 +317,19 @@ class BrowseTableViewCell: UITableViewCell {
                             let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0.movie, show: $0.show, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else {
-                            let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in
+                            let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter { media in
                                 media.movie != nil || media.season != nil || media.episode != nil || media.show != nil
-                            })
+                            }
                             continuation.resume(returning: items)
                         }
                     } catch {
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     override func didMoveToSuperview() {
@@ -369,7 +366,7 @@ class BrowseTableViewCell: UITableViewCell {
         )
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .groupPagingCentered
-        section.visibleItemsInvalidationHandler = { [weak self] (_, _, _) in
+        section.visibleItemsInvalidationHandler = { [weak self] _, _, _ in
             guard let self = self else { return }
             if self.shouldUpdatePageControl == false { return }
             guard let progress = self.pageControl?.progress as? UIPageControlTimerProgress else { return }
@@ -384,8 +381,7 @@ class BrowseTableViewCell: UITableViewCell {
             progress.resumeTimer()
         }
 
-        let layout = UICollectionViewCompositionalLayout(section: section)
-        return layout
+        return UICollectionViewCompositionalLayout(section: section)
     }
 
     private func L3Section() -> UICollectionViewLayout {
@@ -410,9 +406,7 @@ class BrowseTableViewCell: UITableViewCell {
         section.interGroupSpacing = 6
         section.contentInsets = .init(top: 0, leading: 12, bottom: 0, trailing: 12)
 
-        let layout = UICollectionViewCompositionalLayout(section: section)
-
-        return layout
+        return UICollectionViewCompositionalLayout(section: section)
     }
 
     private func LSection() -> UICollectionViewLayout {
@@ -431,9 +425,7 @@ class BrowseTableViewCell: UITableViewCell {
         section.interGroupSpacing = 6
         section.contentInsets = .init(top: 0, leading: 12, bottom: 0, trailing: 12)
 
-        let layout = UICollectionViewCompositionalLayout(section: section)
-
-        return layout
+        return UICollectionViewCompositionalLayout(section: section)
     }
 
     private func GSection() -> UICollectionViewLayout {
@@ -452,13 +444,11 @@ class BrowseTableViewCell: UITableViewCell {
         section.interGroupSpacing = 6
         section.contentInsets = .init(top: 0, leading: 12, bottom: 0, trailing: 12)
 
-        let layout = UICollectionViewCompositionalLayout(section: section)
-
-        return layout
+        return UICollectionViewCompositionalLayout(section: section)
     }
 
     private func listSection() -> UICollectionViewLayout {
-        let layout = UICollectionViewCompositionalLayout { _, environment in
+        return UICollectionViewCompositionalLayout { _, environment in
             let width = environment.container.effectiveContentSize.width
             let isCompact = environment.traitCollection.horizontalSizeClass == .compact
             let groupWidth: CGFloat
@@ -487,8 +477,6 @@ class BrowseTableViewCell: UITableViewCell {
 
             return section
         }
-
-        return layout
     }
 
     override func prepareForReuse() {
@@ -499,15 +487,14 @@ class BrowseTableViewCell: UITableViewCell {
 
         task?.cancel()
 
-        guard let progress = self.pageControl?.progress as? UIPageControlTimerProgress else { return }
+        guard let progress = pageControl?.progress as? UIPageControlTimerProgress else { return }
         progress.currentProgress = 0
     }
 }
 
 extension BrowseTableViewCell: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
-        if let progress = self.pageControl?.progress as? UIPageControlTimerProgress {
+        if let progress = pageControl?.progress as? UIPageControlTimerProgress {
             progress.pauseTimer()
         }
 
@@ -516,9 +503,9 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
             contextMenu.controller = presentingViewController
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return self.contextMenu.previewViewController
+                self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
 
@@ -527,10 +514,10 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
             contextMenu.controller = presentingViewController
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return nil
+                nil
                 // return self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
 
@@ -539,10 +526,10 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
             contextMenu.controller = presentingViewController
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return nil
+                nil
                 // return self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                let dynamicAction = UIDeferredMenuElement.uncached({ completion in
+                let dynamicAction = UIDeferredMenuElement.uncached { completion in
                     Task {
                         guard let progress = await self.contextMenu.media.progress() else {
                             completion(self.contextMenu.toWatchMenu.children)
@@ -556,7 +543,7 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
                                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                                 guard let self = self else { return }
                                 switch result {
-                                case let .success(moyaResponse):
+                                case .success(let moyaResponse):
                                     do {
                                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -572,7 +559,7 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
                                             completion(self.contextMenu.toWatchMenu.children)
                                         }
                                     }
-                                case let .failure(error):
+                                case .failure(let error):
                                     print("Failed fetching episode \(error)")
                                     DispatchQueue.main.async {
                                         completion(self.contextMenu.toWatchMenu.children)
@@ -583,7 +570,7 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
                             completion(self.contextMenu.toWatchMenu.children)
                         }
                     }
-                })
+                }
                 return UIMenu(title: "Up Next", image: nil, children: [dynamicAction])
             })
         }
@@ -593,10 +580,10 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
             contextMenu.controller = presentingViewController
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return nil
+                nil
                 // return self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
 
@@ -605,10 +592,10 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
             contextMenu.controller = presentingViewController
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return nil
+                nil
                 // return self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
 
@@ -617,10 +604,10 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
             contextMenu.controller = presentingViewController
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return nil
+                nil
                 // return self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
 
@@ -629,9 +616,9 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
             contextMenu.controller = presentingViewController
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return self.contextMenu.previewViewController
+                self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
 
@@ -644,7 +631,7 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-        if let progress = self.pageControl?.progress as? UIPageControlTimerProgress {
+        if let progress = pageControl?.progress as? UIPageControlTimerProgress {
             progress.resumeTimer()
         }
         guard let poster = contextMenu.previewView else { return nil }
@@ -672,10 +659,8 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
         guard let media = media(at: indexPath) else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! L1BrowseCollectionViewCell
-            return cell
+            return collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! L1BrowseCollectionViewCell
         }
 
         if reuseIdentifier == "ToWatch" {
@@ -756,14 +741,14 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
         let zoomSourceView = zoomSourceView(in: collectionView, at: indexPath)
         let showProgressZoomSourceView = reuseIdentifier == "List" ? zoomSourceView : nil
 
-        if case let .showProgress(show, progress) = media {
+        if case .showProgress(let show, let progress) = media {
             if let nextToRewatch = progress.nextToRewatch {
                 TraktAPIProvider.provider.request(TraktAPIService.episode(id: String(show.identifiers.trakt!),
                                                                           season: nextToRewatch.0.number,
                                                                           episode: nextToRewatch.1.number),
                                                   callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                     switch result {
-                    case let .success(moyaResponse):
+                    case .success(let moyaResponse):
                         do {
                             let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -782,7 +767,7 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
                                              zoomSourceView: showProgressZoomSourceView)
                             }
                         }
-                    case let .failure(error):
+                    case .failure(let error):
                         print("Failed fetching episode \(error)")
                         DispatchQueue.main.async {
                             self.present(media: show.mediaModel,
@@ -886,7 +871,6 @@ extension BrowseTableViewCell: UICollectionViewDragDelegate {
 }
 
 extension BrowseTableViewCell: UIPageControlTimerProgressDelegate {
-
     private func scroll(to page: Int) {
         shouldUpdatePageControl = false
         contentView.isUserInteractionEnabled = false
@@ -919,7 +903,5 @@ extension BrowseTableViewCell: UIPageControlTimerProgressDelegate {
 }
 
 extension BrowseTableViewCell: UICollectionViewDataSourcePrefetching {
-    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-
-    }
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {}
 }

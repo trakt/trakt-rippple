@@ -6,26 +6,23 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
+import Moya
+import NVActivityIndicatorView
 import UIKit
 
-import NVActivityIndicatorView
-
-import Moya
-
 final class FollowingViewController: UITableViewController {
-
-    // Public
+    /// Public
     var user: User!
 
-    // Private
+    /// Private
     private var following = [User]()
 
-    // Empty
+    /// Empty
     @IBOutlet private var emptyView: UIView!
 
     // Paging Management
     @IBOutlet private var loadingView: UIView!
-    @IBOutlet private weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet private var animationViewContainer: NVActivityIndicatorView!
 
     private var currentPage: PageInfo?
 
@@ -33,7 +30,7 @@ final class FollowingViewController: UITableViewController {
     @IBOutlet private var errorView: UIView!
     private var error: Error?
 
-    // Standard Footer
+    /// Standard Footer
     @IBOutlet private var footerView: UIView!
 
     private enum Section: Int {
@@ -105,8 +102,8 @@ final class FollowingViewController: UITableViewController {
 
     func fetchNext() {
         guard let currentPage = currentPage else {
-            self.currentPage = PageInfo.firstPage(with: 10)
-            fetch(pageInfo: self.currentPage!)
+            currentPage = PageInfo.firstPage(with: 10)
+            fetch(pageInfo: currentPage!)
             return
         }
         fetch(pageInfo: currentPage.nextPage)
@@ -119,7 +116,7 @@ final class FollowingViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -127,7 +124,7 @@ final class FollowingViewController: UITableViewController {
 
                     // Paging support
                     if let response = response.response,
-                        let pageInfo = PageInfo(headers: response.allHeaderFields) {
+                       let pageInfo = PageInfo(headers: response.allHeaderFields) {
                         self.currentPage = pageInfo
                     }
                     self.error = nil
@@ -169,7 +166,7 @@ final class FollowingViewController: UITableViewController {
                         self.dataSource.apply(snapshot, animatingDifferences: false)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("/followers request failure \(error)")
                 self.error = error
 

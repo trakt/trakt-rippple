@@ -9,7 +9,6 @@
 import SwiftUI
 
 struct AutomationSettingsView: View {
-
     @AppStorage("GeneralSettings.watchlistaddback") private var watchlistAddBack = false
     @AppStorage("GeneralSettings.addtowatchlistautolistsync") private var addToWatchlistAutoListSync = false
     @AppStorage("GeneralSettings.addtowatchlistautowatchedsync") private var addToWatchlistAutoWatchedSync = false

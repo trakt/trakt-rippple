@@ -3,6 +3,8 @@
 
 --exclude Pods,BuildTools/.build,BuildTools/.swiftpm,build,Rippple/Secrets.swift
 
+--disable wrapMultilineStatementBraces
+
 --binary-grouping none
 --decimal-grouping none
 --hex-grouping none

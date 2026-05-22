@@ -6,8 +6,8 @@
 //  Copyright © 2026 Trakt. All rights reserved.
 //
 
-import UIKit
 import Receiver
+import UIKit
 
 protocol OpenInRowTableViewCellDelegate: AnyObject {
     func openInRowCell(_ cell: OpenActionsTableViewCell, didSelectURL url: URL, for item: CustomOpenAction)
@@ -15,13 +15,12 @@ protocol OpenInRowTableViewCellDelegate: AnyObject {
 }
 
 final class OpenActionsTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
-
     weak var delegate: OpenInRowTableViewCellDelegate?
 
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var moreAction: UIButton!
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var moreAction: UIButton!
 
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet var collectionView: UICollectionView!
 
     private let disposeBag = DisposeBag()
 
@@ -135,7 +134,6 @@ final class OpenActionsTableViewCell: UITableViewCell, UICollectionViewDataSourc
 // MARK: - Collection view cell for actions
 
 final class OpenInActionCollectionViewCell: UICollectionViewCell {
-
     static let reuseIdentifier = "OpenInActionCollectionViewCell"
 
     private let stackView: UIStackView = {

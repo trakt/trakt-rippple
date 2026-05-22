@@ -6,13 +6,12 @@
 //  Copyright © 2025 Trakt. All rights reserved.
 //
 
-import UIKit
 import Kingfisher
+import UIKit
 
 // MARK: - FullScreenImageViewController
 
 final class FullScreenImageViewController: UIViewController {
-
     // MARK: - Public Properties
 
     var images: [ImageItem] = []
@@ -71,12 +70,12 @@ final class FullScreenImageViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        if !hasLoadedInitialImages && pageScrollView.bounds.width > 0 {
+        if !hasLoadedInitialImages, pageScrollView.bounds.width > 0 {
             loadImages()
             hasLoadedInitialImages = true
         }
 
-        if hasLoadedInitialImages && !hasScrolledToInitialIndex {
+        if hasLoadedInitialImages, !hasScrolledToInitialIndex {
             scrollToIndex(currentIndex, animated: false)
             hasScrolledToInitialIndex = true
         }
@@ -206,7 +205,7 @@ final class FullScreenImageViewController: UIViewController {
 
     @objc private func pageControlValueChanged() {
         let newIndex = pageControl.currentPage
-        guard newIndex != currentIndex && newIndex < images.count else { return }
+        guard newIndex != currentIndex, newIndex < images.count else { return }
         scrollToIndex(newIndex, animated: true)
     }
 
@@ -300,7 +299,7 @@ final class FullScreenImageViewController: UIViewController {
     }
 
     private func loadImageAtIndex(_ index: Int) {
-        guard index >= 0 && index < images.count,
+        guard index >= 0, index < images.count,
               let placeholderView = placeholderViews[index] else { return }
 
         let imageItem = images[index]
@@ -336,7 +335,7 @@ final class FullScreenImageViewController: UIViewController {
     // MARK: - Navigation
 
     private func scrollToIndex(_ index: Int, animated: Bool) {
-        guard index >= 0 && index < images.count,
+        guard index >= 0, index < images.count,
               pageScrollView.bounds.width > 0 else { return }
 
         let offsetX = CGFloat(index) * pageScrollView.bounds.width
@@ -457,13 +456,13 @@ extension FullScreenImageViewController: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let pageIndex = Int(pageScrollView.contentOffset.x / pageScrollView.bounds.width + 0.5)
         guard pageIndex != currentIndex,
-              pageIndex >= 0 && pageIndex < images.count else { return }
+              pageIndex >= 0, pageIndex < images.count else { return }
         loadImagesForIndex(pageIndex)
     }
 
     private func updateCurrentPage() {
         let pageIndex = Int(pageScrollView.contentOffset.x / pageScrollView.bounds.width + 0.5)
-        guard pageIndex != currentIndex && pageIndex < images.count else { return }
+        guard pageIndex != currentIndex, pageIndex < images.count else { return }
 
         currentIndex = pageIndex
         pageControl.currentPage = pageIndex

@@ -11,13 +11,10 @@ import Foundation
 // MARK: - Configuration
 
 struct Configuration: Codable {
-
     let images: ImagesConfiguration
-
 }
 
 struct ImagesConfiguration: Codable {
-
     let baseURL: String
     let posterSizes: [String]
     let backdropSizes: [String]
@@ -317,6 +314,7 @@ struct Keyword: Codable {
 }
 
 // MARK: - Changes
+
 /*
  {
    "changes": [
@@ -366,9 +364,7 @@ struct ChangeItem: Codable {
         do {
             decodedValue = try values.decode(String.self, forKey: .value)
             decodedOriginalValue = try values.decode(String.self, forKey: .originalValue)
-        } catch {
-
-        }
+        } catch {}
         value = decodedValue
         originalValue = decodedOriginalValue
     }

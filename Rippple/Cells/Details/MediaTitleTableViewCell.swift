@@ -6,11 +6,10 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
-import Moya
 import Haring
+import Moya
 import Receiver
+import UIKit
 
 extension UIFont {
     func withTraits(traits: UIFontDescriptor.SymbolicTraits) -> UIFont {
@@ -45,7 +44,6 @@ extension UIView {
 }
 
 final class MediaTitleTableViewCell: UITableViewCell {
-
     private let disposeBag = DisposeBag()
 
     enum Action {
@@ -56,22 +54,22 @@ final class MediaTitleTableViewCell: UITableViewCell {
 
     weak var delegate: MediaTitleTableViewCellDelegate?
 
-    @IBOutlet weak var genreLabel: UILabel!
-    @IBOutlet weak var certificationLabel: UILabel!
+    @IBOutlet var genreLabel: UILabel!
+    @IBOutlet var certificationLabel: UILabel!
 
-    @IBOutlet weak var certificationBorderView: UIView!
+    @IBOutlet var certificationBorderView: UIView!
 
-    @IBOutlet weak var ratingsStack: UIView!
-    @IBOutlet weak var rottenTomatoesCriticsRating: EFCountingLabel!
-    @IBOutlet weak var rottenTomatoesAudienceRating: EFCountingLabel!
-    @IBOutlet weak var rottentTomatoesCriticsImage: UIImageView!
-    @IBOutlet weak var rottenTomatoesAudienceImage: UIImageView!
+    @IBOutlet var ratingsStack: UIView!
+    @IBOutlet var rottenTomatoesCriticsRating: EFCountingLabel!
+    @IBOutlet var rottenTomatoesAudienceRating: EFCountingLabel!
+    @IBOutlet var rottentTomatoesCriticsImage: UIImageView!
+    @IBOutlet var rottenTomatoesAudienceImage: UIImageView!
 
-    @IBOutlet weak var runtimeLabel: UILabel!
-    @IBOutlet weak var stingerLabel: UILabel!
+    @IBOutlet var runtimeLabel: UILabel!
+    @IBOutlet var stingerLabel: UILabel!
 
-    @IBOutlet weak var mainActionButton: UIButton!
-    @IBOutlet weak var secondaryActionButton: UIButton!
+    @IBOutlet var mainActionButton: UIButton!
+    @IBOutlet var secondaryActionButton: UIButton!
 
     private var mainActionButtonMinHeightConstraint: NSLayoutConstraint?
     private var secondaryActionButtonMinHeightConstraint: NSLayoutConstraint?
@@ -84,7 +82,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
         return dateFormatter
     }()
 
-    @IBOutlet weak var cardView: UIView!
+    @IBOutlet var cardView: UIView!
 
     private var cancellable: Cancellable? {
         willSet {
@@ -103,12 +101,12 @@ final class MediaTitleTableViewCell: UITableViewCell {
 
         rottenTomatoesCriticsRating.method = .easeInOut
         rottenTomatoesCriticsRating.formatBlock = { value in
-            return String(format: "%02d", Int(value)) + "%"
+            String(format: "%02d", Int(value)) + "%"
         }
         rottenTomatoesCriticsRating.font = .preferredMonospacedFont(for: .caption2, weight: .regular)
         rottenTomatoesAudienceRating.method = .easeInOut
         rottenTomatoesAudienceRating.formatBlock = { value in
-            return String(format: "%02d", Int(value)) + "%"
+            String(format: "%02d", Int(value)) + "%"
         }
         rottenTomatoesAudienceRating.font = .preferredMonospacedFont(for: .caption2, weight: .regular)
 
@@ -175,13 +173,15 @@ final class MediaTitleTableViewCell: UITableViewCell {
 
         let actionButtonsMinimumHeight = quickActionButtonMinimumHeight()
         let mainActionButtonMinHeightConstraint = mainActionButton.heightAnchor.constraint(
-            greaterThanOrEqualToConstant: actionButtonsMinimumHeight)
+            greaterThanOrEqualToConstant: actionButtonsMinimumHeight
+        )
         mainActionButtonMinHeightConstraint.priority = .required
         mainActionButtonMinHeightConstraint.isActive = true
         self.mainActionButtonMinHeightConstraint = mainActionButtonMinHeightConstraint
 
         let secondaryActionButtonMinHeightConstraint = secondaryActionButton.heightAnchor.constraint(
-            greaterThanOrEqualToConstant: actionButtonsMinimumHeight)
+            greaterThanOrEqualToConstant: actionButtonsMinimumHeight
+        )
         secondaryActionButtonMinHeightConstraint.priority = .required
         secondaryActionButtonMinHeightConstraint.isActive = true
         self.secondaryActionButtonMinHeightConstraint = secondaryActionButtonMinHeightConstraint
@@ -216,7 +216,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
 
     @objc
     private func configureView() {
-        certificationBorderView.layer.borderColor = self.certificationLabel.textColor.cgColor
+        certificationBorderView.layer.borderColor = certificationLabel.textColor.cgColor
     }
 
     private let contextMenuHelper = ContextMenuHelper()
@@ -330,13 +330,13 @@ final class MediaTitleTableViewCell: UITableViewCell {
     }
 
     private func updateSeasonMetadata() {
-        guard let media = self.media else { return }
+        guard let media = media else { return }
         guard let show = media.show else { return }
         guard let season = media.season else { return }
 
         let markdownParser = SpoilerMarkdownParser(font: .preferredFont(forTextStyle: .subheadline),
-                                            color: .label,
-                                            automaticLinkDetectionEnabled: false)
+                                                   color: .label,
+                                                   automaticLinkDetectionEnabled: false)
         markdownParser.bold.color = UIColor(asset: .globalTint)
         markdownParser.bold.font = .preferredFont(forTextStyle: .subheadline).bold()
         markdownParser.spoilerStrategy = .hideInlineSpoilers
@@ -352,13 +352,13 @@ final class MediaTitleTableViewCell: UITableViewCell {
     }
 
     private func updateEpisodeMetadata() {
-        guard let media = self.media else { return }
+        guard let media = media else { return }
         guard let show = media.show else { return }
         guard let episode = media.episode else { return }
 
         let markdownParser = SpoilerMarkdownParser(font: .preferredFont(forTextStyle: .subheadline),
-                                            color: .label,
-                                            automaticLinkDetectionEnabled: false)
+                                                   color: .label,
+                                                   automaticLinkDetectionEnabled: false)
         markdownParser.bold.color = UIColor(asset: .globalTint)
         markdownParser.bold.font = .preferredFont(forTextStyle: .subheadline).bold()
         markdownParser.spoilerStrategy = .hideInlineSpoilers
@@ -414,7 +414,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
     }
 
     private func placeShowButton() {
-        guard let media = self.media else { return }
+        guard let media = media else { return }
         guard let show = media.show else { return }
         guard let attributedText = genreLabel.attributedText else { return }
 
@@ -437,7 +437,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
     }
 
     private func placeEpisodeSpoilerButton() {
-        guard let media = self.media else { return }
+        guard let media = media else { return }
         guard let episode = media.episode else { return }
         guard let attributedText = genreLabel.attributedText else { return }
         guard let episodeTitle = episode.title else { return }
@@ -459,14 +459,14 @@ final class MediaTitleTableViewCell: UITableViewCell {
     }
 
     @objc func removeSpoilers() {
-        guard let media = self.media else { return }
+        guard let media = media else { return }
         guard let show = media.show else { return }
         guard let episode = media.episode else { return }
         guard let episodeTitle = episode.title else { return }
 
         let markdownParser = SpoilerMarkdownParser(font: .preferredFont(forTextStyle: .subheadline),
-                                            color: .label,
-                                            automaticLinkDetectionEnabled: false)
+                                                   color: .label,
+                                                   automaticLinkDetectionEnabled: false)
         markdownParser.bold.color = UIColor(asset: .globalTint)
         markdownParser.bold.font = .preferredFont(forTextStyle: .subheadline).bold()
         markdownParser.spoilerStrategy = .hideInlineSpoilers
@@ -507,7 +507,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     media.cancelCheckin()
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .touchUpInside)
+                }, for: .touchUpInside)
 
                 secondaryActionButton.configuration?.title = "Share"
                 secondaryActionButton.configuration?.image = UIImage(systemName: "wave.3.right")
@@ -520,7 +520,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.secondaryActionButton.menu = self.contextMenuHelper.quickShareMenu
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .menuActionTriggered)
+                }, for: .menuActionTriggered)
                 secondaryActionButton.isHidden = false
             } else if movie.isWatched {
                 if let rating = media.userRating {
@@ -539,7 +539,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.mainActionButton.menu = self.contextMenuHelper.media.rateMenu
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .menuActionTriggered)
+                }, for: .menuActionTriggered)
 
                 secondaryActionButton.configuration?.title = "Share"
                 secondaryActionButton.configuration?.image = UIImage(systemName: "wave.3.right")
@@ -552,7 +552,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.secondaryActionButton.menu = self.contextMenuHelper.quickShareMenu
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .menuActionTriggered)
+                }, for: .menuActionTriggered)
             } else {
                 mainActionButton.configuration?.title = "Track"
                 mainActionButton.configuration?.image = UIImage(systemName: "play")
@@ -565,7 +565,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.mainActionButton.menu = self.contextMenuHelper.quickTrackMenu
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .menuActionTriggered)
+                }, for: .menuActionTriggered)
 
                 secondaryActionButton.configuration?.title = "Stack"
                 secondaryActionButton.configuration?.image = UIImage(systemName: "rectangle.stack")
@@ -578,7 +578,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.secondaryActionButton.menu = self.contextMenuHelper.quickStackMenu
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .menuActionTriggered)
+                }, for: .menuActionTriggered)
             }
         case .show(let show):
             if show.isInToWatch {
@@ -609,7 +609,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                             guard let self = self else { return }
                             switch result {
-                            case let .success(moyaResponse):
+                            case .success(let moyaResponse):
                                 do {
                                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -647,7 +647,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                             self.mainActionButton.menu = self.contextMenuHelper.quickTrackMenu
                                             UISelectionFeedbackGenerator().selectionChanged()
                                             self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                                         }, for: .menuActionTriggered)
+                                        }, for: .menuActionTriggered)
                                         self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
                                         self.invalidateIntrinsicContentSize()
                                     }
@@ -665,7 +665,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                         self.mainActionButton.menu = self.contextMenuHelper.quickTrackMenu
                                         UISelectionFeedbackGenerator().selectionChanged()
                                         self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                                     }, for: .menuActionTriggered)
+                                    }, for: .menuActionTriggered)
                                     self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
                                     self.invalidateIntrinsicContentSize()
                                 }
@@ -685,7 +685,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.secondaryActionButton.menu = self.contextMenuHelper.quickShareMenu
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .menuActionTriggered)
+                }, for: .menuActionTriggered)
             } else if show.isHiddenFromProgress {
                 mainActionButton.configuration?.title = "Unhide"
                 mainActionButton.configuration?.image = UIImage(systemName: "eye.circle")
@@ -695,7 +695,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     media.unhideShow()
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .touchUpInside)
+                }, for: .touchUpInside)
 
                 secondaryActionButton.configuration?.title = "Stack"
                 secondaryActionButton.configuration?.image = UIImage(systemName: "rectangle.stack")
@@ -708,7 +708,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.secondaryActionButton.menu = self.contextMenuHelper.quickStackMenu
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .menuActionTriggered)
+                }, for: .menuActionTriggered)
             } else if show.isCompleted {
                 mainActionButton.configuration?.title = "Rewatch"
                 mainActionButton.configuration?.image = UIImage(systemName: "backward.circle")
@@ -718,7 +718,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     media.startRewatchingShow()
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .touchUpInside)
+                }, for: .touchUpInside)
 
                 if let rating = media.userRating {
                     secondaryActionButton.configuration?.title = "Rated \(rating)"
@@ -736,7 +736,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.secondaryActionButton.menu = self.contextMenuHelper.media.rateMenu
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .menuActionTriggered)
+                }, for: .menuActionTriggered)
             } else {
                 mainActionButton.configuration?.title = "Track"
                 mainActionButton.configuration?.image = UIImage(systemName: "play")
@@ -749,7 +749,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.mainActionButton.menu = self.contextMenuHelper.quickTrackMenu
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .menuActionTriggered)
+                }, for: .menuActionTriggered)
 
                 secondaryActionButton.configuration?.title = "Stack"
                 secondaryActionButton.configuration?.image = UIImage(systemName: "rectangle.stack")
@@ -762,7 +762,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.secondaryActionButton.menu = self.contextMenuHelper.quickStackMenu
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .menuActionTriggered)
+                }, for: .menuActionTriggered)
             }
         case .episode(let episode, let show):
             if let watchingItem = WatchingManager.shared.watchingItem, let watchingModel = MediaModel(item: watchingItem), watchingModel == media {
@@ -774,7 +774,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     media.cancelCheckin()
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .touchUpInside)
+                }, for: .touchUpInside)
 
                 secondaryActionButton.configuration?.title = "Share"
                 secondaryActionButton.configuration?.image = UIImage(systemName: "wave.3.right")
@@ -787,7 +787,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.secondaryActionButton.menu = self.contextMenuHelper.quickShareMenu
                     UISelectionFeedbackGenerator().selectionChanged()
                     self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                 }, for: .menuActionTriggered)
+                }, for: .menuActionTriggered)
                 secondaryActionButton.isHidden = false
             } else {
                 show.mediaModel.progress { [weak self] progress in
@@ -869,7 +869,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                 self.mainActionButton.menu = self.contextMenuHelper.quickTrackMenu
                 UISelectionFeedbackGenerator().selectionChanged()
                 self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-             }, for: .menuActionTriggered)
+            }, for: .menuActionTriggered)
 
             secondaryActionButton.configuration?.title = "Stack"
             secondaryActionButton.configuration?.image = UIImage(systemName: "rectangle.stack")
@@ -882,7 +882,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                 self.secondaryActionButton.menu = self.contextMenuHelper.quickStackMenu
                 UISelectionFeedbackGenerator().selectionChanged()
                 self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-             }, for: .menuActionTriggered)
+            }, for: .menuActionTriggered)
         case .list:
             fatalError()
         case .showProgress:
@@ -918,7 +918,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
         return TmdbAPIProvider.provider.request(service, callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -948,14 +948,14 @@ final class MediaTitleTableViewCell: UITableViewCell {
                 } catch {
                     print("Keywords (tmdb) request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Keywords (tmdb) request failure \(error)")
             }
         }
     }
 
     fileprivate func share() {
-        guard let media = self.media else { return }
+        guard let media = media else { return }
         guard let sharedURL = media.traktWebsiteMediaLink else { return }
         let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
         UIApplication.shared.present(activityViewController)
@@ -1048,7 +1048,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
         TraktAPIProvider.provider.request(.ratings(type: type), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1062,29 +1062,29 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                               duration: 0.7,
                                               options: .transitionCrossDissolve,
                                               animations: {
-                                if let state = ratings.rottenTomatoes.state {
-                                    switch state {
-                                    case "fresh":
-                                        self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesFresh)
-                                    case "certified":
-                                        self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesCertifiedFreshSmall)
-                                    case "rotten":
-                                        self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesRotten)
-                                    default:
-                                        // Fallback
-                                        if rating >= 75 {
-                                            // certified fresh
-                                            self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesCertifiedFreshSmall)
-                                        } else if rating >= 60 {
-                                            // fresh
-                                            self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesFresh)
-                                        } else {
-                                            // rotten
-                                            self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesRotten)
-                                        }
-                                    }
-                                }
-                            })
+                                                  if let state = ratings.rottenTomatoes.state {
+                                                      switch state {
+                                                      case "fresh":
+                                                          self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesFresh)
+                                                      case "certified":
+                                                          self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesCertifiedFreshSmall)
+                                                      case "rotten":
+                                                          self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesRotten)
+                                                      default:
+                                                          // Fallback
+                                                          if rating >= 75 {
+                                                              // certified fresh
+                                                              self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesCertifiedFreshSmall)
+                                                          } else if rating >= 60 {
+                                                              // fresh
+                                                              self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesFresh)
+                                                          } else {
+                                                              // rotten
+                                                              self.rottentTomatoesCriticsImage.image = UIImage(resource: ImageResource.rottenTomatoesRotten)
+                                                          }
+                                                      }
+                                                  }
+                                              })
                         } else {
                             self.rottenTomatoesCriticsRating.text = "--%"
                         }
@@ -1095,29 +1095,29 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                               duration: 0.7,
                                               options: .transitionCrossDissolve,
                                               animations: {
-                                if let state = ratings.rottenTomatoes.userState {
-                                    switch state {
-                                    case "upright":
-                                        self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesPositiveAudience)
-                                    case "certified":
-                                        self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesVerifiedHotSmall)
-                                    case "spilled":
-                                        self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesNegativeAudience)
-                                    default:
-                                        // Fallback
-                                        if userRating >= 90 {
-                                            // verified hot
-                                            self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesVerifiedHotSmall)
-                                        } else if userRating >= 60 {
-                                            // upright
-                                            self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesPositiveAudience)
-                                        } else {
-                                            // spilled
-                                            self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesNegativeAudience)
-                                        }
-                                    }
-                                }
-                            })
+                                                  if let state = ratings.rottenTomatoes.userState {
+                                                      switch state {
+                                                      case "upright":
+                                                          self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesPositiveAudience)
+                                                      case "certified":
+                                                          self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesVerifiedHotSmall)
+                                                      case "spilled":
+                                                          self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesNegativeAudience)
+                                                      default:
+                                                          // Fallback
+                                                          if userRating >= 90 {
+                                                              // verified hot
+                                                              self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesVerifiedHotSmall)
+                                                          } else if userRating >= 60 {
+                                                              // upright
+                                                              self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesPositiveAudience)
+                                                          } else {
+                                                              // spilled
+                                                              self.rottenTomatoesAudienceImage.image = UIImage(resource: ImageResource.rottenTomatoesNegativeAudience)
+                                                          }
+                                                      }
+                                                  }
+                                              })
                         } else {
                             self.rottenTomatoesAudienceRating.text = "--%"
                         }
@@ -1125,7 +1125,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                 } catch {
                     print("Ratings request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Ratings request failure \(error)")
             }
         }
@@ -1138,7 +1138,7 @@ extension UIImage {
         guard let currentFilter = CIFilter(name: "CIPhotoEffectTonal") else { return self }
         currentFilter.setValue(CIImage(image: self), forKey: kCIInputImageKey)
         if let output = currentFilter.outputImage,
-            let cgImage = context.createCGImage(output, from: output.extent) {
+           let cgImage = context.createCGImage(output, from: output.extent) {
             return UIImage(cgImage: cgImage, scale: scale, orientation: imageOrientation)
         }
         return self

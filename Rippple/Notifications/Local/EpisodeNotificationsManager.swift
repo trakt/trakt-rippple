@@ -1,5 +1,5 @@
 //
-//  EpisodeReleaseNotificationsManager.swift
+//  EpisodeNotificationsManager.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 22/05/2020.
@@ -7,13 +7,11 @@
 //
 
 import Foundation
-
 import Receiver
 
 let (onEpisodesNotificationsChangedTransmitter, onEpisodesNotificationsChangedReceiver) = Receiver<[UNNotificationRequest]>.make(with: .warm(upTo: 1))
 
 final class EpisodeNotificationsManager {
-
     static let shared = EpisodeNotificationsManager()
 
     // Settings
@@ -31,30 +29,35 @@ final class EpisodeNotificationsManager {
             UserDefaults.standard.synchronize()
         }
     }
+
     var watchlistSeasonPremiere: Bool {
         didSet {
             UserDefaults.standard.set(watchlistSeasonPremiere, forKey: "EpisodeNotificationsManager.watchlistSeasonPremiere")
             UserDefaults.standard.synchronize()
         }
     }
+
     var watchlistEpisodeRelease: Bool {
         didSet {
             UserDefaults.standard.set(watchlistEpisodeRelease, forKey: "EpisodeNotificationsManager.watchlistEpisodeRelease")
             UserDefaults.standard.synchronize()
         }
     }
+
     var toWatchShowPremiere: Bool {
         didSet {
             UserDefaults.standard.set(toWatchShowPremiere, forKey: "EpisodeNotificationsManager.toWatchShowPremiere")
             UserDefaults.standard.synchronize()
         }
     }
+
     var toWatchSeasonPremiere: Bool {
         didSet {
             UserDefaults.standard.set(toWatchSeasonPremiere, forKey: "EpisodeNotificationsManager.toWatchSeasonPremiere")
             UserDefaults.standard.synchronize()
         }
     }
+
     var toWatchEpisodeRelease: Bool {
         didSet {
             UserDefaults.standard.set(toWatchEpisodeRelease, forKey: "EpisodeNotificationsManager.toWatchEpisodeRelease")
@@ -118,7 +121,7 @@ final class EpisodeNotificationsManager {
 
     private func rebuildNotifications() {
         // the ToWatch or Watchlist can be empty, this call  is debounced enough to not wait more than this!
-        if toWatchShows == nil && watchlistedShows == nil { return }
+        if toWatchShows == nil, watchlistedShows == nil { return }
 
         rebuildNotificationsTask?.cancel()
         scheduleNotifications()
@@ -169,7 +172,7 @@ final class EpisodeNotificationsManager {
         let result: [ShowEpisodeCalendarItem] = try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.showsCalendar(startDate: Calendar.current.date(byAdding: .day, value: -1, to: Date())!, days: 7, filters: [String: String]()), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let showEpisodeCalendarItems = try response.map([ShowEpisodeCalendarItem].self, using: TraktAPIProvider.decoder)
@@ -177,7 +180,7 @@ final class EpisodeNotificationsManager {
                     } catch {
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     continuation.resume(throwing: error)
                 }
             }
@@ -286,7 +289,7 @@ final class EpisodeNotificationsManager {
                 let pendingNotifications = await notificationCenter.pendingNotificationRequests()
                 try Task.checkCancellation()
                 var identifiersToRemove = [String]()
-                for pendingNotification in pendingNotifications where requests.contains(where: {  $0.identifier == pendingNotification.identifier }) == false && pendingNotification.isEpisodeNotification {
+                for pendingNotification in pendingNotifications where requests.contains(where: { $0.identifier == pendingNotification.identifier }) == false && pendingNotification.isEpisodeNotification {
                     print("Removing notification: \(pendingNotification.identifier) - \(pendingNotification.content.title) - \(pendingNotification.content.body)")
                     identifiersToRemove.append(pendingNotification.identifier)
                 }
@@ -337,13 +340,13 @@ final class EpisodeNotificationsManager {
         let triggerDate = showEpisodeItem.firstAired
 
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second],
-                                                                     from: triggerDate)
+                                                         from: triggerDate)
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let uuidString = identifier(for: showEpisodeItem)
         return UNNotificationRequest(identifier: uuidString,
-                                        content: content,
-                                        trigger: trigger)
+                                     content: content,
+                                     trigger: trigger)
     }
 
     private func scheduleGroupNotification(for showEpisodeItem: ShowEpisodeCalendarItem, with title: String, subtitle: String, and groupCount: Int) -> UNNotificationRequest {
@@ -356,13 +359,13 @@ final class EpisodeNotificationsManager {
 
         let triggerDate = showEpisodeItem.firstAired
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second],
-                                                                     from: triggerDate)
+                                                         from: triggerDate)
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let uuidString = identifier(for: showEpisodeItem)
         return UNNotificationRequest(identifier: uuidString,
-                                        content: content,
-                                        trigger: trigger)
+                                     content: content,
+                                     trigger: trigger)
     }
 
     private func identifier(for showEpisodeItem: ShowEpisodeCalendarItem) -> String {
@@ -372,6 +375,6 @@ final class EpisodeNotificationsManager {
 
 extension UNNotificationRequest {
     var isEpisodeNotification: Bool {
-        return self.identifier.hasPrefix(EpisodeNotificationsManager.shared.uuidPrefix)
+        return identifier.hasPrefix(EpisodeNotificationsManager.shared.uuidPrefix)
     }
 }

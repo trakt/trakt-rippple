@@ -6,14 +6,12 @@
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
+import Kingfisher
 import UIKit
 
-import Kingfisher
-
 final class FollowingCollectionViewCell: UICollectionViewCell {
-
-    @IBOutlet weak var avatarImageView: UIImageView!
-    @IBOutlet weak var usernameLabel: UILabel!
+    @IBOutlet var avatarImageView: UIImageView!
+    @IBOutlet var usernameLabel: UILabel!
 
     private let filter = RoundCornerImageProcessor(
         cornerRadius: 25.0,
@@ -25,7 +23,7 @@ final class FollowingCollectionViewCell: UICollectionViewCell {
 
         contentView.autoresizingMask = .flexibleHeight
 
-        avatarImageView.layer.cornerRadius = avatarImageView.bounds.height/2.0
+        avatarImageView.layer.cornerRadius = avatarImageView.bounds.height / 2.0
         avatarImageView.layer.borderWidth = 1
         avatarImageView.layer.borderColor = UIColor.tertiarySystemFill.cgColor
         avatarImageView.clipsToBounds = true
@@ -48,5 +46,4 @@ final class FollowingCollectionViewCell: UICollectionViewCell {
             }
         }
     }
-
 }

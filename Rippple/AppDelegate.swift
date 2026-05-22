@@ -6,20 +6,17 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import AlamofireNetworkActivityIndicator
-import Receiver
-
+import AWSCore
+import AWSDynamoDB
+import AWSSNS
 import BackgroundTasks
+import NVActivityIndicatorView
+import Receiver
+import UIKit
 
 // Push management
 import UserNotifications
-import AWSCore
-import AWSSNS
-import AWSDynamoDB
-
-import NVActivityIndicatorView
 
 enum ApplicationLifecycle {
     case didFinishLaunching
@@ -35,7 +32,6 @@ let (commandTransmitter, commandReceiver) = Receiver<UIKeyCommand>.make(with: .h
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
     private let disposeBag = DisposeBag()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -142,7 +138,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
          *Rippple*
          ripl://whatsnew -> Ok
          ripl://settings/notifications -> Ok
-         
+
          *Search*
          ripl://search/[query]
 
@@ -206,7 +202,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             getNotificationSettings()
 
             if SessionManager.shared.isLoggedIn {
-                self.registerForPushNotifications()
+                registerForPushNotifications()
             }
 
             onSettingsChangedReceiver.listen { [weak self] _ in
@@ -265,7 +261,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         CalendarManager.shared.setup()
 
         BGTaskScheduler.shared.register(forTaskWithIdentifier: "tv.trakt.towatch.refresh", using: nil) { task in
-
             #if !targetEnvironment(macCatalyst)
             Task {
                 await LiveActivityManager.shared.stopActivityIfNeeded()
@@ -334,6 +329,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
     }
+
     private var moviesSmartSearch = SmartSearch.smartSearches(for: .movie) {
         didSet {
             if moviesSmartSearch != oldValue {
@@ -372,7 +368,6 @@ private var token: String? {
 }
 
 extension AppDelegate {
-
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         if AWSServiceManager.default().defaultServiceConfiguration == nil {
@@ -388,8 +383,8 @@ extension AppDelegate {
         let latestToken = tokenParts.joined()
 
         if let endpointARN = endpointARN,
-            let token = token,
-            latestToken == token {
+           let token = token,
+           latestToken == token {
             updateARNOnAWS(ARN: endpointARN)
             updateDynamoDB(ARN: endpointARN)
         } else {
@@ -425,7 +420,7 @@ extension AppDelegate {
                 print("💀 AWS SNS createPlatformEndpoint Error: \(String(describing: task.error))")
                 pushTokenReceiveAndUpdatedTransmitter.broadcast(task.error)
             } else if let createEndpointResponse = task.result,
-                let endpointArnForSNS = createEndpointResponse.endpointArn {
+                      let endpointArnForSNS = createEndpointResponse.endpointArn {
                 print("🎉 endpointArn from AWS SNS: \(endpointArnForSNS)")
                 endpointARN = endpointArnForSNS
                 self.updateDynamoDB(ARN: endpointArnForSNS)
@@ -517,7 +512,7 @@ extension Bundle {
 
 extension AppDelegate {
     func registerForPushNotifications() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .providesAppNotificationSettings]) { (granted, _) in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .providesAppNotificationSettings]) { granted, _ in
             print("Permission granted: \(granted)")
 
             guard granted else { return }
@@ -526,7 +521,7 @@ extension AppDelegate {
     }
 
     func getNotificationSettings() {
-        UNUserNotificationCenter.current().getNotificationSettings { (settings) in
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
             print("Notification settings: \(settings)")
             guard settings.authorizationStatus == .authorized else { return }
             DispatchQueue.main.async {
@@ -546,7 +541,6 @@ extension UIView {
 }
 
 extension AppDelegate {
-
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         print("canPerformAction \(action)")
         if UIApplication.shared.isModalDisplayed() { return false }
@@ -562,7 +556,7 @@ extension AppDelegate {
     override func find(_ sender: Any?) {
         ShortcutManager.shared.shouldHandle(shortcut: ShortcutManager.shared.searchAndKeyboardShortcutItem)
         if SessionManager.shared.isLoggedIn,
-            DeeplinkManager.shared.shouldOpenDeeplink() {
+           DeeplinkManager.shared.shouldOpenDeeplink() {
             UIApplication.shared.switchToDeeplink()
         }
     }

@@ -7,13 +7,10 @@
 //
 
 import Foundation
-
 import Moya
-
 import Receiver
 
 final class WatchedImageView: UIImageView {
-
     private let disposeBag = DisposeBag()
 
     override func awakeFromNib() {
@@ -117,7 +114,7 @@ final class WatchedImageView: UIImageView {
         return TraktAPIProvider.provider.request(.isWatched(type: type, id: traktId), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -137,7 +134,7 @@ final class WatchedImageView: UIImageView {
                 } catch {
                     print("Stats request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 if error.localizedDescription == "cancelled" { return }
                 print("Stats request failure \(error)")
             }

@@ -6,10 +6,10 @@
 //  Copyright © 2025 Trakt. All rights reserved.
 //
 
-import UIKit
 import Kingfisher
 import Moya
 import NVActivityIndicatorView
+import UIKit
 
 // MARK: - ImageItem
 
@@ -29,7 +29,6 @@ struct ImageItem: Hashable {
 // MARK: - ImageBrowserViewController
 
 final class ImageBrowserViewController: UIViewController {
-
     // MARK: - Public Properties
 
     var media: MediaModel!
@@ -51,7 +50,7 @@ final class ImageBrowserViewController: UIViewController {
         case empty
     }
 
-    private class ImageBrowserDiffibleDataSource: UICollectionViewDiffableDataSource<Section, Item> { }
+    private class ImageBrowserDiffibleDataSource: UICollectionViewDiffableDataSource<Section, Item> {}
 
     private lazy var collectionView: UICollectionView = {
         let layout = createLayout()
@@ -467,9 +466,9 @@ final class ImageBrowserViewController: UIViewController {
             }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 self.handleSuccessResponse(moyaResponse)
-            case let .failure(error):
+            case .failure(let error):
                 print("Error loading images: \(error)")
                 DispatchQueue.main.async {
                     self.showError("Failed to load images.")
@@ -704,7 +703,7 @@ extension ImageBrowserViewController: UICollectionViewDelegate {
         collectionView.deselectItem(at: indexPath, animated: true)
 
         guard let selectedItem = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let .content(selectedImage) = selectedItem else { return }
+        guard case .content(let selectedImage) = selectedItem else { return }
 
         let fullScreenVC = FullScreenImageViewController()
         fullScreenVC.images = filteredImages
@@ -786,40 +785,40 @@ extension ImageBrowserViewController: UICollectionViewDelegate {
     }
 
     /*
-    func collectionView(_ collectionView: UICollectionView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-        guard let indexPath = configuration.identifier as? IndexPath,
-              let cell = collectionView.cellForItem(at: indexPath) else { return nil }
+     func collectionView(_ collectionView: UICollectionView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+         guard let indexPath = configuration.identifier as? IndexPath,
+               let cell = collectionView.cellForItem(at: indexPath) else { return nil }
 
-        let previewView: UIView?
-        if let imageCell = cell as? ImageBrowserCell {
-            previewView = imageCell.imageView
-        } else if let logoCell = cell as? LogoImageBrowserCell {
-            previewView = logoCell.imageView
-        } else {
-            return nil
-        }
+         let previewView: UIView?
+         if let imageCell = cell as? ImageBrowserCell {
+             previewView = imageCell.imageView
+         } else if let logoCell = cell as? LogoImageBrowserCell {
+             previewView = logoCell.imageView
+         } else {
+             return nil
+         }
 
-        guard let previewView = previewView else { return nil }
-        return UITargetedPreview(view: previewView, parameters: UIPreviewParameters())
-    }
+         guard let previewView = previewView else { return nil }
+         return UITargetedPreview(view: previewView, parameters: UIPreviewParameters())
+     }
 
-    func collectionView(_ collectionView: UICollectionView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-        guard let indexPath = configuration.identifier as? IndexPath,
-              let cell = collectionView.cellForItem(at: indexPath) else { return nil }
+     func collectionView(_ collectionView: UICollectionView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+         guard let indexPath = configuration.identifier as? IndexPath,
+               let cell = collectionView.cellForItem(at: indexPath) else { return nil }
 
-        let previewView: UIView?
-        if let imageCell = cell as? ImageBrowserCell {
-            previewView = imageCell.imageView
-        } else if let logoCell = cell as? LogoImageBrowserCell {
-            previewView = logoCell.imageView
-        } else {
-            return nil
-        }
+         let previewView: UIView?
+         if let imageCell = cell as? ImageBrowserCell {
+             previewView = imageCell.imageView
+         } else if let logoCell = cell as? LogoImageBrowserCell {
+             previewView = logoCell.imageView
+         } else {
+             return nil
+         }
 
-        guard let previewView = previewView else { return nil }
-        return UITargetedPreview(view: previewView, parameters: UIPreviewParameters())
-    }
-     */
+         guard let previewView = previewView else { return nil }
+         return UITargetedPreview(view: previewView, parameters: UIPreviewParameters())
+     }
+      */
 }
 
 // MARK: - Zoom Transition
@@ -864,6 +863,7 @@ final class FilterHeaderView: UICollectionReusableView {
         super.init(frame: frame)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -909,6 +909,7 @@ final class ImageBrowserCell: UICollectionViewCell {
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -960,6 +961,7 @@ final class LogoImageBrowserCell: UICollectionViewCell {
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

@@ -6,14 +6,12 @@
 //  Copyright © 2021 Trakt. All rights reserved.
 //
 
+import Kingfisher
 import UIKit
 
-import Kingfisher
-
 final class WhereToWatchCollectionViewCell: UICollectionViewCell {
-
-    @IBOutlet weak var providerType: UILabel!
-    @IBOutlet weak var providerLogo: UIImageView!
+    @IBOutlet var providerType: UILabel!
+    @IBOutlet var providerLogo: UIImageView!
 
     var provider: ProviderType! {
         didSet {
@@ -34,5 +32,4 @@ final class WhereToWatchCollectionViewCell: UICollectionViewCell {
         providerLogo.layer.borderWidth = 1
         providerLogo.layer.borderColor = UIColor.tertiarySystemFill.cgColor
     }
-
 }

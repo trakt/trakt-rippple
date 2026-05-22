@@ -7,8 +7,8 @@
 //
 
 import Foundation
-import UIKit
 import SafariServices
+import UIKit
 
 enum MediaModel: Equatable, Hashable, Codable {
     enum CodingKeys: Int, CodingKey {
@@ -27,7 +27,7 @@ enum MediaModel: Equatable, Hashable, Codable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        guard let type = CodingKeys(intValue: try container.decode(Int.self, forKey: .type)) else {
+        guard let type = try CodingKeys(intValue: container.decode(Int.self, forKey: .type)) else {
             throw MediaModelError.decodingError
         }
         switch type {
@@ -86,12 +86,12 @@ enum MediaModel: Equatable, Hashable, Codable {
 
     static func == (lhs: MediaModel, rhs: MediaModel) -> Bool {
         switch (lhs, rhs) {
-        case let (.movie(left), .movie(right)): return left == right
-        case let (.show(left), .show(right)): return left == right
-        case let (.episode(left, _), .episode(right, _)): return left == right
-        case let (.season(left, _), .season(right, _)): return left == right
-        case let (.list(left), .list(right)): return left == right
-        case let (.showProgress(left, left2), .showProgress(right, right2)): return left == right && left2.nextEpisodeToWatch == right2.nextEpisodeToWatch && left2.toRewatchCount == right2.toRewatchCount
+        case (.movie(let left), .movie(let right)): return left == right
+        case (.show(let left), .show(let right)): return left == right
+        case (.episode(let left, _), .episode(let right, _)): return left == right
+        case (.season(let left, _), .season(let right, _)): return left == right
+        case (.list(let left), .list(let right)): return left == right
+        case (.showProgress(let left, let left2), .showProgress(let right, let right2)): return left == right && left2.nextEpisodeToWatch == right2.nextEpisodeToWatch && left2.toRewatchCount == right2.toRewatchCount
         default: return false
         }
     }
@@ -293,22 +293,22 @@ enum MediaModel: Equatable, Hashable, Codable {
     }
 
     var movie: Movie? {
-        if case let .movie(movie) = self {
+        if case .movie(let movie) = self {
             return movie
         } else {
             return nil
         }
     }
 
-//    @available(*, deprecated, message: "Use other accessor instead")
+    ///    @available(*, deprecated, message: "Use other accessor instead")
     var show: Show? {
-        if case let .show(show) = self {
+        if case .show(let show) = self {
             return show
-        } else if case let .showProgress(show, _) = self {
+        } else if case .showProgress(let show, _) = self {
             return show
-        } else if case let .season(_, show) = self {
+        } else if case .season(_, let show) = self {
             return show
-        } else if case let .episode(_, show) = self {
+        } else if case .episode(_, let show) = self {
             return show
         } else {
             return nil
@@ -316,7 +316,7 @@ enum MediaModel: Equatable, Hashable, Codable {
     }
 
     var showShow: Show? {
-        if case let .show(show) = self {
+        if case .show(let show) = self {
             return show
         } else {
             return nil
@@ -324,7 +324,7 @@ enum MediaModel: Equatable, Hashable, Codable {
     }
 
     var showProgressShow: Show? {
-        if case let .showProgress(show, _) = self {
+        if case .showProgress(let show, _) = self {
             return show
         } else {
             return nil
@@ -332,7 +332,7 @@ enum MediaModel: Equatable, Hashable, Codable {
     }
 
     var toRewatchCount: Int {
-        if case let .showProgress(_, progress) = self {
+        if case .showProgress(_, let progress) = self {
             return progress.toRewatchCount
         } else {
             return 0
@@ -340,7 +340,7 @@ enum MediaModel: Equatable, Hashable, Codable {
     }
 
     var seasonShow: Show? {
-        if case let .season(_, show) = self {
+        if case .season(_, let show) = self {
             return show
         } else {
             return nil
@@ -348,7 +348,7 @@ enum MediaModel: Equatable, Hashable, Codable {
     }
 
     var episodeShow: Show? {
-        if case let .episode(_, show) = self {
+        if case .episode(_, let show) = self {
             return show
         } else {
             return nil
@@ -356,18 +356,18 @@ enum MediaModel: Equatable, Hashable, Codable {
     }
 
     var season: Season? {
-        if case let .season(season, _) = self {
+        if case .season(let season, _) = self {
             return season
         } else {
             return nil
         }
     }
 
-//    @available(*, deprecated, message: "Use other accessor instead")
+    ///    @available(*, deprecated, message: "Use other accessor instead")
     var episode: Episode? {
-        if case let .episode(episode, _) = self {
+        if case .episode(let episode, _) = self {
             return episode
-        } else if case let .showProgress(_, progress) = self {
+        } else if case .showProgress(_, let progress) = self {
             return progress.nextEpisodeToWatch
         } else {
             return nil
@@ -375,7 +375,7 @@ enum MediaModel: Equatable, Hashable, Codable {
     }
 
     var episodeEpisode: Episode? {
-        if case let .episode(episode, _) = self {
+        if case .episode(let episode, _) = self {
             return episode
         } else {
             return nil
@@ -383,7 +383,7 @@ enum MediaModel: Equatable, Hashable, Codable {
     }
 
     var showProgressEpisode: Episode? {
-        if case let .showProgress(_, progress) = self {
+        if case .showProgress(_, let progress) = self {
             return progress.nextEpisodeToWatch
         } else {
             return nil
@@ -567,44 +567,35 @@ enum MediaModel: Equatable, Hashable, Codable {
 }
 
 extension Movie {
-
     var mediaModel: MediaModel {
         return MediaModel(item: MediaItem(movie: self, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil))
     }
-
 }
 
 extension Show {
-
     var mediaModel: MediaModel {
         return MediaModel(item: MediaItem(movie: nil, show: self, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil))
     }
-
 }
 
 extension Episode {
-
     func mediaModel(given show: Show) -> MediaModel {
         return MediaModel(item: MediaItem(movie: nil, show: show, episode: self, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil))
     }
-
 }
 
 extension Season {
-
     func mediaModel(given show: Show) -> MediaModel {
         return MediaModel(item: MediaItem(movie: nil, show: show, episode: nil, season: self, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil))
     }
-
 }
 
 extension MediaModel {
-
     private var checkinItem: CheckinItem? {
-        if case let .movie(movie) = self {
+        if case .movie(let movie) = self {
             return CheckinItem(movie: movie)
         }
-        if case let .episode(episode, _) = self {
+        if case .episode(let episode, _) = self {
             return CheckinItem(episode: episode)
         }
         return nil
@@ -619,50 +610,50 @@ extension MediaModel {
 
         TraktAPIProvider.provider.request(TraktAPIService.checkin(item: checkinItem),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    // check-in already in progress
-                                                    if moyaResponse.statusCode == 409 {
-                                                        DispatchQueue.main.async {
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: "✌️ Check-in already in progress", style: .standout)
-                                                        }
-                                                    } else {
-                                                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    // check-in already in progress
+                    if moyaResponse.statusCode == 409 {
+                        DispatchQueue.main.async {
+                            AppManager.shared.isUserInteractionEnabled = true
+                            SwiftMessages.show(message: "✌️ Check-in already in progress", style: .standout)
+                        }
+                    } else {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                        print("Check-in successful \(response)")
+                        print("Check-in successful \(response)")
 
-                                                        self.checkForStinger()
+                        self.checkForStinger()
 
-                                                        DispatchQueue.main.async {
-                                                            WatchingManager.shared.refreshWatching()
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: "▶️ Checked in")
-                                                        }
-                                                    }
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        AppManager.shared.isUserInteractionEnabled = true
-                                                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    AppManager.shared.isUserInteractionEnabled = true
-                                                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                }
-                                            }
+                        DispatchQueue.main.async {
+                            WatchingManager.shared.refreshWatching()
+                            AppManager.shared.isUserInteractionEnabled = true
+                            SwiftMessages.show(message: "▶️ Checked in")
+                        }
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 
     private func checkForStinger() {
-        guard case let .movie(movie) = self else { return } // not a movie
+        guard case .movie(let movie) = self else { return } // not a movie
 
         if let tmdbId = movie.identifiers.tmdb {
             TmdbAPIProvider.provider.request(TmdbAPIService.movieKeywords(tmdbId), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -672,7 +663,7 @@ extension MediaModel {
                     } catch {
                         print("Keywords (tmdb) request JSON mapping failed! \(error)")
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Keywords (tmdb) request failure \(error)")
                 }
             }
@@ -680,7 +671,7 @@ extension MediaModel {
     }
 
     private func buildCheckinStingerNotification(for keywords: [String]) {
-        guard case let .movie(movie) = self else { return } // not a movie
+        guard case .movie(let movie) = self else { return } // not a movie
         if UserDefaults.standard.bool(forKey: "Stinger.alert.type") == false { return } // user dosn't want it
 
         let identifier = "CheckinStingerNotification-\(movie.title)"
@@ -716,7 +707,7 @@ extension MediaModel {
                                             trigger: nil)
 
         let notificationCenter = UNUserNotificationCenter.current()
-        notificationCenter.add(request) { (error) in
+        notificationCenter.add(request) { error in
             if error != nil {
                 print("notificationCenter.add error: \(error!)")
             } else {
@@ -732,39 +723,39 @@ extension MediaModel {
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [identifier])
 
         TraktAPIProvider.provider.request(TraktAPIService.cancelCheckin,
-                                                  callbackQueue: DispatchQueue.global(qos: .utility)) { /*[weak self]*/ result in
+                                          callbackQueue: DispatchQueue.global(qos: .utility)) { /* [weak self] */ result in
 //                                                    guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            print("Cancel Check-in successful \(response)")
+                    print("Cancel Check-in successful \(response)")
 
-                                                            DispatchQueue.main.async {
-                                                                WatchingManager.shared.refreshWatching(with: nil)
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "▶️ Check-in canceled")
-                                                            }
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                        }
-                                                    }
+                    DispatchQueue.main.async {
+                        WatchingManager.shared.refreshWatching(with: nil)
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "▶️ Check-in canceled")
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
                 }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                }
+            }
+        }
     }
 
     func markWatchedWhenReleased() {
         if let movie = movie {
             if let released = movie.released {
-                let dateFormatter = DateFormatter.init()
+                let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd"
                 guard let date = dateFormatter.date(from: released) else {
                     markMovieWatched(at: Date()) // does nothing if not a movie
@@ -778,7 +769,6 @@ extension MediaModel {
         if let episode = episode {
             markEpisodeWatched(at: episode.firstAired ?? Date()) // does nothing if not an episode
         }
-
     }
 
     func markWatched() {
@@ -796,7 +786,7 @@ extension MediaModel {
         TraktAPIProvider.provider.request(TraktAPIService.addEpisodeToHistory(id: episode.identifiers.trakt!, watchedAt: date),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -811,7 +801,7 @@ extension MediaModel {
                         SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
                 }
@@ -829,7 +819,7 @@ extension MediaModel {
         TraktAPIProvider.provider.request(TraktAPIService.addMovieToHistory(id: movie.identifiers.trakt!, watchedAt: date),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -844,7 +834,7 @@ extension MediaModel {
                         SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
                 }
@@ -875,34 +865,34 @@ extension MediaModel {
         SwiftMessages.show(message: "Adding to Watchlist...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.addToWatchlist(item: watchlistItem),
-                                                  callbackQueue: DispatchQueue.global(qos: .utility)) { /*[weak self]*/ result in
+                                          callbackQueue: DispatchQueue.global(qos: .utility)) { /* [weak self] */ result in
 //                                                    guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            print("Add to watchlist successful \(response)")
+                    print("Add to watchlist successful \(response)")
 
-                                                            DispatchQueue.main.async {
-                                                                WatchlistManager.shared.refresh()
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "🕒 Added to Watchlist")
-                                                            }
+                    DispatchQueue.main.async {
+                        WatchlistManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "🕒 Added to Watchlist")
+                    }
 
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                        }
-                                                    }
-    }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                }
+            }
+        }
     }
 
     func addToCollection() {
@@ -914,68 +904,68 @@ extension MediaModel {
         SwiftMessages.show(message: "Adding to Library...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.addToCollection(item: watchlistItem),
-                                                  callbackQueue: DispatchQueue.global(qos: .utility)) { /*[weak self]*/ result in
+                                          callbackQueue: DispatchQueue.global(qos: .utility)) { /* [weak self] */ result in
 //                                                    guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            print("Library successful \(response)")
+                    print("Library successful \(response)")
 
-                                                            DispatchQueue.main.async {
-                                                                CollectionManager.shared.refresh()
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "📚 Added to Library")
-                                                            }
+                    DispatchQueue.main.async {
+                        CollectionManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "📚 Added to Library")
+                    }
 
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                        }
-                                                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 
     func removeFromWatchlist() {
         SwiftMessages.show(message: "Removing from Watchlist...", style: .loading)
 
-                TraktAPIProvider.provider.request(TraktAPIService.removeFromWatchlist(item: watchlistItem),
-                                                          callbackQueue: DispatchQueue.global(qos: .utility)) { /*[weak self]*/ result in
-    //                                                        guard let self = self else { return }
-                                                            switch result {
-                                                            case let .success(moyaResponse):
-                                                                do {
-                                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+        TraktAPIProvider.provider.request(TraktAPIService.removeFromWatchlist(item: watchlistItem),
+                                          callbackQueue: DispatchQueue.global(qos: .utility)) { /* [weak self] */ result in
+            //                                                        guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                                    print("Add to watchlist successful \(response)")
+                    print("Add to watchlist successful \(response)")
 
-                                                                    DispatchQueue.main.async {
-                                                                        WatchlistManager.shared.refresh()
-                                                                        AppManager.shared.isUserInteractionEnabled = true
-                                                                        SwiftMessages.show(message: "🕒 Removed from Watchlist")
-                                                                    }
+                    DispatchQueue.main.async {
+                        WatchlistManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "🕒 Removed from Watchlist")
+                    }
 
-                                                                } catch {
-                                                                    DispatchQueue.main.async {
-                                                                        AppManager.shared.isUserInteractionEnabled = true
-                                                                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                                    }
-                                                                }
-                                                            case let .failure(error):
-                                                                DispatchQueue.main.async {
-                                                                    AppManager.shared.isUserInteractionEnabled = true
-                                                                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                                }
-                                                            }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
             }
+        }
     }
 
     func addToRecommendations() {
@@ -988,103 +978,102 @@ extension MediaModel {
         SwiftMessages.show(message: "Adding to Favorites...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.addToRecommendations(item: item),
-                                                  callbackQueue: DispatchQueue.global(qos: .utility)) { /*[weak self]*/ result in
+                                          callbackQueue: DispatchQueue.global(qos: .utility)) { /* [weak self] */ result in
 //                                                    guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            print("Recommendation successful \(response)")
+                    print("Recommendation successful \(response)")
 
-                                                            DispatchQueue.main.async {
-                                                                RecommendedManager.shared.refresh()
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "⭐️ Added to Favorites")
-                                                            }
+                    DispatchQueue.main.async {
+                        RecommendedManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "⭐️ Added to Favorites")
+                    }
 
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                        }
-                                                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 
     func removeFromRecommendations() {
-
         SwiftMessages.show(message: "Removing from Favorites...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.removeFromRecommendations(item: watchlistItem),
-                                                  callbackQueue: DispatchQueue.global(qos: .utility)) { /*[weak self]*/ result in
+                                          callbackQueue: DispatchQueue.global(qos: .utility)) { /* [weak self] */ result in
 //                                                        guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            print("Removed from recommendations successful \(response)")
+                    print("Removed from recommendations successful \(response)")
 
-                                                            DispatchQueue.main.async {
-                                                                RecommendedManager.shared.refresh()
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "⭐️ Removed from Favorites")
-                                                            }
+                    DispatchQueue.main.async {
+                        RecommendedManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "⭐️ Removed from Favorites")
+                    }
 
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                        }
-                                                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
             }
+        }
     }
 
     func removeFromCollection() {
         SwiftMessages.show(message: "Removing from Library...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.removeFromCollection(item: watchlistItem),
-                                                  callbackQueue: DispatchQueue.global(qos: .utility)) { /*[weak self]*/ result in
+                                          callbackQueue: DispatchQueue.global(qos: .utility)) { /* [weak self] */ result in
 //                                                        guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            print("Removed from Library successful \(response)")
+                    print("Removed from Library successful \(response)")
 
-                                                            DispatchQueue.main.async {
-                                                                CollectionManager.shared.refresh()
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "📚 Removed from Library")
-                                                            }
+                    DispatchQueue.main.async {
+                        CollectionManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "📚 Removed from Library")
+                    }
 
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                        }
-                                                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
             }
+        }
     }
 
     func add(to list: List) {
@@ -1097,7 +1086,7 @@ extension MediaModel {
         TraktAPIProvider.provider.request(.addToList(id: list.identifiers.trakt!,
                                                      item: watchlistItem), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1117,7 +1106,7 @@ extension MediaModel {
                         SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     AppManager.shared.isUserInteractionEnabled = true
                     SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
@@ -1126,13 +1115,13 @@ extension MediaModel {
         }
     }
 
-    static public func addShowsToWatchlistUndercover(medias: [MediaModel]) {
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now()+2) {
+    static func addShowsToWatchlistUndercover(medias: [MediaModel]) {
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
             let dispatchGroup = DispatchGroup()
             for media in medias where media.showShow != nil {
                 dispatchGroup.enter()
                 TraktAPIProvider.noRatingProvider.request(.addToWatchlist(item: WatchlistedItem(show: media.showShow!)),
-                                                  callbackQueue: DispatchQueue.global(qos: .utility)) { _ in
+                                                          callbackQueue: DispatchQueue.global(qos: .utility)) { _ in
                     dispatchGroup.leave()
                 }
             }
@@ -1141,9 +1130,9 @@ extension MediaModel {
         }
     }
 
-    static public func removeShowFromToWatchListUndercover(media: MediaModel) {
+    static func removeShowFromToWatchListUndercover(media: MediaModel) {
         Task(priority: .utility) {
-            try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+            try? await Task.sleep(nanoseconds: 2000000000) // 2 seconds
 
             if SessionManager.shared.isLoggedOut { return }
 
@@ -1164,9 +1153,9 @@ extension MediaModel {
         }
     }
 
-    static public func removeMovieFromToWatchListUndercover(media: MediaModel) {
+    static func removeMovieFromToWatchListUndercover(media: MediaModel) {
         Task(priority: .utility) {
-            try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+            try? await Task.sleep(nanoseconds: 2000000000) // 2 seconds
 
             if SessionManager.shared.isLoggedOut { return }
 
@@ -1187,9 +1176,9 @@ extension MediaModel {
         }
     }
 
-    static public func removeEpisodeFromAnyListUndercover(media: MediaModel) {
+    static func removeEpisodeFromAnyListUndercover(media: MediaModel) {
         Task(priority: .utility) {
-            try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+            try? await Task.sleep(nanoseconds: 2000000000) // 2 seconds
 
             if SessionManager.shared.isLoggedOut { return }
 
@@ -1211,7 +1200,7 @@ extension MediaModel {
     }
 
     private func removeFromListUndercover(list: List) async -> List? {
-        let result: List? = await withCheckedContinuation { continuation in
+        return await withCheckedContinuation { continuation in
             var watchlistedItem: WatchlistedItem
             switch self {
             case .movie(let movie):
@@ -1228,12 +1217,12 @@ extension MediaModel {
                                                                       id: list.identifiers.trakt!,
                                                                       item: watchlistedItem), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                         _ = try response.map(RemoveListItemsResponse.self,
-                                                 using: TraktAPIProvider.decoder)
+                                             using: TraktAPIProvider.decoder)
 
                         if response.statusCode == 200 {
                             print("Removed \(watchlistedItem) from \(list)")
@@ -1246,13 +1235,12 @@ extension MediaModel {
                         print("List remove request JSON mapping failed! \(error)")
                         continuation.resume(returning: nil)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("List remove request failure \(error)")
                     continuation.resume(returning: nil)
                 }
             }
         }
-        return result
     }
 
     func fetchListed() async -> [List]? {
@@ -1276,11 +1264,11 @@ extension MediaModel {
             }
         }()
 
-        let result: [List]? = await withCheckedContinuation { continuation in
+        return await withCheckedContinuation { continuation in
             TraktAPIProvider.noChacheProvider.request(service,
-                                                    callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+                                                      callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
@@ -1289,18 +1277,16 @@ extension MediaModel {
                         print("Listed request JSON mapping failed! \(error)")
                         continuation.resume(returning: nil)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Listed request failure \(error)")
                     continuation.resume(returning: nil)
                 }
             }
         }
-        return result
     }
 }
 
 extension MediaModel {
-
     private func writeComment(media: MediaModel) {
         let composer = UIStoryboard(name: "Compose", bundle: nil).instantiateInitialViewController() as! ComposeNavigationController
 
@@ -1317,7 +1303,7 @@ extension MediaModel {
         UIApplication.shared.present(listViewController)
     }
 
-    public func hide(from section: HiddenSection) {
+    func hide(from section: HiddenSection) {
         switch self {
         case .movie:
             hideMovie(from: section)
@@ -1334,7 +1320,7 @@ extension MediaModel {
         }
     }
 
-    public func hideShow(from section: HiddenSection) {
+    func hideShow(from section: HiddenSection) {
         let traktId = show!.identifiers.trakt!
         let type = "Show"
 
@@ -1343,32 +1329,32 @@ extension MediaModel {
         TraktAPIProvider.provider.request(TraktAPIService.hideShow(section: section,
                                                                    id: traktId),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    print("Hide \(type) successful \(response)")
+                    print("Hide \(type) successful \(response)")
 
-                                                    DispatchQueue.main.async {
-                                                        HiddenMediaManager.shared.refresh()
-                                                        SwiftMessages.show(message: "🙈 \(type) hidden")
-                                                    }
+                    DispatchQueue.main.async {
+                        HiddenMediaManager.shared.refresh()
+                        SwiftMessages.show(message: "🙈 \(type) hidden")
+                    }
 
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                }
-                                            }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 
-    public func hideSeason(from section: HiddenSection) {
+    func hideSeason(from section: HiddenSection) {
         let traktId = season!.identifiers.trakt!
         let type = "Season"
 
@@ -1377,125 +1363,125 @@ extension MediaModel {
         TraktAPIProvider.provider.request(TraktAPIService.hideSeason(section: section,
                                                                      id: traktId),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    print("Hide \(type) successful \(response)")
+                    print("Hide \(type) successful \(response)")
 
-                                                    DispatchQueue.main.async {
-                                                        HiddenMediaManager.shared.refresh()
-                                                        SwiftMessages.show(message: "🙈 \(type) hidden")
-                                                    }
+                    DispatchQueue.main.async {
+                        HiddenMediaManager.shared.refresh()
+                        SwiftMessages.show(message: "🙈 \(type) hidden")
+                    }
 
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                }
-                                            }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 
-    public func hideMovie(from section: HiddenSection) {
+    func hideMovie(from section: HiddenSection) {
         let traktId = movie!.identifiers.trakt!
         let type = "Movie"
 
         SwiftMessages.show(message: "Hiding \(type)...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.hideMovie(section: section,
-                                                                   id: traktId),
+                                                                    id: traktId),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    print("Hide \(type) successful \(response)")
+                    print("Hide \(type) successful \(response)")
 
-                                                    DispatchQueue.main.async {
-                                                        HiddenMediaManager.shared.refresh()
-                                                        SwiftMessages.show(message: "🙈 \(type) hidden")
-                                                    }
+                    DispatchQueue.main.async {
+                        HiddenMediaManager.shared.refresh()
+                        SwiftMessages.show(message: "🙈 \(type) hidden")
+                    }
 
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                }
-                                            }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 
-    public func unhideShow() {
+    func unhideShow() {
         SwiftMessages.show(message: "Unhiding Show...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.unhideShow(section: .progressWatched, id: show!.identifiers.trakt!),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    print("Unhide Show successful \(response)")
+                    print("Unhide Show successful \(response)")
 
-                                                    DispatchQueue.main.async {
-                                                        HiddenMediaManager.shared.refresh()
-                                                        SwiftMessages.show(message: "🐵 Show unhidden")
-                                                    }
+                    DispatchQueue.main.async {
+                        HiddenMediaManager.shared.refresh()
+                        SwiftMessages.show(message: "🐵 Show unhidden")
+                    }
 
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                }
-                                            }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 
-    public func unhideSeason() {
+    func unhideSeason() {
         SwiftMessages.show(message: "Unhiding Season...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.unhideSeason(section: .progressWatched, id: season!.identifiers.trakt!),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    print("Unhide Season successful \(response)")
+                    print("Unhide Season successful \(response)")
 
-                                                    DispatchQueue.main.async {
-                                                        HiddenMediaManager.shared.refresh()
-                                                        AppManager.shared.isUserInteractionEnabled = true
-                                                        SwiftMessages.show(message: "🐵 Season unhidden")
-                                                    }
+                    DispatchQueue.main.async {
+                        HiddenMediaManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "🐵 Season unhidden")
+                    }
 
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        AppManager.shared.isUserInteractionEnabled = true
-                                                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    AppManager.shared.isUserInteractionEnabled = true
-                                                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                }
-                                            }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 
@@ -1514,7 +1500,7 @@ extension MediaModel {
         if userRating == nil {
             let ratings = ["😴 1 - I fell asleep", "😩 2 - Terrible", "👎 3 - Bad", "🙁 4 - Poor", "😐 5 - Meh", "😌 6 - Fair", "👍 7 - Good", "👏 8 - Great", "👌 9 - Superb", "💯 10 - Masterpiece"]
             for index in 1...10 {
-                let rateAction = UIAction(title: ratings[index-1]) { _ in
+                let rateAction = UIAction(title: ratings[index - 1]) { _ in
                     rate(rating: index) { error in
                         if error == nil {
                             SwiftMessages.show(message: "🌟 Rating sent")
@@ -1604,21 +1590,21 @@ extension MediaModel {
         }
         switch self {
         case .movie:
-            return UIMenu(title: (userRating != nil ? "Edit Rating" : "Rate"),
-                                     image: UIImage(systemName: "heart"),
-                                     children: rateActions)
+            return UIMenu(title: userRating != nil ? "Edit Rating" : "Rate",
+                          image: UIImage(systemName: "heart"),
+                          children: rateActions)
         case .show:
-            return UIMenu(title: (userRating != nil ? "Edit Show Rating" : "Rate Show"),
-                                     image: UIImage(systemName: "heart"),
-                                     children: rateActions)
+            return UIMenu(title: userRating != nil ? "Edit Show Rating" : "Rate Show",
+                          image: UIImage(systemName: "heart"),
+                          children: rateActions)
         case .episode:
-            return UIMenu(title: (userRating != nil ? "Edit Episode Rating" : "Rate Episode"),
-                                     image: UIImage(systemName: "heart"),
-                                     children: rateActions)
+            return UIMenu(title: userRating != nil ? "Edit Episode Rating" : "Rate Episode",
+                          image: UIImage(systemName: "heart"),
+                          children: rateActions)
         case .season:
-            return UIMenu(title: (userRating != nil ? "Edit Season Rating" : "Rate Season"),
-                                     image: UIImage(systemName: "heart"),
-                                     children: rateActions)
+            return UIMenu(title: userRating != nil ? "Edit Season Rating" : "Rate Season",
+                          image: UIImage(systemName: "heart"),
+                          children: rateActions)
         case .list:
             fatalError()
         case .showProgress:
@@ -1638,28 +1624,28 @@ extension MediaModel {
 
         TraktAPIProvider.provider.request(TraktAPIService.undoResetProgress(id: show.identifiers.trakt!),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    print("Undo Reset show successful \(response)")
+                    print("Undo Reset show successful \(response)")
 
-                                                    DispatchQueue.main.async {
-                                                        SwiftMessages.show(message: "⏪ Rewatching stopped", style: .content)
-                                                        onRewatchingChangedTransmitter.broadcast(show)
-                                                    }
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: "⏪ Rewatching stopped", style: .content)
+                        onRewatchingChangedTransmitter.broadcast(show)
+                    }
 
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                }
-                                            }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 
@@ -1675,34 +1661,34 @@ extension MediaModel {
 
         TraktAPIProvider.provider.request(TraktAPIService.resetProgress(id: show.identifiers.trakt!),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    print("Reset show successful \(response)")
+                    print("Reset show successful \(response)")
 
-                                                    DispatchQueue.main.async {
-                                                        SwiftMessages.show(message: "⏪ Rewatching started")
-                                                        onRewatchingChangedTransmitter.broadcast(show)
-                                                    }
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: "⏪ Rewatching started")
+                        onRewatchingChangedTransmitter.broadcast(show)
+                    }
 
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                }
-                                            }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 }
 
 extension MediaModel {
-    // Fetch and return Sentiments analysis
+    /// Fetch and return Sentiments analysis
     func fetchSentiments() async -> CommentsSentiments? {
         var service: TraktAPIService?
         switch self {
@@ -1714,8 +1700,8 @@ extension MediaModel {
             service = .episodeSentiments(id: episode.identifiers.trakt!)
         case .season:
             return nil
-            // service = .seasonSentiments(id: show.identifiers.traktIdOrSlug,
-            //                            season: season.number)
+        // service = .seasonSentiments(id: show.identifiers.traktIdOrSlug,
+        //                            season: season.number)
         case .list:
             fatalError("Case not handled, provide a plain movie, episode, season or show")
         case .showProgress:
@@ -1723,10 +1709,10 @@ extension MediaModel {
         }
         guard let service = service else { return nil }
 
-        let result: CommentsSentiments? = await withCheckedContinuation { continuation in
+        return await withCheckedContinuation { continuation in
             TraktAPIProvider.provider.request(service, callbackQueue: .global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1740,7 +1726,7 @@ extension MediaModel {
                             continuation.resume(returning: nil)
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("😓 Error Sentiment \(error)")
                     DispatchQueue.main.async {
                         continuation.resume(returning: nil)
@@ -1748,6 +1734,5 @@ extension MediaModel {
                 }
             }
         }
-        return result
     }
 }

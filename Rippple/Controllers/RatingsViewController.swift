@@ -6,20 +6,16 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
+import Moya
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import NVActivityIndicatorView
-
-import Moya
-
-import Receiver
-
 final class RatingsViewController: UITableViewController {
-
     var user: User!
 
     required init?(coder aDecoder: NSCoder) {
-        self.user = UserManager.shared.currentUser
+        user = UserManager.shared.currentUser
         super.init(coder: aDecoder)
     }
 
@@ -42,7 +38,7 @@ final class RatingsViewController: UITableViewController {
     @IBOutlet var emptyView: UIView!
 
     @IBOutlet var errorView: UIView!
-    @IBOutlet weak var errorLabel: UILabel!
+    @IBOutlet var errorLabel: UILabel!
 
     private var filteredRatings = Array(1...10) {
         didSet {
@@ -55,11 +51,12 @@ final class RatingsViewController: UITableViewController {
             reset()
         }
     }
+
     private var cancellable: Cancellable?
 
     private let contextMenu = ContextMenuHelper()
 
-    @IBOutlet weak var filterButtonItem: UIBarButtonItem!
+    @IBOutlet var filterButtonItem: UIBarButtonItem!
     private var currentFilter = Filter.all {
         didSet {
             navigationItem.title = user.isCurrentUser ? "Ratings" : "\(user.username)'s Ratings"
@@ -89,7 +86,7 @@ final class RatingsViewController: UITableViewController {
         }
     }
 
-    // Error Management
+    /// Error Management
     private var error: Error? {
         didSet {
             if let error = error {
@@ -207,9 +204,9 @@ final class RatingsViewController: UITableViewController {
         filterButtonItem.menu = filterMenu()
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         commandReceiver.listen { [weak self] keyCommand in
             guard let self = self else { return }
@@ -243,9 +240,7 @@ final class RatingsViewController: UITableViewController {
         fetchRatings()
     }
 
-    @IBAction func unwindFromCommentComposer(segue: UIStoryboardSegue) {
-
-    }
+    @IBAction func unwindFromCommentComposer(segue: UIStoryboardSegue) {}
 
     private func reset() {
         if let cancellable = cancellable {
@@ -261,27 +256,27 @@ final class RatingsViewController: UITableViewController {
 
     private func filterMenu() -> UIMenu {
         let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
-            let all = UIAction(title: "Everything", image: nil, state: (self.currentFilter == .all ? .on : .off)) { [weak self] _ in
+            let all = UIAction(title: "Everything", image: nil, state: self.currentFilter == .all ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .all
             }
 
-            let movies = UIAction(title: "Movies", image: nil, state: (self.currentFilter == .movies ? .on : .off)) { [weak self] _ in
+            let movies = UIAction(title: "Movies", image: nil, state: self.currentFilter == .movies ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .movies
             }
 
-            let shows = UIAction(title: "Shows", image: nil, state: (self.currentFilter == .shows ? .on : .off)) { [weak self] _ in
+            let shows = UIAction(title: "Shows", image: nil, state: self.currentFilter == .shows ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .shows
             }
 
-            let seasons = UIAction(title: "Seasons", image: nil, state: (self.currentFilter == .seasons ? .on : .off)) { [weak self] _ in
+            let seasons = UIAction(title: "Seasons", image: nil, state: self.currentFilter == .seasons ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .seasons
             }
 
-            let episodes = UIAction(title: "Episodes", image: nil, state: (self.currentFilter == .episodes ? .on : .off)) { [weak self] _ in
+            let episodes = UIAction(title: "Episodes", image: nil, state: self.currentFilter == .episodes ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .episodes
             }
@@ -296,7 +291,7 @@ final class RatingsViewController: UITableViewController {
             for i in 1...9 {
                 children.append(UIAction(title: "\(i)") { [weak self] _ in
                     guard let self = self else { return }
-                    self.filteredRatings = Array((i+1)...10)
+                    self.filteredRatings = Array((i + 1)...10)
                 })
             }
             let above = UIMenu(title: "Above...", children: children)
@@ -305,7 +300,7 @@ final class RatingsViewController: UITableViewController {
             for i in 2...10 {
                 children.append(UIAction(title: "\(i)") { [weak self] _ in
                     guard let self = self else { return }
-                    self.filteredRatings = Array(1...(i-1))
+                    self.filteredRatings = Array(1...(i - 1))
                 })
             }
             let below = UIMenu(title: "Below...", children: children)
@@ -338,7 +333,7 @@ final class RatingsViewController: UITableViewController {
             }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -409,19 +404,19 @@ final class RatingsViewController: UITableViewController {
                             }
                             votes += 1
                         }
-                        let avgRating = Float((one*1)+(two*2)+(three*3)+(four*4)+(five*5)+(six*6)+(seven*7)+(eight*8)+(nine*9)+(ten*10))/Float(votes)
+                        let avgRating = Float((one * 1) + (two * 2) + (three * 3) + (four * 4) + (five * 5) + (six * 6) + (seven * 7) + (eight * 8) + (nine * 9) + (ten * 10)) / Float(votes)
                         let ratings = TraktRatings(rating: avgRating,
-                                              votes: votes,
-                                              distribution: RatingDistribution(one: one,
-                                                                               two: two,
-                                                                               three: three,
-                                                                               four: four,
-                                                                               five: five,
-                                                                               six: six,
-                                                                               seven: seven,
-                                                                               eight: eight,
-                                                                               nine: nine,
-                                                                               ten: ten))
+                                                   votes: votes,
+                                                   distribution: RatingDistribution(one: one,
+                                                                                    two: two,
+                                                                                    three: three,
+                                                                                    four: four,
+                                                                                    five: five,
+                                                                                    six: six,
+                                                                                    seven: seven,
+                                                                                    eight: eight,
+                                                                                    nine: nine,
+                                                                                    ten: ten))
                         snapshot.appendItems([Wrapper.stats(ratings)], toSection: "stats")
                         DispatchQueue.main.async {
                             self.timeMap = newTimeMap
@@ -438,7 +433,7 @@ final class RatingsViewController: UITableViewController {
                         self.dataSource.apply(snapshot, animatingDifferences: false)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Comments request failure \(error)")
 
                 var snapshot = NSDiffableDataSourceSnapshot<String, Wrapper>()
@@ -453,7 +448,7 @@ final class RatingsViewController: UITableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let commentsViewController = segue.destination as? CommentsViewController,
-            let media = sender as? MediaModel {
+           let media = sender as? MediaModel {
             commentsViewController.coordinator = CommentsCoordinator(type: .media(media))
         }
 
@@ -463,14 +458,13 @@ final class RatingsViewController: UITableViewController {
         }
 
         if let seasonsViewController = segue.destination as? SeasonsViewController,
-            let show = sender as? Show {
+           let show = sender as? Show {
             seasonsViewController.show = show
         }
     }
 }
 
 extension RatingsViewController {
-
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         switch item {
@@ -519,7 +513,6 @@ extension RatingsViewController {
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
         guard let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell else {
             return nil
         }
@@ -527,9 +520,9 @@ extension RatingsViewController {
         contextMenu.controller = self
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-            return self.contextMenu.previewViewController
+            self.contextMenu.previewViewController
         }, actionProvider: { _ in
-            return self.contextMenu.menu
+            self.contextMenu.menu
         })
     }
 
@@ -559,9 +552,7 @@ extension RatingsViewController {
             notes.backgroundColor = UIColor(resource: .ripppleGray)
             notes.image = UIImage(systemName: "note.text")
 
-            let configuration = UISwipeActionsConfiguration(actions: [notes])
-
-            return configuration
+            return UISwipeActionsConfiguration(actions: [notes])
         default:
             return nil
         }
@@ -574,7 +565,7 @@ extension RatingsViewController: MediaTableViewCellDelegate {
 
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
 
-        guard case let Wrapper.item(ratedItem) = item else { return }
+        guard case Wrapper.item(let ratedItem) = item else { return }
 
         if action == .details {
             if let show = ratedItem.show {
@@ -595,5 +586,5 @@ extension RatingsViewController: RatingsStatTableViewCellDelegate {
 }
 
 final class RatingsHeaderTableViewCell: UITableViewCell {
-    @IBOutlet weak var title: UILabel!
+    @IBOutlet var title: UILabel!
 }

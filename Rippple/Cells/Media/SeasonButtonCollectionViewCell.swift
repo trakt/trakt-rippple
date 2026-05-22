@@ -9,13 +9,13 @@
 import UIKit
 
 final class SeasonButtonCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var subtitle: UILabel!
-    @IBOutlet weak var meta: CommentCountLabel?
-    @IBOutlet weak var whereToWatchImageView: WhereToWatchImageView?
-    @IBOutlet weak var poster: PosterButton!
+    @IBOutlet var title: UILabel!
+    @IBOutlet var subtitle: UILabel!
+    @IBOutlet var meta: CommentCountLabel?
+    @IBOutlet var whereToWatchImageView: WhereToWatchImageView?
+    @IBOutlet var poster: PosterButton!
 
-    @IBOutlet weak var cardView: InsideCardView!
+    @IBOutlet var cardView: InsideCardView!
 
     override func awakeFromNib() {
         super.awakeFromNib()

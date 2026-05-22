@@ -1,5 +1,5 @@
 //
-//  MediaTitleTableViewCell.swift
+//  PeopleInfoTableViewCell.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 14/01/2019.
@@ -9,11 +9,10 @@
 import UIKit
 
 final class PeopleInfoTableViewCell: UITableViewCell {
+    @IBOutlet var mainInfoLabel: UILabel!
+    @IBOutlet var secondaryInfoLabel: UILabel!
 
-    @IBOutlet weak var mainInfoLabel: UILabel!
-    @IBOutlet weak var secondaryInfoLabel: UILabel!
-
-    @IBOutlet weak var candleLabel: UILabel!
+    @IBOutlet var candleLabel: UILabel!
 
     private static let heightFormatter: LengthFormatter = {
         let formatter = LengthFormatter()
@@ -60,12 +59,12 @@ final class PeopleInfoTableViewCell: UITableViewCell {
                 relativeDateFormatter.formattingContext = .standalone
                 mainInfoLabel.text = "Died at \(ageComponents.year!) years old, \(relativeDateFormatter.localizedString(for: death, relativeTo: Date()))"
                 mainInfoLabel.isHidden = false
-            // Age
+                // Age
             } else if let birthday = person.birthday {
                 let ageComponents = Calendar.current.dateComponents([.year], from: birthday, to: Date())
                 mainInfoLabel.text = "\(ageComponents.year!) years old" + (happyBirthday == true ? " today" : "")
                 mainInfoLabel.isHidden = false
-            // Nothing
+                // Nothing
             } else {
                 mainInfoLabel.isHidden = true
             }
@@ -75,15 +74,15 @@ final class PeopleInfoTableViewCell: UITableViewCell {
             if let birthday = person.birthday, let birthplace = person.birthplace {
                 secondaryInfoLabel.text = "Born \(dateFormatter.string(from: birthday)) in \(birthplace)"
                 secondaryInfoLabel.isHidden = false
-            // birthday only
+                // birthday only
             } else if let birthday = person.birthday {
                 secondaryInfoLabel.text = "Born \(dateFormatter.string(from: birthday))"
                 secondaryInfoLabel.isHidden = false
-            // birthplace only
+                // birthplace only
             } else if let birthplace = person.birthplace {
                 secondaryInfoLabel.text = "Born in \(birthplace)"
                 secondaryInfoLabel.isHidden = false
-            // nothing
+                // nothing
             } else {
                 secondaryInfoLabel.isHidden = true
             }
@@ -93,7 +92,7 @@ final class PeopleInfoTableViewCell: UITableViewCell {
             if let bornText = secondaryInfoLabel.text, let death = person.death {
                 secondaryInfoLabel.text = "\(bornText)\nDied \(dateFormatter.string(from: death))"
                 secondaryInfoLabel.isHidden = false
-            // just the info if dead
+                // just the info if dead
             } else if let death = person.death {
                 secondaryInfoLabel.text = "Died \(dateFormatter.string(from: death))"
                 secondaryInfoLabel.isHidden = false

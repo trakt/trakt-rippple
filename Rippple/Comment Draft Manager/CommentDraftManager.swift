@@ -7,10 +7,9 @@
 //
 
 import Foundation
-
 import Receiver
 
-fileprivate extension MediaModel {
+private extension MediaModel {
     var key: String {
         switch self {
         case .movie(let movie):
@@ -40,28 +39,28 @@ struct CommentDraft: Codable, Hashable {
             season = nil
             list = nil
         case .show(let show):
-            self.type = .show
+            type = .show
             movie = nil
             self.show = show
             episode = nil
             season = nil
             list = nil
         case .episode(let episode, let show):
-            self.type = .episode
+            type = .episode
             movie = nil
             self.show = show
             self.episode = episode
             season = nil
             list = nil
         case .season(let season, let show):
-            self.type = .season
+            type = .season
             movie = nil
             self.show = show
             episode = nil
             self.season = season
             list = nil
         case .list(let list):
-            self.type = .list
+            type = .list
             movie = nil
             show = nil
             episode = nil
@@ -70,8 +69,8 @@ struct CommentDraft: Codable, Hashable {
         case .showProgress:
             fatalError()
         }
-        self.identifier = mediaModel.key
-        self.updated = Date()
+        identifier = mediaModel.key
+        updated = Date()
         self.comment = comment.body
     }
 
@@ -101,7 +100,6 @@ struct CommentDraft: Codable, Hashable {
 let (onCommentsDraftsChangedTransmitter, onCommentsDraftsChangedReceiver) = Receiver<Int>.make(with: .hot)
 
 final class CommentDraftManager {
-
     private var drafts = Set<CommentDraft>()
 
     private init() {
@@ -130,7 +128,7 @@ final class CommentDraftManager {
 
     static let shared = CommentDraftManager()
 
-    public func canSaveDraft(for comment: Comment) -> Bool {
+    func canSaveDraft(for comment: Comment) -> Bool {
         // is not a reply and is not an edit of a previous comment
         return comment.isReply == false && comment.identifier == 0
     }
@@ -142,14 +140,14 @@ final class CommentDraftManager {
         return nil
     }
 
-    public func comment(for mediaModel: MediaModel) -> String? {
+    func comment(for mediaModel: MediaModel) -> String? {
         if let draft = draft(for: mediaModel) {
             return draft.comment
         }
         return nil
     }
 
-    public func saveDraft(for comment: Comment, with mediaModel: MediaModel) {
+    func saveDraft(for comment: Comment, with mediaModel: MediaModel) {
         if canSaveDraft(for: comment) == false { return }
 
         if let draft = draft(for: mediaModel) {
@@ -160,7 +158,7 @@ final class CommentDraftManager {
         saveDrafts()
     }
 
-    public func unsaveDraft(for mediaModel: MediaModel) {
+    func unsaveDraft(for mediaModel: MediaModel) {
         if let draft = draft(for: mediaModel) {
             drafts.remove(draft)
         }

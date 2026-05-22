@@ -7,16 +7,14 @@
 //
 
 import Foundation
-
 import Receiver
 
 let (onSavedFiltersChangedTransmitter, onSavedFiltersChangedReceiver) = Receiver<[SavedFilter]>.make(with: .warm(upTo: 1))
 
 final class SavedFiltersManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     static let shared = SavedFiltersManager()
 
@@ -69,7 +67,7 @@ final class SavedFiltersManager {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -81,7 +79,7 @@ final class SavedFiltersManager {
                 } catch {
                     print("TraktAPI.savedFilters Error: \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("TraktAPI.savedFilters Failure: \(error)")
             }
         }

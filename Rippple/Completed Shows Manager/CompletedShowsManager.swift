@@ -7,9 +7,7 @@
 //
 
 import Foundation
-
 import Receiver
-
 import TinyStorage
 
 let (onCompletedShowsChangedTransmitter, onCompletedShowsChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
@@ -20,11 +18,10 @@ private struct CompletedShow: Codable, Hashable {
 }
 
 final class CompletedShowsManager {
-
     private let disposeBag = DisposeBag()
     private let stateLock = NSLock()
 
-    private init() { }
+    private init() {}
 
     private var debouncedTransmit: Debouncer!
 
@@ -80,7 +77,7 @@ final class CompletedShowsManager {
         if show.status == nil { return }
 
         // the shows's complete
-        if (show.status == "canceled" || show.status == "ended") && (progress.showProgress.nextEpisodeToWatch == nil && progress.showProgress.nextToRewatch == nil) {
+        if show.status == "canceled" || show.status == "ended", progress.showProgress.nextEpisodeToWatch == nil, progress.showProgress.nextToRewatch == nil {
             updateCompletedShows { completedShows in
                 if completedShows.contains(where: { $0.show == show }) == false {
                     completedShows.append(CompletedShow(show: show,
@@ -96,8 +93,8 @@ final class CompletedShowsManager {
 
     static let shared = CompletedShowsManager()
 
-    fileprivate var completedShowSet = Set<Int64>()
-    fileprivate var completedShows = [CompletedShow]()
+    private var completedShowSet = Set<Int64>()
+    private var completedShows = [CompletedShow]()
 
     private func withStateLock<T>(_ work: () -> T) -> T {
         stateLock.lock()

@@ -9,9 +9,8 @@
 import Foundation
 
 extension String {
-
     var wordCount: Int {
-        let inputRange = CFRangeMake(0, self.utf16.count)
+        let inputRange = CFRangeMake(0, utf16.count)
         let flag = UInt(kCFStringTokenizerUnitWord)
         let locale = CFLocaleCopyCurrent()
         let tokenizer = CFStringTokenizerCreate(kCFAllocatorDefault, self as CFString, inputRange, flag, locale)
@@ -25,10 +24,10 @@ extension String {
     }
 
     func tokenize() -> [String] {
-        let inputRange = CFRangeMake(0, self.utf16.count)
+        let inputRange = CFRangeMake(0, utf16.count)
         let flag = UInt(kCFStringTokenizerUnitWord)
         let locale = CFLocaleCopyCurrent()
-        let tokenizer = CFStringTokenizerCreate( kCFAllocatorDefault, self as CFString, inputRange, flag, locale)
+        let tokenizer = CFStringTokenizerCreate(kCFAllocatorDefault, self as CFString, inputRange, flag, locale)
         var tokenType = CFStringTokenizerAdvanceToNextToken(tokenizer)
         var tokens: [String] = []
 
@@ -43,8 +42,7 @@ extension String {
     }
 
     func substringWithRange(aRange: CFRange) -> String {
-        let nsrange = NSRange.init(location: aRange.location, length: aRange.length)
-        let substring = (self as NSString).substring(with: nsrange)
-        return substring
+        let nsrange = NSRange(location: aRange.location, length: aRange.length)
+        return (self as NSString).substring(with: nsrange)
     }
 }

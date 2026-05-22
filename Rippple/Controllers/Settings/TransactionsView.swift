@@ -7,8 +7,8 @@
 //
 
 import Foundation
-import SwiftUI
 import StoreKit
+import SwiftUI
 
 struct TransactionsView: View {
     @State private var transactions: [StoreKit.Transaction] = []
@@ -19,7 +19,9 @@ struct TransactionsView: View {
     private enum Filter: String, CaseIterable, Identifiable {
         case activePurchased = "Active"
         case all = "All"
-        var id: Self { self }
+        var id: Self {
+            self
+        }
     }
 
     @State private var selectedFilter: Filter = .activePurchased

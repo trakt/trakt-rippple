@@ -9,7 +9,6 @@
 import UIKit
 
 final class SearchTableViewCell: UITableViewCell {
-
     private var text: String!
     private var subtext: String?
     private var searchQuery: String?
@@ -55,7 +54,6 @@ final class SearchTableViewCell: UITableViewCell {
                         }
                     }
                 }
-
             }
             title.attributedText = attributedString
         } else {
@@ -108,7 +106,7 @@ final class SearchTableViewCell: UITableViewCell {
 
 final class SearchHeaderView: UITableViewHeaderFooterView {
     @IBOutlet var title: UILabel!
-    @IBOutlet weak var button: UIButton!
+    @IBOutlet var button: UIButton!
 
     override func awakeFromNib() {
         super.awakeFromNib()

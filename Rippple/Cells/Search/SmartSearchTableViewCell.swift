@@ -9,15 +9,14 @@
 import UIKit
 
 final class SmartSearchTableViewCell: UITableViewCell {
-
     @IBOutlet var title: UILabel!
     @IBOutlet var separator: UIView!
 
     @IBOutlet var card: UIView!
 
-    @IBOutlet weak var bottomConstraint: NSLayoutConstraint!
-    @IBOutlet weak var topConstraint: NSLayoutConstraint!
-    @IBOutlet weak var titleConstraint: NSLayoutConstraint!
+    @IBOutlet var bottomConstraint: NSLayoutConstraint!
+    @IBOutlet var topConstraint: NSLayoutConstraint!
+    @IBOutlet var titleConstraint: NSLayoutConstraint!
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
@@ -55,7 +54,7 @@ final class SmartSearchTableViewCell: UITableViewCell {
         }
     }
 
-    var cardType: CardType = CardType.middle {
+    var cardType: CardType = .middle {
         didSet {
             switch cardType {
             case .top:

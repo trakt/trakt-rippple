@@ -6,14 +6,11 @@
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
+import Kingfisher
+import Receiver
 import UIKit
 
-import Receiver
-
-import Kingfisher
-
 final class ProfileButton: UIButton {
-
     private let disposeBag = DisposeBag()
 
     required init?(coder aDecoder: NSCoder) {
@@ -34,7 +31,7 @@ final class ProfileButton: UIButton {
         let size: CGFloat = 24
         #endif
 
-        imageView?.layer.cornerRadius = size/2.0
+        imageView?.layer.cornerRadius = size / 2.0
         imageView?.layer.cornerCurve = .continuous
         imageView?.layer.masksToBounds = true
         imageView?.backgroundColor = UIColor.secondarySystemBackground
@@ -50,12 +47,11 @@ final class ProfileButton: UIButton {
                 self.kf.setImage(with: settings.user.images!.avatar.full,
                                  for: .normal,
                                  options: [.scaleFactor(self.traitCollection.displayScale),
-                                           .processor(RoundCornerImageProcessor(cornerRadius: size/2.0,
+                                           .processor(RoundCornerImageProcessor(cornerRadius: size / 2.0,
                                                                                 targetSize: .init(width: size, height: size)))], completionHandler: { _ in
-                    self.sizeToFit()
-                })
+                                     self.sizeToFit()
+                                 })
             }
         }.disposed(by: disposeBag)
     }
-
 }

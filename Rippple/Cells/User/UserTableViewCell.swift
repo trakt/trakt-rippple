@@ -6,38 +6,34 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Kingfisher
+import Moya
+import Receiver
 import UIKit
 
-import Kingfisher
-
-import Moya
-
-import Receiver
-
 final class UserTableViewCell: UITableViewCell {
+    @IBOutlet var fanartImageViewHeightConstraint: NSLayoutConstraint?
 
-    @IBOutlet weak var fanartImageViewHeightConstraint: NSLayoutConstraint?
+    @IBOutlet var nameLabel: UILabel!
+    @IBOutlet var usernameLabel: UILabel!
+    @IBOutlet var commentReactionsLabel: UILabel?
 
-    @IBOutlet weak var nameLabel: UILabel!
-    @IBOutlet weak var usernameLabel: UILabel!
-    @IBOutlet weak var commentReactionsLabel: UILabel?
+    @IBOutlet var avatarImageView: UIImageView?
+    @IBOutlet var fanartImageView: UIImageView?
 
-    @IBOutlet weak var avatarImageView: UIImageView?
-    @IBOutlet weak var fanartImageView: UIImageView?
+    @IBOutlet var memberSinceLabel: UILabel?
+    @IBOutlet var VIPView: UIView?
+    @IBOutlet var VIPLabel: UILabel?
 
-    @IBOutlet weak var memberSinceLabel: UILabel?
-    @IBOutlet weak var VIPView: UIView?
-    @IBOutlet weak var VIPLabel: UILabel?
-
-    @IBOutlet weak var privateStatus: UIImageView?
+    @IBOutlet var privateStatus: UIImageView?
 
     private let disposeBag = DisposeBag()
 
-    @IBOutlet weak var cardView: CardView?
+    @IBOutlet var cardView: CardView?
 
     private let dateFormatter = DateFormatter()
 
-    // request
+    /// request
     private var request: Cancellable?
 
     private let profileFilter = RoundCornerImageProcessor(
@@ -65,8 +61,8 @@ final class UserTableViewCell: UITableViewCell {
             if VIPView != nil { // only add the border if on profile
                 avatarImageView.layer.borderColor = UIColor.white.cgColor
                 avatarImageView.layer.borderWidth = 2
-                avatarImageView.layer.cornerRadius = avatarImageView.bounds.height/2.0
-                avatarImageView.layer.shadowColor = UIColor.init(asset: .shadow).cgColor
+                avatarImageView.layer.cornerRadius = avatarImageView.bounds.height / 2.0
+                avatarImageView.layer.shadowColor = UIColor(asset: .shadow).cgColor
                 avatarImageView.layer.shadowOpacity = 0.6
                 avatarImageView.layer.shadowRadius = 5
                 avatarImageView.layer.shadowOffset = CGSize(width: 0, height: 0)
@@ -77,7 +73,7 @@ final class UserTableViewCell: UITableViewCell {
 
                 maximumContentSizeCategory = .extraExtraLarge
             } else {
-                avatarImageView.layer.cornerRadius = avatarImageView.bounds.height/2.0
+                avatarImageView.layer.cornerRadius = avatarImageView.bounds.height / 2.0
                 avatarImageView.layer.borderWidth = 1
                 avatarImageView.layer.borderColor = UIColor.tertiarySystemFill.cgColor
                 avatarImageView.clipsToBounds = true
@@ -86,7 +82,7 @@ final class UserTableViewCell: UITableViewCell {
 
         if let VIPLabel = VIPView {
             VIPLabel.layer.cornerCurve = .circular
-            VIPLabel.layer.cornerRadius = VIPLabel.bounds.height/2.0
+            VIPLabel.layer.cornerRadius = VIPLabel.bounds.height / 2.0
             VIPLabel.clipsToBounds = true
         }
     }
@@ -216,7 +212,7 @@ final class UserTableViewCell: UITableViewCell {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -228,7 +224,7 @@ final class UserTableViewCell: UITableViewCell {
                 } catch {
                     print("User fetch failed \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("User fetch failed \(error)")
             }
         }
@@ -248,7 +244,7 @@ final class UserTableViewCell: UITableViewCell {
                 gradientLayer.removeFromSuperlayer()
             }
 
-            let colorTop =  UIColor.clear.cgColor
+            let colorTop = UIColor.clear.cgColor
             let colorBottom = UIColor.black.cgColor
 
             let gradientLayer = CAGradientLayer()

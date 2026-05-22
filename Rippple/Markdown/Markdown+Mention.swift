@@ -18,7 +18,7 @@ class MarkdownMention: MarkdownCommonElement {
         return MarkdownMention.regex
     }
 
-    public init(font: UIFont? = nil, color: UIColor? = nil) {
+    init(font: UIFont? = nil, color: UIColor? = nil) {
         self.font = font
         self.color = color
     }

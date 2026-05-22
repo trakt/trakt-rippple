@@ -6,14 +6,11 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
+import Receiver
+import SafariServices
 import UIKit
 
-import Receiver
-
-import SafariServices
-
 final class EpisodesToWatchViewController: UITableViewController {
-
     private enum ViewControllerSegue: String {
         case comments
         case details
@@ -262,7 +259,7 @@ final class EpisodesToWatchViewController: UITableViewController {
         #if !targetEnvironment(macCatalyst)
         refreshControl = UIRefreshControl()
         #endif
-        refreshControl?.addTarget(self, action: #selector(self.refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         onEpisodeToWatchStatusChangedReceiver.listen { [weak self] status in
             guard let self = self else { return }
@@ -304,7 +301,7 @@ final class EpisodesToWatchViewController: UITableViewController {
     }
 
     @objc private func refreshEpisodes(_ sender: UIKeyCommand) {
-        refresh(self.refreshControl as Any)
+        refresh(refreshControl as Any)
     }
 
     @objc func refresh(_ sender: Any) {
@@ -313,13 +310,13 @@ final class EpisodesToWatchViewController: UITableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let commentsViewController = segue.destination as? CommentsViewController,
-            let media = sender as? MediaModel {
+           let media = sender as? MediaModel {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.media(media))
         } else if let commentsViewController = segue.destination as? CommentsViewController,
-            let show = sender as? Show {
+                  let show = sender as? Show {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.media(.show(show)))
         } else if let mediaViewController = segue.destination as? MediaViewController,
-            let media = sender as? MediaModel {
+                  let media = sender as? MediaModel {
             mediaViewController.media = media
         } else if let seasonsViewController = segue.destination as? SeasonsViewController {
             if let show = sender as? Show {
@@ -404,7 +401,6 @@ extension EpisodesToWatchViewController {
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
         guard let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell else {
             return nil
         }
@@ -413,9 +409,9 @@ extension EpisodesToWatchViewController {
         contextMenu.controller = self
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-            return self.contextMenu.previewViewController
+            self.contextMenu.previewViewController
         }, actionProvider: { _ in
-            return self.contextMenu.menu
+            self.contextMenu.menu
         })
     }
 
@@ -475,7 +471,7 @@ extension EpisodesToWatchViewController {
             guard let show = media.showProgressShow else { return nil }
 
             let episodes = UIContextualAction(style: .normal,
-                                             title: "Episodes") { _, _, boolValue in
+                                              title: "Episodes") { _, _, boolValue in
                 self.performSegue(withIdentifier: ViewControllerSegue.seasons.rawValue, sender: show)
                 boolValue(true)
             }
@@ -483,7 +479,7 @@ extension EpisodesToWatchViewController {
             episodes.backgroundColor = UIColor(resource: .ripppleGray).lighter()
 
             let hide = UIContextualAction(style: .normal,
-                                             title: "Hide") { _, _, boolValue in
+                                          title: "Hide") { _, _, boolValue in
                 media.hide(from: .progressWatched)
                 boolValue(true)
             }
@@ -491,7 +487,7 @@ extension EpisodesToWatchViewController {
             hide.backgroundColor = UIColor(resource: .ripppleGray).darker()
 
             let drop = UIContextualAction(style: .normal,
-                                             title: "Drop") { _, _, boolValue in
+                                          title: "Drop") { _, _, boolValue in
                 media.show?.drop()
                 boolValue(true)
             }
@@ -501,7 +497,7 @@ extension EpisodesToWatchViewController {
             var pin: UIContextualAction
             if show.isPinned {
                 pin = UIContextualAction(style: .normal,
-                                                 title: "Unpin") { _, _, boolValue in
+                                         title: "Unpin") { _, _, boolValue in
                     show.unpin()
                     boolValue(true)
                 }
@@ -509,7 +505,7 @@ extension EpisodesToWatchViewController {
                 pin.backgroundColor = UIColor(resource: .ripppleGray)
             } else {
                 pin = UIContextualAction(style: .normal,
-                                                 title: "Pin") { _, _, boolValue in
+                                         title: "Pin") { _, _, boolValue in
                     show.pin()
                     boolValue(true)
                 }
@@ -525,7 +521,6 @@ extension EpisodesToWatchViewController {
 }
 
 extension EpisodesToWatchViewController: MediaTableViewCellDelegate {
-
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action) {
         guard let index = tableView.indexPath(for: cell) else { return }
         guard let wrapper = dataSource.itemIdentifier(for: index) else { return }

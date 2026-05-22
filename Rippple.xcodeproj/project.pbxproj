@@ -540,6 +540,7 @@
 		0917E8952F5DE5AE00339338 /* bug_report.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = bug_report.yml; sourceTree = "<group>"; };
 		0917E8962F5DE5AE00339338 /* config.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = config.yml; sourceTree = "<group>"; };
 		0917E8972F5DE5AE00339338 /* feature_request.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = feature_request.yml; sourceTree = "<group>"; };
+		091EFE592FC05C52004A9B4D /* .swiftformat */ = {isa = PBXFileReference; lastKnownFileType = text; path = .swiftformat; sourceTree = "<group>"; };
 		0929C5AD2ECCE40A00172E74 /* PinnedMoviesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedMoviesManager.swift; sourceTree = "<group>"; };
 		092A51462E0A7FC000DD0C15 /* CheckinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinView.swift; sourceTree = "<group>"; };
 		09570F922ED5B34C00EB91CE /* WallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallViewController.swift; sourceTree = "<group>"; };
@@ -1927,6 +1928,7 @@
 		3A9119BB1FADC7EB00457D28 = {
 			isa = PBXGroup;
 			children = (
+				091EFE592FC05C52004A9B4D /* .swiftformat */,
 				09DA105E2F4C997B00DD80F5 /* .github */,
 				09DA10582F4C990F00DD80F5 /* README.md */,
 				09DA10562F4C990200DD80F5 /* CONTRIBUTING.md */,
@@ -2922,6 +2924,29 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		09B1F33A2FBD123400A1B2C3 /* Run Script (SwiftFormat) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/.swiftformat",
+				"${SRCROOT}/BuildTools/Package.swift",
+				"${SRCROOT}/Scripts/swiftformat.sh",
+			);
+			name = "Run Script (SwiftFormat)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Scripts/swiftformat.sh\" --lint --changed --xcode-build-phase\n";
+			showEnvVarsInLog = 0;
+		};
 		3A6908432A3AFD8F00501A19 /* Run Script (version) */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -2960,29 +2985,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "SECRETS_FILE=\"${SRCROOT}/Rippple/Secrets.swift\"\n\nif [ ! -f \"$SECRETS_FILE\" ]; then\n  echo \"error: Missing Secrets.swift file. Copy Secrets-Template.swift to Secrets.swift, fill in the required values, and include the file in all needed targets.\" >&2\n  exit 1\nfi\n\nFILTERED=$(grep -v '^[[:space:]]*//' \"$SECRETS_FILE\")\nif echo \"$FILTERED\" | grep -q '<#'; then\n  echo \"error: Secrets.swift contains template placeholders. Fill in all the required values.\" >&2\n  exit 1\nfi\n\nif echo \"$FILTERED\" | grep -E -q '=[[:space:]]*\"\"'; then\n  echo \"error: Secrets.swift contains empty string values. Fill in all the required values.\" >&2\n  exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		09B1F33A2FBD123400A1B2C3 /* Run Script (SwiftFormat) */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${SRCROOT}/.swiftformat",
-				"${SRCROOT}/BuildTools/Package.swift",
-				"${SRCROOT}/Scripts/swiftformat.sh",
-			);
-			name = "Run Script (SwiftFormat)";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Scripts/swiftformat.sh\" --lint --changed --xcode-build-phase\n";
 			showEnvVarsInLog = 0;
 		};
 		446431FD91F095F90D3214F6 /* [CP] Check Pods Manifest.lock */ = {

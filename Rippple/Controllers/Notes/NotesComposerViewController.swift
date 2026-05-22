@@ -6,9 +6,8 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import UIKit
 
 let (onWatchlistTypeNotesChangedTransmitter, onWatchlistTypeNotesChangedReceiver) = Receiver<WatchlistType>.make(with: .hot)
 
@@ -19,7 +18,6 @@ enum WatchlistType {
 }
 
 final class NotesComposerViewController: UIViewController {
-
     var media: MediaModel?
     var ratedItem: RatedItem?
     var historyItem: HistoryItem?
@@ -29,24 +27,24 @@ final class NotesComposerViewController: UIViewController {
 
     var watchlistType: WatchlistType?
 
-    @IBOutlet weak var textView: UITextView!
-    @IBOutlet weak var placeholderTextView: UITextView!
-    @IBOutlet weak var previewTextView: UITextView!
+    @IBOutlet var textView: UITextView!
+    @IBOutlet var placeholderTextView: UITextView!
+    @IBOutlet var previewTextView: UITextView!
 
-    @IBOutlet weak var charCountLabel: UILabel!
+    @IBOutlet var charCountLabel: UILabel!
 
-    @IBOutlet weak var privacyButton: UIButton!
-    @IBOutlet weak var spoilerButton: UIButton!
-    @IBOutlet weak var previewButton: UIButton!
+    @IBOutlet var privacyButton: UIButton!
+    @IBOutlet var spoilerButton: UIButton!
+    @IBOutlet var previewButton: UIButton!
 
-    @IBOutlet weak var toolbar: UIToolbar!
-    @IBOutlet weak var inputAccessoryBackgroundView: UIView!
+    @IBOutlet var toolbar: UIToolbar!
+    @IBOutlet var inputAccessoryBackgroundView: UIView!
     @IBOutlet var commentInputAccessoryView: UIView!
 
     @IBOutlet var sendButton: UIBarButtonItem!
     @IBOutlet var cancelButton: UIBarButtonItem!
 
-    @IBOutlet weak var metaLabel: UILabel!
+    @IBOutlet var metaLabel: UILabel!
 
     // internal
     private var notesPrivacy: NotePrivacy = .me
@@ -348,10 +346,10 @@ final class NotesComposerViewController: UIViewController {
 
                     textView.isEditable = false
 
-                    previewTextView.scrollIndicatorInsets = UIEdgeInsets.init(top: -16.0,
-                                                                             left: 0.0,
-                                                                             bottom: 0.0,
-                                                                             right: -16.0)
+                    previewTextView.scrollIndicatorInsets = UIEdgeInsets(top: -16.0,
+                                                                         left: 0.0,
+                                                                         bottom: 0.0,
+                                                                         right: -16.0)
 
                     previewTextView.clipsToBounds = false
                     return
@@ -408,10 +406,10 @@ final class NotesComposerViewController: UIViewController {
 
         textView.text = noteItem!.note.notes
 
-        textView.scrollIndicatorInsets = UIEdgeInsets.init(top: -16.0,
-                                                                 left: 0.0,
-                                                                 bottom: 0.0,
-                                                                 right: -16.0)
+        textView.scrollIndicatorInsets = UIEdgeInsets(top: -16.0,
+                                                      left: 0.0,
+                                                      bottom: 0.0,
+                                                      right: -16.0)
 
         textView.clipsToBounds = false
         textView.inputAccessoryView = commentInputAccessoryView
@@ -521,7 +519,7 @@ final class NotesComposerViewController: UIViewController {
                 return
             }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     _ = try moyaResponse.filterSuccessfulStatusCodes()
                     if case .updateRecommendationItem = service {
@@ -549,7 +547,7 @@ final class NotesComposerViewController: UIViewController {
                         self.navigationItem.rightBarButtonItem = self.sendButton
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Notes saving failed! \(error)")
                 NotesManager.shared.refresh()
                 DispatchQueue.main.async {
@@ -645,26 +643,26 @@ final class NotesComposerViewController: UIViewController {
         privacyButton.showsMenuAsPrimaryAction = true
 
         let privacyPublic = UIAction(title: "Public",
-                            image: UIImage(systemName: "globe"),
+                                     image: UIImage(systemName: "globe"),
                                      handler: { [weak self] _ in
-            guard let self = self else { return }
-            notesPrivacy = .all
-            updateQuickActions()
-        })
+                                         guard let self = self else { return }
+                                         notesPrivacy = .all
+                                         updateQuickActions()
+                                     })
         let privacyFriends = UIAction(title: "Friends",
-                            image: UIImage(systemName: "lock.open"),
-                                     handler: { [weak self] _ in
-            guard let self = self else { return }
-            notesPrivacy = .friends
-            updateQuickActions()
-        })
+                                      image: UIImage(systemName: "lock.open"),
+                                      handler: { [weak self] _ in
+                                          guard let self = self else { return }
+                                          notesPrivacy = .friends
+                                          updateQuickActions()
+                                      })
         let privacyPrivate = UIAction(title: "Private",
-                            image: UIImage(systemName: "lock"),
-                                     handler: { [weak self] _ in
-            guard let self = self else { return }
-            notesPrivacy = .me
-            updateQuickActions()
-        })
+                                      image: UIImage(systemName: "lock"),
+                                      handler: { [weak self] _ in
+                                          guard let self = self else { return }
+                                          notesPrivacy = .me
+                                          updateQuickActions()
+                                      })
 
         if noteItem?.noteAttachement.type == .collection || noteItem?.noteAttachement.type == .history || noteItem?.noteAttachement.type == .rating {
             privacyButton.menu = UIMenu(title: "Choose who can see your Note:",
@@ -694,19 +692,19 @@ final class NotesComposerViewController: UIViewController {
         spoilerButton.showsMenuAsPrimaryAction = true
 
         let spoilerYes = UIAction(title: "Spoiler Alert",
-                            image: UIImage(systemName: "exclamationmark.bubble"),
-                                     handler: { [weak self] _ in
-            guard let self = self else { return }
-            notesContainsSpoilers = true
-            updateQuickActions()
-        })
+                                  image: UIImage(systemName: "exclamationmark.bubble"),
+                                  handler: { [weak self] _ in
+                                      guard let self = self else { return }
+                                      notesContainsSpoilers = true
+                                      updateQuickActions()
+                                  })
         let spoilerNo = UIAction(title: "No Spoiler",
-                            image: UIImage(systemName: "text.bubble"),
-                                     handler: { [weak self] _ in
-            guard let self = self else { return }
-            notesContainsSpoilers = false
-            updateQuickActions()
-        })
+                                 image: UIImage(systemName: "text.bubble"),
+                                 handler: { [weak self] _ in
+                                     guard let self = self else { return }
+                                     notesContainsSpoilers = false
+                                     updateQuickActions()
+                                 })
 
         if noteItem?.noteAttachement.type == .collection || noteItem?.noteAttachement.type == .history || noteItem?.noteAttachement.type == .rating {
             spoilerButton.menu = UIMenu(title: "Mark your Notes with a Spoiler Alert:",
@@ -715,7 +713,7 @@ final class NotesComposerViewController: UIViewController {
                 guard let self = self else { return }
                 UISelectionFeedbackGenerator().selectionChanged()
                 self.spoilerButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-             }, for: .menuActionTriggered)
+            }, for: .menuActionTriggered)
         } else {
             spoilerButton.isHidden = true
         }
@@ -733,7 +731,7 @@ final class NotesComposerViewController: UIViewController {
             self.title = "Preview"
             self.sendButton.isEnabled = false
             self.navigationItem.leftBarButtonItem?.isEnabled = false
-         }, for: .touchDown)
+        }, for: .touchDown)
         previewButton.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             self.previewTextView.isHidden = true
@@ -745,7 +743,7 @@ final class NotesComposerViewController: UIViewController {
     }
 
     private var markdownParser = SpoilerMarkdownParser(font: UIFont.preferredFont(forTextStyle: .body),
-                                                automaticLinkDetectionEnabled: true)
+                                                       automaticLinkDetectionEnabled: true)
 
     private func attributedString() -> NSAttributedString? {
         markdownParser.color = .label
@@ -774,14 +772,14 @@ extension NotesComposerViewController: UITextViewDelegate {
     private func keyboardFrameDidChange(notification: NSNotification) {
         if let frameValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
             let keyboardHeight = frameValue.cgRectValue.size.height - view.safeAreaInsets.bottom
-            textView.contentInset = UIEdgeInsets.init(top: 0.0,
-                                                            left: 0.0,
-                                                            bottom: keyboardHeight,
-                                                            right: 0.0)
-            textView.scrollIndicatorInsets = UIEdgeInsets.init(top: -16.0,
-                                                                     left: 0.0,
-                                                                     bottom: keyboardHeight,
-                                                                     right: -16.0)
+            textView.contentInset = UIEdgeInsets(top: 0.0,
+                                                 left: 0.0,
+                                                 bottom: keyboardHeight,
+                                                 right: 0.0)
+            textView.scrollIndicatorInsets = UIEdgeInsets(top: -16.0,
+                                                          left: 0.0,
+                                                          bottom: keyboardHeight,
+                                                          right: -16.0)
         }
     }
 }
@@ -795,7 +793,7 @@ extension NotesComposerViewController {
                 textView.insertText(prefix + sufix)
             }
             if let from = textView.position(from: selectedRange.start, offset: prefix.count),
-                let to = textView.position(from: selectedRange.end, offset: prefix.count) {
+               let to = textView.position(from: selectedRange.end, offset: prefix.count) {
                 textView.selectedTextRange = textView.textRange(from: from, to: to)
             }
         }

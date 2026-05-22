@@ -6,12 +6,10 @@
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 class CustomTableView: UITableView {
-
     private let customTableViewDisposeBag = DisposeBag()
 
     override func awakeFromNib() {
@@ -27,7 +25,6 @@ class CustomTableView: UITableView {
     }
 
     override func touchesShouldCancel(in view: UIView) -> Bool {
-
         if view is UIControl
             && !(view is UITextInput)
             && !(view is UISlider)

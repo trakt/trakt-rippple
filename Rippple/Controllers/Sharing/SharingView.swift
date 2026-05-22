@@ -9,7 +9,6 @@
 import SwiftUI
 
 struct SharingView: View {
-
     @State private var enableText: Bool = true
     @State private var enableURL: Bool = true
     @State private var enableImage: Bool = true

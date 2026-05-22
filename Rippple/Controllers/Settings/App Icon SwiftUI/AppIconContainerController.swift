@@ -6,8 +6,8 @@
 //  Copyright © 2024 Trakt. All rights reserved.
 //
 
-import UIKit
 import SwiftUI
+import UIKit
 
 final class AppIconContainerController: UIHostingController<AppIconChooserView> {
     required init?(coder aDecoder: NSCoder) {

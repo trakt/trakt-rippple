@@ -7,8 +7,8 @@
 //
 
 import Foundation
-
 import Receiver
+
 //
 // import Moya
 
@@ -16,18 +16,17 @@ import Receiver
 // let (onEpisodeToWatchStatusChangedTransmitter, onEpisodeToWatchStatusChangedReceiver) = Receiver<EpisodeToWatchManager.Status>.make(with: .warm(upTo: 1))
 
 final class ToWatchMovieReleaseNotificationsManager {
-
     static let shared = ToWatchMovieReleaseNotificationsManager()
 
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     private let uuidPrefix = "movieRelease"
 
     private var movies: [Movie]? {
         didSet {
-            self.fetchCalendar()
+            fetchCalendar()
         }
     }
 
@@ -43,7 +42,7 @@ final class ToWatchMovieReleaseNotificationsManager {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -71,7 +70,7 @@ final class ToWatchMovieReleaseNotificationsManager {
                 } catch {
                     print("moviesCalendar request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("moviesCalendar request failure \(error)")
             }
         }
@@ -93,10 +92,10 @@ final class ToWatchMovieReleaseNotificationsManager {
                                             trigger: trigger)
 
         let notificationCenter = UNUserNotificationCenter.current()
-        notificationCenter.add(request) { (error) in
-           if error != nil {
-              // Handle any errors.
-           }
+        notificationCenter.add(request) { error in
+            if error != nil {
+                // Handle any errors.
+            }
         }
     }
 }

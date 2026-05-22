@@ -9,20 +9,19 @@
 import UIKit
 
 public struct TransitionOptions {
-
     public enum Curve {
         case linear
         case easeIn
         case easeOut
         case easeInOut
 
-        internal var function: CAMediaTimingFunction {
+        var function: CAMediaTimingFunction {
             let key: String!
             switch self {
-            case .linear:        key = convertFromCAMediaTimingFunctionName(CAMediaTimingFunctionName.linear)
-            case .easeIn:        key = convertFromCAMediaTimingFunctionName(CAMediaTimingFunctionName.easeIn)
-            case .easeOut:        key = convertFromCAMediaTimingFunctionName(CAMediaTimingFunctionName.easeOut)
-            case .easeInOut:    key = convertFromCAMediaTimingFunctionName(CAMediaTimingFunctionName.easeInEaseOut)
+            case .linear: key = convertFromCAMediaTimingFunctionName(CAMediaTimingFunctionName.linear)
+            case .easeIn: key = convertFromCAMediaTimingFunctionName(CAMediaTimingFunctionName.easeIn)
+            case .easeOut: key = convertFromCAMediaTimingFunctionName(CAMediaTimingFunctionName.easeOut)
+            case .easeInOut: key = convertFromCAMediaTimingFunctionName(CAMediaTimingFunctionName.easeInEaseOut)
             }
             return CAMediaTimingFunction(name: convertToCAMediaTimingFunctionName(key))
         }
@@ -35,7 +34,7 @@ public struct TransitionOptions {
         case toLeft
         case toRight
 
-        internal func transition() -> CATransition {
+        func transition() -> CATransition {
             let transition = CATransition()
             transition.type = CATransitionType.push
             switch self {
@@ -66,18 +65,17 @@ public struct TransitionOptions {
         self.style = style
     }
 
-    public init() { }
+    public init() {}
 
-    internal var animation: CATransition {
-        let transition = self.direction.transition()
-        transition.duration = self.duration
-        transition.timingFunction = self.style.function
+    var animation: CATransition {
+        let transition = direction.transition()
+        transition.duration = duration
+        transition.timingFunction = style.function
         return transition
     }
 }
 
 public extension UIWindow {
-
     func setRootViewController(_ controller: UIViewController, options: TransitionOptions = TransitionOptions()) {
         layer.add(options.animation, forKey: kCATransition)
         rootViewController = controller
@@ -85,12 +83,12 @@ public extension UIWindow {
     }
 }
 
-// Helper function inserted by Swift 4.2 migrator.
+/// Helper function inserted by Swift 4.2 migrator.
 private func convertFromCAMediaTimingFunctionName(_ input: CAMediaTimingFunctionName) -> String {
-	return input.rawValue
+    return input.rawValue
 }
 
-// Helper function inserted by Swift 4.2 migrator.
+/// Helper function inserted by Swift 4.2 migrator.
 private func convertToCAMediaTimingFunctionName(_ input: String) -> CAMediaTimingFunctionName {
-	return CAMediaTimingFunctionName(rawValue: input)
+    return CAMediaTimingFunctionName(rawValue: input)
 }

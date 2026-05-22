@@ -6,20 +6,19 @@
 //  Copyright © 2021 Trakt. All rights reserved.
 //
 
-import UIKit
-
-import SpreadsheetView
 import CoreMedia
 import Receiver
+import SpreadsheetView
+import UIKit
 
 final class SeasonsRatingsViewController: UIViewController, SpreadsheetViewDataSource, SpreadsheetViewDelegate {
-
     private enum Filter: Int {
         case trakt
         case yours
     }
+
     // Filters
-    @IBOutlet weak var filterButtonItem: UIBarButtonItem!
+    @IBOutlet var filterButtonItem: UIBarButtonItem!
     private var currentFilter = Filter.trakt {
         didSet {
             UserDefaults.standard.set(currentFilter.rawValue, forKey: "SeasonsRatingsViewController.currentFilter")
@@ -39,6 +38,7 @@ final class SeasonsRatingsViewController: UIViewController, SpreadsheetViewDataS
             spreadsheetView.reloadData()
         }
     }
+
     @IBAction func currentFilterChanged() {
         if currentFilter == .trakt {
             currentFilter = .yours
@@ -55,7 +55,7 @@ final class SeasonsRatingsViewController: UIViewController, SpreadsheetViewDataS
         }
     }
 
-    @IBOutlet weak var spreadsheetView: SpreadsheetView!
+    @IBOutlet var spreadsheetView: SpreadsheetView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -129,7 +129,7 @@ final class SeasonsRatingsViewController: UIViewController, SpreadsheetViewDataS
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -141,7 +141,7 @@ final class SeasonsRatingsViewController: UIViewController, SpreadsheetViewDataS
                 } catch {
                     print("Seasons request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Seasons request failure \(error)")
             }
         }
@@ -218,11 +218,11 @@ final class SeasonsRatingsViewController: UIViewController, SpreadsheetViewDataS
     }
 
     func spreadsheetView(_ spreadsheetView: SpreadsheetView, widthForColumn column: Int) -> CGFloat {
-      return 60
+        return 60
     }
 
     func spreadsheetView(_ spreadsheetView: SpreadsheetView, heightForRow row: Int) -> CGFloat {
-      return 40
+        return 40
     }
 
     func frozenColumns(in spreadsheetView: SpreadsheetView) -> Int {
@@ -236,7 +236,7 @@ final class SeasonsRatingsViewController: UIViewController, SpreadsheetViewDataS
     }
 
     func spreadsheetView(_ spreadsheetView: SpreadsheetView, cellForItemAt indexPath: IndexPath) -> Cell? {
-        if indexPath.row == 0 && indexPath.column == 0 {
+        if indexPath.row == 0, indexPath.column == 0 {
             return spreadsheetView.dequeueReusableCell(withReuseIdentifier: String(describing: EmptyContentCell.self),
                                                        for: indexPath)
         }
@@ -359,7 +359,7 @@ final class SeasonsRatingsViewController: UIViewController, SpreadsheetViewDataS
         cell.addInteraction(interaction)
 
         return cell
-   }
+    }
 }
 
 extension SeasonsRatingsViewController: UIContextMenuInteractionDelegate {
@@ -382,16 +382,16 @@ extension SeasonsRatingsViewController: UIContextMenuInteractionDelegate {
 
         return UIContextMenuConfiguration(identifier: indexPath as NSCopying,
                                           previewProvider: {
-            let mediaPreviewViewController = UIStoryboard(name: "EpisodePreview", bundle: nil).instantiateInitialViewController() as! EpisodePreviewViewController
+                                              let mediaPreviewViewController = UIStoryboard(name: "EpisodePreview", bundle: nil).instantiateInitialViewController() as! EpisodePreviewViewController
 
-            mediaPreviewViewController.media = episodeMedia
-            mediaPreviewViewController.preferredContentSize = CGSize(width: 500,
-                                                                     height: 500 * 0.5)
-            return mediaPreviewViewController
-        }, actionProvider: { _ -> UIMenu? in
-            return UIMenu(title: episodeMedia.mediaTitle,
-                          children: episodeMedia.rateMenu.children)
-        })
+                                              mediaPreviewViewController.media = episodeMedia
+                                              mediaPreviewViewController.preferredContentSize = CGSize(width: 500,
+                                                                                                       height: 500 * 0.5)
+                                              return mediaPreviewViewController
+                                          }, actionProvider: { _ -> UIMenu? in
+                                              return UIMenu(title: episodeMedia.mediaTitle,
+                                                            children: episodeMedia.rateMenu.children)
+                                          })
     }
 
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, highlightPreviewForItemWithIdentifier identifier: any NSCopying) -> UITargetedPreview? {
@@ -449,7 +449,7 @@ final class SeasonsRatingsContentCell: Cell {
 
         backgroundColor = .systemBackground
 
-        label.frame = bounds// .applying(CGAffineTransform(scaleX: 0.8, y: 0.8))
+        label.frame = bounds // .applying(CGAffineTransform(scaleX: 0.8, y: 0.8))
         label.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         label.adjustsFontForContentSizeCategory = true
         label.maximumContentSizeCategory = .extraExtraExtraLarge
@@ -461,7 +461,7 @@ final class SeasonsRatingsContentCell: Cell {
         label.layer.cornerCurve = .continuous
         label.clipsToBounds = true
 
-        label.layer.borderColor = UIColor.init(asset: .shadow).cgColor
+        label.layer.borderColor = UIColor(asset: .shadow).cgColor
         label.layer.borderWidth = 0.5
 
         contentView.backgroundColor = .clear
@@ -482,7 +482,8 @@ final class SeasonsRatingsContentCell: Cell {
             progress.leadingAnchor.constraint(equalTo: label.leadingAnchor, constant: 5),
             progress.trailingAnchor.constraint(equalTo: label.trailingAnchor, constant: -5),
             progress.bottomAnchor.constraint(equalTo: label.bottomAnchor, constant: -3),
-            progress.heightAnchor.constraint(equalToConstant: 3.0)])
+            progress.heightAnchor.constraint(equalToConstant: 3.0)
+        ])
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -491,7 +492,6 @@ final class SeasonsRatingsContentCell: Cell {
 }
 
 final class EmptyContentCell: Cell {
-
     override init(frame: CGRect) {
         super.init(frame: frame)
 

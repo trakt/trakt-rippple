@@ -6,9 +6,8 @@
 //  Copyright © 2024 Trakt. All rights reserved.
 //
 
-import SwiftUI
-
 import Receiver
+import SwiftUI
 
 private struct ShelfSortOption: Hashable {
     let id: String
@@ -411,15 +410,15 @@ struct ShelfRowQuickConfigView: View {
 
     private func persistCurrentConfiguration() {
         let updatedModule = BrowseViewController.ModuleType(module: selectedStyle,
-                                                           filter: SavedFilter(section: row.filter.section,
-                                                                               name: name,
-                                                                               path: row.filter.path,
-                                                                               query: updatedShelfQuery(from: row.filter.query,
+                                                            filter: SavedFilter(section: row.filter.section,
+                                                                                name: name,
+                                                                                path: row.filter.path,
+                                                                                query: updatedShelfQuery(from: row.filter.query,
                                                                                                          ignoreWatched: ignoreWatched,
                                                                                                          sort: ShelfSortConfiguration(by: sortBy,
                                                                                                                                       how: sortHow)),
-                                                                               limit: row.filter.limit),
-                                                           buttonStyle: buttonStyle == .none ? nil : buttonStyle)
+                                                                                limit: row.filter.limit),
+                                                            buttonStyle: buttonStyle == .none ? nil : buttonStyle)
         ShelfManager.shared.edit(module: row, with: currentConfiguration)
         row = updatedModule
     }
@@ -617,8 +616,7 @@ struct BrowseRowPreview: UIViewControllerRepresentable {
 }
 
 private final class NavigationManager: ObservableObject {
-
-    public enum Destination: Codable, Hashable {
+    enum Destination: Codable, Hashable {
         case details(BrowseViewController.ModuleType)
     }
 
@@ -662,100 +660,100 @@ struct SheetView: View {
                                         query: "",
                                         limit: 250)
 
-    //  { "module": "ToWatch", "filter": { "section": "episodes_to_watch", "name": "Up Next", "path": "", "query": "" } }
+    ///  { "module": "ToWatch", "filter": { "section": "episodes_to_watch", "name": "Up Next", "path": "", "query": "" } }
     private let toWatch = SavedFilter(section: "episodes_to_watch",
-                                        name: "Up Next",
-                                        path: "",
-                                        query: "",
-                                        limit: nil)
+                                      name: "Up Next",
+                                      path: "",
+                                      query: "",
+                                      limit: nil)
     private let moviesToWatch = SavedFilter(section: "movies_to_watch",
                                             name: "Movies To Watch",
                                             path: "",
                                             query: "",
                                             limit: nil)
     private let pinnedToWatch = SavedFilter(section: "pinned_to_watch",
-                                      name: "Pinned Up Next",
-                                      path: "",
-                                      query: "",
-                                      limit: nil)
+                                            name: "Pinned Up Next",
+                                            path: "",
+                                            query: "",
+                                            limit: nil)
     private let unpinnedToWatch = SavedFilter(section: "unpinned_to_watch",
-                                      name: "Up Next",
-                                      path: "",
+                                              name: "Up Next",
+                                              path: "",
+                                              query: "",
+                                              limit: nil)
+    ///  { "module": "History", "filter": { "section": "History", "name": "History", "path": "", "query": "" } }
+    private let history = SavedFilter(section: "History",
+                                      name: "History",
+                                      path: "history",
                                       query: "",
                                       limit: nil)
-    //  { "module": "History", "filter": { "section": "History", "name": "History", "path": "", "query": "" } }
-    private let history = SavedFilter(section: "History",
-                                        name: "History",
-                                        path: "history",
-                                        query: "",
-                                        limit: nil)
 
-    // { "module": "Comments", "filter": { "section": "comments", "name": "Comments", "path": "", "query": "" } }
+    /// { "module": "Comments", "filter": { "section": "comments", "name": "Comments", "path": "", "query": "" } }
     private let comments = SavedFilter(section: "comments",
                                        name: "Comments",
                                        path: "",
                                        query: "",
                                        limit: nil)
 
-    // { "module": "In Review", "filter": { "section": "in_review", "name": "In Review", "path": "", "query": "" } }
+    /// { "module": "In Review", "filter": { "section": "in_review", "name": "In Review", "path": "", "query": "" } }
     private let inReview = SavedFilter(section: "in_review",
                                        name: "Rewind: Go Back in Time",
                                        path: "",
                                        query: "",
                                        limit: nil)
 
-    // { "module": "Services", "filter": { "section": "services", "name": "Streaming On", "path": "", "query": "" } }
+    /// { "module": "Services", "filter": { "section": "services", "name": "Streaming On", "path": "", "query": "" } }
     private let streamingOn = SavedFilter(section: "services",
-                                       name: "Streaming On",
-                                       path: "",
-                                       query: "",
-                                       limit: nil)
+                                          name: "Streaming On",
+                                          path: "",
+                                          query: "",
+                                          limit: nil)
 
-    // { "module": "L2", "filter": { "section": "shows", "name": "TV Shows Recommendations", "path": "/recommendations/shows", "query": "" } }
+    /// { "module": "L2", "filter": { "section": "shows", "name": "TV Shows Recommendations", "path": "/recommendations/shows", "query": "" } }
     private let tvRecommendations = SavedFilter(section: "shows",
-                                       name: "TV Shows Recommendations",
-                                       path: "/recommendations/shows",
-                                       query: "",
-                                       limit: nil)
+                                                name: "TV Shows Recommendations",
+                                                path: "/recommendations/shows",
+                                                query: "",
+                                                limit: nil)
 
-    // { "module": "L2", "filter": { "section": "movies", "name": "Movies Recommendations", "path": "/recommendations/movies", "query": "" } }
+    /// { "module": "L2", "filter": { "section": "movies", "name": "Movies Recommendations", "path": "/recommendations/movies", "query": "" } }
     private let moviesRecommendations = SavedFilter(section: "movies",
-                                       name: "Movies Recommendations",
-                                       path: "/recommendations/movies",
-                                       query: "",
-                                       limit: nil)
+                                                    name: "Movies Recommendations",
+                                                    path: "/recommendations/movies",
+                                                    query: "",
+                                                    limit: nil)
 
-    // { "module": "Genres", "filter": { "section": "genres-movies", "name": "By Genres", "path": "", "query": "" } }
+    /// { "module": "Genres", "filter": { "section": "genres-movies", "name": "By Genres", "path": "", "query": "" } }
     private let movieGenres = SavedFilter(section: "genres-movies",
-                                       name: "Movies By Genres",
-                                       path: "",
-                                       query: "",
-                                       limit: nil)
+                                          name: "Movies By Genres",
+                                          path: "",
+                                          query: "",
+                                          limit: nil)
 
-    // { "module": "Genres", "filter": { "section": "genres-shows", "name": "By Genres", "path": "", "query": "" } }
+    /// { "module": "Genres", "filter": { "section": "genres-shows", "name": "By Genres", "path": "", "query": "" } }
     private let tvGenres = SavedFilter(section: "genres-shows",
                                        name: "TV Shows By Genres",
                                        path: "",
                                        query: "",
                                        limit: nil)
 
-    // { "module": "C1", "filter": { "section": "movies,shows", "name": "", "path": "/media/trending", "query": "" } }
+    /// { "module": "C1", "filter": { "section": "movies,shows", "name": "", "path": "/media/trending", "query": "" } }
     private let allTrending = SavedFilter(section: "movies,shows",
-                                       name: "Trending TV Shows & Movies",
-                                       path: "/media/trending",
-                                       query: "",
-                                       limit: nil)
-
-    private let watchedMovies = SavedFilter(section: "WatchedItem",
-                                          name: "Watched Movies",
-                                          path: "/users/me/watched/movies",
+                                          name: "Trending TV Shows & Movies",
+                                          path: "/media/trending",
                                           query: "",
                                           limit: nil)
-    private let watchedShows = SavedFilter(section: "WatchedItem",
-                                            name: "Watched TV Shows",
-                                            path: "/users/me/watched/shows",
+
+    private let watchedMovies = SavedFilter(section: "WatchedItem",
+                                            name: "Watched Movies",
+                                            path: "/users/me/watched/movies",
                                             query: "",
                                             limit: nil)
+    private let watchedShows = SavedFilter(section: "WatchedItem",
+                                           name: "Watched TV Shows",
+                                           path: "/users/me/watched/shows",
+                                           query: "",
+                                           limit: nil)
 
     private let droppedShows = SavedFilter(section: "DroppedShows",
                                            name: "Dropped TV Shows",
@@ -763,31 +761,31 @@ struct SheetView: View {
                                            query: "",
                                            limit: nil)
     private let pinnedShows = SavedFilter(section: "PinnedShows",
-                                           name: "Pinned TV Shows",
-                                           path: "",
-                                           query: "",
-                                           limit: nil)
+                                          name: "Pinned TV Shows",
+                                          path: "",
+                                          query: "",
+                                          limit: nil)
     private let pinnedMovies = SavedFilter(section: "PinnedMovies",
                                            name: "Pinned Movies",
                                            path: "",
                                            query: "",
                                            limit: nil)
     private let completedShows = SavedFilter(section: "CompletedShows",
-                                          name: "Completed TV Shows",
-                                          path: "",
-                                          query: "",
-                                          limit: nil)
+                                             name: "Completed TV Shows",
+                                             path: "",
+                                             query: "",
+                                             limit: nil)
 
     private let collectedMovies = SavedFilter(section: "movies",
-                                          name: "Movie Library",
-                                          path: "/users/me/collection/movies",
-                                          query: "",
-                                          limit: nil)
+                                              name: "Movie Library",
+                                              path: "/users/me/collection/movies",
+                                              query: "",
+                                              limit: nil)
     private let collectedShows = SavedFilter(section: "shows",
-                                            name: "TV Show Library",
-                                            path: "/users/me/collection/shows",
-                                            query: "",
-                                            limit: nil)
+                                             name: "TV Show Library",
+                                             path: "/users/me/collection/shows",
+                                             query: "",
+                                             limit: nil)
 
     var body: some View {
         NavigationStack {

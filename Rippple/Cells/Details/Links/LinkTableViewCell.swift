@@ -26,7 +26,7 @@ final class LinkTableViewCell: UITableViewCell {
 
     weak var delegate: LinkTableViewCellDelegate?
 
-    var cardType: CardType = CardType.middle {
+    var cardType: CardType = .middle {
         didSet {
             card.cardType = cardType
         }

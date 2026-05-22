@@ -6,13 +6,11 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import Foundation
-
 import AuthenticationServices
+import Foundation
 import Moya
 
 class SessionManager: NSObject {
-
     static let shared = SessionManager()
 
     private var authSession: ASWebAuthenticationSession!
@@ -49,7 +47,7 @@ class SessionManager: NSObject {
 
     func wakeUp(completion: @escaping (_ isLoggedIn: Bool) -> Void) {
         if let token = token {
-            if token.createdAt.advanced(by: min(Double(token.expiresIn), 24*60*60)) < Date.now.timeIntervalSince1970 {
+            if token.createdAt.advanced(by: min(Double(token.expiresIn), 24 * 60 * 60)) < Date.now.timeIntervalSince1970 {
                 refreshToken(refreshToken: token.refreshToken) { [weak self] newToken in
                     guard let self = self else { return }
                     self.token = newToken
@@ -69,47 +67,46 @@ class SessionManager: NSObject {
     }
 
     func initiateTraktLogin(completion: @escaping (_ isLoggedIn: Bool) -> Void) {
-
         guard let authURL = URL(string: "\(TraktAPIConfiguration.authBaseURL)/oauth/authorize?response_type=code&client_id=\(TraktAPIConfiguration.clientId)&redirect_uri=\(TraktAPIConfiguration.callbackURL)") else {
             completion(isLoggedIn)
             return
         }
 
         authSession = ASWebAuthenticationSession(url: authURL,
-                                              callbackURLScheme: "ripl") { (callback, error) in
-                                                guard error == nil, let successURL = callback else {
-                                                    print("ASWebAuthenticationSession error \(String(describing: error))")
-                                                    print("ASWebAuthenticationSession callback \(String(describing: callback))")
-                                                    completion(self.isLoggedIn)
-                                                    return
-                                                }
-                                                guard let code = NSURLComponents(string: (successURL.absoluteString))?.queryItems?.filter({$0.name == "code"}).first?.value else {
-                                                    completion(self.isLoggedIn)
-                                                    return
-                                                }
+                                                 callbackURLScheme: "ripl") { callback, error in
+            guard error == nil, let successURL = callback else {
+                print("ASWebAuthenticationSession error \(String(describing: error))")
+                print("ASWebAuthenticationSession callback \(String(describing: callback))")
+                completion(self.isLoggedIn)
+                return
+            }
+            guard let code = NSURLComponents(string: successURL.absoluteString)?.queryItems?.filter({ $0.name == "code" }).first?.value else {
+                completion(self.isLoggedIn)
+                return
+            }
 
-                                                TraktAPIProvider.noRatingProvider.request(.token(code: code),
-                                                                                  callbackQueue: .global(qos: .userInitiated)) { result in
-                                                    defer {
-                                                        completion(self.isLoggedIn)
-                                                    }
+            TraktAPIProvider.noRatingProvider.request(.token(code: code),
+                                                      callbackQueue: .global(qos: .userInitiated)) { result in
+                defer {
+                    completion(self.isLoggedIn)
+                }
 
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        print("Token request status code \(moyaResponse.statusCode)")
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
-                                                            let tokenResponse = try response.map(Token.self)
-                                                            self.token = tokenResponse
-                                                            TraktAPIProvider.source.token = tokenResponse.accessToken
-                                                            UserManager.shared.reloadSettings()
-                                                        } catch {
-                                                            print("Token request JSON mapping failed! \(error)")
-                                                        }
-                                                    case let .failure(error):
-                                                        print("Token request failure \(error)")
-                                                    }
-                                                }
+                switch result {
+                case .success(let moyaResponse):
+                    print("Token request status code \(moyaResponse.statusCode)")
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                        let tokenResponse = try response.map(Token.self)
+                        self.token = tokenResponse
+                        TraktAPIProvider.source.token = tokenResponse.accessToken
+                        UserManager.shared.reloadSettings()
+                    } catch {
+                        print("Token request JSON mapping failed! \(error)")
+                    }
+                case .failure(let error):
+                    print("Token request failure \(error)")
+                }
+            }
         }
         authSession.presentationContextProvider = AppManager.shared
         authSession.prefersEphemeralWebBrowserSession = true
@@ -121,11 +118,11 @@ class SessionManager: NSObject {
     func logout() {
         guard let token = token else { return }
         TraktAPIProvider.noRatingProvider.request(.revoke(token: token.accessToken),
-                                          callbackQueue: .global(qos: .userInitiated)) { result in
+                                                  callbackQueue: .global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 print("Revoke request status code \(moyaResponse.statusCode)")
-            case let .failure(error):
+            case .failure(let error):
                 print("Revoke request failure \(error)")
             }
         }
@@ -136,13 +133,12 @@ class SessionManager: NSObject {
 // MARK: Helpers
 
 extension SessionManager {
-
     private func refreshToken(refreshToken: String, completion: @escaping (_ token: Token?) -> Void) {
         print("SessionManager - refreshing token (API call)")
         TraktAPIProvider.noRatingProvider.request(.refresh(refreshToken: refreshToken),
-                                          callbackQueue: .global(qos: .userInitiated)) { result in
+                                                  callbackQueue: .global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 print("Refresh token request status code \(moyaResponse.statusCode)")
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
@@ -152,7 +148,7 @@ extension SessionManager {
                     print("Refresh token request JSON mapping failed! \(error)")
                     completion(self.token)
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Refresh token request failure \(error)")
                 completion(self.token)
             }

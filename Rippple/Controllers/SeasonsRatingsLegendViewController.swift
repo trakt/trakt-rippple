@@ -9,13 +9,13 @@
 import UIKit
 
 final class SeasonsRatingsLegendViewController: UITableViewController {
-
     var media: MediaModel! {
         didSet {
             if media.show == nil { fatalError("Not okay") }
             tableView.reloadData()
         }
     }
+
     var seasons: [Season]? {
         didSet {
             tableView.reloadData()
@@ -65,9 +65,9 @@ final class SeasonsRatingsLegendViewController: UITableViewController {
             let numberFormatter = NumberFormatter()
             numberFormatter.numberStyle = .decimal
             if let firstEpisode = seasons.first?.episodes?.first?.firstAired, let lastEpisode = seasons.last?.episodes?.last?.firstAired {
-                return "Based on \(numberFormatter.string(from: NSNumber(value: ratingsCount))!) rating\(ratingsCount > 1 ? "s": "") on a total of \(numberFormatter.string(from: NSNumber(value: episodesCount))!) episode\(episodesCount > 1 ? "s": "") that aired from \(Calendar.current.dateComponents([.year], from: firstEpisode).year!) to \(Calendar.current.dateComponents([.year], from: lastEpisode).year!)."
+                return "Based on \(numberFormatter.string(from: NSNumber(value: ratingsCount))!) rating\(ratingsCount > 1 ? "s" : "") on a total of \(numberFormatter.string(from: NSNumber(value: episodesCount))!) episode\(episodesCount > 1 ? "s" : "") that aired from \(Calendar.current.dateComponents([.year], from: firstEpisode).year!) to \(Calendar.current.dateComponents([.year], from: lastEpisode).year!)."
             }
-            return "Based on \(numberFormatter.string(from: NSNumber(value: ratingsCount))!) rating\(ratingsCount > 1 ? "s": "") on a total of \(numberFormatter.string(from: NSNumber(value: episodesCount))!) episode\(episodesCount > 1 ? "s": "")."
+            return "Based on \(numberFormatter.string(from: NSNumber(value: ratingsCount))!) rating\(ratingsCount > 1 ? "s" : "") on a total of \(numberFormatter.string(from: NSNumber(value: episodesCount))!) episode\(episodesCount > 1 ? "s" : "")."
         }
         return nil
     }

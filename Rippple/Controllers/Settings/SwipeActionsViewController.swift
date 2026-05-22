@@ -6,12 +6,10 @@
 //  Copyright © 2021 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class SwipeActionsViewController: UITableViewController {
-
     override func viewDidLoad() {
         super.viewDidLoad()
 

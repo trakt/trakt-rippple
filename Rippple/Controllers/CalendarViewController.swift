@@ -12,14 +12,13 @@
 // (nice to have) group 10 episodes released the same day/hour
 // (nice to have) Find a way to better show what is past and present+future -> maybe with an empty section or something...
 
+import NVActivityIndicatorView
+import Receiver
+import SwiftUI
 import UIKit
 
-import Receiver
-import NVActivityIndicatorView
-import SwiftUI
-
 final class Debouncer {
-    var callback: (() -> Void)
+    var callback: () -> Void
     var delay: Double
     private var workItem: DispatchWorkItem?
     private let lock = NSLock()
@@ -52,7 +51,7 @@ final class Debouncer {
     }
 
     func fireNow() {
-        let callback: (() -> Void)
+        let callback: () -> Void
         lock.lock()
         // Cancel any pending debounced work
         workItem?.cancel()
@@ -108,7 +107,6 @@ extension Locale {
 }
 
 final class CalendarViewController: UITableViewController {
-
     private enum ViewControllerSegue: String {
         case details
     }
@@ -120,7 +118,7 @@ final class CalendarViewController: UITableViewController {
     private var debouncedReloadData: Debouncer!
 
     @IBOutlet var loadingView: UIView!
-    @IBOutlet weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet var animationViewContainer: NVActivityIndicatorView!
 
     enum Section: Hashable {
         case day(Date)
@@ -138,7 +136,7 @@ final class CalendarViewController: UITableViewController {
 
     private var now = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: Date.now)!
 
-    private class CalendarViewDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> { }
+    private class CalendarViewDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> {}
 
     private var headerDateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -152,8 +150,7 @@ final class CalendarViewController: UITableViewController {
 
         switch wrapper {
         case .loading:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
-            return cell
+            return tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
         case .nothing:
             return UITableViewCell()
         case .header(let date):
@@ -165,27 +162,27 @@ final class CalendarViewController: UITableViewController {
             if diff == 0 {
                 cell.title.text = "— \(headerDateFormatter.string(from: date))"
                 cell.title.textColor = UIColor(asset: .globalTint)
-                cell.subtitle?.text =  "today"
+                cell.subtitle?.text = "today"
                 cell.subtitle?.textColor = UIColor(asset: .globalTint)
             } else if diff == 1 {
                 cell.title.text = "↑ \(headerDateFormatter.string(from: date))"
                 cell.title.textColor = .label
-                cell.subtitle?.text =  "tomorrow"
+                cell.subtitle?.text = "tomorrow"
                 cell.subtitle?.textColor = .secondaryLabel
             } else if diff == -1 {
                 cell.title.text = "↓ \(headerDateFormatter.string(from: date))"
                 cell.title.textColor = .secondaryLabel
-                cell.subtitle?.text =  "yesterday"
+                cell.subtitle?.text = "yesterday"
                 cell.subtitle?.textColor = .secondaryLabel
             } else if date > now {
                 cell.title.text = "↑ \(headerDateFormatter.string(from: date))"
                 cell.title.textColor = .label
-                cell.subtitle?.text =  "in \(abs(diff)) days"
+                cell.subtitle?.text = "in \(abs(diff)) days"
                 cell.subtitle?.textColor = .secondaryLabel
             } else {
                 cell.title.text = "↓ \(headerDateFormatter.string(from: date))"
                 cell.title.textColor = .secondaryLabel
-                cell.subtitle?.text =  "\(abs(diff)) days ago"
+                cell.subtitle?.text = "\(abs(diff)) days ago"
                 cell.subtitle?.textColor = .secondaryLabel
             }
             return cell
@@ -241,7 +238,7 @@ final class CalendarViewController: UITableViewController {
 
         debouncedReloadData = Debouncer(delay: 0.8) { [weak self] in
             guard let self = self else { return }
-            Task.init {
+            Task {
                 await self.reloadData()
             }
         }
@@ -263,20 +260,20 @@ final class CalendarViewController: UITableViewController {
             Task { await self.applyCalendarData(data) }
         }.disposed(by: disposeBag)
 
-        Task.init {
+        Task {
             await reloadData()
         }
 
         let down = UIBarButtonItem(image: UIImage(systemName: "chevron.down"),
-                                  primaryAction: UIAction { [weak self] _ in
-            guard let self = self else { return }
-            self.scrollToNextBestPosition()
-        })
+                                   primaryAction: UIAction { [weak self] _ in
+                                       guard let self = self else { return }
+                                       self.scrollToNextBestPosition()
+                                   })
         let up = UIBarButtonItem(image: UIImage(systemName: "chevron.up"),
-                                  primaryAction: UIAction { [weak self] _ in
-            guard let self = self else { return }
-            self.scrollToPreviousBestPosition()
-        })
+                                 primaryAction: UIAction { [weak self] _ in
+                                     guard let self = self else { return }
+                                     self.scrollToPreviousBestPosition()
+                                 })
         let settings = navigationItem.rightBarButtonItem!
         navigationItem.rightBarButtonItems = [down, up, .fixedSpace(), settings]
 
@@ -352,7 +349,7 @@ final class CalendarViewController: UITableViewController {
             let date = Calendar.current.date(bySettingHour: 0,
                                              minute: 0,
                                              second: 0,
-                                             of: Date.now.advanced(by: Double(i)*60*60*24))!
+                                             of: Date.now.advanced(by: Double(i) * 60 * 60 * 24))!
             dates.append(date)
         }
         snapshot.appendSections(dates.removingDuplicates().map { .day($0) })
@@ -390,7 +387,7 @@ final class CalendarViewController: UITableViewController {
                 }
                 var meta = ""
                 if let firstAired = media.episode!.firstAired {
-                    let dateFormatter = DateFormatter.init()
+                    let dateFormatter = DateFormatter()
                     dateFormatter.locale = Locale(identifier: "en_US")
                     dateFormatter.dateStyle = .none
                     dateFormatter.timeStyle = .short
@@ -430,20 +427,17 @@ final class CalendarViewController: UITableViewController {
         }
     }
 
-    @objc private func addTapped() {
-
-    }
+    @objc private func addTapped() {}
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let mediaViewController = segue.destination as? MediaViewController,
-            let media = sender as? MediaModel {
+           let media = sender as? MediaModel {
             mediaViewController.media = media
         }
     }
 }
 
 extension CalendarViewController {
-
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard let firstIndexPath = tableView.indexPathForRow(at: CGPoint(x: 0.0,
                                                                          y: tableView.adjustedContentInset.top + tableView.contentOffset.y + 1.0)) else { return }
@@ -466,11 +460,11 @@ extension CalendarViewController {
         }
     }
 
-    public func scrollToClosestToNow(animated: Bool) {
+    func scrollToClosestToNow(animated: Bool) {
         let now = Calendar.current.date(bySettingHour: 0,
-                                         minute: 0,
-                                         second: 0,
-                                         of: Date.now)!
+                                        minute: 0,
+                                        second: 0,
+                                        of: Date.now)!
         for section in dataSource.snapshot().sectionIdentifiers {
             switch section {
             case .day(let date):
@@ -490,7 +484,7 @@ extension CalendarViewController {
         }
     }
 
-    public func scrollToNextBestPosition() {
+    func scrollToNextBestPosition() {
         guard let firstIndexPath = tableView.indexPathForRow(at: CGPoint(x: 0.0,
                                                                          y: tableView.adjustedContentInset.top + tableView.contentOffset.y + 1.0)) else { return }
         guard let currentSection = dataSource.sectionIdentifier(for: firstIndexPath.section) else { return }
@@ -515,9 +509,9 @@ extension CalendarViewController {
         }
     }
 
-    public func scrollToPreviousBestPosition() {
+    func scrollToPreviousBestPosition() {
         guard let previousIndexPath = tableView.indexPathForRow(at: CGPoint(x: 0.0,
-                                                                         y: tableView.adjustedContentInset.top + tableView.contentOffset.y - 1)) else { return }
+                                                                            y: tableView.adjustedContentInset.top + tableView.contentOffset.y - 1)) else { return }
         guard let previousSection = dataSource.sectionIdentifier(for: previousIndexPath.section) else { return }
         guard case .day(let previousDate) = previousSection else { return }
 
@@ -555,14 +549,13 @@ extension CalendarViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
 
-        if case let Wrapper.media(media, _, _) = item {
+        if case Wrapper.media(let media, _, _) = item {
             performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
                          sender: media)
         }
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
         guard let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell else {
             return nil
         }
@@ -570,9 +563,9 @@ extension CalendarViewController {
         contextMenu.controller = self
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-            return self.contextMenu.previewViewController
+            self.contextMenu.previewViewController
         }, actionProvider: { _ in
-            return self.contextMenu.menu
+            self.contextMenu.menu
         })
     }
 
@@ -596,7 +589,7 @@ extension CalendarViewController {
         switch wrapper {
         case .media(let media, _, _):
             let hide = UIContextualAction(style: .normal,
-                                             title: "Hide") { _, _, boolValue in
+                                          title: "Hide") { _, _, boolValue in
                 if media.movie != nil {
                     media.hide(from: .calendar)
                     boolValue(true)
@@ -609,7 +602,7 @@ extension CalendarViewController {
             hide.backgroundColor = UIColor(resource: .ripppleGray).darker()
 
             let list = UIContextualAction(style: .normal,
-                                             title: "List") { _, _, boolValue in
+                                          title: "List") { _, _, boolValue in
                 let listViewController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "Lists Action") as! ListActionViewController
 
                 if media.show != nil {
@@ -643,13 +636,12 @@ extension CalendarViewController {
 }
 
 extension CalendarViewController: MediaTableViewCellDelegate {
-
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
 
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
 
-        guard case let Wrapper.media(media, _, _) = item else { return }
+        guard case Wrapper.media(let media, _, _) = item else { return }
 
         if action == .details {
             if media.movie != nil {
@@ -666,18 +658,17 @@ extension CalendarViewController: MediaTableViewCellDelegate {
 let (calendarSettingsUpdatedTransmitter, calendarSettingsUpdatedReceiver) = Receiver<Int>.make(with: .hot)
 
 final class CalendarSettingsViewController: UIViewController {
-
-    @IBOutlet weak var myShowsSwitch: UISwitch!
-    @IBOutlet weak var filterToWatchSwitch: UISwitch!
-    @IBOutlet weak var addTrendingShowsSwitch: UISwitch!
-    @IBOutlet weak var addAnticipatedShowsSwitch: UISwitch!
-    @IBOutlet weak var myMoviesSwitch: UISwitch!
-    @IBOutlet weak var addTrendingMoviesSwitch: UISwitch!
-    @IBOutlet weak var addAnticipatedMoviesSwitch: UISwitch!
-    @IBOutlet weak var hideHiddenMoviesSwitch: UISwitch!
-    @IBOutlet weak var hideHiddenShowsSwitch: UISwitch!
-    @IBOutlet weak var hideRecentlyWatchedMoviesSwitch: UISwitch!
-    @IBOutlet weak var hideRecentlyWatchedShowsSwitch: UISwitch!
+    @IBOutlet var myShowsSwitch: UISwitch!
+    @IBOutlet var filterToWatchSwitch: UISwitch!
+    @IBOutlet var addTrendingShowsSwitch: UISwitch!
+    @IBOutlet var addAnticipatedShowsSwitch: UISwitch!
+    @IBOutlet var myMoviesSwitch: UISwitch!
+    @IBOutlet var addTrendingMoviesSwitch: UISwitch!
+    @IBOutlet var addAnticipatedMoviesSwitch: UISwitch!
+    @IBOutlet var hideHiddenMoviesSwitch: UISwitch!
+    @IBOutlet var hideHiddenShowsSwitch: UISwitch!
+    @IBOutlet var hideRecentlyWatchedMoviesSwitch: UISwitch!
+    @IBOutlet var hideRecentlyWatchedShowsSwitch: UISwitch!
 
     private var settingsHostingController: UIHostingController<CalendarSettingsSwiftUIView>?
 
@@ -724,18 +715,21 @@ final class CalendarSettingsViewController: UIViewController {
             UserDefaults.standard.synchronize()
         }
     }
+
     var filtersShowToWatch = true {
         didSet {
             UserDefaults.standard.set(filtersShowToWatch, forKey: "CalendarSettings.filtersShowToWatch")
             UserDefaults.standard.synchronize()
         }
     }
+
     var addTrendingShows = true {
         didSet {
             UserDefaults.standard.set(addTrendingShows, forKey: "CalendarSettings.addTrendingShows")
             UserDefaults.standard.synchronize()
         }
     }
+
     var addAnticipatedShows = true {
         didSet {
             UserDefaults.standard.set(addAnticipatedShows, forKey: "CalendarSettings.addAnticipatedShows")
@@ -749,36 +743,42 @@ final class CalendarSettingsViewController: UIViewController {
             UserDefaults.standard.synchronize()
         }
     }
+
     var addTrendingMovies = true {
         didSet {
             UserDefaults.standard.set(addTrendingMovies, forKey: "CalendarSettings.addTrendingMovies")
             UserDefaults.standard.synchronize()
         }
     }
+
     var addAnticipatedMovies = true {
         didSet {
             UserDefaults.standard.set(addAnticipatedMovies, forKey: "CalendarSettings.addAnticipatedMovies")
             UserDefaults.standard.synchronize()
         }
     }
+
     var hideHiddenMovies = true {
         didSet {
             UserDefaults.standard.set(hideHiddenMovies, forKey: "CalendarSettings.hideHiddenMovies")
             UserDefaults.standard.synchronize()
         }
     }
+
     var hideHiddenShows = true {
         didSet {
             UserDefaults.standard.set(hideHiddenShows, forKey: "CalendarSettings.hideHiddenShows")
             UserDefaults.standard.synchronize()
         }
     }
+
     var hideRecentlyWatchedMovies = false {
         didSet {
             UserDefaults.standard.set(hideRecentlyWatchedMovies, forKey: "CalendarSettings.hideRecentlyWatchedMovies")
             UserDefaults.standard.synchronize()
         }
     }
+
     var hideRecentlyWatchedShows = false {
         didSet {
             UserDefaults.standard.set(hideRecentlyWatchedShows, forKey: "CalendarSettings.hideRecentlyWatchedShows")
@@ -873,7 +873,6 @@ final class CalendarSettingsViewController: UIViewController {
             navigationItem.leftBarButtonItem?.isEnabled = true
         }
     }
-
 }
 
 private struct CalendarSettingsSwiftUIView: View {
@@ -963,7 +962,6 @@ private struct CalendarSettingsToggleRow: View {
 }
 
 extension CalendarSettingsViewController: UIAdaptivePresentationControllerDelegate {
-
     func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
         if myShows == false, filtersShowToWatch == false, addTrendingShows == false, addAnticipatedShows == false, myMovies == false, addTrendingMovies == false, addAnticipatedMovies == false {
             return false

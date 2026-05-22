@@ -6,19 +6,17 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
+import Moya
 import UIKit
 
-import Moya
-
 final class StatsTableViewCell: UITableViewCell {
+    @IBOutlet var watchers: EFCountingLabel!
+    @IBOutlet var plays: EFCountingLabel!
+    @IBOutlet var lists: EFCountingLabel!
+    @IBOutlet var recommended: EFCountingLabel!
+    @IBOutlet var collected: EFCountingLabel!
 
-    @IBOutlet weak var watchers: EFCountingLabel!
-    @IBOutlet weak var plays: EFCountingLabel!
-    @IBOutlet weak var lists: EFCountingLabel!
-    @IBOutlet weak var recommended: EFCountingLabel!
-    @IBOutlet weak var collected: EFCountingLabel!
-
-    @IBOutlet weak var recommendedStack: UIStackView!
+    @IBOutlet var recommendedStack: UIStackView!
 
     var media: MediaModel! {
         didSet {
@@ -37,7 +35,7 @@ final class StatsTableViewCell: UITableViewCell {
         cancelCancellable()
     }
 
-    private let numberFormatter: NumberFormatter = NumberFormatter()
+    private let numberFormatter: NumberFormatter = .init()
 
     private func update(with media: MediaModel?) {
         numberFormatter.numberStyle = .decimal
@@ -78,21 +76,21 @@ final class StatsTableViewCell: UITableViewCell {
         }
 
         switch media! {
-        case let .movie(movie):
+        case .movie(let movie):
             recommendedStack.isHidden = false
             cancellable = fetchStatsFor(type: .movie(movieId: movie.identifiers.trakt!))
-        case let .show(show):
+        case .show(let show):
             recommendedStack.isHidden = false
             cancellable = fetchStatsFor(type: .show(showId: show.identifiers.trakt!))
-        case let .episode(episode, show):
+        case .episode(let episode, let show):
             recommendedStack.isHidden = true
             cancellable = fetchStatsFor(type: .episode(showId: show.identifiers.trakt!,
-                                                           season: episode.season,
-                                                           episode: episode.number))
-        case let .season(season, show):
+                                                       season: episode.season,
+                                                       episode: episode.number))
+        case .season(let season, let show):
             recommendedStack.isHidden = true
             cancellable = fetchStatsFor(type: .season(showId: show.identifiers.trakt!,
-                                                          season: season.number))
+                                                      season: season.number))
         case .list:
             fatalError()
         case .showProgress:
@@ -130,7 +128,7 @@ final class StatsTableViewCell: UITableViewCell {
         return TraktAPIProvider.provider.request(.stats(type: type), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -146,23 +144,22 @@ final class StatsTableViewCell: UITableViewCell {
                 } catch {
                     print("Ratings request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Ratings request failure \(error)")
             }
         }
     }
-
 }
 
 private extension Double {
     var shortStringRepresentation: String {
-        if self.isNaN {
+        if isNaN {
             return "NaN"
         }
-        if self.isInfinite {
+        if isInfinite {
             return "\(self < 0.0 ? "-" : "+")Infinity"
         }
-        if self.isEqual(to: 0) {
+        if isEqual(to: 0) {
             return "0"
         }
         let units = ["", "k", "M"]

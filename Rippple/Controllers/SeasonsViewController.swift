@@ -6,16 +6,12 @@
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
+import Moya
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import NVActivityIndicatorView
-
-import Moya
-
-import Receiver
-
 final class SeasonsViewController: UITableViewController {
-
     private enum ViewControllerSegue: String {
         case comments
         case details
@@ -35,12 +31,12 @@ final class SeasonsViewController: UITableViewController {
         }
     }
 
-    // Empty
+    /// Empty
     @IBOutlet private var emptyView: UIView!
 
     // Error Management
     @IBOutlet private var errorView: UIView!
-    @IBOutlet weak var errorLabel: UILabel!
+    @IBOutlet var errorLabel: UILabel!
     private var error: Error? {
         didSet {
             if let error = error {
@@ -143,8 +139,7 @@ final class SeasonsViewController: UITableViewController {
             }
             return cell
         case .loading:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
-            return cell
+            return tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
         }
     }
 
@@ -201,7 +196,7 @@ final class SeasonsViewController: UITableViewController {
                     self.scroll(to: season, animated: false)
                     self.season = nil
                 } else if let episode = self.progress?.nextEpisodeToWatch,
-                            self.jumpToNextEpisode == true {
+                          self.jumpToNextEpisode == true {
                     self.scroll(to: episode, animated: true)
                 }
             }
@@ -231,15 +226,15 @@ final class SeasonsViewController: UITableViewController {
 
                 let markWatchedActionViewController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "Mark Watched") { [weak self] coder -> MarkWatchedActionViewController? in
                     guard let self = self else { return nil }
-                    return  MarkWatchedActionViewController(coder: coder,
-                                                            media: self.show.mediaModel,
-                                                            episodes: self.tableView.indexPathsForSelectedRows!.compactMap {
-                        guard let item = self.dataSource.itemIdentifier(for: $0) else { return nil }
-                        if case let Wrapper.episode(episode, _, _, _) = item {
-                            return episode.mediaModel(given: self.show)
-                        }
-                        return nil
-                    })
+                    return MarkWatchedActionViewController(coder: coder,
+                                                           media: self.show.mediaModel,
+                                                           episodes: self.tableView.indexPathsForSelectedRows!.compactMap {
+                                                               guard let item = self.dataSource.itemIdentifier(for: $0) else { return nil }
+                                                               if case Wrapper.episode(let episode, _, _, _) = item {
+                                                                   return episode.mediaModel(given: self.show)
+                                                               }
+                                                               return nil
+                                                           })
                 }
 
                 navigationController.viewControllers = [markWatchedActionViewController]
@@ -336,7 +331,7 @@ final class SeasonsViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -353,7 +348,7 @@ final class SeasonsViewController: UITableViewController {
                         self.dataSource.apply(snapshot, animatingDifferences: false)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Seasons request failure \(error)")
 
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
@@ -433,11 +428,11 @@ extension SeasonsViewController {
             return
         }
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        if case let Wrapper.season(season, _, _) = item {
+        if case Wrapper.season(let season, _, _) = item {
             performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
                          sender: season.mediaModel(given: show))
         }
-        if case let Wrapper.episode(episode, _, _, _) = item {
+        if case Wrapper.episode(let episode, _, _, _) = item {
             performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
                          sender: MediaModel.episode(episode, show))
         }
@@ -468,19 +463,19 @@ extension SeasonsViewController {
     }
 
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        guard let item = self.dataSource.itemIdentifier(for: indexPath) else { return nil }
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
 
-        if case let Wrapper.season(season, _, _) = item {
+        if case Wrapper.season(let season, _, _) = item {
             return season.mediaModel(given: show).trailingSwipeActions(for: self)
         }
-        if case let Wrapper.episode(episode, _, _, _) = item {
+        if case Wrapper.episode(let episode, _, _, _) = item {
             return episode.mediaModel(given: show).trailingSwipeActions(for: self)
         }
         return nil
     }
 
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        guard let item = self.dataSource.itemIdentifier(for: indexPath) else { return nil }
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
 
         let action: UIContextualAction
 
@@ -503,7 +498,7 @@ extension SeasonsViewController {
                                                       callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
                         guard let self = self else { return }
                         switch result {
-                        case let .success(moyaResponse):
+                        case .success(let moyaResponse):
                             do {
                                 _ = try moyaResponse.filterSuccessfulStatusCodes()
                                 DispatchQueue.main.async {
@@ -517,7 +512,7 @@ extension SeasonsViewController {
                                     SwiftMessages.show(message: "😓 Error removing", style: .error(error))
                                 }
                             }
-                        case let .failure(error):
+                        case .failure(let error):
                             DispatchQueue.main.async {
                                 completion(false)
                                 SwiftMessages.show(message: "😓 Error removing", style: .error(error))
@@ -545,7 +540,7 @@ extension SeasonsViewController {
                                                       callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
                         guard let self = self else { return }
                         switch result {
-                        case let .success(moyaResponse):
+                        case .success(let moyaResponse):
                             do {
                                 _ = try moyaResponse.filterSuccessfulStatusCodes()
                                 DispatchQueue.main.async {
@@ -559,7 +554,7 @@ extension SeasonsViewController {
                                     SwiftMessages.show(message: "😓 Error removing", style: .error(error))
                                 }
                             }
-                        case let .failure(error):
+                        case .failure(let error):
                             DispatchQueue.main.async {
                                 completion(false)
                                 SwiftMessages.show(message: "😓 Error removing", style: .error(error))
@@ -638,9 +633,9 @@ extension SeasonsViewController {
             } else {
                 navigationItem.subtitle = "\(count) Selected"
                 let action = UIBarButtonItem(image: UIImage(systemName: "checkmark"),
-                                   primaryAction: UIAction(handler: { _ in
-                    self.select()
-                }))
+                                             primaryAction: UIAction(handler: { _ in
+                                                 self.select()
+                                             }))
                 action.style = .prominent
                 navigationItem.setRightBarButtonItems([action], animated: true)
             }
@@ -659,11 +654,11 @@ extension SeasonsViewController {
             navigationItem.subtitle = "Seasons and Episodes"
 
             if let seasons = seasons, seasons.count > 1 {
-                self.navigationItem.setRightBarButtonItems([self.jumperButtonItem, .fixedSpace(), .init(title: "Select", primaryAction: UIAction(handler: { _ in
+                navigationItem.setRightBarButtonItems([jumperButtonItem, .fixedSpace(), .init(title: "Select", primaryAction: UIAction(handler: { _ in
                     self.select()
                 }))], animated: true)
             } else {
-                self.navigationItem.setRightBarButtonItems([.init(title: "Select", primaryAction: UIAction(handler: { _ in
+                navigationItem.setRightBarButtonItems([.init(title: "Select", primaryAction: UIAction(handler: { _ in
                     self.select()
                 }))], animated: true)
             }

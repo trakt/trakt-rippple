@@ -6,14 +6,12 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Moya
 import NVActivityIndicatorView
 import Receiver
+import UIKit
 
 final class PeoplesTableViewController: UITableViewController {
-
     private enum PeopleFilter: String, CaseIterable {
         case all = "Cast & Crew"
         case cast = "Cast"
@@ -49,39 +47,48 @@ final class PeoplesTableViewController: UITableViewController {
 
     private var filteredCast: [Cast] {
         if let people = people {
-            return people.cast.filter({ cast in
+            return people.cast.filter { cast in
                 if searchQuery.isEmpty { return true }
                 if searchQuery == "" { return true }
                 if let person = cast.person, person.name.localizedCaseInsensitiveContains(searchQuery) { return true }
-                for character in cast.characters where character.localizedCaseInsensitiveContains(searchQuery) { return true }
+                for character in cast.characters where character.localizedCaseInsensitiveContains(searchQuery) {
+                    return true
+                }
                 return false
-            })
+            }
         } else {
             return [Cast]()
         }
     }
+
     private var filteredCrew: [Job] {
-        return allCrew.filter({ crew in
+        return allCrew.filter { crew in
             if searchQuery.isEmpty { return true }
             if searchQuery == "" { return true }
             if let person = crew.person, person.name.localizedCaseInsensitiveContains(searchQuery) { return true }
-            for job in crew.jobs where job.localizedCaseInsensitiveContains(searchQuery) { return true }
+            for job in crew.jobs where job.localizedCaseInsensitiveContains(searchQuery) {
+                return true
+            }
             return false
-        })
+        }
     }
+
     private var filteredGuestStars: [Cast] {
         if let people = people, let guestStars = people.guestStars, !guestStars.isEmpty {
-            return guestStars.filter({ cast in
+            return guestStars.filter { cast in
                 if searchQuery.isEmpty { return true }
                 if searchQuery == "" { return true }
                 if let person = cast.person, person.name.localizedCaseInsensitiveContains(searchQuery) { return true }
-                for character in cast.characters where character.localizedCaseInsensitiveContains(searchQuery) { return true }
+                for character in cast.characters where character.localizedCaseInsensitiveContains(searchQuery) {
+                    return true
+                }
                 return false
-            })
+            }
         } else {
             return [Cast]()
         }
     }
+
     private func updateDatasource() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.content])
@@ -89,19 +96,25 @@ final class PeoplesTableViewController: UITableViewController {
         func appendCast() {
             guard !filteredCast.isEmpty else { return }
             snapshot.appendItems([.header("Cast", "\(filteredCast.count) member\(filteredCast.count > 1 ? "s" : "")")])
-            for cast in filteredCast { snapshot.appendItems([.cast(cast)]) }
+            for cast in filteredCast {
+                snapshot.appendItems([.cast(cast)])
+            }
         }
 
         func appendGuest() {
             guard !filteredGuestStars.isEmpty else { return }
             snapshot.appendItems([.header("Guest Stars", "\(filteredGuestStars.count) member\(filteredGuestStars.count > 1 ? "s" : "")")])
-            for guest in filteredGuestStars { snapshot.appendItems([.guest(guest)]) }
+            for guest in filteredGuestStars {
+                snapshot.appendItems([.guest(guest)])
+            }
         }
 
         func appendCrew() {
             guard !filteredCrew.isEmpty else { return }
             snapshot.appendItems([.header("Crew", "\(filteredCrew.count) member\(filteredCrew.count > 1 ? "s" : "")")])
-            for crew in filteredCrew { snapshot.appendItems([.crew(crew)]) }
+            for crew in filteredCrew {
+                snapshot.appendItems([.crew(crew)])
+            }
         }
 
         if searchQuery.isEmpty || searchQuery == "" {
@@ -157,19 +170,19 @@ final class PeoplesTableViewController: UITableViewController {
         }
     }
 
-    // Empty
+    /// Empty
     private var showEmpty: Bool {
         return error != nil
     }
 
-    // Paging Management
+    /// Paging Management
     private var showLoading = true {
         didSet {
             updateTitle()
         }
     }
 
-    // Error Management
+    /// Error Management
     private var error: Error?
 
     private enum Section: Int {
@@ -237,9 +250,9 @@ final class PeoplesTableViewController: UITableViewController {
         fetchPeople()
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         commandReceiver.listen { [weak self] keyCommand in
             guard let self = self else { return }
@@ -271,167 +284,167 @@ final class PeoplesTableViewController: UITableViewController {
         switch media! {
         case .movie(let movie):
             cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleMovie(id: movie.identifiers.trakt!),
-                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                                guard let self = self else { return }
+                                                            callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                guard let self = self else { return }
 
-                                                defer {
-                                                    DispatchQueue.main.async {
-                                                        self.refreshControl?.isEnabled = true
-                                                        self.refreshControl?.endRefreshing()
-                                                    }
-                                                }
+                defer {
+                    DispatchQueue.main.async {
+                        self.refreshControl?.isEnabled = true
+                        self.refreshControl?.endRefreshing()
+                    }
+                }
 
-                                                switch result {
-                                                case let .success(moyaResponse):
-                                                    do {
-                                                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                        let people = try response.map(People.self, using: TraktAPIProvider.decoder)
+                        let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
-                                                        DispatchQueue.main.async {
-                                                            self.showLoading = false
-                                                            self.error = nil
-                                                            self.people = people
-                                                        }
-                                                    } catch {
-                                                        DispatchQueue.main.async {
-                                                            print("Failed fetching people \(error)")
-                                                            self.error = error
-                                                            self.showLoading = false
-                                                            self.tableView.reloadData()
-                                                        }
-                                                    }
-                                                case let .failure(error):
-                                                    DispatchQueue.main.async {
-                                                        print("Failed fetching people \(error)")
-                                                        self.error = error
-                                                        self.showLoading = false
-                                                        self.tableView.reloadData()
-                                                    }
-                                                }
+                        DispatchQueue.main.async {
+                            self.showLoading = false
+                            self.error = nil
+                            self.people = people
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            print("Failed fetching people \(error)")
+                            self.error = error
+                            self.showLoading = false
+                            self.tableView.reloadData()
+                        }
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        print("Failed fetching people \(error)")
+                        self.error = error
+                        self.showLoading = false
+                        self.tableView.reloadData()
+                    }
+                }
             }
         case .show(let show):
             cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleShow(id: show.identifiers.trakt!, extended: .guestStars),
-                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                                guard let self = self else { return }
+                                                            callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                guard let self = self else { return }
 
-                                                defer {
-                                                    DispatchQueue.main.async {
-                                                        self.refreshControl?.isEnabled = true
-                                                        self.refreshControl?.endRefreshing()
-                                                    }
-                                                }
+                defer {
+                    DispatchQueue.main.async {
+                        self.refreshControl?.isEnabled = true
+                        self.refreshControl?.endRefreshing()
+                    }
+                }
 
-                                                switch result {
-                                                case let .success(moyaResponse):
-                                                    do {
-                                                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                        let people = try response.map(People.self, using: TraktAPIProvider.decoder)
+                        let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
-                                                        DispatchQueue.main.async {
-                                                            self.showLoading = false
-                                                            self.error = nil
-                                                            self.people = people
-                                                        }
-                                                    } catch {
-                                                        DispatchQueue.main.async {
-                                                            print("Error fetching people \(error)")
-                                                            self.error = error
-                                                            self.showLoading = false
-                                                            self.tableView.reloadData()
-                                                        }
-                                                    }
-                                                case let .failure(error):
-                                                    DispatchQueue.main.async {
-                                                        print("Failed fetching people \(error)")
-                                                        self.error = error
-                                                        self.showLoading = false
-                                                        self.tableView.reloadData()
-                                                    }
-                                                }
+                        DispatchQueue.main.async {
+                            self.showLoading = false
+                            self.error = nil
+                            self.people = people
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            print("Error fetching people \(error)")
+                            self.error = error
+                            self.showLoading = false
+                            self.tableView.reloadData()
+                        }
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        print("Failed fetching people \(error)")
+                        self.error = error
+                        self.showLoading = false
+                        self.tableView.reloadData()
+                    }
+                }
             }
         case .episode(let episode, let show):
             cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleEpisode(id: show.identifiers.trakt!, season: episode.season, episode: episode.number, extended: .guestStars),
-                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                                guard let self = self else { return }
+                                                            callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                guard let self = self else { return }
 
-                                                defer {
-                                                    DispatchQueue.main.async {
-                                                        self.refreshControl?.isEnabled = true
-                                                        self.refreshControl?.endRefreshing()
-                                                    }
-                                                }
+                defer {
+                    DispatchQueue.main.async {
+                        self.refreshControl?.isEnabled = true
+                        self.refreshControl?.endRefreshing()
+                    }
+                }
 
-                                                switch result {
-                                                case let .success(moyaResponse):
-                                                    do {
-                                                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                        let people = try response.map(People.self, using: TraktAPIProvider.decoder)
+                        let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
-                                                        DispatchQueue.main.async {
-                                                            self.showLoading = false
-                                                            self.error = nil
-                                                            self.people = people
-                                                        }
-                                                    } catch {
-                                                        DispatchQueue.main.async {
-                                                            print("Error fetching people \(error)")
-                                                            self.error = error
-                                                            self.showLoading = false
-                                                            self.tableView.reloadData()
-                                                        }
-                                                    }
-                                                case let .failure(error):
-                                                    DispatchQueue.main.async {
-                                                        print("Failed fetching people \(error)")
-                                                        self.error = error
-                                                        self.showLoading = false
-                                                        self.tableView.reloadData()
-                                                    }
-                                                }
+                        DispatchQueue.main.async {
+                            self.showLoading = false
+                            self.error = nil
+                            self.people = people
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            print("Error fetching people \(error)")
+                            self.error = error
+                            self.showLoading = false
+                            self.tableView.reloadData()
+                        }
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        print("Failed fetching people \(error)")
+                        self.error = error
+                        self.showLoading = false
+                        self.tableView.reloadData()
+                    }
+                }
             }
         case .season(let season, let show):
             cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleSeason(id: show.identifiers.trakt!, season: season.number, extended: .guestStars),
-                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                                guard let self = self else { return }
+                                                            callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                guard let self = self else { return }
 
-                                                defer {
-                                                    DispatchQueue.main.async {
-                                                        self.refreshControl?.isEnabled = true
-                                                        self.refreshControl?.endRefreshing()
-                                                    }
-                                                }
+                defer {
+                    DispatchQueue.main.async {
+                        self.refreshControl?.isEnabled = true
+                        self.refreshControl?.endRefreshing()
+                    }
+                }
 
-                                                switch result {
-                                                case let .success(moyaResponse):
-                                                    do {
-                                                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                        let people = try response.map(People.self, using: TraktAPIProvider.decoder)
+                        let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
-                                                        DispatchQueue.main.async {
-                                                            self.showLoading = false
-                                                            self.error = nil
-                                                            self.people = people
-                                                        }
-                                                    } catch {
-                                                        DispatchQueue.main.async {
-                                                            print("Error fetching people \(error)")
-                                                            self.error = error
-                                                            self.showLoading = false
-                                                            self.tableView.reloadData()
-                                                        }
-                                                    }
-                                                case let .failure(error):
-                                                    DispatchQueue.main.async {
-                                                        print("Failed fetching people \(error)")
-                                                        self.error = error
-                                                        self.showLoading = false
-                                                        self.tableView.reloadData()
-                                                    }
-                                                }
+                        DispatchQueue.main.async {
+                            self.showLoading = false
+                            self.error = nil
+                            self.people = people
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            print("Error fetching people \(error)")
+                            self.error = error
+                            self.showLoading = false
+                            self.tableView.reloadData()
+                        }
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        print("Failed fetching people \(error)")
+                        self.error = error
+                        self.showLoading = false
+                        self.tableView.reloadData()
+                    }
+                }
             }
         case .list:
             fatalError()
@@ -465,36 +478,33 @@ extension PeoplesTableViewController {
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
 
         if let cell = tableView.cellForRow(at: indexPath) as? PeopleTableViewCell {
-
             if cell.avatarImageView.image == nil { return nil }
 
             return UIContextMenuConfiguration(identifier: indexPath as NSCopying,
                                               previewProvider: {
-                let mediaPreviewViewController = UIStoryboard(name: "PersonPreview",
-                                                              bundle: nil).instantiateInitialViewController() as! PeoplePreviewViewController
+                                                  let mediaPreviewViewController = UIStoryboard(name: "PersonPreview",
+                                                                                                bundle: nil).instantiateInitialViewController() as! PeoplePreviewViewController
 
-                switch item {
-                case .cast(let cast):
-                    mediaPreviewViewController.person = cast.person
-                case .guest(let guest):
-                    mediaPreviewViewController.person = guest.person
-                case .crew(let crew):
-                    mediaPreviewViewController.person = crew.person
-                case .header:
-                    fatalError()
-                }
+                                                  switch item {
+                                                  case .cast(let cast):
+                                                      mediaPreviewViewController.person = cast.person
+                                                  case .guest(let guest):
+                                                      mediaPreviewViewController.person = guest.person
+                                                  case .crew(let crew):
+                                                      mediaPreviewViewController.person = crew.person
+                                                  case .header:
+                                                      fatalError()
+                                                  }
 
-                mediaPreviewViewController.preferredContentSize = CGSize(width: 500,
-                                                                         height: 500 * 1.5)
-                return mediaPreviewViewController
-            }, actionProvider: { _ -> UIMenu? in
-                let menu = UIMenu(children: [])
-                return menu
-            })
+                                                  mediaPreviewViewController.preferredContentSize = CGSize(width: 500,
+                                                                                                           height: 500 * 1.5)
+                                                  return mediaPreviewViewController
+                                              }, actionProvider: { _ -> UIMenu? in
+                                                  return UIMenu(children: [])
+                                              })
         }
 
         return nil
@@ -534,16 +544,13 @@ extension PeoplesTableViewController {
 }
 
 extension PeoplesTableViewController: UISearchResultsUpdating {
-
     func updateSearchResults(for searchController: UISearchController) {
         searchQuery = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         updateDatasource()
     }
 }
 
-extension PeoplesTableViewController: UISearchBarDelegate {
-
-}
+extension PeoplesTableViewController: UISearchBarDelegate {}
 
 private extension PeoplesTableViewController {
     func makeFilterMenu() -> UIMenu {

@@ -6,40 +6,38 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import Foundation
-
-import Moya
 import Alamofire
+import Foundation
+import Moya
 
-final class TraktAPIProvider {
-
+enum TraktAPIProvider {
     static let source = TokenSource()
 
     static let networkLogger = NetworkLoggerPlugin(configuration: NetworkLoggerPlugin.Configuration(logOptions: .verbose))
 
     static let debug_provider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy()),
-                                                              plugins: [networkLogger, AuthPlugin { return source.token }])
+                                                              plugins: [networkLogger, AuthPlugin { source.token }])
 
     static let provider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy(),
                                                                          eventMonitors: [checkRatingMonitor]),
-                                                        plugins: [AuthPlugin { return source.token }])
+                                                        plugins: [AuthPlugin { source.token }])
 
     static let noRatingProvider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy()),
-                                                        plugins: [AuthPlugin { return source.token }])
+                                                                plugins: [AuthPlugin { source.token }])
     static let noChacheProvider = MoyaProvider<TraktAPIService>(requestClosure: requestClosure,
                                                                 session: Session(interceptor: RipppleRetryPolicy(),
                                                                                  eventMonitors: [checkRatingMonitor]),
-                                                                plugins: [AuthPlugin { return source.token }])
+                                                                plugins: [AuthPlugin { source.token }])
     static let noChacheDebugProvider = MoyaProvider<TraktAPIService>(requestClosure: requestClosure,
-                                                                session: Session(interceptor: RipppleRetryPolicy(),
-                                                                                 eventMonitors: [checkRatingMonitor]),
-                                                                     plugins: [networkLogger, AuthPlugin { return source.token }])
+                                                                     session: Session(interceptor: RipppleRetryPolicy(),
+                                                                                      eventMonitors: [checkRatingMonitor]),
+                                                                     plugins: [networkLogger, AuthPlugin { source.token }])
 
     static let decoder = setupJSONDecoder()
 
     static let checkRatingMonitor: ClosureEventMonitor = {
         let monitor = ClosureEventMonitor()
-        monitor.requestDidCompleteTaskWithError = { (request, _, error) in
+        monitor.requestDidCompleteTaskWithError = { request, _, error in
             // if it's a post call and the error is nil, check if we ask for a rating
             if request.request?.method == .post, error == nil {
                 AppManager.shared.checkRating()
@@ -108,7 +106,7 @@ final class TraktAPIProvider {
 }
 
 private final class TraktJSONDecoder: JSONDecoder, @unchecked Sendable {
-    override func decode<T>(_ type: T.Type, from data: Data) throws -> T where T: Decodable {
+    override func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         if type == [Comment].self {
             return try super.decode(LossyCommentArray<Comment>.self, from: data).elements as! T
         }
@@ -172,7 +170,7 @@ private struct LossyDecodableElement<Element: Decodable>: Decodable {
 
 final class TokenSource {
     var token: String?
-    init() { }
+    init() {}
 }
 
 protocol AuthorizedTargetType: TargetType {

@@ -6,16 +6,14 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import UIKit
 
 protocol MediaTableViewCellDelegate: AnyObject {
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action)
 }
 
 final class MediaTableViewCell: UITableViewCell {
-
     enum Action {
         case details
         case close
@@ -28,35 +26,35 @@ final class MediaTableViewCell: UITableViewCell {
         }
     }
 
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var subtitle: UILabel!
-    @IBOutlet weak var meta: CommentCountLabel?
-    @IBOutlet weak var submeta: LinkEnabledLabel?
+    @IBOutlet var title: UILabel!
+    @IBOutlet var subtitle: UILabel!
+    @IBOutlet var meta: CommentCountLabel?
+    @IBOutlet var submeta: LinkEnabledLabel?
 
     @IBOutlet var progress: ShowProgressBar?
 
-    @IBOutlet weak var poster: PosterButton!
+    @IBOutlet var poster: PosterButton!
 
-    @IBOutlet weak var recommendedStatus: RecommendedImageView?
-    @IBOutlet weak var watchlistedStatus: WatchlistImageView?
-    @IBOutlet weak var watchedStatus: WatchedImageView?
-    @IBOutlet weak var toWatchStatus: ToWatchImageView?
-    @IBOutlet weak var collectedStatus: CollectedImageView?
-    @IBOutlet weak var commentedStatus: CommentedImageView?
-    @IBOutlet weak var ratedStatus: RatingImageView?
-    @IBOutlet weak var hiddenStatus: HiddenImageView?
-    @IBOutlet weak var droppedStatus: DroppedImageView?
-    @IBOutlet weak var pinnedStatus: PinnedImageView?
-    @IBOutlet weak var listedStatus: ListedImageView?
+    @IBOutlet var recommendedStatus: RecommendedImageView?
+    @IBOutlet var watchlistedStatus: WatchlistImageView?
+    @IBOutlet var watchedStatus: WatchedImageView?
+    @IBOutlet var toWatchStatus: ToWatchImageView?
+    @IBOutlet var collectedStatus: CollectedImageView?
+    @IBOutlet var commentedStatus: CommentedImageView?
+    @IBOutlet var ratedStatus: RatingImageView?
+    @IBOutlet var hiddenStatus: HiddenImageView?
+    @IBOutlet var droppedStatus: DroppedImageView?
+    @IBOutlet var pinnedStatus: PinnedImageView?
+    @IBOutlet var listedStatus: ListedImageView?
 
-    @IBOutlet weak var whereToWatchImageView: WhereToWatchImageView?
+    @IBOutlet var whereToWatchImageView: WhereToWatchImageView?
 
-    @IBOutlet weak var menuButtonContainter: UIView?
-    @IBOutlet weak var closeButton: UIButton?
+    @IBOutlet var menuButtonContainter: UIView?
+    @IBOutlet var closeButton: UIButton?
 
-    @IBOutlet weak var notesButton: UIButton?
+    @IBOutlet var notesButton: UIButton?
 
-    @IBOutlet weak var rateButton: UIButton?
+    @IBOutlet var rateButton: UIButton?
 
     private let disposeBag = DisposeBag()
 
@@ -121,8 +119,8 @@ final class MediaTableViewCell: UITableViewCell {
             if rateButton?.isHidden == false {
                 var configuration = rateButton?.configuration
                 configuration?.indicator = .popup
-                configuration?.baseBackgroundColor = UIColor.init { trait in
-                    return trait.userInterfaceStyle == .dark ? UIColor(asset: .globalTint).withAlphaComponent(0.2) : UIColor(asset: .globalTint).lighter(amount: 0.1).withAlphaComponent(0.2)
+                configuration?.baseBackgroundColor = UIColor { trait in
+                    trait.userInterfaceStyle == .dark ? UIColor(asset: .globalTint).withAlphaComponent(0.2) : UIColor(asset: .globalTint).lighter(amount: 0.1).withAlphaComponent(0.2)
                 }
                 configuration?.title = ""
                 configuration?.contentInsets = NSDirectionalEdgeInsets(top: 2,
@@ -172,14 +170,14 @@ final class MediaTableViewCell: UITableViewCell {
                         menuButton.menu = self.menuButtonContextMenu.toWatchMenu
                         UISelectionFeedbackGenerator().selectionChanged()
                         menuButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                     }, for: .menuActionTriggered)
+                    }, for: .menuActionTriggered)
                 } else {
                     menuButton.addAction(UIAction { [weak self] _ in
                         guard let self = self else { return }
                         menuButton.menu = self.menuButtonContextMenu.menu
                         UISelectionFeedbackGenerator().selectionChanged()
                         menuButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                     }, for: .menuActionTriggered)
+                    }, for: .menuActionTriggered)
                 }
             }
             invalidateIntrinsicContentSize()
@@ -200,8 +198,9 @@ final class MediaTableViewCell: UITableViewCell {
             invalidateIntrinsicContentSize()
         }
     }
+
     private var markdownParser = SpoilerMarkdownParser(font: UIFont.preferredFont(forTextStyle: .footnote, compatibleWith: UITraitCollection(preferredContentSizeCategory: min(UIApplication.shared.preferredContentSizeCategory, .extraExtraExtraLarge))),
-                                                automaticLinkDetectionEnabled: true)
+                                                       automaticLinkDetectionEnabled: true)
     private func attributedString() -> NSAttributedString? {
         guard let note = note else { return nil }
 
@@ -283,9 +282,9 @@ final class MediaTableViewCell: UITableViewCell {
         onCompletedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if dimmedIfWatched == false { return }
-            if case let .show(show) = self.media {
+            if case .show(let show) = self.media {
                 DispatchQueue.main.async {
-                    if show.isCompleted && self.closeButton == nil {
+                    if show.isCompleted, self.closeButton == nil {
                         self.contentView.alpha = 0.6
                     } else {
                         self.contentView.alpha = 1.0
@@ -297,8 +296,8 @@ final class MediaTableViewCell: UITableViewCell {
         onWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if dimmedIfWatched == false { return }
-            if case let .movie(movie) = self.media {
-                if movie.isWatched && self.closeButton == nil {
+            if case .movie(let movie) = self.media {
+                if movie.isWatched, self.closeButton == nil {
                     contentView.alpha = 0.6
                 } else {
                     contentView.alpha = 1.0
@@ -309,8 +308,8 @@ final class MediaTableViewCell: UITableViewCell {
         onShowsHiddenFromProgressMediaChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if dimmedIfWatched == false { return }
-            if case let .showProgress(show, _) = self.media {
-                if show.isHiddenFromProgress && closeButton == nil {
+            if case .showProgress(let show, _) = self.media {
+                if show.isHiddenFromProgress, closeButton == nil {
                     contentView.alpha = 0.6
                 } else {
                     contentView.alpha = 1.0
@@ -434,7 +433,7 @@ final class MediaTableViewCell: UITableViewCell {
         if dimmedIfWatched == false {
             contentView.alpha = 1.0
         } else {
-            if movie.isWatched && closeButton == nil {
+            if movie.isWatched, closeButton == nil {
                 contentView.alpha = 0.6
             } else {
                 contentView.alpha = 1.0
@@ -584,7 +583,7 @@ final class MediaTableViewCell: UITableViewCell {
         if dimmedIfWatched == false {
             contentView.alpha = 1.0
         } else {
-            if show.isHiddenFromProgress && closeButton == nil {
+            if show.isHiddenFromProgress, closeButton == nil {
                 contentView.alpha = 0.6
             } else {
                 contentView.alpha = 1.0
@@ -631,7 +630,7 @@ final class MediaTableViewCell: UITableViewCell {
 
         var info = [String]()
         if let airedEpisodes = show.airedEpisodes, airedEpisodes != 0 {
-            info.append("\(airedEpisodes) episode\((airedEpisodes > 1 ? "s" : ""))")
+            info.append("\(airedEpisodes) episode\(airedEpisodes > 1 ? "s" : "")")
         } else if let release = show.releaseYear {
             info.append("\(release)")
         }
@@ -664,7 +663,7 @@ final class MediaTableViewCell: UITableViewCell {
         if dimmedIfWatched == false {
             contentView.alpha = 1.0
         } else {
-            if show.isCompleted && closeButton == nil {
+            if show.isCompleted, closeButton == nil {
                 contentView.alpha = 0.6
             } else {
                 contentView.alpha = 1.0

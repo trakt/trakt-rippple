@@ -6,12 +6,10 @@
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
+import Moya
 import UIKit
 
-import Moya
-
 final class DeeplinkLoadingViewController: UIViewController, UINavigationControllerDelegate {
-
     enum DeeplinkError: Error {
         case parsingError(error: Error)
         case fetchingError(error: Error)
@@ -19,7 +17,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
         case deeplinkNotFoundError
     }
 
-    @IBOutlet weak var loadingLabel: UILabel!
+    @IBOutlet var loadingLabel: UILabel!
 
     private var migrationLoadingTimer: Timer?
 
@@ -108,7 +106,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -122,7 +120,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -135,7 +133,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -145,7 +143,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                             guard let self = self else { return }
                             switch result {
-                            case let .success(moyaResponse):
+                            case .success(let moyaResponse):
                                 do {
                                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -173,7 +171,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                         self.backToMainApp(withError: .parsingError(error: error))
                                     }
                                 }
-                            case let .failure(error):
+                            case .failure(let error):
                                 DispatchQueue.main.async {
                                     self.backToMainApp(withError: .fetchingError(error: error))
                                 }
@@ -184,7 +182,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -197,7 +195,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -207,7 +205,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                             guard let self = self else { return }
                             switch result {
-                            case let .success(moyaResponse):
+                            case .success(let moyaResponse):
                                 do {
                                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -222,7 +220,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                         self.backToMainApp(withError: .parsingError(error: error))
                                     }
                                 }
-                            case let .failure(error):
+                            case .failure(let error):
                                 DispatchQueue.main.async {
                                     self.backToMainApp(withError: .fetchingError(error: error))
                                 }
@@ -233,7 +231,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -246,7 +244,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -261,7 +259,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -277,7 +275,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -292,7 +290,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -305,7 +303,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -320,7 +318,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -341,7 +339,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -360,7 +358,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -373,7 +371,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -392,7 +390,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -405,7 +403,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -424,7 +422,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -437,7 +435,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -452,7 +450,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -465,7 +463,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -485,7 +483,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -510,7 +508,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -524,7 +522,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                             self.backToMainApp(withError: .parsingError(error: error))
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         self.backToMainApp(withError: .fetchingError(error: error))
                     }
@@ -582,7 +580,6 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
     }
 
     private func backToMainApp(withError error: DeeplinkError) {
-
         let alertController = UIAlertController(title: "Oooops",
                                                 message: nil,
                                                 preferredStyle: .alert)
@@ -610,88 +607,88 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
         loadingLabel.text = "Opening comment..."
         TraktAPIProvider.provider.request(TraktAPIService.commentMediaItem(id: id),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let mediaItem = try response.map(MediaItem.self, using: TraktAPIProvider.decoder)
+                    let mediaItem = try response.map(MediaItem.self, using: TraktAPIProvider.decoder)
 
-                                                    let mediaModel = MediaModel(item: mediaItem)
-                                                    switch mediaModel {
-                                                    case .list:
-                                                        DispatchQueue.main.async {
-                                                            self.backToMainApp(withError: .unsupportedLinkError)
-                                                        }
-                                                    default:
-                                                        break
-                                                    }
+                    let mediaModel = MediaModel(item: mediaItem)
+                    switch mediaModel {
+                    case .list:
+                        DispatchQueue.main.async {
+                            self.backToMainApp(withError: .unsupportedLinkError)
+                        }
+                    default:
+                        break
+                    }
 
-                                                    DispatchQueue.main.async {
-                                                        self.openComment(with: id, mediaModel: mediaModel)
-                                                    }
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        self.backToMainApp(withError: .parsingError(error: error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    self.backToMainApp(withError: .fetchingError(error: error))
-                                                }
-                                            }
+                    DispatchQueue.main.async {
+                        self.openComment(with: id, mediaModel: mediaModel)
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self.backToMainApp(withError: .parsingError(error: error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.backToMainApp(withError: .fetchingError(error: error))
+                }
+            }
         }
     }
 
     private func openComment(with id: Int64, mediaModel: MediaModel) {
         TraktAPIProvider.provider.request(TraktAPIService.comment(id: id),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let comment = try response.map(Comment.self, using: TraktAPIProvider.decoder)
+                    let comment = try response.map(Comment.self, using: TraktAPIProvider.decoder)
 
-                                                    if comment.parentIdentifier != 0 {
-                                                        self.openComment(with: comment.parentIdentifier,
-                                                                               mediaModel: mediaModel)
-                                                        return
-                                                    }
+                    if comment.parentIdentifier != 0 {
+                        self.openComment(with: comment.parentIdentifier,
+                                         mediaModel: mediaModel)
+                        return
+                    }
 
-                                                    let commentModel = CommentModel(media: mediaModel,
-                                                                                    comment: comment,
-                                                                                    spoilerStrategy: SpoilerStrategy.showAllSpoilers)
+                    let commentModel = CommentModel(media: mediaModel,
+                                                    comment: comment,
+                                                    spoilerStrategy: SpoilerStrategy.showAllSpoilers)
 
-                                                    DispatchQueue.main.async {
-                                                        self.performSegue(withIdentifier: "deeplink",
-                                                                                sender: CommentsCoordinator.ListType.replies(commentModel, false))
-                                                    }
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        self.backToMainApp(withError: .parsingError(error: error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    self.backToMainApp(withError: .fetchingError(error: error))
-                                                }
-                                            }
+                    DispatchQueue.main.async {
+                        self.performSegue(withIdentifier: "deeplink",
+                                          sender: CommentsCoordinator.ListType.replies(commentModel, false))
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self.backToMainApp(withError: .parsingError(error: error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.backToMainApp(withError: .fetchingError(error: error))
+                }
+            }
         }
     }
 
     func navigationController(_ navigationController: UINavigationController,
                               willShow viewController: UIViewController,
                               animated: Bool) {
-        if navigationController.viewControllers.first == self && viewController != self {
+        if navigationController.viewControllers.first == self, viewController != self {
             navigationController.isNavigationBarHidden = false
             navigationController.setViewControllers([viewController], animated: false)
             let buttonItem = UIBarButtonItem(systemItem: .close,
                                              primaryAction: UIAction(handler: { _ in
-                viewController.dismiss(animated: true, completion: nil)
-            }))
+                                                 viewController.dismiss(animated: true, completion: nil)
+                                             }))
             buttonItem.style = .plain
             viewController.navigationItem.leftBarButtonItems = [buttonItem]
         }
@@ -704,131 +701,131 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
         }
 
         // Define allowed UserDefaults keys
-        let allUserDefaultsKeys: Set<String> = ["ActivityViewController.currentFilter",
-                                                "Badge.mode",
-                                                "BrowseConfigManager.currentConfig",
-                                                "CalendarSettings.addAnticipatedMovies",
-                                                "CalendarSettings.addAnticipatedShows",
-                                                "CalendarSettings.addTrendingMovies",
-                                                "CalendarSettings.addTrendingShows",
-                                                "CalendarSettings.filtersShowToWatch",
-                                                "CalendarSettings.hideHiddenMovies",
-                                                "CalendarSettings.hideHiddenShows",
-                                                "CalendarSettings.myMovies",
-                                                "CalendarSettings.myShows",
-                                                "CollectionViewController.currentFilter",
-                                                "CollectionViewController.currentSorting",
-                                                "CommentsCoordinator.sort",
-                                                "CountryManager.disabled",
-                                                "CountryManager.displayInLists",
-                                                "CountryManager.favoritesOnly",
-                                                "CountryManager.userCountry",
-                                                "CustomListsViewController.customList",
-                                                "CustomListsViewController.displayList",
-                                                "CustomListsViewController.standardList",
-                                                "EpisodeNotificationsManager.groupEpisodes",
-                                                "EpisodeNotificationsManager.toWatchEpisodeRelease",
-                                                "EpisodeNotificationsManager.toWatchSeasonPremiere",
-                                                "EpisodeNotificationsManager.toWatchShowPremiere",
-                                                "EpisodeNotificationsManager.watchlistEpisodeRelease",
-                                                "EpisodeNotificationsManager.watchlistSeasonPremiere",
-                                                "EpisodeNotificationsManager.watchlistShowPremiere",
-                                                "EpisodeToWatchSettings.allWatched",
-                                                "EpisodeToWatchSettings.collected",
-                                                "EpisodeToWatchSettings.likedLists",
-                                                "EpisodeToWatchSettings.lists",
-                                                "EpisodeToWatchSettings.groupMode",
-                                                "EpisodeToWatchSettings.otherLists",
-                                                "EpisodeToWatchSettings.recommended",
-                                                "EpisodeToWatchSettings.reverse",
-                                                "EpisodeToWatchSettings.smartSearches",
-                                                "EpisodeToWatchSettings.sort",
-                                                "EpisodeToWatchSettings.upcoming",
-                                                "EpisodeToWatchSettings.watched",
-                                                "EpisodeToWatchSettings.watchlist",
-                                                "ForYouViewController.currentFilter",
-                                                "GeneralSettings.addtowatchlistautolistsync",
-                                                "GeneralSettings.addtowatchlistautowatchedsync",
-                                                "GeneralSettings.comments",
-                                                "GeneralSettings.commentscount",
-                                                "GeneralSettings.detailepisodetitle",
-                                                "GeneralSettings.dragging",
-                                                "GeneralSettings.droppedshows",
-                                                "GeneralSettings.listsepisodetitle",
-                                                "GeneralSettings.towatchepisodetitle",
-                                                "GeneralSettings.watchlistaddback",
-                                                "GridViewController.edgeToEdgeLayout",
-                                                "GridViewController.itemsPerRow",
-                                                "LibrarySideBarExpanded",
-                                                "LikedListsSideBarExpanded",
-                                                "ListsSideBarExpanded",
-                                                "MainTabBarController.selectedTab",
-                                                "MainTabBarController.tab.positions",
-                                                "ManualRemoteNotificationsManager.appUpdate",
-                                                "ManualRemoteNotificationsManager.blogPost",
-                                                "MovieNotificationsManager.toWatchMovieRelease",
-                                                "MovieNotificationsManager.watchlistMovieRelease",
-                                                "MovieToWatchSettings.collected",
-                                                "MovieToWatchSettings.likedLists",
-                                                "MovieToWatchSettings.lists",
-                                                "MovieToWatchSettings.groupMode",
-                                                "MovieToWatchSettings.otherLists",
-                                                "MovieToWatchSettings.recommended",
-                                                "MovieToWatchSettings.reverse",
-                                                "MovieToWatchSettings.smartSearches",
-                                                "MovieToWatchSettings.sort",
-                                                "MovieToWatchSettings.upcoming",
-                                                "MovieToWatchSettings.watchlist",
-                                                "RecommendedNotificationsManager.recommendedMovies",
-                                                "RecommendedNotificationsManager.recommendedShows",
-                                                "RecommendedViewController.currentFilter",
-                                                "RecommendedViewController.currentSorting",
-                                                "SeasonsRatingsViewController.currentFilter",
-                                                "SidebarViewController.selectedIndex.row",
-                                                "SidebarViewController.selectedIndex.section",
-                                                "Swipe.ToWatch.default",
-                                                "Swipe.ToWatch.secondary",
-                                                "ToWatchViewController.currentType",
-                                                "TrendingNotificationsManager.trendingMovies",
-                                                "TrendingNotificationsManager.trendingShows",
-                                                "UpcomingLabelManager.labelStyle",
-                                                "WallViewController.savedFilter",
-                                                "WatchlistViewController.currentFilter",
-                                                "WatchlistViewController.currentSorting",
-                                                "WatchedViewController.currentFilter",
-                                                "WatchedViewController.currentSorting",
-                                                "DVDMovieNotificationsManager.toWatchMovieRelease",
-                                                "ActivityNotificationsManager.activityNewFollower",
-                                                "ActivityNotificationsManager.commentNewMention",
-                                                "ActivityNotificationsManager.commentNewReply",
-                                                "ActivityNotificationsManager.commentNewLikes",
-                                                "AnticipatedNotificationsManager.anticipatedShows",
-                                                "AnticipatedNotificationsManager.anticipatedMovies",
-                                                "Stinger.alert.type",
-                                                "AppManager.currentUserInterfaceStyle",
-                                                "AppManager.currentTint"]
+        let allUserDefaultsKeys: Set = ["ActivityViewController.currentFilter",
+                                        "Badge.mode",
+                                        "BrowseConfigManager.currentConfig",
+                                        "CalendarSettings.addAnticipatedMovies",
+                                        "CalendarSettings.addAnticipatedShows",
+                                        "CalendarSettings.addTrendingMovies",
+                                        "CalendarSettings.addTrendingShows",
+                                        "CalendarSettings.filtersShowToWatch",
+                                        "CalendarSettings.hideHiddenMovies",
+                                        "CalendarSettings.hideHiddenShows",
+                                        "CalendarSettings.myMovies",
+                                        "CalendarSettings.myShows",
+                                        "CollectionViewController.currentFilter",
+                                        "CollectionViewController.currentSorting",
+                                        "CommentsCoordinator.sort",
+                                        "CountryManager.disabled",
+                                        "CountryManager.displayInLists",
+                                        "CountryManager.favoritesOnly",
+                                        "CountryManager.userCountry",
+                                        "CustomListsViewController.customList",
+                                        "CustomListsViewController.displayList",
+                                        "CustomListsViewController.standardList",
+                                        "EpisodeNotificationsManager.groupEpisodes",
+                                        "EpisodeNotificationsManager.toWatchEpisodeRelease",
+                                        "EpisodeNotificationsManager.toWatchSeasonPremiere",
+                                        "EpisodeNotificationsManager.toWatchShowPremiere",
+                                        "EpisodeNotificationsManager.watchlistEpisodeRelease",
+                                        "EpisodeNotificationsManager.watchlistSeasonPremiere",
+                                        "EpisodeNotificationsManager.watchlistShowPremiere",
+                                        "EpisodeToWatchSettings.allWatched",
+                                        "EpisodeToWatchSettings.collected",
+                                        "EpisodeToWatchSettings.likedLists",
+                                        "EpisodeToWatchSettings.lists",
+                                        "EpisodeToWatchSettings.groupMode",
+                                        "EpisodeToWatchSettings.otherLists",
+                                        "EpisodeToWatchSettings.recommended",
+                                        "EpisodeToWatchSettings.reverse",
+                                        "EpisodeToWatchSettings.smartSearches",
+                                        "EpisodeToWatchSettings.sort",
+                                        "EpisodeToWatchSettings.upcoming",
+                                        "EpisodeToWatchSettings.watched",
+                                        "EpisodeToWatchSettings.watchlist",
+                                        "ForYouViewController.currentFilter",
+                                        "GeneralSettings.addtowatchlistautolistsync",
+                                        "GeneralSettings.addtowatchlistautowatchedsync",
+                                        "GeneralSettings.comments",
+                                        "GeneralSettings.commentscount",
+                                        "GeneralSettings.detailepisodetitle",
+                                        "GeneralSettings.dragging",
+                                        "GeneralSettings.droppedshows",
+                                        "GeneralSettings.listsepisodetitle",
+                                        "GeneralSettings.towatchepisodetitle",
+                                        "GeneralSettings.watchlistaddback",
+                                        "GridViewController.edgeToEdgeLayout",
+                                        "GridViewController.itemsPerRow",
+                                        "LibrarySideBarExpanded",
+                                        "LikedListsSideBarExpanded",
+                                        "ListsSideBarExpanded",
+                                        "MainTabBarController.selectedTab",
+                                        "MainTabBarController.tab.positions",
+                                        "ManualRemoteNotificationsManager.appUpdate",
+                                        "ManualRemoteNotificationsManager.blogPost",
+                                        "MovieNotificationsManager.toWatchMovieRelease",
+                                        "MovieNotificationsManager.watchlistMovieRelease",
+                                        "MovieToWatchSettings.collected",
+                                        "MovieToWatchSettings.likedLists",
+                                        "MovieToWatchSettings.lists",
+                                        "MovieToWatchSettings.groupMode",
+                                        "MovieToWatchSettings.otherLists",
+                                        "MovieToWatchSettings.recommended",
+                                        "MovieToWatchSettings.reverse",
+                                        "MovieToWatchSettings.smartSearches",
+                                        "MovieToWatchSettings.sort",
+                                        "MovieToWatchSettings.upcoming",
+                                        "MovieToWatchSettings.watchlist",
+                                        "RecommendedNotificationsManager.recommendedMovies",
+                                        "RecommendedNotificationsManager.recommendedShows",
+                                        "RecommendedViewController.currentFilter",
+                                        "RecommendedViewController.currentSorting",
+                                        "SeasonsRatingsViewController.currentFilter",
+                                        "SidebarViewController.selectedIndex.row",
+                                        "SidebarViewController.selectedIndex.section",
+                                        "Swipe.ToWatch.default",
+                                        "Swipe.ToWatch.secondary",
+                                        "ToWatchViewController.currentType",
+                                        "TrendingNotificationsManager.trendingMovies",
+                                        "TrendingNotificationsManager.trendingShows",
+                                        "UpcomingLabelManager.labelStyle",
+                                        "WallViewController.savedFilter",
+                                        "WatchlistViewController.currentFilter",
+                                        "WatchlistViewController.currentSorting",
+                                        "WatchedViewController.currentFilter",
+                                        "WatchedViewController.currentSorting",
+                                        "DVDMovieNotificationsManager.toWatchMovieRelease",
+                                        "ActivityNotificationsManager.activityNewFollower",
+                                        "ActivityNotificationsManager.commentNewMention",
+                                        "ActivityNotificationsManager.commentNewReply",
+                                        "ActivityNotificationsManager.commentNewLikes",
+                                        "AnticipatedNotificationsManager.anticipatedShows",
+                                        "AnticipatedNotificationsManager.anticipatedMovies",
+                                        "Stinger.alert.type",
+                                        "AppManager.currentUserInterfaceStyle",
+                                        "AppManager.currentTint"]
 
-        let ubiquitousKeys: Set<String> = ["ShelfManager.shelf",
-                                           "EpisodeToWatchManager.pinnedShows",
-                                           "MovieToWatchManager.pinnedMovies",
-                                           "SmartSearch.movies",
-                                           "SmartSearch.shows",
-                                           "RecentSearchManager.recentSearches",
-                                           "CommentDraftManager.drafts"]
+        let ubiquitousKeys: Set = ["ShelfManager.shelf",
+                                   "EpisodeToWatchManager.pinnedShows",
+                                   "MovieToWatchManager.pinnedMovies",
+                                   "SmartSearch.movies",
+                                   "SmartSearch.shows",
+                                   "RecentSearchManager.recentSearches",
+                                   "CommentDraftManager.drafts"]
 
-        let dataUserDefaultsKeys: Set<String> = ["MainTabBarController.tab.positions",
-                                                 "WallViewController.savedFilter",
-                                                 "NotesManager.notes",
-                                                 "ListsManager.lists",
-                                                 "CollaborationsManager.collaborations",
-                                                 "SavedFiltersManager.savedFilters"]
+        let dataUserDefaultsKeys: Set = ["MainTabBarController.tab.positions",
+                                         "WallViewController.savedFilter",
+                                         "NotesManager.notes",
+                                         "ListsManager.lists",
+                                         "CollaborationsManager.collaborations",
+                                         "SavedFiltersManager.savedFilters"]
 
-        let dataUbiquitousKeys: Set<String> = ["EpisodeToWatchManager.pinnedShows",
-                                               "MovieToWatchManager.pinnedMovies",
-                                               "SmartSearch.movies",
-                                               "SmartSearch.shows",
-                                               "RecentSearchManager.recentSearches",
-                                               "CommentDraftManager.drafts"]
+        let dataUbiquitousKeys: Set = ["EpisodeToWatchManager.pinnedShows",
+                                       "MovieToWatchManager.pinnedMovies",
+                                       "SmartSearch.movies",
+                                       "SmartSearch.shows",
+                                       "RecentSearchManager.recentSearches",
+                                       "CommentDraftManager.drafts"]
 
         // Combine all allowed keys
         let allowedKeys = allUserDefaultsKeys.union(ubiquitousKeys)
@@ -841,9 +838,9 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
 
             // Validate key is in allowed set (or is a dynamic ListViewController key)
             let isDynamicListViewControllerKey = key.hasPrefix("ListViewController.") &&
-                                                 (key.contains(".currentFilter") || key.contains(".currentSorting"))
+                (key.contains(".currentFilter") || key.contains(".currentSorting"))
             let isDynamicCountryManagerKey = key.hasPrefix("CountryManager.favoriteProviders.") &&
-                                             key.split(separator: ".").count == 3
+                key.split(separator: ".").count == 3
 
             guard isDynamicListViewControllerKey || isDynamicCountryManagerKey || allowedKeys.contains(key) else {
                 print("[Migration Deeplink] Skipping unknown key: \(key)")
@@ -873,8 +870,8 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
             }
 
             let shouldStoreAsData = dataUserDefaultsKeys.contains(key) ||
-                                    dataUbiquitousKeys.contains(key) ||
-                                    isDynamicCountryManagerKey
+                dataUbiquitousKeys.contains(key) ||
+                isDynamicCountryManagerKey
 
             if shouldStoreAsData, let data = Data(base64Encoded: valueString) {
                 print("[Migration Deeplink] \(key): <Data> (base64 length: \(valueString.count))")

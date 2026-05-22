@@ -6,14 +6,11 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import NVActivityIndicatorView
-
-import Receiver
-
 final class NotesListViewController: UITableViewController {
-
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
@@ -53,8 +50,7 @@ final class NotesListViewController: UITableViewController {
             cell.action.isHidden = true
             return cell
         case .loading:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
-            return cell
+            return tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
         }
     }
 
@@ -146,7 +142,7 @@ final class NotesListViewController: UITableViewController {
         TraktAPIProvider.provider.request(.deleteNotes(id: noteItem.note.identifier),
                                           callbackQueue: .global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     _ = try moyaResponse.filterSuccessfulStatusCodes()
                     NotesManager.shared.refresh()
@@ -161,7 +157,7 @@ final class NotesListViewController: UITableViewController {
                         window.isUserInteractionEnabled = true
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Notes deleting failed! \(error)")
                 NotesManager.shared.refresh()
                 DispatchQueue.main.async {

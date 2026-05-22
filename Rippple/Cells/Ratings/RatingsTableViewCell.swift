@@ -6,14 +6,11 @@
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
+import Moya
+import Receiver
 import UIKit
 
-import Moya
-
-import Receiver
-
 final class RatingsTableViewCell: UITableViewCell {
-
     private let disposeBag = DisposeBag()
 
     @IBOutlet var rating: EFCountingLabel!
@@ -27,36 +24,36 @@ final class RatingsTableViewCell: UITableViewCell {
     @IBOutlet var moreAction: UIButton!
     @IBOutlet var rateAction: UIButton!
 
-    /* External Ratings */
-    @IBOutlet weak var rottenTomatoesCriticsStack: UIStackView!
+    /** External Ratings */
+    @IBOutlet var rottenTomatoesCriticsStack: UIStackView!
 
-    @IBOutlet weak var rottenTomatoesCriticsRating: EFCountingLabel!
-    @IBOutlet weak var rottentTomatoesCriticsImage: UIButton!
+    @IBOutlet var rottenTomatoesCriticsRating: EFCountingLabel!
+    @IBOutlet var rottentTomatoesCriticsImage: UIButton!
 
-    @IBOutlet weak var rottenTomatoesAudienceStack: UIStackView!
+    @IBOutlet var rottenTomatoesAudienceStack: UIStackView!
 
-    @IBOutlet weak var rottenTomatoesAudienceRating: EFCountingLabel!
-    @IBOutlet weak var rottenTomatoesAudienceImage: UIButton!
+    @IBOutlet var rottenTomatoesAudienceRating: EFCountingLabel!
+    @IBOutlet var rottenTomatoesAudienceImage: UIButton!
 
-    @IBOutlet weak var imdbStack: UIStackView!
+    @IBOutlet var imdbStack: UIStackView!
 
-    @IBOutlet weak var imdbRating: EFCountingLabel!
-    @IBOutlet weak var imdbVotes: EFCountingLabel!
-    @IBOutlet weak var imdbImage: UIButton!
+    @IBOutlet var imdbRating: EFCountingLabel!
+    @IBOutlet var imdbVotes: EFCountingLabel!
+    @IBOutlet var imdbImage: UIButton!
 
-    @IBOutlet weak var metacriticStack: UIStackView!
+    @IBOutlet var metacriticStack: UIStackView!
 
-    @IBOutlet weak var metacriticRating: EFCountingLabel!
-    @IBOutlet weak var metacriticLabel: UILabel!
-    @IBOutlet weak var metacriticImage: UIButton!
+    @IBOutlet var metacriticRating: EFCountingLabel!
+    @IBOutlet var metacriticLabel: UILabel!
+    @IBOutlet var metacriticImage: UIButton!
 
-    @IBOutlet weak var tmdbStack: UIStackView!
+    @IBOutlet var tmdbStack: UIStackView!
 
-    @IBOutlet weak var tmdbRating: EFCountingLabel!
-    @IBOutlet weak var tmdbVotes: EFCountingLabel!
-    @IBOutlet weak var tmdbImage: UIButton!
+    @IBOutlet var tmdbRating: EFCountingLabel!
+    @IBOutlet var tmdbVotes: EFCountingLabel!
+    @IBOutlet var tmdbImage: UIButton!
 
-    private let votesFormatter: NumberFormatter = NumberFormatter()
+    private let votesFormatter: NumberFormatter = .init()
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -74,12 +71,12 @@ final class RatingsTableViewCell: UITableViewCell {
 
         rottenTomatoesCriticsRating.method = .easeInOut
         rottenTomatoesCriticsRating.formatBlock = { value in
-            return String(format: "%02d", Int(value))
+            String(format: "%02d", Int(value))
         }
 
         rottenTomatoesAudienceRating.method = .easeInOut
         rottenTomatoesAudienceRating.formatBlock = { value in
-            return String(format: "%02d", Int(value))
+            String(format: "%02d", Int(value))
         }
 
         imdbRating.method = .easeInOut
@@ -93,12 +90,12 @@ final class RatingsTableViewCell: UITableViewCell {
 
         metacriticRating.method = .easeInOut
         metacriticRating.formatBlock = { value in
-            return String(format: "%02d", Int(value))
+            String(format: "%02d", Int(value))
         }
 
         tmdbRating.method = .easeInOut
         tmdbRating.formatBlock = { value in
-            return String(format: "%02d", Int(value*10))
+            String(format: "%02d", Int(value * 10))
         }
 
         tmdbVotes.method = .easeInOut
@@ -115,7 +112,7 @@ final class RatingsTableViewCell: UITableViewCell {
 
         for bar in distributionBars {
             bar.backgroundColor = #colorLiteral(red: 0.737254902, green: 0.7333333333, blue: 0.7568627451, alpha: 1)
-            bar.layer.cornerRadius = bar.layer.frame.size.width/2.0
+            bar.layer.cornerRadius = bar.layer.frame.size.width / 2.0
         }
 
         for constant in distributionHeightConstant {
@@ -162,7 +159,7 @@ final class RatingsTableViewCell: UITableViewCell {
                     guard let viewController = self.viewController else { return }
                     viewController.performSegue(withIdentifier: "ratings", sender: nil)
                     UISelectionFeedbackGenerator().selectionChanged()
-                 }, for: .touchUpInside)
+                }, for: .touchUpInside)
             default:
                 moreAction.enumerateEventHandlers { action, _, event, _ in
                     if let action = action {
@@ -215,17 +212,17 @@ final class RatingsTableViewCell: UITableViewCell {
         rating.text = "0"
         votes.text = "Loading..."
         switch media! {
-        case let .movie(movie):
+        case .movie(let movie):
             cancellable = fetchRatingsFor(type: .movie(movieId: movie.identifiers.trakt!))
-        case let .show(show):
+        case .show(let show):
             cancellable = fetchRatingsFor(type: .show(showId: show.identifiers.trakt!))
-        case let .episode(episode, show):
+        case .episode(let episode, let show):
             cancellable = fetchRatingsFor(type: .episode(showId: show.identifiers.trakt!,
-                                                           season: episode.season,
-                                                           episode: episode.number))
-        case let .season(season, show):
+                                                         season: episode.season,
+                                                         episode: episode.number))
+        case .season(let season, let show):
             cancellable = fetchRatingsFor(type: .season(showId: show.identifiers.trakt!,
-                                                          season: season.number))
+                                                        season: season.number))
         case .list:
             fatalError()
         case .showProgress:
@@ -259,16 +256,16 @@ final class RatingsTableViewCell: UITableViewCell {
                                delay: 0,
                                options: [.curveEaseInOut, .allowUserInteraction],
                                animations: {
-                                for constant in self.distributionHeightConstant {
-                                    let votes = values[Int(constant.identifier!)! - 1]
-                                    let proportion = CGFloat(votes) / CGFloat(max)
-                                    let height = self.distributionBars.first!.superview!.frame.size.height
-                                    constant.constant = height * proportion
-                                }
-                                for bar in self.distributionBars {
-                                    bar.superview!.layoutIfNeeded()
-                                }
-                })
+                                   for constant in self.distributionHeightConstant {
+                                       let votes = values[Int(constant.identifier!)! - 1]
+                                       let proportion = CGFloat(votes) / CGFloat(max)
+                                       let height = self.distributionBars.first!.superview!.frame.size.height
+                                       constant.constant = height * proportion
+                                   }
+                                   for bar in self.distributionBars {
+                                       bar.superview!.layoutIfNeeded()
+                                   }
+                               })
             }
         }
     }
@@ -285,7 +282,7 @@ final class RatingsTableViewCell: UITableViewCell {
         return TraktAPIProvider.provider.request(.ratings(type: type), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -379,7 +376,7 @@ final class RatingsTableViewCell: UITableViewCell {
                             self.imdbRating.countFromCurrentValueTo(CGFloat(imdbRating),
                                                                     withDuration: 0.7)
                             self.imdbVotes.countFromCurrentValueTo(CGFloat(imdbVotes),
-                                                                    withDuration: 0.7)
+                                                                   withDuration: 0.7)
                             if let url = ratings.imdb.link {
                                 self.imdbImage.addAction(UIAction(handler: { _ in
                                     UIApplication.shared.open(url)
@@ -428,7 +425,7 @@ final class RatingsTableViewCell: UITableViewCell {
                             self.tmdbRating.countFromCurrentValueTo(CGFloat(tmdbRating),
                                                                     withDuration: 0.7)
                             self.tmdbVotes.countFromCurrentValueTo(CGFloat(tmdbVotes),
-                                                                    withDuration: 0.7)
+                                                                   withDuration: 0.7)
                             if let url = ratings.tmdb.link {
                                 self.tmdbImage.addAction(UIAction(handler: { _ in
                                     UIApplication.shared.open(url)
@@ -441,7 +438,7 @@ final class RatingsTableViewCell: UITableViewCell {
                 } catch {
                     print("Ratings request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Ratings request failure \(error)")
             }
         }

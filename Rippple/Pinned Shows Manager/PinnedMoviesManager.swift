@@ -6,18 +6,16 @@
 //
 
 import Foundation
-
+import Moya
 import Receiver
 
-import Moya
-
 // MARK: - Pinned Movies Signals
+
 let (onPinnedMoviesToWatchChangedTransmitter, onPinnedMoviesToWatchChangedReceiver) = Receiver<[Movie]>.make(with: .warm(upTo: 1))
 let (onPinnedMovieToWatchAddedTransmitter, onPinnedMovieToWatchAddedReceiver) = Receiver<Movie>.make(with: .hot)
 let (onPinnedMovieToWatchRemovedTransmitter, onPinnedMovieToWatchRemovedReceiver) = Receiver<Movie>.make(with: .hot)
 
 final class PinnedMoviesManager {
-
     static let shared = PinnedMoviesManager()
 
     private let disposeBag = DisposeBag()
@@ -37,13 +35,13 @@ final class PinnedMoviesManager {
             if let pinnedMovies = try? JSONDecoder().decode(Set<Movie>.self, from: encodedMovies) {
                 self.pinnedMovies = Set<Movie>(pinnedMovies)
             } else {
-                self.pinnedMovies = Set<Movie>()
+                pinnedMovies = Set<Movie>()
             }
         } else {
-            self.pinnedMovies = Set<Movie>()
+            pinnedMovies = Set<Movie>()
         }
 
-        onPinnedMoviesToWatchChangedTransmitter.broadcast([Movie](self.pinnedMovies.filter { !$0.isHiddenFromCalendar }))
+        onPinnedMoviesToWatchChangedTransmitter.broadcast([Movie](pinnedMovies.filter { !$0.isHiddenFromCalendar }))
 
         onWatchedMoviesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
@@ -54,7 +52,7 @@ final class PinnedMoviesManager {
     var pinnedMovies = Set<Movie>() {
         didSet {
             if pinnedMovies != oldValue {
-                _Concurrency.Task.init {
+                _Concurrency.Task {
                     var fullPinnedMovies = Set<Movie>()
                     for movie in pinnedMovies {
                         if movie.rating == nil {
@@ -101,15 +99,15 @@ final class PinnedMoviesManager {
                 return
             }
         }
-        self.pinnedMovies = Set<Movie>()
+        pinnedMovies = Set<Movie>()
     }
 
-    // Fetch the full movie async + return the old Movie if there's an error to not lose it
+    /// Fetch the full movie async + return the old Movie if there's an error to not lose it
     private func fetchMovie(movie: Movie) async -> Movie {
-        let result: Movie = await withCheckedContinuation { continuation in
+        return await withCheckedContinuation { continuation in
             TraktAPIProvider.provider.request(.movie(id: movie.identifiers.traktIdOrSlug, extended: .full), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let fullMovie = try response.map(Movie.self, using: TraktAPIProvider.decoder)
@@ -122,7 +120,6 @@ final class PinnedMoviesManager {
                 }
             }
         }
-        return result
     }
 }
 

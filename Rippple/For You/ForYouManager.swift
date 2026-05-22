@@ -9,21 +9,21 @@
 import Foundation
 
 final class ForYouManager {
-
-    public enum Filter: Int {
+    enum Filter: Int {
         case all
         case becauseYouWatchedOnly
         case becauseYouFollowOnly
     }
-    public var currentFilter = Filter.all
 
-    private init() { }
+    var currentFilter = Filter.all
+
+    private init() {}
 
     static let shared = ForYouManager()
 
     private var activities = [HistoryItem]()
 
-    public func filterForYou(comments: [CommentItem]) -> [CommentItem] {
+    func filterForYou(comments: [CommentItem]) -> [CommentItem] {
         return comments.filter { item -> Bool in
             if (currentFilter == .all || currentFilter == .becauseYouFollowOnly) && FollowManager.shared.followed(user: item.comment.user) {
                 return true
@@ -40,35 +40,35 @@ final class ForYouManager {
         }
     }
 
-    public func refreshActivities(with completion: @escaping (_ error: Error?) -> Void) {
+    func refreshActivities(with completion: @escaping (_ error: Error?) -> Void) {
         if SessionManager.shared.isLoggedOut {
             return
         }
         TraktAPIProvider.provider.request(TraktAPIService.history(type: nil, id: nil, pageInfo: PageInfo.firstPage(with: 50), endDate: nil),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let fetchedActivities = try response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
+                    let fetchedActivities = try response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.activities = fetchedActivities
-                                                        completion(nil)
-                                                    }
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        print("For you comments (/activities) request JSON mapping failed! \(error)")
-                                                        completion(error)
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    print("For you comments (/activities) request failure \(error)")
-                                                    completion(error)
-                                                }
-                                            }
+                    DispatchQueue.main.async {
+                        self.activities = fetchedActivities
+                        completion(nil)
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        print("For you comments (/activities) request JSON mapping failed! \(error)")
+                        completion(error)
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    print("For you comments (/activities) request failure \(error)")
+                    completion(error)
+                }
+            }
         }
     }
 }

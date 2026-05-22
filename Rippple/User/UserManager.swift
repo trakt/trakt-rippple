@@ -7,7 +7,6 @@
 //
 
 import Foundation
-
 import Moya
 import Receiver
 
@@ -18,7 +17,7 @@ let (onVIPChangedTransmitter, onVIPChangedReceiver) = Receiver<Bool>.make(with: 
 extension URL {
     func slurmified() -> URL {
         if let slurm = UserManager.shared.slurm {
-            return self.appending(queryItems: [URLQueryItem(name: "slurm", value: slurm)])
+            return appending(queryItems: [URLQueryItem(name: "slurm", value: slurm)])
         } else {
             return self
         }
@@ -26,7 +25,6 @@ extension URL {
 }
 
 final class UserManager {
-
     static let shared = UserManager()
 
     var currentUser: User?
@@ -62,31 +60,31 @@ final class UserManager {
         }
     }
 
-    public var currentUserCanWatchOnlyOnce: Bool {
+    var currentUserCanWatchOnlyOnce: Bool {
         return settings?.browsing.watchOnlyOnce ?? false
     }
 
-    public var currentUserCanComment: Bool {
+    var currentUserCanComment: Bool {
         return settings?.permissions.commenting ?? false
     }
 
-    public var currentUserListLimit: Int {
+    var currentUserListLimit: Int {
         return settings?.limits.list.count ?? 0
     }
 
-    public var currentUserNotesLimit: Int {
+    var currentUserNotesLimit: Int {
         return settings?.limits.notes.itemCount ?? 0
     }
 
     private init() {
         let decoder = JSONDecoder()
         if let data = UserDefaults.standard.data(forKey: "Rippple.currentUser"),
-            let user = try? decoder.decode(User.self, from: data) {
+           let user = try? decoder.decode(User.self, from: data) {
             currentUser = user
         }
     }
 
-    func startManaging() { }
+    func startManaging() {}
 
     func reloadSettings(transmitRefreshed: Bool = false) {
         fetchSettings(transmitRefreshed: transmitRefreshed)
@@ -100,7 +98,7 @@ final class UserManager {
         TraktAPIProvider.provider.request(.settings,
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     print("Fetch Settings status code (retry attempt: \(retryAttempt)): \(moyaResponse.statusCode)")
                     if moyaResponse.statusCode == 401 {
@@ -134,7 +132,7 @@ final class UserManager {
                         self.promptShowSettingsError(error: error)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Settings request failed! \(error)")
                 DispatchQueue.main.async {
                     self.promptShowSettingsError(error: error)
@@ -150,14 +148,14 @@ final class UserManager {
 
         alert.addAction(UIAlertAction(title: "Trakt Status", style: .default, handler: { _ in
             if let url = URL(string: "https://status.trakt.tv"),
-                UIApplication.shared.canOpenURL(url) {
+               UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }
         }))
 
         alert.addAction(UIAlertAction(title: "Trakt Forums", style: .default, handler: { _ in
             if let url = URL(string: "https://forums.trakt.tv"),
-                UIApplication.shared.canOpenURL(url) {
+               UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }
         }))

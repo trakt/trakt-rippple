@@ -6,16 +6,14 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import UIKit
 
 protocol MediaMoreTableViewCellDelegate: AnyObject {
     func cell(_ cell: MediaMoreTableViewCell, didSelect season: Season)
 }
 
 final class MediaMoreTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollectionViewDelegate {
-
     private let disposeBag = DisposeBag()
 
     @IBOutlet var title: UILabel!
@@ -34,7 +32,7 @@ final class MediaMoreTableViewCell: UITableViewCell, UICollectionViewDataSource,
     }
 
     /*
-     
+
      Returning Series · Loading...
      Loading...
      Loading...
@@ -49,12 +47,12 @@ final class MediaMoreTableViewCell: UITableViewCell, UICollectionViewDataSource,
      13 of 13 episodes watched
      You're up-to-date!
      ——————————————————————
-     
+
      Ended · 1 season (~10h 36m)
      13 of 13 episodes watched
      You've watched all episodes!
      ——————————————————————
-     
+
      */
 
     override func awakeFromNib() {
@@ -65,7 +63,7 @@ final class MediaMoreTableViewCell: UITableViewCell, UICollectionViewDataSource,
         onProgressCacheChangedReceiver.listen { [weak self] progress in
             guard let self = self else { return }
             if progress.show == self.show {
-                Task.init {
+                Task {
                     let progress = progress.showProgress
 
                     let seasons = await self.fetchSeasons()
@@ -120,7 +118,7 @@ final class MediaMoreTableViewCell: UITableViewCell, UICollectionViewDataSource,
             subtitle2.text = "Loading..."
             invalidateIntrinsicContentSize()
 
-            Task.init {
+            Task {
                 let mediaModel = self.show.mediaModel
                 guard let progress = await mediaModel.progress() else {
                     title.text = "\([show.status?.capitalized].compactMap { $0 }.joined(separator: " · "))"
@@ -168,8 +166,8 @@ final class MediaMoreTableViewCell: UITableViewCell, UICollectionViewDataSource,
                                    minutes: episodesWatchedTime % 60)
 
                 updateSubtitle2With(episodesToWatch: episodesToWatch,
-                                   hours: episodesToWatchTime / 60,
-                                   minutes: episodesToWatchTime % 60)
+                                    hours: episodesToWatchTime / 60,
+                                    minutes: episodesToWatchTime % 60)
 
                 // should use the cache now
                 self.progress.media = mediaModel
@@ -285,7 +283,7 @@ final class MediaMoreTableViewCell: UITableViewCell, UICollectionViewDataSource,
                 TraktAPIProvider.provider.request(.seasons(id: showId), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                     guard let self = self else { return }
                     switch result {
-                    case let .success(moyaResponse):
+                    case .success(let moyaResponse):
                         do {
                             let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -300,7 +298,7 @@ final class MediaMoreTableViewCell: UITableViewCell, UICollectionViewDataSource,
                             print("Seasons request JSON mapping failed! \(error)")
                             continuation.resume(throwing: error)
                         }
-                    case let .failure(error):
+                    case .failure(let error):
                         print("Seasons request failure \(error)")
                         continuation.resume(throwing: error)
                     }

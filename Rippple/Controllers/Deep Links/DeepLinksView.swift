@@ -7,7 +7,6 @@
 //
 
 import SwiftUI
-
 import UniformTypeIdentifiers
 
 /*
@@ -38,7 +37,7 @@ import UniformTypeIdentifiers
  ripl:// -> Just open Rippple
  ripl://whatsnew -> Ok
  ripl://settings/notifications -> Ok
- 
+
  *Search*
  ripl://search/[query]
 
@@ -56,79 +55,79 @@ private struct DeeplinkInfo: Hashable {
                              url: "`ripl://search/_query_`",
                              deeplink: "ripl://search/Pulp Fiction"),
                 DeeplinkInfo(title: "Episodes To Watch",
-                                     subtitle: "Open your Episodes To Watch.",
-                                     url: "`ripl://towatch/episodes`",
-                                     deeplink: "ripl://towatch/episodes"),
+                             subtitle: "Open your Episodes To Watch.",
+                             url: "`ripl://towatch/episodes`",
+                             deeplink: "ripl://towatch/episodes"),
                 DeeplinkInfo(title: "Movies To Watch",
-                                     subtitle: "Open your Movies To Watch.",
-                                     url: "`ripl://towatch/movies`",
-                                     deeplink: "ripl://towatch/movies"),
+                             subtitle: "Open your Movies To Watch.",
+                             url: "`ripl://towatch/movies`",
+                             deeplink: "ripl://towatch/movies"),
                 DeeplinkInfo(title: "History",
-                                     subtitle: "Open your History.",
-                                     url: "`ripl://history`",
+                             subtitle: "Open your History.",
+                             url: "`ripl://history`",
                              deeplink: "ripl://history"),
                 DeeplinkInfo(title: "Calendar",
-                                     subtitle: "Open the Calendar.",
-                                     url: "`ripl://calendar`",
-                                     deeplink: "ripl://calendar")]
+                             subtitle: "Open the Calendar.",
+                             url: "`ripl://calendar`",
+                             deeplink: "ripl://calendar")]
     }
 
     static var contentDatasource: [DeeplinkInfo] {
         return [DeeplinkInfo(title: "Movie",
-                                     subtitle: "Open a movie. Supports _id_ or _slug_.",
-                                     url: "`ripl://movies/_slug_`",
-                                     deeplink: "ripl://movies/the-matrix-1999"),
+                             subtitle: "Open a movie. Supports _id_ or _slug_.",
+                             url: "`ripl://movies/_slug_`",
+                             deeplink: "ripl://movies/the-matrix-1999"),
                 DeeplinkInfo(title: "Show",
-                                     subtitle: "Open a TV show. Supports _id_ or _slug_.",
-                                     url: "`ripl://shows/_slug_`",
-                                     deeplink: "ripl://trakt/shows/rick-and-morty"),
+                             subtitle: "Open a TV show. Supports _id_ or _slug_.",
+                             url: "`ripl://shows/_slug_`",
+                             deeplink: "ripl://trakt/shows/rick-and-morty"),
                 DeeplinkInfo(title: "Season",
-                                     subtitle: "Open the list of all episodes for the show scrolled on the specified season's _number_. Supports TV shows _id_ or _slug_.",
-                                     url: "`ripl://shows/_slug_/seasons/_number_`",
-                                     deeplink: "ripl://shows/breaking-bad/seasons/2"),
+                             subtitle: "Open the list of all episodes for the show scrolled on the specified season's _number_. Supports TV shows _id_ or _slug_.",
+                             url: "`ripl://shows/_slug_/seasons/_number_`",
+                             deeplink: "ripl://shows/breaking-bad/seasons/2"),
                 DeeplinkInfo(title: "Episode",
-                                     subtitle: "Open an episode on the specified season's and episode's _number_. Supports TV shows _id_ or _slug_",
-                                     url: "`ripl://shows/_slug_/seasons/_number_/episodes/_number_`",
-                                     deeplink: "ripl://shows/the-office/seasons/4/episodes/3"),
+                             subtitle: "Open an episode on the specified season's and episode's _number_. Supports TV shows _id_ or _slug_",
+                             url: "`ripl://shows/_slug_/seasons/_number_/episodes/_number_`",
+                             deeplink: "ripl://shows/the-office/seasons/4/episodes/3"),
                 DeeplinkInfo(title: "People, Cast and Crew",
-                                     subtitle: "Open a people's view with cast and crew information. Supports _id_ or _slug_.",
-                                     url: "`ripl://people/_slug_`",
-                                     deeplink: "ripl://people/quentin-tarantino"),
+                             subtitle: "Open a people's view with cast and crew information. Supports _id_ or _slug_.",
+                             url: "`ripl://people/_slug_`",
+                             deeplink: "ripl://people/quentin-tarantino"),
                 DeeplinkInfo(title: "Comment",
-                                     subtitle: "Open a specific comment and its replies with the given comment's Trakt _id_. Supports movie, TV show, season and episode comment's _id_. The comment can be a review, a shout and even a reply to another comment.",
-                                     url: "`ripl://comments/_id_`",
-                                     deeplink: "ripl://comments/327791"),
+                             subtitle: "Open a specific comment and its replies with the given comment's Trakt _id_. Supports movie, TV show, season and episode comment's _id_. The comment can be a review, a shout and even a reply to another comment.",
+                             url: "`ripl://comments/_id_`",
+                             deeplink: "ripl://comments/327791"),
                 DeeplinkInfo(title: "Trakt User",
-                                     subtitle: "Open a user profile giving the slugified username.",
-                                     url: "`ripl://users/_slug_`",
-                                     deeplink: "ripl://users/kcador"),
+                             subtitle: "Open a user profile giving the slugified username.",
+                             url: "`ripl://users/_slug_`",
+                             deeplink: "ripl://users/kcador"),
                 DeeplinkInfo(title: "List",
-                                     subtitle: "Open a user's list. All you need is the _user_'s username slug (or 'me' if it's your list) and the _list_'s slug or id.",
-                                     url: "`ripl://users/_user_/lists/_list_`",
-                                     deeplink: "ripl://users/kcador/lists/highlights")]
+                             subtitle: "Open a user's list. All you need is the _user_'s username slug (or 'me' if it's your list) and the _list_'s slug or id.",
+                             url: "`ripl://users/_user_/lists/_list_`",
+                             deeplink: "ripl://users/kcador/lists/highlights")]
     }
 
     static var tmdbDatasource: [DeeplinkInfo] {
         return [DeeplinkInfo(title: "Movie",
-                                     subtitle: "Open a movie. Supports TMDb _id_.",
-                                     url: "`ripl://tmdb/movies/_id_`",
-                                     deeplink: "ripl://tmdb/movies/502356"),
+                             subtitle: "Open a movie. Supports TMDb _id_.",
+                             url: "`ripl://tmdb/movies/_id_`",
+                             deeplink: "ripl://tmdb/movies/502356"),
                 DeeplinkInfo(title: "Show",
-                                     subtitle: "Open a TV show. Supports TMDb _id_.",
-                                     url: "`ripl://tmdb/shows/_id_`",
-                                     deeplink: "ripl://tmdb/shows/97546"),
+                             subtitle: "Open a TV show. Supports TMDb _id_.",
+                             url: "`ripl://tmdb/shows/_id_`",
+                             deeplink: "ripl://tmdb/shows/97546"),
                 DeeplinkInfo(title: "Season",
-                                     subtitle: "Open the list of all episodes for the show scrolled on the specified season's _number_. Supports TMDb _id_.",
-                                     url: "`ripl://tmdb/shows/_id_/seasons/_number_`",
-                                     deeplink: "ripl://tmdb/shows/97546/seasons/3"),
+                             subtitle: "Open the list of all episodes for the show scrolled on the specified season's _number_. Supports TMDb _id_.",
+                             url: "`ripl://tmdb/shows/_id_/seasons/_number_`",
+                             deeplink: "ripl://tmdb/shows/97546/seasons/3"),
                 DeeplinkInfo(title: "Episode",
-                                     subtitle: "Open an episode on the specified season's and episode's _number_. Supports TMDb _id_",
-                                     url: "`ripl://tmdb/shows/_id_/seasons/_number_/episodes/_number_`",
-                                     deeplink: "ripl://tmdb/shows/97546/seasons/3/episodes/2"),
+                             subtitle: "Open an episode on the specified season's and episode's _number_. Supports TMDb _id_",
+                             url: "`ripl://tmdb/shows/_id_/seasons/_number_/episodes/_number_`",
+                             deeplink: "ripl://tmdb/shows/97546/seasons/3/episodes/2"),
                 DeeplinkInfo(title: "People, Cast and Crew",
-                                     subtitle: "Open a people's view with cast and crew information. Supports TMDb _id_.",
-                                     url: "`ripl://tmdb/people/_id_`",
-                                     deeplink: "ripl://tmdb/people/58224")]
+                             subtitle: "Open a people's view with cast and crew information. Supports TMDb _id_.",
+                             url: "`ripl://tmdb/people/_id_`",
+                             deeplink: "ripl://tmdb/people/58224")]
     }
 }
 
@@ -142,9 +141,9 @@ struct DeepLinksView: View {
                     Text("\(Image(systemName: "square.2.layers.3d")) About Deeplinks")
                         .font(.headline)
                     Text("""
-Deeplinks are shortcuts urls that can take you directly to a specific part of the app when you tap them from a message, a website or from other apps like Shortcuts, Siri or other TV and movie trackers.
-It saves time by skipping through the app's homepage and directly lands you where you need to be, making it easier to access content without navigating manually.
-""").frame(maxWidth: .infinity, alignment: .leading)
+                    Deeplinks are shortcuts urls that can take you directly to a specific part of the app when you tap them from a message, a website or from other apps like Shortcuts, Siri or other TV and movie trackers.
+                    It saves time by skipping through the app's homepage and directly lands you where you need to be, making it easier to access content without navigating manually.
+                    """).frame(maxWidth: .infinity, alignment: .leading)
                 }
             }.padding(.vertical, 6)
             Section {
@@ -204,9 +203,9 @@ It saves time by skipping through the app's homepage and directly lands you wher
                     Text("Base URL")
                         .font(.headline)
                     Text("""
-    You can use \(Text("`ripl://`").font(.subheadline.bold())), \(Text("`ripl://trakt/`").font(.subheadline.bold())) or \(Text("`ripl://trakt.tv/`").font(.subheadline.bold())) as base URL for Rippple's deeplinks.
-    This means the following will work the same for movies, episodes, comments,...
-    """).font(.subheadline)
+                    You can use \(Text("`ripl://`").font(.subheadline.bold())), \(Text("`ripl://trakt/`").font(.subheadline.bold())) or \(Text("`ripl://trakt.tv/`").font(.subheadline.bold())) as base URL for Rippple's deeplinks.
+                    This means the following will work the same for movies, episodes, comments,...
+                    """).font(.subheadline)
                     Text("`ripl://comments/_id_`")
                         .font(.subheadline)
                         .foregroundStyle(Color(UIColor(asset: .globalTint)))
@@ -265,8 +264,8 @@ It saves time by skipping through the app's homepage and directly lands you wher
                     Text("TMDb")
                         .font(.headline)
                     Text("""
-If you are working with TMDb identifiers, you can use `ripl://tmdb/` to force Rippple to use TMDb as a source. This works with TV shows, seasons, episodes, movies and people. Won't work with comments and users.
-""")
+                    If you are working with TMDb identifiers, you can use `ripl://tmdb/` to force Rippple to use TMDb as a source. This works with TV shows, seasons, episodes, movies and people. Won't work with comments and users.
+                    """)
                 }
                 ForEach(DeeplinkInfo.tmdbDatasource, id: \.self) { deeplinkInfo in
                     VStack(alignment: .leading, spacing: 5) {

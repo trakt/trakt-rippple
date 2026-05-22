@@ -6,18 +6,16 @@
 //  Copyright © 2021 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import NVActivityIndicatorView
-
 import Receiver
+import UIKit
 
 final class MultiWatchedProgressActionViewController: UIViewController {
     private var media: MediaModel!
     private var unwatched: [(SeasonProgress, EpisodeProgress)]!
     private var watchedAt: Date?
 
-    @IBOutlet weak var loading: NVActivityIndicatorView!
+    @IBOutlet var loading: NVActivityIndicatorView!
 
     deinit {
         print("deinit MultiWatchedProgressActionViewController")
@@ -40,6 +38,7 @@ final class MultiWatchedProgressActionViewController: UIViewController {
         super.init(coder: coder)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -47,9 +46,9 @@ final class MultiWatchedProgressActionViewController: UIViewController {
     @IBSegueAction
     func makeMultiWatchedActionErrorViewController(coder: NSCoder, sender: Any?) -> MultiWatchedActionErrorViewController? {
         return MultiWatchedActionErrorViewController(coder: coder,
-                                               media: media,
-                                               watchedAt: watchedAt,
-                                               unwatched: unwatched)
+                                                     media: media,
+                                                     watchedAt: watchedAt,
+                                                     unwatched: unwatched)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -67,9 +66,9 @@ final class MultiWatchedProgressActionViewController: UIViewController {
             fatalError("Not implemented")
         case .episode(_, let show):
             TraktAPIProvider.provider.request(TraktAPIService.addEpisodesToHistory(showId: show.identifiers.trakt!, watchedAt: watchedAt, seasonsEpisodes: unwatched.map { ($0.number, $1.number) }, runtime: show.runtime),
-            callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -88,7 +87,7 @@ final class MultiWatchedProgressActionViewController: UIViewController {
                             AppManager.shared.isUserInteractionEnabled = true
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error marking watched show \(error)")
                     DispatchQueue.main.async {
                         self.performSegue(withIdentifier: "error", sender: nil)

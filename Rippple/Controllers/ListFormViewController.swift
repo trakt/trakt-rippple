@@ -6,25 +6,23 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import UIKit
 
 let (listCreatedTransmitter, listCreatedReceiver) = Receiver<Bool>.make(with: .hot)
 let (listUpdatedTransmitter, listUpdatedReceiver) = Receiver<List>.make(with: .hot)
 
 final class ListFormViewController: UITableViewController {
-
     var list: List?
 
-    @IBOutlet weak var listNameTextField: UITextField!
-    @IBOutlet weak var listDescriptionTextField: UITextField!
-    @IBOutlet weak var privacySegmentedControl: UISegmentedControl!
-    @IBOutlet weak var allowCommentsSwitch: UISwitch!
-    @IBOutlet weak var displayRankSwitch: UISwitch!
+    @IBOutlet var listNameTextField: UITextField!
+    @IBOutlet var listDescriptionTextField: UITextField!
+    @IBOutlet var privacySegmentedControl: UISegmentedControl!
+    @IBOutlet var allowCommentsSwitch: UISwitch!
+    @IBOutlet var displayRankSwitch: UISwitch!
 
     @IBOutlet var addButton: UIBarButtonItem!
-    @IBOutlet weak var cancelButton: UIBarButtonItem!
+    @IBOutlet var cancelButton: UIBarButtonItem!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -96,7 +94,7 @@ final class ListFormViewController: UITableViewController {
         TraktAPIProvider.provider.request(.updateList(id: list.identifiers.trakt!,
                                                       name: listNameTextField.text ?? "",
                                                       description: listDescriptionTextField.text ?? "",
-                                                      privacy: self.privacy,
+                                                      privacy: privacy,
                                                       displayNumbers: displayRankSwitch.isOn,
                                                       allowComments: allowCommentsSwitch.isOn),
                                           callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
@@ -105,7 +103,7 @@ final class ListFormViewController: UITableViewController {
                 return
             }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -127,7 +125,7 @@ final class ListFormViewController: UITableViewController {
                         self.cancelButton.isEnabled = true
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Comment post failed! \(error)")
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 Error updating", style: .error(error))
@@ -147,7 +145,7 @@ final class ListFormViewController: UITableViewController {
 
         TraktAPIProvider.provider.request(.createList(name: listNameTextField.text ?? "",
                                                       description: listDescriptionTextField.text ?? "",
-                                                      privacy: self.privacy,
+                                                      privacy: privacy,
                                                       displayNumbers: displayRankSwitch.isOn,
                                                       allowComments: allowCommentsSwitch.isOn),
                                           callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
@@ -156,7 +154,7 @@ final class ListFormViewController: UITableViewController {
                 return
             }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     _ = try moyaResponse.filterSuccessfulStatusCodes()
                     listCreatedTransmitter.broadcast(true)
@@ -175,7 +173,7 @@ final class ListFormViewController: UITableViewController {
                         self.cancelButton.isEnabled = true
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Comment post failed! \(error)")
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 Error creating", style: .error(error))

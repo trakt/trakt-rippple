@@ -6,22 +6,17 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
-import Receiver
-
-import SafariServices
-
 import Moya
-
+import Receiver
+import SafariServices
 import SwiftUI
+import UIKit
 
 let (onRemoveWatchTransmitter, onRemoveWatchReceiver) = Receiver<Int64>.make(with: .hot)
 let (onRemoveWatchMediaTransmitter, onRemoveWatchMediaReceiver) = Receiver<MediaModel>.make(with: .hot)
 let (onRemoveMultipleMediaTransmitter, onRemoveMultipleMediaReceiver) = Receiver<MediaModel>.make(with: .hot)
 
 final class MediaViewController: UITableViewController {
-
     private let disposeBag = DisposeBag()
 
     private var didDownloadFull = false {
@@ -36,6 +31,7 @@ final class MediaViewController: UITableViewController {
             }
         }
     }
+
     private var didDownloadPoster = true {
         didSet {
             if didDownloadPoster == false {
@@ -43,6 +39,7 @@ final class MediaViewController: UITableViewController {
             }
         }
     }
+
     var media: MediaModel! {
         didSet {
             if isViewLoaded {
@@ -66,6 +63,7 @@ final class MediaViewController: UITableViewController {
             }
         }
     }
+
     private func progress(for season: Season) -> SeasonProgress? {
         guard let progress = progress else { return nil }
         for seasonProgress in progress.seasons where seasonProgress.number == season.number {
@@ -73,6 +71,7 @@ final class MediaViewController: UITableViewController {
         }
         return nil
     }
+
     private func progress(for episode: Episode, in season: Season) -> EpisodeProgress? {
         guard let seasonProgress = progress(for: season) else { return nil }
         for episodeProgress in seasonProgress.episodes where episodeProgress.number == episode.number {
@@ -425,7 +424,7 @@ final class MediaViewController: UITableViewController {
                 loadFullMovie()
             }
             fetchMovieOfficialList()
-            // fetchMovieTranslations()
+        // fetchMovieTranslations()
         case .show:
             if !didDownloadFull {
                 loadFullShow()
@@ -745,24 +744,24 @@ final class MediaViewController: UITableViewController {
         guard let movie = media.movie else { fatalError("Media should be a Movie") }
         TraktAPIProvider.provider.request(TraktAPIService.movie(id: movie.identifiers.traktIdOrSlug, extended: .full),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let movie = try response.map(Movie.self, using: TraktAPIProvider.decoder)
+                    let movie = try response.map(Movie.self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.media = MediaModel.movie(movie)
-                                                        self.didDownloadFull = true
-                                                    }
-                                                } catch {
-                                                    print("Error fetching movie \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching movie \(error)")
-                                            }
+                    DispatchQueue.main.async {
+                        self.media = MediaModel.movie(movie)
+                        self.didDownloadFull = true
+                    }
+                } catch {
+                    print("Error fetching movie \(error)")
+                }
+            case .failure(let error):
+                print("Failed fetching movie \(error)")
+            }
         }
     }
 
@@ -770,49 +769,49 @@ final class MediaViewController: UITableViewController {
         guard let show = media.show else { fatalError("Media should be a Show") }
         TraktAPIProvider.provider.request(TraktAPIService.show(id: show.identifiers.traktIdOrSlug, extended: .full),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let show = try response.map(Show.self, using: TraktAPIProvider.decoder)
+                    let show = try response.map(Show.self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.media = MediaModel.show(show)
-                                                        self.didDownloadFull = true
-                                                    }
-                                                } catch {
-                                                    print("Error fetching movie \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching movie \(error)")
-                                            }
+                    DispatchQueue.main.async {
+                        self.media = MediaModel.show(show)
+                        self.didDownloadFull = true
+                    }
+                } catch {
+                    print("Error fetching movie \(error)")
+                }
+            case .failure(let error):
+                print("Failed fetching movie \(error)")
+            }
         }
     }
 
     private func loadFullEpisode() {
-        guard case let .episode(episode, show) = media else { fatalError("Media should be an episode") }
+        guard case .episode(let episode, let show) = media else { fatalError("Media should be an episode") }
         TraktAPIProvider.provider.request(TraktAPIService.episode(id: show.identifiers.traktIdOrSlug, season: episode.season, episode: episode.number),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
+                    let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.media = MediaModel.episode(episode, show)
-                                                        self.didDownloadFull = true
-                                                    }
-                                                } catch {
-                                                    print("Error fetching movie \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching movie \(error)")
-                                            }
+                    DispatchQueue.main.async {
+                        self.media = MediaModel.episode(episode, show)
+                        self.didDownloadFull = true
+                    }
+                } catch {
+                    print("Error fetching movie \(error)")
+                }
+            case .failure(let error):
+                print("Failed fetching movie \(error)")
+            }
         }
     }
 
@@ -902,23 +901,23 @@ final class MediaViewController: UITableViewController {
         guard let traktId = media.movie?.identifiers.trakt else { fatalError("Media should be a Movie with a valid id") }
         TraktAPIProvider.provider.request(TraktAPIService.movieLists(id: traktId, type: .official),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
+                    let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.officialList = lists.first
-                                                    }
-                                                } catch {
-                                                    print("Error fetching movie lists \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching movie lists \(error)")
-                                            }
+                    DispatchQueue.main.async {
+                        self.officialList = lists.first
+                    }
+                } catch {
+                    print("Error fetching movie lists \(error)")
+                }
+            case .failure(let error):
+                print("Failed fetching movie lists \(error)")
+            }
         }
     }
 
@@ -926,23 +925,23 @@ final class MediaViewController: UITableViewController {
         guard let traktId = media.show?.identifiers.trakt else { fatalError("Media should be a Show with a valid id") }
         TraktAPIProvider.provider.request(TraktAPIService.showLists(id: traktId, type: .official),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
+                    let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.officialList = lists.first
-                                                    }
-                                                } catch {
-                                                    print("Error fetching show lists \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching show lists \(error)")
-                                            }
+                    DispatchQueue.main.async {
+                        self.officialList = lists.first
+                    }
+                } catch {
+                    print("Error fetching show lists \(error)")
+                }
+            case .failure(let error):
+                print("Failed fetching show lists \(error)")
+            }
         }
     }
 
@@ -952,7 +951,7 @@ final class MediaViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -965,37 +964,37 @@ final class MediaViewController: UITableViewController {
                 } catch {
                     print("Seasons request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Seasons request failure \(error)")
             }
         }
     }
 
     /*
-    private func fetchMovieTranslations() {
-        guard let traktId = media.movie?.identifiers.traktIdOrSlug else { fatalError("Media should be a Movie with a valid id") }
-        TraktAPIProvider.provider.request(.movieTranslations(id: traktId),
-                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+     private func fetchMovieTranslations() {
+         guard let traktId = media.movie?.identifiers.traktIdOrSlug else { fatalError("Media should be a Movie with a valid id") }
+         TraktAPIProvider.provider.request(.movieTranslations(id: traktId),
+                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                                             guard let self = self else { return }
+                                             switch result {
+                                             case let .success(moyaResponse):
+                                                 do {
+                                                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let translations = try response.map([Translation].self, using: TraktAPIProvider.decoder)
+                                                     let translations = try response.map([Translation].self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        print("Translations fetched: \(translations)")
-                                                    }
-                                                } catch {
-                                                    print("Error fetching movie translations \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching movie translations \(error)")
-                                            }
-        }
-    }
-     */
+                                                     DispatchQueue.main.async {
+                                                         print("Translations fetched: \(translations)")
+                                                     }
+                                                 } catch {
+                                                     print("Error fetching movie translations \(error)")
+                                                 }
+                                             case let .failure(error):
+                                                 print("Failed fetching movie translations \(error)")
+                                             }
+         }
+     }
+      */
 
     private var firstEverScrollOffset: CGPoint?
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -1008,7 +1007,7 @@ final class MediaViewController: UITableViewController {
             if contentOffsetY <= 0 {
                 cell.contentView.alpha = 1.0
             } else {
-                cell.contentView.alpha = 1.0 - (contentOffsetY/60.0)
+                cell.contentView.alpha = 1.0 - (contentOffsetY / 60.0)
             }
         }
 
@@ -1232,12 +1231,11 @@ extension MediaViewController: UITableViewDragDelegate {
                     self.writeToPhotoAlbum(image: image)
                 }
                 let shareAction = UIAction(title: "Share Image",
-                                          image: UIImage(systemName: "square.and.arrow.up"),
-                                          identifier: nil) { _ in
+                                           image: UIImage(systemName: "square.and.arrow.up"),
+                                           identifier: nil) { _ in
                     self.share(image: image)
                 }
-                let menu = UIMenu(children: [copyAction, saveAction, shareAction])
-                return menu
+                return UIMenu(children: [copyAction, saveAction, shareAction])
             }
         }
 

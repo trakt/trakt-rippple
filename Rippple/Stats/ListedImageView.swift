@@ -7,13 +7,10 @@
 //
 
 import Foundation
-
 import Moya
-
 import Receiver
 
 final class ListedImageView: UIImageView {
-
     private let disposeBag = DisposeBag()
 
     override func awakeFromNib() {
@@ -81,10 +78,10 @@ final class ListedImageView: UIImageView {
         }()
 
         return TraktAPIProvider.noChacheProvider.request(service,
-                                                       callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
+                                                         callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -101,7 +98,7 @@ final class ListedImageView: UIImageView {
                 } catch {
                     print("Listed request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Listed request failure \(error)")
             }
         }

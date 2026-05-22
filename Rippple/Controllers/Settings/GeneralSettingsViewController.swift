@@ -6,10 +6,9 @@
 //  Copyright © 2021 Trakt. All rights reserved.
 //
 
-import UIKit
-import SwiftUI
-
 import Receiver
+import SwiftUI
+import UIKit
 
 let (toWatchDroppedEnabledTransmitter, toWatchDroppedEnabledReceiver) = Receiver<Bool>.make(with: .hot)
 let (dragEnabledTransmitter, dragEnabledReceiver) = Receiver<Bool>.make(with: .hot)
@@ -17,7 +16,6 @@ let (onCommentsDisplayTransmitter, onCommentsDisplayReceiver) = Receiver<Bool>.m
 let (onCommentsCountDisplayTransmitter, onCommentsCountDisplayReceiver) = Receiver<Int>.make(with: .hot)
 
 final class GeneralSettingsViewController: UITableViewController {
-
     private let disposeBag = DisposeBag()
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {

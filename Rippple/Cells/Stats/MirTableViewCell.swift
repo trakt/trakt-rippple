@@ -6,22 +6,19 @@
 //  Copyright © 2025 Trakt. All rights reserved.
 //
 
+import Moya
+import Receiver
 import UIKit
 
-import Moya
-
-import Receiver
-
 final class MirTableViewCell: UITableViewCell {
+    @IBOutlet var plays: EFCountingLabel!
+    @IBOutlet var minutes: EFCountingLabel!
+    @IBOutlet var ratings: EFCountingLabel!
+    @IBOutlet var comments: EFCountingLabel!
 
-    @IBOutlet weak var plays: EFCountingLabel!
-    @IBOutlet weak var minutes: EFCountingLabel!
-    @IBOutlet weak var ratings: EFCountingLabel!
-    @IBOutlet weak var comments: EFCountingLabel!
+    @IBOutlet var monthIn: UILabel!
 
-    @IBOutlet weak var monthIn: UILabel!
-
-    @IBOutlet weak var moreButton: UIButton!
+    @IBOutlet var moreButton: UIButton!
 
     private let disposeBag = DisposeBag()
 
@@ -69,31 +66,31 @@ final class MirTableViewCell: UITableViewCell {
 
         switch month {
         case 1:
-            self.monthIn.text = "January in"
+            monthIn.text = "January in"
         case 2:
-            self.monthIn.text = "February in"
+            monthIn.text = "February in"
         case 3:
-            self.monthIn.text = "March in"
+            monthIn.text = "March in"
         case 4:
-            self.monthIn.text = "April in"
+            monthIn.text = "April in"
         case 5:
-            self.monthIn.text = "May in"
+            monthIn.text = "May in"
         case 6:
-            self.monthIn.text = "June in"
+            monthIn.text = "June in"
         case 7:
-            self.monthIn.text = "July in"
+            monthIn.text = "July in"
         case 8:
-            self.monthIn.text = "August in"
+            monthIn.text = "August in"
         case 9:
-            self.monthIn.text = "September in"
+            monthIn.text = "September in"
         case 10:
-            self.monthIn.text = "October in"
+            monthIn.text = "October in"
         case 11:
-            self.monthIn.text = "November in"
+            monthIn.text = "November in"
         case 12:
-            self.monthIn.text = "December in"
+            monthIn.text = "December in"
         default:
-            self.monthIn.text = "Month in"
+            monthIn.text = "Month in"
         }
 
         // user last, year and month need to be set!
@@ -116,7 +113,7 @@ final class MirTableViewCell: UITableViewCell {
         cancelCancellable()
     }
 
-    private let numberFormatter: NumberFormatter = NumberFormatter()
+    private let numberFormatter: NumberFormatter = .init()
     private let dateFormatter = DateComponentsFormatter()
 
     private func update(with user: User) {
@@ -193,7 +190,7 @@ final class MirTableViewCell: UITableViewCell {
                                                  callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -208,7 +205,7 @@ final class MirTableViewCell: UITableViewCell {
                 } catch {
                     print("fetchMir request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchMir request failure \(error)")
             }
         }

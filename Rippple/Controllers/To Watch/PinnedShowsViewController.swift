@@ -9,7 +9,6 @@
 import Receiver
 
 class PinnedShowsViewController: UITableViewController {
-
     // Private
 
     private enum ViewControllerSegue: String {
@@ -31,7 +30,7 @@ class PinnedShowsViewController: UITableViewController {
         case empty(String, String, String, String)
     }
 
-    private class PinnedDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> { }
+    private class PinnedDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> {}
 
     private lazy var dataSource = PinnedDiffibleDataSource(tableView: tableView) { [weak self] tableView, _, item in
         guard let self = self else { return nil }
@@ -98,10 +97,10 @@ class PinnedShowsViewController: UITableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let commentsViewController = segue.destination as? CommentsViewController,
-            let media = sender as? MediaModel {
+           let media = sender as? MediaModel {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.media(media))
         } else if let mediaViewController = segue.destination as? MediaViewController,
-            let media = sender as? MediaModel {
+                  let media = sender as? MediaModel {
             mediaViewController.media = media
         } else if let navigationController = segue.destination as? UINavigationController, let smartSearchBuilderViewController = navigationController.viewControllers.first as? SmartSearchBuilderViewController, let smartSearch = sender as? SmartSearch {
             smartSearchBuilderViewController.smartSearch = smartSearch
@@ -112,7 +111,7 @@ class PinnedShowsViewController: UITableViewController {
 extension PinnedShowsViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.media(mediaModel) = item else { return }
+        guard case Wrapper.media(let mediaModel) = item else { return }
         performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: mediaModel)
     }
 
@@ -121,15 +120,14 @@ extension PinnedShowsViewController {
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
         let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell
         contextMenu.cell = cell
         contextMenu.controller = self
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-            return self.contextMenu.previewViewController
+            self.contextMenu.previewViewController
         }, actionProvider: { _ in
-            return self.contextMenu.menu
+            self.contextMenu.menu
         })
     }
 
@@ -150,14 +148,14 @@ extension PinnedShowsViewController {
 
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.media(media) = item else { return nil }
+        guard case Wrapper.media(let media) = item else { return nil }
 
         return media.trailingSwipeActions(for: self)
     }
 
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.media(media) = item else { return nil }
+        guard case Wrapper.media(let media) = item else { return nil }
 
         return media.leadingSwipeActions(for: self)
     }
@@ -167,7 +165,7 @@ extension PinnedShowsViewController: MediaTableViewCellDelegate {
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.media(mediaModel) = item else { return }
+        guard case Wrapper.media(let mediaModel) = item else { return }
 
         if action == .details {
             performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: mediaModel)

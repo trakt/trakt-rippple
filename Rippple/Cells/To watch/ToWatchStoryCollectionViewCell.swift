@@ -9,9 +9,8 @@
 import UIKit
 
 final class ToWatchStoryCollectionViewCell: UICollectionViewCell {
-
-    @IBOutlet weak var days: UILabel!
-    @IBOutlet weak var poster: PosterImageView!
+    @IBOutlet var days: UILabel!
+    @IBOutlet var poster: PosterImageView!
 
     private let dateFormatter = DateFormatter()
     private let dateComponentsFormatter = DateComponentsFormatter()
@@ -94,5 +93,4 @@ final class ToWatchStoryCollectionViewCell: UICollectionViewCell {
 
         maximumContentSizeCategory = .large
     }
-
 }

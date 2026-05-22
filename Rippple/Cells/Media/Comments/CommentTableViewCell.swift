@@ -6,18 +6,15 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Kingfisher
-
 import Receiver
+import UIKit
 
 protocol CommentTableViewCellDelegate: AnyObject {
     func cell(_ cell: CommentTableViewCell, action: CommentTableViewCell.Action)
 }
 
 final class CommentTableViewCell: UITableViewCell {
-
     enum Action {
         case presentReplies
         case presentAuthor
@@ -37,22 +34,22 @@ final class CommentTableViewCell: UITableViewCell {
 
     // Media
     @IBOutlet var mediaViews: [UIView]!
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var subtitleLabel: UILabel!
-    @IBOutlet weak var commentCountLabel: CommentCountLabel!
-    @IBOutlet weak var poster: PosterButton?
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var subtitleLabel: UILabel!
+    @IBOutlet var commentCountLabel: CommentCountLabel!
+    @IBOutlet var poster: PosterButton?
 
     // Comment
-    @IBOutlet weak var ratingAndSpoilerLabel: UILabel!
-    @IBOutlet weak var commentLabel: LinkEnabledLabel!
-    @IBOutlet weak var replyCountButton: ReplyCountButton!
-    @IBOutlet weak var commentReactionButton: CommentReactionButton!
-    @IBOutlet weak var wordCountLabel: UILabel!
+    @IBOutlet var ratingAndSpoilerLabel: UILabel!
+    @IBOutlet var commentLabel: LinkEnabledLabel!
+    @IBOutlet var replyCountButton: ReplyCountButton!
+    @IBOutlet var commentReactionButton: CommentReactionButton!
+    @IBOutlet var wordCountLabel: UILabel!
 
-    @IBOutlet weak var replyParentLabel: UILabel?
-    @IBOutlet weak var replyParentLink: UIButton?
+    @IBOutlet var replyParentLabel: UILabel?
+    @IBOutlet var replyParentLink: UIButton?
 
-    // Sentiments
+    /// Sentiments
     var sentiments: CommentsSentiments? {
         didSet {
             if commentModel == nil { return }
@@ -62,26 +59,26 @@ final class CommentTableViewCell: UITableViewCell {
     }
 
     // User
-    @IBOutlet weak var avatarImageView: UIImageView?
-    @IBOutlet weak var byLabel: UILabel!
-    @IBOutlet weak var replyMicImageView: UIImageView?
-    @IBOutlet weak var timeLabel: UILabel!
+    @IBOutlet var avatarImageView: UIImageView?
+    @IBOutlet var byLabel: UILabel!
+    @IBOutlet var replyMicImageView: UIImageView?
+    @IBOutlet var timeLabel: UILabel!
 
     // Actions
     @IBOutlet var actionViews: [UIView]!
-    @IBOutlet weak var likeButton: ReactButton?
-    @IBOutlet weak var replyButton: UIButton?
-    @IBOutlet weak var editButton: UIButton!
-    @IBOutlet weak var shareButton: UIButton!
-    @IBOutlet weak var presentRepliesButton: UIButton!
+    @IBOutlet var likeButton: ReactButton?
+    @IBOutlet var replyButton: UIButton?
+    @IBOutlet var editButton: UIButton!
+    @IBOutlet var shareButton: UIButton!
+    @IBOutlet var presentRepliesButton: UIButton!
 
-    // Reply chat background image
-    @IBOutlet weak var chatBubbleBackgroundImage: UIImageView?
+    /// Reply chat background image
+    @IBOutlet var chatBubbleBackgroundImage: UIImageView?
 
-    // Pin image
-    @IBOutlet weak var pinImage: UIImageView?
+    /// Pin image
+    @IBOutlet var pinImage: UIImageView?
 
-    // Filter
+    /// Filter
     private static let userFilter = RoundCornerImageProcessor(
         cornerRadius: 13.0,
         targetSize: CGSize(width: 26.0, height: 26.0)
@@ -93,7 +90,7 @@ final class CommentTableViewCell: UITableViewCell {
 
     private let contextMenu = MediaContextMenuInteractionDelegate()
 
-    @IBOutlet weak var mediaMenuAction: UIButton?
+    @IBOutlet var mediaMenuAction: UIButton?
 
     deinit {
         print("deiniting Comment Table View Cell")
@@ -120,7 +117,7 @@ final class CommentTableViewCell: UITableViewCell {
         }
 
         if let avatarImageView = avatarImageView {
-            avatarImageView.layer.cornerRadius = avatarImageView.bounds.height/2.0
+            avatarImageView.layer.cornerRadius = avatarImageView.bounds.height / 2.0
             avatarImageView.layer.borderWidth = 1
             avatarImageView.layer.borderColor = UIColor.tertiarySystemFill.cgColor
             avatarImageView.clipsToBounds = true
@@ -182,10 +179,10 @@ final class CommentTableViewCell: UITableViewCell {
         case .show(let show):
             setupShow(show: show)
             contextMenu.media = commentModel.media
-        case let .episode(episode, show):
+        case .episode(let episode, let show):
             setupEpisode(episode: episode, show: show)
             contextMenu.media = show.mediaModel
-        case let .season(season, show):
+        case .season(let season, let show):
             setupSeason(season: season, show: show)
             contextMenu.media = show.mediaModel
         case .list:
@@ -211,7 +208,7 @@ final class CommentTableViewCell: UITableViewCell {
                 mediaMenuAction.menu = self.menuButtonContextMenu.menu
                 UISelectionFeedbackGenerator().selectionChanged()
                 mediaMenuAction.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-             }, for: .menuActionTriggered)
+            }, for: .menuActionTriggered)
         }
     }
 
@@ -322,7 +319,7 @@ final class CommentTableViewCell: UITableViewCell {
             for bad in sentiments.bad where bad.commentIds.contains(where: { $0 == comment.identifier }) {
                 isBad = true
             }
-            if isGood && isBad {
+            if isGood, isBad {
                 texts.append("● Neutral")
             } else if isGood {
                 texts.append("▲ Positive")

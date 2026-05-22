@@ -6,11 +6,9 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Moya
-
 import Receiver
+import UIKit
 
 final class StandardListTableViewCell: UITableViewCell {
     @IBOutlet var title: UILabel!

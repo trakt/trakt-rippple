@@ -6,13 +6,11 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class PrivateNotesTableViewCell: UITableViewCell {
-
-    @IBOutlet weak var notes: NotesLabel!
+    @IBOutlet var notes: NotesLabel!
 
     private let disposeBag = DisposeBag()
 

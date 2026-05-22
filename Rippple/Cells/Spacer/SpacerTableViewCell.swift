@@ -30,10 +30,10 @@ final class SpacerTableViewCell: UITableViewCell {
         constraint = spacer.heightAnchor.constraint(equalToConstant: CGFloat(space.rounded(.down)))
         NSLayoutConstraint.activate([
             constraint,
-            spacer.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            spacer.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            spacer.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-            spacer.topAnchor.constraint(equalTo: self.topAnchor)
+            spacer.leadingAnchor.constraint(equalTo: leadingAnchor),
+            spacer.trailingAnchor.constraint(equalTo: trailingAnchor),
+            spacer.bottomAnchor.constraint(equalTo: bottomAnchor),
+            spacer.topAnchor.constraint(equalTo: topAnchor)
         ])
     }
 }

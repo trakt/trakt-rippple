@@ -6,10 +6,8 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
-import Foundation
-
 import AWSSNS
-
+import Foundation
 import Receiver
 
 final class TrendingNotificationsManager {
@@ -21,7 +19,7 @@ final class TrendingNotificationsManager {
         return UserDefaults.standard.string(forKey: "Rippple.endpointArnForSNS")
     }
 
-    // Settings
+    /// Settings
     var trendingMovies: Bool {
         didSet {
             UserDefaults.standard.set(trendingMovies, forKey: "TrendingNotificationsManager.trendingMovies")
@@ -29,6 +27,7 @@ final class TrendingNotificationsManager {
             pushInfoToAWS()
         }
     }
+
     var trendingShows: Bool {
         didSet {
             UserDefaults.standard.set(trendingShows, forKey: "TrendingNotificationsManager.trendingShows")
@@ -148,7 +147,7 @@ final class TrendingNotificationsManager {
 
     private func listSubscriptions(topic: AWSSNSListSubscriptionsByTopicInput, subscriptions: [AWSSNSSubscription], arn: String, unsubscibeTopic: String) {
         let sns = AWSSNS.default()
-        sns.listSubscriptions(byTopic: topic) { [weak self] (response, error) in
+        sns.listSubscriptions(byTopic: topic) { [weak self] response, error in
             guard let self = self else { return }
             if let error = error {
                 print("💀 AWS listSubscriptions: \(String(describing: error))")
@@ -158,9 +157,9 @@ final class TrendingNotificationsManager {
                     guard let listSubscriptionsByTopic = AWSSNSListSubscriptionsByTopicInput() else { return }
                     listSubscriptionsByTopic.topicArn = topic.topicArn
                     listSubscriptionsByTopic.nextToken = nextToken
-                    self.listSubscriptions(topic: listSubscriptionsByTopic, subscriptions: subscriptions+newSubscriptions, arn: arn, unsubscibeTopic: unsubscibeTopic)
+                    self.listSubscriptions(topic: listSubscriptionsByTopic, subscriptions: subscriptions + newSubscriptions, arn: arn, unsubscibeTopic: unsubscibeTopic)
                 } else {
-                    self.unsubscribe(arn: arn, to: unsubscibeTopic, subscriptions: subscriptions+newSubscriptions)
+                    self.unsubscribe(arn: arn, to: unsubscibeTopic, subscriptions: subscriptions + newSubscriptions)
                 }
             }
         }

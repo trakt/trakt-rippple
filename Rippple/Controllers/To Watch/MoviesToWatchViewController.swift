@@ -6,14 +6,11 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
+import Receiver
+import SafariServices
 import UIKit
 
-import Receiver
-
-import SafariServices
-
 final class MoviesToWatchViewController: UITableViewController {
-
     private enum ViewControllerSegue: String {
         case comments
         case details
@@ -210,9 +207,9 @@ final class MoviesToWatchViewController: UITableViewController {
         }.disposed(by: disposeBag)
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(self.refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         onMovieToWatchStatusChangedReceiver.listen { [weak self] status in
             guard let self = self else { return }
@@ -240,7 +237,7 @@ final class MoviesToWatchViewController: UITableViewController {
     }
 
     @objc private func refreshMovies(_ sender: UIKeyCommand) {
-        refresh(self.refreshControl as Any)
+        refresh(refreshControl as Any)
     }
 
     @objc func refresh(_ sender: Any) {
@@ -251,7 +248,7 @@ final class MoviesToWatchViewController: UITableViewController {
         if let commentsViewController = segue.destination as? CommentsViewController, let media = sender as? MediaModel {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.media(media))
         } else if let mediaViewController = segue.destination as? MediaViewController,
-            let media = sender as? MediaModel {
+                  let media = sender as? MediaModel {
             mediaViewController.media = media
         }
     }
@@ -277,7 +274,6 @@ extension MoviesToWatchViewController {
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
         guard let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell else {
             return nil
         }
@@ -286,9 +282,9 @@ extension MoviesToWatchViewController {
         contextMenu.controller = self
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-            return self.contextMenu.previewViewController
+            self.contextMenu.previewViewController
         }, actionProvider: { _ in
-            return self.contextMenu.menu
+            self.contextMenu.menu
         })
     }
 
@@ -342,7 +338,7 @@ extension MoviesToWatchViewController {
             var pin: UIContextualAction
             if movie.isPinned {
                 pin = UIContextualAction(style: .normal,
-                                                 title: "Unpin") { _, _, boolValue in
+                                         title: "Unpin") { _, _, boolValue in
                     movie.unpin()
                     boolValue(true)
                 }
@@ -350,7 +346,7 @@ extension MoviesToWatchViewController {
                 pin.backgroundColor = UIColor(resource: .ripppleGray)
             } else {
                 pin = UIContextualAction(style: .normal,
-                                                 title: "Pin") { _, _, boolValue in
+                                         title: "Pin") { _, _, boolValue in
                     movie.pin()
                     boolValue(true)
                 }
@@ -366,7 +362,6 @@ extension MoviesToWatchViewController {
 }
 
 extension MoviesToWatchViewController: MediaTableViewCellDelegate {
-
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action) {
         guard let index = tableView.indexPath(for: cell) else { return }
         guard let wrapper = dataSource.itemIdentifier(for: index) else { return }

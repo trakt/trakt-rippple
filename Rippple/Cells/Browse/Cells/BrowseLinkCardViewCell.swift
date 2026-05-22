@@ -9,13 +9,12 @@
 import UIKit
 
 final class BrowseLinkCardViewCell: UITableViewCell {
+    @IBOutlet var topLayoutConstraint: NSLayoutConstraint!
 
-    @IBOutlet weak var topLayoutConstraint: NSLayoutConstraint!
+    @IBOutlet var cardView: CardView!
 
-    @IBOutlet weak var cardView: CardView!
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var subtitleLabel: UILabel!
 
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var subtitleLabel: UILabel!
-
-    @IBOutlet weak var indicatorImageView: UIImageView!
+    @IBOutlet var indicatorImageView: UIImageView!
 }

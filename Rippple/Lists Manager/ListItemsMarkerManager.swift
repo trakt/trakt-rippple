@@ -9,13 +9,12 @@
 import Foundation
 
 final class ListItemsMarkerManager {
-
     static let shared = ListItemsMarkerManager()
 
     private var markers = [Int64: String]()
     private let lock = NSLock()
 
-    private init() { }
+    private init() {}
 
     func marker(for listId: Int64) -> String {
         lock.lock()

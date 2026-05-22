@@ -7,13 +7,11 @@
 //
 
 import Foundation
-
 import Receiver
 
 let (onDVDMoviesNotificationsChangedTransmitter, onDVDMoviesNotificationsChangedReceiver) = Receiver<[UNNotificationRequest]>.make(with: .warm(upTo: 1))
 
 final class DVDMovieNotificationsManager {
-
     static let shared = DVDMovieNotificationsManager()
 
     private let disposeBag = DisposeBag()
@@ -26,6 +24,7 @@ final class DVDMovieNotificationsManager {
             UserDefaults.standard.synchronize()
         }
     }
+
     var toWatchMovieRelease: Bool {
         didSet {
             UserDefaults.standard.set(toWatchMovieRelease, forKey: "DVDMovieNotificationsManager.toWatchMovieRelease")
@@ -93,7 +92,7 @@ final class DVDMovieNotificationsManager {
             }
             let notificationCenter = UNUserNotificationCenter.current()
             for request in requests {
-                notificationCenter.add(request) { (error) in
+                notificationCenter.add(request) { error in
                     if error != nil {
                         print("notificationCenter.add error: \(error!)")
                     } else {
@@ -124,9 +123,9 @@ final class DVDMovieNotificationsManager {
                                                     sort: nil) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(watchlistItems):
+                case .success(let watchlistItems):
                     self.watchlistedMovies = watchlistItems.map { $0.movie! }
-                case let .failure(error):
+                case .failure(let error):
                     print("watchlist request failure \(error)")
                 }
             }
@@ -140,7 +139,7 @@ final class DVDMovieNotificationsManager {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -149,7 +148,7 @@ final class DVDMovieNotificationsManager {
                 } catch {
                     print("dvdMoviesCalendar request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("dvdMoviesCalendar request failure \(error)")
             }
         }
@@ -174,20 +173,18 @@ final class DVDMovieNotificationsManager {
         content.userInfo = ["link": "ripl://movies/\(movieCalendarItem.movie.identifiers.trakt!)"]
 
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second],
-                                                                     from: triggerDate)
+                                                         from: triggerDate)
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let uuidString = uuidPrefix + "\(movieCalendarItem.movie.identifiers.trakt!)"
-        let request = UNNotificationRequest(identifier: uuidString,
-                                            content: content,
-                                            trigger: trigger)
-
-        return request
+        return UNNotificationRequest(identifier: uuidString,
+                                     content: content,
+                                     trigger: trigger)
     }
 }
 
 extension UNNotificationRequest {
     var isDVDMovieNotification: Bool {
-        return self.identifier.hasPrefix(DVDMovieNotificationsManager.shared.uuidPrefix)
+        return identifier.hasPrefix(DVDMovieNotificationsManager.shared.uuidPrefix)
     }
 }

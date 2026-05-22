@@ -1,5 +1,5 @@
 //
-//  MovieReleaseNotificationsManager.swift
+//  MovieNotificationsManager.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 23/05/2020.
@@ -7,13 +7,11 @@
 //
 
 import Foundation
-
 import Receiver
 
 let (onMoviesNotificationsChangedTransmitter, onMoviesNotificationsChangedReceiver) = Receiver<[UNNotificationRequest]>.make(with: .warm(upTo: 1))
 
 final class MovieNotificationsManager {
-
     static let shared = MovieNotificationsManager()
 
     private let disposeBag = DisposeBag()
@@ -26,6 +24,7 @@ final class MovieNotificationsManager {
             UserDefaults.standard.synchronize()
         }
     }
+
     var toWatchMovieRelease: Bool {
         didSet {
             UserDefaults.standard.set(toWatchMovieRelease, forKey: "MovieNotificationsManager.toWatchMovieRelease")
@@ -51,7 +50,7 @@ final class MovieNotificationsManager {
 
     private var watchlistedMovies: [Int64]? {
         didSet {
-            if watchlistedMovies == oldValue { return}
+            if watchlistedMovies == oldValue { return }
             rebuildNotifications()
         }
     }
@@ -88,7 +87,7 @@ final class MovieNotificationsManager {
         let notificationCenter = UNUserNotificationCenter.current()
         notificationCenter.getPendingNotificationRequests { pendingNotificationRequests in
             var identifiersToRemove = [String]()
-            for pendingNotificationRequest in pendingNotificationRequests where requests.contains(where: {  $0.identifier == pendingNotificationRequest.identifier }) == false && pendingNotificationRequest.isMovieNotification {
+            for pendingNotificationRequest in pendingNotificationRequests where requests.contains(where: { $0.identifier == pendingNotificationRequest.identifier }) == false && pendingNotificationRequest.isMovieNotification {
                 print("Removing notification: \(pendingNotificationRequest.identifier) - \(pendingNotificationRequest.content.title) - \(pendingNotificationRequest.content.body)")
                 identifiersToRemove.append(pendingNotificationRequest.identifier)
             }
@@ -96,7 +95,7 @@ final class MovieNotificationsManager {
         }
 
         for request in requests {
-            notificationCenter.add(request) { (error) in
+            notificationCenter.add(request) { error in
                 if error != nil {
                     print("notificationCenter.add error: \(error!)")
                 } else {
@@ -141,7 +140,7 @@ final class MovieNotificationsManager {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -150,7 +149,7 @@ final class MovieNotificationsManager {
                 } catch {
                     print("moviesCalendar request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("moviesCalendar request failure \(error)")
             }
         }
@@ -176,20 +175,18 @@ final class MovieNotificationsManager {
         content.userInfo = ["link": "ripl://movies/\(movieCalendarItem.movie.identifiers.trakt!)"]
 
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second],
-                                                                     from: triggerDate)
+                                                         from: triggerDate)
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let uuidString = uuidPrefix + "\(movieCalendarItem.movie.identifiers.trakt!)"
-        let request = UNNotificationRequest(identifier: uuidString,
-                                            content: content,
-                                            trigger: trigger)
-
-        return request
+        return UNNotificationRequest(identifier: uuidString,
+                                     content: content,
+                                     trigger: trigger)
     }
 }
 
 extension UNNotificationRequest {
     var isMovieNotification: Bool {
-        return self.identifier.hasPrefix(MovieNotificationsManager.shared.uuidPrefix)
+        return identifier.hasPrefix(MovieNotificationsManager.shared.uuidPrefix)
     }
 }

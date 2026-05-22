@@ -7,13 +7,10 @@
 //
 
 import Foundation
-
 import Receiver
-
 import WidgetKit
 
 final class WidgetManager {
-
     private let disposeBag = DisposeBag()
 
     private init() {
@@ -77,12 +74,12 @@ final class WidgetManager {
             guard let self = self else { return }
             guard let model = models.first else {
                 let progress = WidgetModel(label: "",
-                                                 title: "You did it!",
-                                                 subtitle: "We couldn't find episodes for you to watch.",
-                                                 image: nil,
-                                                 behind: nil,
-                                                 redacted: false,
-                                                 deeplink: nil)
+                                           title: "You did it!",
+                                           subtitle: "We couldn't find episodes for you to watch.",
+                                           image: nil,
+                                           behind: nil,
+                                           redacted: false,
+                                           deeplink: nil)
                 self.store(singleWidget: progress, with: WidgetType.showsToWatch.rawValue)
                 return
             }
@@ -102,12 +99,12 @@ final class WidgetManager {
                         subtitle = episodeToWatch.localizedEpisodeNumber
                     }
                     let progress = WidgetModel(label: "Next Episode",
-                                                     title: show.title,
-                                                     subtitle: subtitle,
-                                                     image: url,
-                                                     behind: behindText,
-                                                     redacted: false,
-                                                     deeplink: model.deeplink)
+                                               title: show.title,
+                                               subtitle: subtitle,
+                                               image: url,
+                                               behind: behindText,
+                                               redacted: false,
+                                               deeplink: model.deeplink)
                     self.store(singleWidget: progress, with: WidgetType.showsToWatch.rawValue)
                 }
             default:
@@ -124,21 +121,21 @@ final class WidgetManager {
                         subtitle = "\(releaseYear)"
                     }
                     let progress = WidgetModel(label: "Next Movie",
-                                                     title: movie.title,
-                                                     subtitle: subtitle,
-                                                     image: url,
-                                                     redacted: false,
-                                                     deeplink: movie.mediaModel.deeplink)
+                                               title: movie.title,
+                                               subtitle: subtitle,
+                                               image: url,
+                                               redacted: false,
+                                               deeplink: movie.mediaModel.deeplink)
                     self.store(singleWidget: progress, with: WidgetType.moviesToWatch.rawValue)
                 }
             } else {
                 let progress = WidgetModel(label: "",
-                                                 title: "You did it!",
-                                                 subtitle: "We couldn't find movies for you to watch.",
-                                                 image: nil,
-                                                 behind: nil,
-                                                 redacted: false,
-                                                 deeplink: nil)
+                                           title: "You did it!",
+                                           subtitle: "We couldn't find movies for you to watch.",
+                                           image: nil,
+                                           behind: nil,
+                                           redacted: false,
+                                           deeplink: nil)
                 self.store(singleWidget: progress, with: WidgetType.moviesToWatch.rawValue)
             }
         }.disposed(by: disposeBag)
@@ -147,12 +144,12 @@ final class WidgetManager {
             guard let self = self else { return }
             guard let model = models.first else {
                 let progress = WidgetModel(label: "",
-                                                 title: "TV not found",
-                                                 subtitle: "We couldn't find an episode coming for you.",
-                                                 image: nil,
-                                                 behind: nil,
-                                                 redacted: false,
-                                                 deeplink: nil)
+                                           title: "TV not found",
+                                           subtitle: "We couldn't find an episode coming for you.",
+                                           image: nil,
+                                           behind: nil,
+                                           redacted: false,
+                                           deeplink: nil)
                 self.store(singleWidget: progress, with: WidgetType.showsComing.rawValue)
                 return
             }
@@ -171,12 +168,12 @@ final class WidgetManager {
             guard let self = self else { return }
             guard let model = models.first else {
                 let progress = WidgetModel(label: "",
-                                                 title: "Movie not found",
-                                                 subtitle: "We couldn't find a movie coming for you.",
-                                                 image: nil,
-                                                 behind: nil,
-                                                 redacted: false,
-                                                 deeplink: nil)
+                                           title: "Movie not found",
+                                           subtitle: "We couldn't find a movie coming for you.",
+                                           image: nil,
+                                           behind: nil,
+                                           redacted: false,
+                                           deeplink: nil)
                 self.store(singleWidget: progress, with: WidgetType.moviesComing.rawValue)
                 return
             }
@@ -205,7 +202,7 @@ final class WidgetManager {
         #endif
     }
 
-    public func storeAppIconForWidget(appIcon: AppIcon) {
+    func storeAppIconForWidget(appIcon: AppIcon) {
         UserDefaults(suiteName: "group.tv.trakt.rippple")!.set(appIcon.identifier.rawValue, forKey: "WidgetManager.appIcon")
         WidgetCenter.shared.reloadTimelines(ofKind: "RipppleIcon")
     }
@@ -218,49 +215,49 @@ final class WidgetManager {
         }
         TraktAPIProvider.provider.request(TraktAPIService.history(slug: "me", type: nil, id: nil, pageInfo: PageInfo.firstPage(with: 1), endDate: nil),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let fetchedActivities = try response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
+                    let fetchedActivities = try response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
 
-                                                    if let last = fetchedActivities.first {
-                                                        if let movie = last.movie {
-                                                            movie.mediaModel.backdropURL { url in
-                                                                let progress = WidgetModel(label: "Last Watched",
-                                                                                           title: movie.title,
-                                                                                           subtitle: (movie.releaseYear != nil) ? "\(movie.releaseYear!)" : "",
-                                                                                           image: url,
-                                                                                           behind: nil,
-                                                                                           redacted: false,
-                                                                                           deeplink: movie.mediaModel.deeplink,
-                                                                                           runtime: movie.runtime,
-                                                                                           endDate: last.watchDate)
-                                                                self.store(singleWidget: progress, with: WidgetType.lastWatched.rawValue)
-                                                            }
-                                                        } else if let show = last.show {
-                                                            show.mediaModel.backdropURL { url in
-                                                                let progress = WidgetModel(label: "Last Watched",
-                                                                                           title: show.title,
-                                                                                           subtitle: last.episode?.localizedEpisodeNumber,
-                                                                                           image: url,
-                                                                                           behind: nil,
-                                                                                           redacted: false,
-                                                                                           deeplink: last.episode?.mediaModel(given: show).deeplink,
-                                                                                           runtime: last.episode!.runtime,
-                                                                                           endDate: last.watchDate)
-                                                                self.store(singleWidget: progress, with: WidgetType.lastWatched.rawValue)
-                                                            }
-                                                        }
-                                                    }
-                                                } catch {
-                                                    print("Last activity (/history) request JSON mapping failed! \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Last activity (/history) request failure \(error)")
-                                            }
+                    if let last = fetchedActivities.first {
+                        if let movie = last.movie {
+                            movie.mediaModel.backdropURL { url in
+                                let progress = WidgetModel(label: "Last Watched",
+                                                           title: movie.title,
+                                                           subtitle: (movie.releaseYear != nil) ? "\(movie.releaseYear!)" : "",
+                                                           image: url,
+                                                           behind: nil,
+                                                           redacted: false,
+                                                           deeplink: movie.mediaModel.deeplink,
+                                                           runtime: movie.runtime,
+                                                           endDate: last.watchDate)
+                                self.store(singleWidget: progress, with: WidgetType.lastWatched.rawValue)
+                            }
+                        } else if let show = last.show {
+                            show.mediaModel.backdropURL { url in
+                                let progress = WidgetModel(label: "Last Watched",
+                                                           title: show.title,
+                                                           subtitle: last.episode?.localizedEpisodeNumber,
+                                                           image: url,
+                                                           behind: nil,
+                                                           redacted: false,
+                                                           deeplink: last.episode?.mediaModel(given: show).deeplink,
+                                                           runtime: last.episode!.runtime,
+                                                           endDate: last.watchDate)
+                                self.store(singleWidget: progress, with: WidgetType.lastWatched.rawValue)
+                            }
+                        }
+                    }
+                } catch {
+                    print("Last activity (/history) request JSON mapping failed! \(error)")
+                }
+            case .failure(let error):
+                print("Last activity (/history) request failure \(error)")
+            }
         }
     }
 

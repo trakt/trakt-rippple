@@ -6,10 +6,9 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
-import UIKit
-import SwiftUI
-
 import Receiver
+import SwiftUI
+import UIKit
 
 let (movieToWatchSettingsUpdatedTransmitter, movieToWatchSettingsUpdatedReceiver) = Receiver<MovieToWatchSettings>.make(with: .hot)
 
@@ -147,7 +146,6 @@ struct MovieToWatchListItem: Codable, Identifiable, Hashable {
 
 @MainActor
 final class MovieToWatchSettingsViewModel: ObservableObject {
-
     @Published var watchlist: Bool
     @Published var recommended: Bool
     @Published var collected: Bool
@@ -468,7 +466,6 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
 }
 
 struct MovieToWatchSettingsView: View {
-
     @ObservedObject var viewModel: MovieToWatchSettingsViewModel
     @State private var editMode: EditMode = .inactive
     @State private var isPresentingAddListPicker = false
@@ -663,7 +660,6 @@ struct MovieToWatchSettingsView: View {
 }
 
 struct MovieAddListPickerView: View {
-
     @ObservedObject var viewModel: MovieToWatchSettingsViewModel
     @Environment(\.dismiss) private var dismiss
 
@@ -716,9 +712,9 @@ struct MovieAddListPickerView: View {
 
     private var hasNoResults: Bool {
         filteredSmartSearches.isEmpty &&
-        filteredCustomLists.isEmpty &&
-        filteredLikedLists.isEmpty &&
-        filteredCollaborations.isEmpty
+            filteredCustomLists.isEmpty &&
+            filteredLikedLists.isEmpty &&
+            filteredCollaborations.isEmpty
     }
 
     private var filteredSmartSearches: [SmartSearch] {
@@ -844,7 +840,6 @@ struct MovieAddListPickerView: View {
 }
 
 final class MovieToWatchSettingsViewController: UIHostingController<MovieToWatchSettingsView> {
-
     private let viewModel = MovieToWatchSettingsViewModel()
 
     required init?(coder aDecoder: NSCoder) {
@@ -870,7 +865,6 @@ final class MovieToWatchSettingsViewController: UIHostingController<MovieToWatch
 }
 
 final class MovieToWatchSettings {
-
     private let disposeBag = DisposeBag()
 
     private init() {
@@ -970,24 +964,28 @@ final class MovieToWatchSettings {
             UserDefaults.standard.synchronize()
         }
     }
+
     var recommended = true {
         didSet {
             UserDefaults.standard.set(recommended, forKey: "MovieToWatchSettings.recommended")
             UserDefaults.standard.synchronize()
         }
     }
+
     var collected = true {
         didSet {
             UserDefaults.standard.set(collected, forKey: "MovieToWatchSettings.collected")
             UserDefaults.standard.synchronize()
         }
     }
+
     var sort = Sort.automatic {
         didSet {
             UserDefaults.standard.set(sort.rawValue, forKey: "MovieToWatchSettings.sort")
             UserDefaults.standard.synchronize()
         }
     }
+
     var reverse = false {
         didSet {
             UserDefaults.standard.set(reverse, forKey: "MovieToWatchSettings.reverse")

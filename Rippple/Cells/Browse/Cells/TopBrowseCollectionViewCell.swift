@@ -9,11 +9,11 @@
 import UIKit
 
 final class TopBrowseCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var backdrop: BackdropImageView!
-    @IBOutlet weak var logo: LogoImageView!
-    @IBOutlet weak var rank: UILabel?
-    @IBOutlet weak var label: UILabel?
-    @IBOutlet weak var sublabel: UILabel?
+    @IBOutlet var backdrop: BackdropImageView!
+    @IBOutlet var logo: LogoImageView!
+    @IBOutlet var rank: UILabel?
+    @IBOutlet var label: UILabel?
+    @IBOutlet var sublabel: UILabel?
 
     var notes: String?
     var media: MediaModel! {
@@ -44,7 +44,7 @@ final class TopBrowseCollectionViewCell: UICollectionViewCell {
                 label?.text = show.title
                 var info = [String]()
                 if let airedEpisodes = show.airedEpisodes, airedEpisodes != 0 {
-                    info.append("\(airedEpisodes) episode\((airedEpisodes > 1 ? "s" : ""))")
+                    info.append("\(airedEpisodes) episode\(airedEpisodes > 1 ? "s" : "")")
                 } else if let release = show.releaseYear {
                     info.append("\(release)")
                 }

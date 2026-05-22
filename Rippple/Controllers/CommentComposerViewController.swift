@@ -6,49 +6,47 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
 import SafariServices
+import UIKit
 
 private extension Comment {
     init(body: String, user: User, containsSpoiler: Bool) {
-        self.identifier = 0
+        identifier = 0
         self.body = body
         self.containsSpoiler = containsSpoiler
-        self.isReview = body.count > 200 ? true : false
-        self.parentIdentifier = 0
-        self.createDate = Date()
-        self.updateDate = Date()
-        self.replies = 0
-        self.likes = 0
-        self.userRating = nil
+        isReview = body.count > 200 ? true : false
+        parentIdentifier = 0
+        createDate = Date()
+        updateDate = Date()
+        replies = 0
+        likes = 0
+        userRating = nil
         self.user = user
-        self.reactions = nil
+        reactions = nil
     }
 
     init(body: String, comment: Comment, containsSpoiler: Bool) {
-        self.identifier = comment.identifier
+        identifier = comment.identifier
         self.body = body
         self.containsSpoiler = containsSpoiler
-        self.isReview = body.count > 200 ? true : false
-        self.parentIdentifier = comment.parentIdentifier
-        self.createDate = comment.createDate
-        self.updateDate = comment.updateDate
-        self.replies = comment.replies
-        self.likes = comment.likes
-        self.userRating = comment.userRating
-        self.user = comment.user
-        self.reactions = nil
+        isReview = body.count > 200 ? true : false
+        parentIdentifier = comment.parentIdentifier
+        createDate = comment.createDate
+        updateDate = comment.updateDate
+        replies = comment.replies
+        likes = comment.likes
+        userRating = comment.userRating
+        user = comment.user
+        reactions = nil
     }
 }
 
 final class CommentComposerViewController: UIViewController {
+    /// @IBOutlet weak var placeholderTextView: UITextView!
+    @IBOutlet var commentTextView: UITextView!
 
-    // @IBOutlet weak var placeholderTextView: UITextView!
-    @IBOutlet weak var commentTextView: UITextView!
-
-    @IBOutlet weak var previewBarButtonItem: UIBarButtonItem!
+    @IBOutlet var previewBarButtonItem: UIBarButtonItem!
 
     var mediaModel: MediaModel!
     var editedComment: Comment?
@@ -96,8 +94,8 @@ final class CommentComposerViewController: UIViewController {
             if self.commentTextView.text == previousComment { return }
 
             let alertController = UIAlertController(title: "New Draft",
-                message: "We found a new Draft on iCloud. Would you like to use it or dismiss it?",
-                preferredStyle: .alert)
+                                                    message: "We found a new Draft on iCloud. Would you like to use it or dismiss it?",
+                                                    preferredStyle: .alert)
 
             let cancel = UIAlertAction(title: "Dismiss iCloud draft", style: .destructive)
             alertController.addAction(cancel)
@@ -125,7 +123,7 @@ final class CommentComposerViewController: UIViewController {
                 self.dismiss(animated: true)
             }))
             alertController.addAction(cancel)
-            self.present(alertController, animated: true)
+            present(alertController, animated: true)
         }
     }
 
@@ -183,7 +181,7 @@ final class CommentComposerViewController: UIViewController {
         commentTextView.resignFirstResponder()
 
         if let previewViewController = segue.destination as? PreviewViewController,
-            let commentToPost = sender as? Comment {
+           let commentToPost = sender as? Comment {
             previewViewController.commentModel = CommentModel(media: mediaModel,
                                                               comment: commentToPost,
                                                               spoilerStrategy: .showAllSpoilers)
@@ -202,8 +200,8 @@ extension CommentComposerViewController {
             // Cannot Save
             if editedComment.isReply {
                 let alertController = UIAlertController(title: "Cancel Reply",
-                    message: "Keep composing your reply or lose it completely.",
-                    preferredStyle: .actionSheet)
+                                                        message: "Keep composing your reply or lose it completely.",
+                                                        preferredStyle: .actionSheet)
 
                 let cancel = UIAlertAction(title: "Keep Composing", style: .cancel)
                 alertController.addAction(cancel)
@@ -219,8 +217,8 @@ extension CommentComposerViewController {
                 present(alertController, animated: true)
             } else {
                 let alertController = UIAlertController(title: "Cancel Edit",
-                    message: "Keep editing your comment or lose your edits.",
-                    preferredStyle: .actionSheet)
+                                                        message: "Keep editing your comment or lose your edits.",
+                                                        preferredStyle: .actionSheet)
 
                 let cancel = UIAlertAction(title: "Keep Editing", style: .cancel)
                 alertController.addAction(cancel)
@@ -302,7 +300,7 @@ extension CommentComposerViewController {
         } else {
             return Comment(body: commentTextView.text,
                            user: UserManager.shared.currentUser!,
-                containsSpoiler: spoilers)
+                           containsSpoiler: spoilers)
         }
     }
 }
@@ -316,7 +314,7 @@ extension CommentComposerViewController {
                 commentTextView.insertText(prefix + sufix)
             }
             if let from = commentTextView.position(from: selectedRange.start, offset: prefix.count),
-                let to = commentTextView.position(from: selectedRange.end, offset: prefix.count) {
+               let to = commentTextView.position(from: selectedRange.end, offset: prefix.count) {
                 commentTextView.selectedTextRange = commentTextView.textRange(from: from, to: to)
             }
         }
@@ -370,14 +368,14 @@ extension CommentComposerViewController: UITextViewDelegate {
     private func keyboardFrameDidChange(notification: NSNotification) {
         if let frameValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
             let keyboardHeight = frameValue.cgRectValue.size.height - view.safeAreaInsets.bottom
-            commentTextView.contentInset = UIEdgeInsets.init(top: 0.0,
-                                                            left: 0.0,
-                                                             bottom: keyboardHeight + 60.0,
-                                                            right: 0.0)
-            commentTextView.scrollIndicatorInsets = UIEdgeInsets.init(top: 0.0,
-                                                                     left: 0.0,
-                                                                      bottom: keyboardHeight + 60.0,
-                                                                      right: -15.0)
+            commentTextView.contentInset = UIEdgeInsets(top: 0.0,
+                                                        left: 0.0,
+                                                        bottom: keyboardHeight + 60.0,
+                                                        right: 0.0)
+            commentTextView.scrollIndicatorInsets = UIEdgeInsets(top: 0.0,
+                                                                 left: 0.0,
+                                                                 bottom: keyboardHeight + 60.0,
+                                                                 right: -15.0)
         }
     }
 }

@@ -15,7 +15,7 @@ private struct Service {
 }
 
 class ServicesBrowseTableViewCell: UITableViewCell {
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet var collectionView: UICollectionView!
 
     weak var presentingViewController: UIViewController?
 

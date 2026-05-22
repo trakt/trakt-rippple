@@ -7,7 +7,6 @@
 //
 
 import Foundation
-
 import Moya
 
 struct PageInfo: Equatable, Hashable {
@@ -47,9 +46,9 @@ struct PageInfo: Equatable, Hashable {
 
     init?(headers: [AnyHashable: Any]) {
         if let page = headers["x-pagination-page"] as? String,
-            let limit = headers["x-pagination-limit"] as? String,
-            let pageCount = headers["x-pagination-page-count"] as? String,
-            let itemCount = headers["x-pagination-item-count"] as? String {
+           let limit = headers["x-pagination-limit"] as? String,
+           let pageCount = headers["x-pagination-page-count"] as? String,
+           let itemCount = headers["x-pagination-item-count"] as? String {
             self.page = Int(page)!
             self.limit = Int(limit)!
             self.pageCount = Int(pageCount)!
@@ -191,7 +190,7 @@ enum HiddenSection: String {
 enum IncludeReplies: String {
     case include = "true"
     case exclude = "false"
-    case only = "only"
+    case only
 }
 
 enum TmdbType: String {
@@ -463,6 +462,7 @@ enum TraktAPIService {
 }
 
 // MARK: - TargetType Protocol Implementation
+
 extension TraktAPIService: AuthorizedTargetType {
     var validationType: ValidationType {
 //        return .successCodes
@@ -480,6 +480,7 @@ extension TraktAPIService: AuthorizedTargetType {
 
         return .customCodes([200, 201, 204, 401, 409])
     }
+
     var baseURL: URL {
         switch self {
         case .verifyIAP, .verifySandboxIAP:
@@ -489,6 +490,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return URL(string: TraktAPIConfiguration.baseURL)!
         }
     }
+
     var path: String {
         switch self {
         case .token:
@@ -501,7 +503,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/\(slug)/watching"
         case .settings:
             return "/users/settings"
-        case let .comments(type, _, sort, _):
+        case .comments(let type, _, let sort, _):
             switch type {
             case .movie(let movieId):
                 if let sort = sort {
@@ -532,9 +534,9 @@ extension TraktAPIService: AuthorizedTargetType {
             case .trending:
                 return "/comments/trending"
             }
-        case let .commentLikesCount(id):
+        case .commentLikesCount(let id):
             return "/comments/\(id)/likes"
-        case let .commentCount(type):
+        case .commentCount(let type):
             switch type {
             case .movie(let movieId):
                 return "/movies/\(movieId)/comments"
@@ -553,7 +555,7 @@ extension TraktAPIService: AuthorizedTargetType {
             case .trending:
                 fatalError()
             }
-        case let .history(slug, type, id, _, _):
+        case .history(let slug, let type, let id, _, _):
             if let type = type, id == nil {
                 return "/users/\(slug)/history/\(type)"
             } else if let type = type, let id = id {
@@ -561,11 +563,11 @@ extension TraktAPIService: AuthorizedTargetType {
             } else {
                 return "/users/\(slug)/history"
             }
-        case let .isWatched(type, id):
+        case .isWatched(let type, let id):
             return "/users/me/history/\(type)/\(id)"
-        case let .likeComment(id), let .unlikeComment(id):
+        case .likeComment(let id), .unlikeComment(let id):
             return "/comments/\(id)/like"
-        case let .likeList(slug, id), let .unlikeList(slug, id):
+        case .likeList(let slug, let id), .unlikeList(let slug, let id):
             if slug == "trakt" {
                 return "/lists/\(id)/like"
             } else {
@@ -575,7 +577,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/likes/\(type)"
         case .commentLikes(let id, _):
             return "/comments/\(id)/likes"
-        case let .stats(type):
+        case .stats(let type):
             switch type {
             case .movie(let movieId):
                 return "/movies/\(movieId)/stats"
@@ -822,32 +824,32 @@ extension TraktAPIService: AuthorizedTargetType {
         case .addEpisodeToHistory, .addMovieToHistory, .addSeasonToHistory, .addShowToHistory, .addEpisodesToHistory:
             return "/sync/history"
         case .showsCalendar(let startDate, let days, _):
-            let dateFormatter = DateFormatter.init()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let formattedDate = dateFormatter.string(from: startDate)
             return "calendars/all/shows/\(formattedDate)/\(days)"
         case .premiereCalendar(let startDate, let days):
-            let dateFormatter = DateFormatter.init()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let formattedDate = dateFormatter.string(from: startDate)
             return "calendars/all/shows/premieres/\(formattedDate)/\(days)"
         case .moviesCalendar(let startDate, let days, _):
-            let dateFormatter = DateFormatter.init()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let formattedDate = dateFormatter.string(from: startDate)
             return "calendars/all/movies/\(formattedDate)/\(days)"
         case .myShowsCalendar(let startDate, let days):
-            let dateFormatter = DateFormatter.init()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let formattedDate = dateFormatter.string(from: startDate)
             return "calendars/my/shows/\(formattedDate)/\(days)"
         case .myMoviesCalendar(let startDate, let days):
-            let dateFormatter = DateFormatter.init()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let formattedDate = dateFormatter.string(from: startDate)
             return "calendars/my/movies/\(formattedDate)/\(days)"
         case .dvdMoviesCalendar(let startDate, let days):
-            let dateFormatter = DateFormatter.init()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let formattedDate = dateFormatter.string(from: startDate)
             return "calendars/all/dvd/\(formattedDate)/\(days)"
@@ -966,9 +968,9 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/vip/apple/v2/verify"
         case .verifySandboxIAP:
             return "/vip/apple/sandbox/v2/verify"
-
         }
     }
+
     var method: Moya.Method {
         switch self {
         case .token, .revoke, .refresh:
@@ -1038,7 +1040,7 @@ extension TraktAPIService: AuthorizedTargetType {
         case .popularLists:
             return .get
         case .popularShows:
-                return .get
+            return .get
         case .popularMovies:
             return .get
         case .anticipatedShows:
@@ -1191,23 +1193,24 @@ extension TraktAPIService: AuthorizedTargetType {
             return .post
         }
     }
+
     var task: Task {
         switch self {
-        case let .token(code):
+        case .token(let code):
             return .requestParameters(parameters: ["code": code,
                                                    "client_id": TraktAPIConfiguration.clientId,
                                                    "client_secret": TraktAPIConfiguration.secretId,
                                                    "redirect_uri": TraktAPIConfiguration.callbackURL,
                                                    "grant_type": "authorization_code"],
                                       encoding: JSONEncoding.default)
-        case let .refresh(refreshToken):
+        case .refresh(let refreshToken):
             return .requestParameters(parameters: ["refresh_token": refreshToken,
                                                    "client_id": TraktAPIConfiguration.clientId,
                                                    "client_secret": TraktAPIConfiguration.secretId,
                                                    "redirect_uri": TraktAPIConfiguration.callbackURL,
                                                    "grant_type": "refresh_token"],
                                       encoding: JSONEncoding.default)
-        case let .revoke(accessToken):
+        case .revoke(let accessToken):
             return .requestParameters(parameters: ["token": accessToken],
                                       encoding: URLEncoding.default)
         case .watching:
@@ -1216,7 +1219,7 @@ extension TraktAPIService: AuthorizedTargetType {
         case .settings:
             return .requestParameters(parameters: ["extended": "browsing"],
                                       encoding: URLEncoding.default)
-        case let .comments(_, pageInfo, _, replies):
+        case .comments(_, let pageInfo, _, let replies):
             if let replies = replies {
                 return .requestParameters(parameters: ["extended": "full,reactions",
                                                        "page": "\(pageInfo.page)",
@@ -1229,7 +1232,7 @@ extension TraktAPIService: AuthorizedTargetType {
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             }
-        case let .likes(_, pageInfo), let .commentLikes(_, pageInfo):
+        case .likes(_, let pageInfo), .commentLikes(_, let pageInfo):
             return .requestParameters(parameters: ["extended": "full,reactions",
                                                    "page": "\(pageInfo.page)",
                                                    "limit": "\(pageInfo.limit)"],
@@ -1270,17 +1273,17 @@ extension TraktAPIService: AuthorizedTargetType {
             return .requestPlain
         case .commentCount, .commentLikesCount:
             return .requestPlain
-        case let .postComment(type, traktId, body, spoilers):
+        case .postComment(let type, let traktId, let body, let spoilers):
             return .requestParameters(parameters: [type.rawValue: ["ids": ["trakt": traktId]],
                                                    "comment": body,
                                                    "spoiler": spoilers],
                                       encoding: JSONEncoding.default)
-        case let .postReply(_, body, spoilers):
+        case .postReply(_, let body, let spoilers):
             return .requestParameters(parameters: ["comment": body, "spoiler": spoilers],
                                       encoding: JSONEncoding.default)
         case .deleteComment:
             return .requestPlain
-        case let .updateComment(_, body, spoilers):
+        case .updateComment(_, let body, let spoilers):
             return .requestParameters(parameters: ["comment": body, "spoiler": spoilers],
                                       encoding: JSONEncoding.default)
         case .follow, .unfollow:
@@ -1328,29 +1331,29 @@ extension TraktAPIService: AuthorizedTargetType {
         case .search(let type, let query):
             if type == .person {
                 return .requestParameters(parameters: ["query": query,
-                             "extended": "full",
-                             "page": "1",
-                             "limit": "50",
-                             "fields": "name"],
-                encoding: URLEncoding.default)
+                                                       "extended": "full",
+                                                       "page": "1",
+                                                       "limit": "50",
+                                                       "fields": "name"],
+                                          encoding: URLEncoding.default)
             } else {
                 return .requestParameters(parameters: ["query": query,
-                             "extended": "full",
-                             "page": "1",
-                             "limit": "50"],
-                encoding: URLEncoding.default)
+                                                       "extended": "full",
+                                                       "page": "1",
+                                                       "limit": "50"],
+                                          encoding: URLEncoding.default)
             }
         case .lookup(_, let type):
             return .requestParameters(parameters: ["extended": "full", "type": type],
                                       encoding: URLEncoding.default)
         case .trendingMedia(let parameters, let extended, let pageInfo),
-                .trendingMovies(let parameters, let extended, let pageInfo),
-                .trendingShows(let parameters, let extended, let pageInfo):
+             .trendingMovies(let parameters, let extended, let pageInfo),
+             .trendingShows(let parameters, let extended, let pageInfo):
             var params: [String: String] = ["extended": extended.rawValue,
-                          "page": String(pageInfo.page),
-                          "limit": String(pageInfo.limit)]
+                                            "page": String(pageInfo.page),
+                                            "limit": String(pageInfo.limit)]
             params.merge(parameters) { s1, _ in
-                return s1
+                s1
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
@@ -1360,12 +1363,12 @@ extension TraktAPIService: AuthorizedTargetType {
                                                    "limit": "50"],
                                       encoding: URLEncoding.default)
         case .popularMovies(let parameters, let extended, let pageInfo),
-                .popularShows(let parameters, let extended, let pageInfo):
+             .popularShows(let parameters, let extended, let pageInfo):
             var params: [String: String] = ["extended": extended.rawValue,
-                          "page": String(pageInfo.page),
-                          "limit": String(pageInfo.limit)]
+                                            "page": String(pageInfo.page),
+                                            "limit": String(pageInfo.limit)]
             params.merge(parameters) { s1, _ in
-                return s1
+                s1
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
@@ -1375,12 +1378,12 @@ extension TraktAPIService: AuthorizedTargetType {
                                                    "limit": "50"],
                                       encoding: URLEncoding.default)
         case .anticipatedMovies(let parameters, let extended, let pageInfo),
-                .anticipatedShows(let parameters, let extended, let pageInfo):
+             .anticipatedShows(let parameters, let extended, let pageInfo):
             var params: [String: String] = ["extended": extended.rawValue,
-                          "page": String(pageInfo.page),
-                          "limit": String(pageInfo.limit)]
+                                            "page": String(pageInfo.page),
+                                            "limit": String(pageInfo.limit)]
             params.merge(parameters) { s1, _ in
-                return s1
+                s1
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
@@ -1402,68 +1405,68 @@ extension TraktAPIService: AuthorizedTargetType {
             }
         case .rateMovie(let id, let rating):
             return .requestJSONEncodable(MoviesRating(movies: [Rating(rating: rating,
-                                                                     ids: Identifiers.init(trakt: id,
+                                                                      ids: Identifiers(trakt: id,
+                                                                                       slug: nil,
+                                                                                       imdb: nil,
+                                                                                       tmdb: nil,
+                                                                                       tvdb: nil,
+                                                                                       tvrage: nil))]))
+        case .rateShow(let id, let rating):
+            return .requestJSONEncodable(ShowsRating(shows: [Rating(rating: rating,
+                                                                    ids: Identifiers(trakt: id,
+                                                                                     slug: nil,
+                                                                                     imdb: nil,
+                                                                                     tmdb: nil,
+                                                                                     tvdb: nil,
+                                                                                     tvrage: nil))]))
+        case .rateSeason(let id, let rating):
+            return .requestJSONEncodable(SeasonsRating(seasons: [Rating(rating: rating,
+                                                                        ids: Identifiers(trakt: id,
+                                                                                         slug: nil,
+                                                                                         imdb: nil,
+                                                                                         tmdb: nil,
+                                                                                         tvdb: nil,
+                                                                                         tvrage: nil))]))
+        case .rateEpisode(let id, let rating):
+            return .requestJSONEncodable(EpisodesRating(episodes: [Rating(rating: rating,
+                                                                          ids: Identifiers(trakt: id,
                                                                                            slug: nil,
                                                                                            imdb: nil,
                                                                                            tmdb: nil,
                                                                                            tvdb: nil,
                                                                                            tvrage: nil))]))
-        case .rateShow(let id, let rating):
-            return .requestJSONEncodable(ShowsRating(shows: [Rating(rating: rating,
-                                                                    ids: Identifiers.init(trakt: id,
-                                                                                          slug: nil,
-                                                                                          imdb: nil,
-                                                                                          tmdb: nil,
-                                                                                          tvdb: nil,
-                                                                                          tvrage: nil))]))
-        case .rateSeason(let id, let rating):
-            return .requestJSONEncodable(SeasonsRating(seasons: [Rating(rating: rating,
-                                                                      ids: Identifiers.init(trakt: id,
-                                                                                            slug: nil,
-                                                                                            imdb: nil,
-                                                                                            tmdb: nil,
-                                                                                            tvdb: nil,
-                                                                                            tvrage: nil))]))
-        case .rateEpisode(let id, let rating):
-            return .requestJSONEncodable(EpisodesRating(episodes: [Rating(rating: rating,
-                                                                          ids: Identifiers.init(trakt: id,
-                                                                                                slug: nil,
-                                                                                                imdb: nil,
-                                                                                                tmdb: nil,
-                                                                                                tvdb: nil,
-                                                                                                tvrage: nil))]))
         case .removeMovieRating(let id):
             return .requestJSONEncodable(MoviesRating(movies: [Rating(rating: 0,
-                                                                      ids: Identifiers.init(trakt: id,
-                                                                                            slug: nil,
-                                                                                            imdb: nil,
-                                                                                            tmdb: nil,
-                                                                                            tvdb: nil,
-                                                                                            tvrage: nil))]))
+                                                                      ids: Identifiers(trakt: id,
+                                                                                       slug: nil,
+                                                                                       imdb: nil,
+                                                                                       tmdb: nil,
+                                                                                       tvdb: nil,
+                                                                                       tvrage: nil))]))
         case .removeShowRating(let id):
             return .requestJSONEncodable(ShowsRating(shows: [Rating(rating: 0,
-                                                                      ids: Identifiers.init(trakt: id,
-                                                                                            slug: nil,
-                                                                                            imdb: nil,
-                                                                                            tmdb: nil,
-                                                                                            tvdb: nil,
-                                                                                            tvrage: nil))]))
+                                                                    ids: Identifiers(trakt: id,
+                                                                                     slug: nil,
+                                                                                     imdb: nil,
+                                                                                     tmdb: nil,
+                                                                                     tvdb: nil,
+                                                                                     tvrage: nil))]))
         case .removeSeasonRating(let id):
             return .requestJSONEncodable(SeasonsRating(seasons: [Rating(rating: 0,
-                                                                      ids: Identifiers.init(trakt: id,
-                                                                                            slug: nil,
-                                                                                            imdb: nil,
-                                                                                            tmdb: nil,
-                                                                                            tvdb: nil,
-                                                                                            tvrage: nil))]))
+                                                                        ids: Identifiers(trakt: id,
+                                                                                         slug: nil,
+                                                                                         imdb: nil,
+                                                                                         tmdb: nil,
+                                                                                         tvdb: nil,
+                                                                                         tvrage: nil))]))
         case .removeEpisodeRating(let id):
             return .requestJSONEncodable(EpisodesRating(episodes: [Rating(rating: 0,
-                                                                      ids: Identifiers.init(trakt: id,
-                                                                                            slug: nil,
-                                                                                            imdb: nil,
-                                                                                            tmdb: nil,
-                                                                                            tvdb: nil,
-                                                                                            tvrage: nil))]))
+                                                                          ids: Identifiers(trakt: id,
+                                                                                           slug: nil,
+                                                                                           imdb: nil,
+                                                                                           tmdb: nil,
+                                                                                           tvdb: nil,
+                                                                                           tvrage: nil))]))
         case .checkin(let item):
             return .requestJSONEncodable(item)
         case .cancelCheckin:
@@ -1505,21 +1508,21 @@ extension TraktAPIService: AuthorizedTargetType {
         case .addToCollection(let item), .removeFromCollection(let item):
             return .requestJSONEncodable(item)
         case .recommendedMovies(_, let parameters, let extended, let pageInfo),
-                .recommendedShows(_, let parameters, let extended, let pageInfo):
+             .recommendedShows(_, let parameters, let extended, let pageInfo):
             var params: [String: String] = ["extended": extended.rawValue,
-                          "page": String(pageInfo.page),
-                          "limit": String(pageInfo.limit)]
+                                            "page": String(pageInfo.page),
+                                            "limit": String(pageInfo.limit)]
             params.merge(parameters) { s1, _ in
-                return s1
+                s1
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
         case .boxoffice(let parameters, let extended, let pageInfo):
             var params: [String: String] = ["extended": extended.rawValue,
-                          "page": String(pageInfo.page),
-                          "limit": String(pageInfo.limit)]
+                                            "page": String(pageInfo.page),
+                                            "limit": String(pageInfo.limit)]
             params.merge(parameters) { s1, _ in
-                return s1
+                s1
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
@@ -1583,7 +1586,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .requestPlain
         case .reorderLists(let ids):
             return .requestParameters(parameters: ["rank": ids],
-            encoding: JSONEncoding.default)
+                                      encoding: JSONEncoding.default)
         case .updateList(_, let name, let description, let privacy, let displayNumbers, let allowComments):
             return .requestParameters(parameters: ["name": name,
                                                    "description": description,
@@ -1616,7 +1619,7 @@ extension TraktAPIService: AuthorizedTargetType {
             formatter.timeZone = TimeZone(secondsFromGMT: 0)
 
             return .requestParameters(parameters: ["movies": [["ids": ["trakt": traktId], "watched_at": watchedAt != nil ? formatter.string(from: watchedAt!) : "released"] as [String: Any]]],
-            encoding: JSONEncoding.default)
+                                      encoding: JSONEncoding.default)
         case .addEpisodeToHistory(let traktId, let watchedAt):
             let formatter = DateFormatter()
             formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -1624,7 +1627,7 @@ extension TraktAPIService: AuthorizedTargetType {
             formatter.timeZone = TimeZone(secondsFromGMT: 0)
 
             return .requestParameters(parameters: ["episodes": [["ids": ["trakt": traktId], "watched_at": watchedAt != nil ? formatter.string(from: watchedAt!) : "released"] as [String: Any]]],
-            encoding: JSONEncoding.default)
+                                      encoding: JSONEncoding.default)
         case .addEpisodesToHistory(let showId, let watchedAt, let seasonsEpisodes, let runtime):
             let formatter = DateFormatter()
             formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -1662,7 +1665,7 @@ extension TraktAPIService: AuthorizedTargetType {
             formatter.timeZone = TimeZone(secondsFromGMT: 0)
 
             return .requestParameters(parameters: ["shows": [["ids": ["trakt": traktId], "watched_at": watchedAt != nil ? formatter.string(from: watchedAt!) : "released"] as [String: Any]]],
-            encoding: JSONEncoding.default)
+                                      encoding: JSONEncoding.default)
         case .addSeasonToHistory(let traktId, let watchedAt):
             let formatter = DateFormatter()
             formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -1670,11 +1673,11 @@ extension TraktAPIService: AuthorizedTargetType {
             formatter.timeZone = TimeZone(secondsFromGMT: 0)
 
             return .requestParameters(parameters: ["seasons": [["ids": ["trakt": traktId], "watched_at": watchedAt != nil ? formatter.string(from: watchedAt!) : "released"] as [String: Any]]],
-            encoding: JSONEncoding.default)
+                                      encoding: JSONEncoding.default)
         case .moviesCalendar(_, _, let parameters), .showsCalendar(_, _, let parameters):
-            var params: [String: String] = ["extended": "full"]
+            var params = ["extended": "full"]
             params.merge(parameters) { s1, _ in
-                return s1
+                s1
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
@@ -1735,32 +1738,32 @@ extension TraktAPIService: AuthorizedTargetType {
         case .undoResetProgress:
             return .requestPlain
         case .playedMovies(_, let parameters, let extended, let pageInfo),
-                .playedShows(_, let parameters, let extended, let pageInfo):
+             .playedShows(_, let parameters, let extended, let pageInfo):
             var params: [String: String] = ["extended": extended.rawValue,
-                          "page": String(pageInfo.page),
-                          "limit": String(pageInfo.limit)]
+                                            "page": String(pageInfo.page),
+                                            "limit": String(pageInfo.limit)]
             params.merge(parameters) { s1, _ in
-                return s1
+                s1
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
         case .watchedMovies(_, let parameters, let extended, let pageInfo),
-                .watchedShows(_, let parameters, let extended, let pageInfo):
+             .watchedShows(_, let parameters, let extended, let pageInfo):
             var params: [String: String] = ["extended": extended.rawValue,
-                          "page": String(pageInfo.page),
-                          "limit": String(pageInfo.limit)]
+                                            "page": String(pageInfo.page),
+                                            "limit": String(pageInfo.limit)]
             params.merge(parameters) { s1, _ in
-                return s1
+                s1
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
         case .collectedMovies(_, let parameters, let extended, let pageInfo),
-                .collectedShows(_, let parameters, let extended, let pageInfo):
+             .collectedShows(_, let parameters, let extended, let pageInfo):
             var params: [String: String] = ["extended": extended.rawValue,
-                          "page": String(pageInfo.page),
-                          "limit": String(pageInfo.limit)]
+                                            "page": String(pageInfo.page),
+                                            "limit": String(pageInfo.limit)]
             params.merge(parameters) { s1, _ in
-                return s1
+                s1
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
@@ -1778,9 +1781,9 @@ extension TraktAPIService: AuthorizedTargetType {
             } else {
                 queryString += "&extended=full&page=\(pageInfo.page)&limit=\(pageInfo.limit)"
             }
-            let params = queryString.components(separatedBy: "&").map({
+            let params = queryString.components(separatedBy: "&").map {
                 $0.components(separatedBy: "=")
-            }).reduce(into: [String: String]()) { dict, pair in
+            }.reduce(into: [String: String]()) { dict, pair in
                 if pair.count == 2 {
                     dict[pair[0]] = pair[1]
                 }
@@ -1903,6 +1906,7 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: JSONEncoding.default)
         }
     }
+
     var headers: [String: String]? {
         switch self {
         case .token, .refresh:
@@ -1917,45 +1921,46 @@ extension TraktAPIService: AuthorizedTargetType {
                     "trakt-api-key": TraktAPIConfiguration.clientId]
         }
     }
+
     var needsAuth: Bool {
         switch self {
         case .trendingMedia(let filters, _, _),
-                .trendingMovies(let filters, _, _),
-                .anticipatedMovies(let filters, _, _),
-                .popularMovies(let filters, _, _),
-                .boxoffice(let filters, _, _),
-                .recommendedMovies(_, let filters, _, _),
-                .watchedMovies(_, let filters, _, _),
-                .playedMovies(_, let filters, _, _),
-                .collectedMovies(_, let filters, _, _),
-                .trendingShows(let filters, _, _),
-                .anticipatedShows(let filters, _, _),
-                .popularShows(let filters, _, _),
-                .recommendedShows(_, let filters, _, _),
-                .watchedShows(_, let filters, _, _),
-                .playedShows(_, let filters, _, _),
-                .collectedShows(_, let filters, _, _):
+             .trendingMovies(let filters, _, _),
+             .anticipatedMovies(let filters, _, _),
+             .popularMovies(let filters, _, _),
+             .boxoffice(let filters, _, _),
+             .recommendedMovies(_, let filters, _, _),
+             .watchedMovies(_, let filters, _, _),
+             .playedMovies(_, let filters, _, _),
+             .collectedMovies(_, let filters, _, _),
+             .trendingShows(let filters, _, _),
+             .anticipatedShows(let filters, _, _),
+             .popularShows(let filters, _, _),
+             .recommendedShows(_, let filters, _, _),
+             .watchedShows(_, let filters, _, _),
+             .playedShows(_, let filters, _, _),
+             .collectedShows(_, let filters, _, _):
             if filters.keys.contains(SmartSearch.Filter.ignoreWatched.rawValue) == true {
                 return true
             }
             return false
         case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary:
             return false
-        case let .stats(type):
+        case .stats(let type):
             switch type {
             case .user:
                 return true
             default:
                 return false
             }
-        case let .comments(type: type, _, _, _):
+        case .comments(type: let type, _, _, _):
             switch type {
             case .user:
                 return true
             default:
                 return false
             }
-        case let .commentCount(type: type):
+        case .commentCount(type: let type):
             switch type {
             case .user:
                 return true
@@ -1983,8 +1988,8 @@ extension SmartSearch {
                                           pageInfo: PageInfo.firstPage(with: count))
             case .popular:
                 return .popularMovies(filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
-                                          extended: .full,
-                                          pageInfo: PageInfo.firstPage(with: count))
+                                      extended: .full,
+                                      pageInfo: PageInfo.firstPage(with: count))
             case .boxOffice:
                 return .boxoffice(filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
                                   extended: .full,
@@ -1996,56 +2001,56 @@ extension SmartSearch {
                                           pageInfo: PageInfo.firstPage(with: count))
             case .watched:
                 return .watchedMovies(period: period?.rawValue ?? "all",
-                                          filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
-                                          extended: .full,
-                                          pageInfo: PageInfo.firstPage(with: count))
+                                      filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
+                                      extended: .full,
+                                      pageInfo: PageInfo.firstPage(with: count))
             case .played:
                 return .playedMovies(period: period?.rawValue ?? "all",
-                                          filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
-                                          extended: .full,
-                                          pageInfo: PageInfo.firstPage(with: count))
+                                     filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
+                                     extended: .full,
+                                     pageInfo: PageInfo.firstPage(with: count))
             case .collected:
                 return .collectedMovies(period: period?.rawValue ?? "all",
-                                          filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
-                                          extended: .full,
-                                          pageInfo: PageInfo.firstPage(with: count))
+                                        filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
+                                        extended: .full,
+                                        pageInfo: PageInfo.firstPage(with: count))
             }
         case .show:
             switch contentKind {
             case .trending:
                 return .trendingShows(filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
-                                       extended: .full,
-                                       pageInfo: PageInfo.firstPage(with: count))
+                                      extended: .full,
+                                      pageInfo: PageInfo.firstPage(with: count))
             case .anticipated:
                 return .anticipatedShows(filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
-                                          extended: .full,
-                                          pageInfo: PageInfo.firstPage(with: count))
+                                         extended: .full,
+                                         pageInfo: PageInfo.firstPage(with: count))
             case .popular:
                 return .popularShows(filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
-                                          extended: .full,
-                                          pageInfo: PageInfo.firstPage(with: count))
+                                     extended: .full,
+                                     pageInfo: PageInfo.firstPage(with: count))
             case .boxOffice:
                 fatalError("Box office not possible with shows")
             case .recommended:
                 return .recommendedShows(period: period?.rawValue ?? "all",
-                                          filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
-                                          extended: .full,
-                                          pageInfo: PageInfo.firstPage(with: count))
+                                         filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
+                                         extended: .full,
+                                         pageInfo: PageInfo.firstPage(with: count))
             case .watched:
                 return .watchedShows(period: period?.rawValue ?? "all",
-                                          filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
-                                          extended: .full,
-                                          pageInfo: PageInfo.firstPage(with: count))
+                                     filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
+                                     extended: .full,
+                                     pageInfo: PageInfo.firstPage(with: count))
             case .played:
                 return .playedShows(period: period?.rawValue ?? "all",
-                                          filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
-                                          extended: .full,
-                                          pageInfo: PageInfo.firstPage(with: count))
+                                    filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
+                                    extended: .full,
+                                    pageInfo: PageInfo.firstPage(with: count))
             case .collected:
                 return .collectedShows(period: period?.rawValue ?? "all",
-                                          filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
-                                          extended: .full,
-                                          pageInfo: PageInfo.firstPage(with: count))
+                                       filters: filters.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
+                                       extended: .full,
+                                       pageInfo: PageInfo.firstPage(with: count))
             }
         }
     }

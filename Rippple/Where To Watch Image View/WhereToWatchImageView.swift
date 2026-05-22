@@ -6,10 +6,10 @@
 //  Copyright © 2024 Trakt. All rights reserved.
 //
 
-import UIKit
-import Receiver
 import Kingfisher
 import Moya
+import Receiver
+import UIKit
 
 final class WhereToWatchImageView: UIImageView {
     private let disposeBag = DisposeBag()
@@ -169,11 +169,11 @@ final class WhereToWatchImageView: UIImageView {
             }
             if CountryManager.shared.favoritesOnly {
                 let favorites = CountryManager.shared.favoriteProviders
-                data = data.filter({ provider in
+                data = data.filter { provider in
                     favorites.contains(where: { $0 == provider })
-                })
+                }
             }
-            self.providers = data.sortedByProviderPriority()
+            providers = data.sortedByProviderPriority()
         }
     }
 
@@ -183,7 +183,7 @@ final class WhereToWatchImageView: UIImageView {
                 if let providerLogoURL = provider.logo, let url = ImagesManager.shared.imageURL(for: providerLogoURL) {
                     kf.setImage(with: url,
                                 options: [.scaleFactor(traitCollection.displayScale), .processor(DownsamplingImageProcessor(size: CGSize(width: maxHeight,
-                                                                                             height: maxHeight)))]) { [weak self] _ in
+                                                                                                                                         height: maxHeight)))]) { [weak self] _ in
                         guard let self = self else { return }
                         self.isHiddenInStackView = false
                     }
@@ -199,7 +199,7 @@ final class WhereToWatchImageView: UIImageView {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        layer.cornerRadius = maxHeight/2.0
+        layer.cornerRadius = maxHeight / 2.0
         layer.cornerCurve = .circular
         layer.masksToBounds = true
         layer.borderWidth = 1
@@ -223,7 +223,7 @@ final class WhereToWatchImageView: UIImageView {
     }
 
     private func provider(in country: Country) -> Providers? {
-        guard let result = self.result else { return nil }
+        guard let result = result else { return nil }
         if let results = result.results {
             switch country {
             case .BE:
@@ -519,7 +519,7 @@ extension WhereToWatchImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -531,7 +531,7 @@ extension WhereToWatchImageView {
                 } catch {
                     print("TmdbAPIService.showProviders Error: \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("TmdbAPIService.showProviders Failure: \(error)")
             }
         }
@@ -545,7 +545,7 @@ extension WhereToWatchImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -557,7 +557,7 @@ extension WhereToWatchImageView {
                 } catch {
                     print("TmdbAPIService.movieProviders Error: \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("TmdbAPIService.movieProviders Failure: \(error)")
             }
         }
@@ -571,7 +571,7 @@ extension WhereToWatchImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -583,7 +583,7 @@ extension WhereToWatchImageView {
                 } catch {
                     print("TmdbAPIService.seasonProviders Error: \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("TmdbAPIService.seasonProviders Failure: \(error)")
             }
         }

@@ -9,7 +9,6 @@
 import Intents
 
 class IntentHandler: INExtension, MediaTypeIntentHandling {
-
     func provideTypeOptionsCollection(for intent: MediaTypeIntent, searchTerm: String?) async throws -> INObjectCollection<MediaType> {
         if let searchTerm = searchTerm, !searchTerm.isEmpty {
             let data = try await TMDBItemLoader().loadItems(from: URL(string: "https://api.themoviedb.org/3/search/multi?api_key=\(TmdbAPIConfiguration.apiKey)&query=\(searchTerm.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)")!)
@@ -53,26 +52,24 @@ class IntentHandler: INExtension, MediaTypeIntentHandling {
                                                          MediaType(identifier: WidgetType.moviesToWatch.rawValue,
                                                                    display: "Movie To Watch")])
             let upcomingSection = INObjectSection(title: "Upcoming",
-                                                 items: [MediaType(identifier: WidgetType.showsComing.rawValue,
-                                                                   display: "Upcoming Episode"),
-                                                         MediaType(identifier: WidgetType.moviesComing.rawValue,
-                                                                   display: "Upcoming Movie")])
+                                                  items: [MediaType(identifier: WidgetType.showsComing.rawValue,
+                                                                    display: "Upcoming Episode"),
+                                                          MediaType(identifier: WidgetType.moviesComing.rawValue,
+                                                                    display: "Upcoming Movie")])
 
             let trendingSection = INObjectSection(title: "Trending",
-                                                 items: [MediaType(identifier: WidgetType.trendingShow.rawValue,
-                                                                   display: "Most Trending Show"),
-                                                         MediaType(identifier: WidgetType.trendingMovie.rawValue,
-                                                                   display: "Most Trending Movie")])
+                                                  items: [MediaType(identifier: WidgetType.trendingShow.rawValue,
+                                                                    display: "Most Trending Show"),
+                                                          MediaType(identifier: WidgetType.trendingMovie.rawValue,
+                                                                    display: "Most Trending Movie")])
 
             let recommendedSection = INObjectSection(title: "Favorited",
-                                                 items: [MediaType(identifier: WidgetType.recommendedShow.rawValue,
-                                                                   display: "Most Favorited Show"),
-                                                         MediaType(identifier: WidgetType.recommendedMovie.rawValue,
-                                                                   display: "Most Favorited Movie")])
+                                                     items: [MediaType(identifier: WidgetType.recommendedShow.rawValue,
+                                                                       display: "Most Favorited Show"),
+                                                             MediaType(identifier: WidgetType.recommendedMovie.rawValue,
+                                                                       display: "Most Favorited Movie")])
 
-            let collection = INObjectCollection(sections: [watchedSection, toWatchSection, upcomingSection, trendingSection, recommendedSection])
-
-            return collection
+            return INObjectCollection(sections: [watchedSection, toWatchSection, upcomingSection, trendingSection, recommendedSection])
         }
     }
 

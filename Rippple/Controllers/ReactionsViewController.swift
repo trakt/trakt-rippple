@@ -1,29 +1,25 @@
 //
-//  LikesViewController.swift
+//  ReactionsViewController.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 14/07/2018.
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
+import Moya
+import NVActivityIndicatorView
+import Receiver
+import SwiftUI
 import UIKit
 
-import NVActivityIndicatorView
-
-import Moya
-import SwiftUI
-
-import Receiver
-
 final class ReactionsViewController: UITableViewController {
-
-    // Public
+    /// Public
     var comment: Comment!
 
-    // Private
+    /// Private
     private var reactions = [CommentReaction]()
 
-    // Reactions summary
+    /// Reactions summary
     private var reactionSummary: ReactionSummary? {
         didSet {
             DispatchQueue.main.async {
@@ -47,12 +43,12 @@ final class ReactionsViewController: UITableViewController {
         }
     }
 
-    // Empty
+    /// Empty
     @IBOutlet private var emptyView: UIView!
 
     // Paging Management
     @IBOutlet private var loadingView: UIView!
-    @IBOutlet private weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet private var animationViewContainer: NVActivityIndicatorView!
 
     private var currentPage: PageInfo? {
         didSet {
@@ -66,7 +62,7 @@ final class ReactionsViewController: UITableViewController {
     @IBOutlet private var errorView: UIView!
     private var error: Error?
 
-    // Standard Footer
+    /// Standard Footer
     @IBOutlet private var footerView: UIView!
 
     private enum Section: Int {
@@ -205,8 +201,8 @@ final class ReactionsViewController: UITableViewController {
 
     func fetchNext() {
         guard let currentPage = currentPage else {
-            self.currentPage = PageInfo.firstPage(with: 30)
-            fetch(pageInfo: self.currentPage!)
+            currentPage = PageInfo.firstPage(with: 30)
+            fetch(pageInfo: currentPage!)
             return
         }
         fetch(pageInfo: currentPage.nextPage)
@@ -219,7 +215,7 @@ final class ReactionsViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -227,7 +223,7 @@ final class ReactionsViewController: UITableViewController {
 
                     // Paging support
                     if let response = response.response,
-                        let pageInfo = PageInfo(headers: response.allHeaderFields) {
+                       let pageInfo = PageInfo(headers: response.allHeaderFields) {
                         self.currentPage = pageInfo
                     }
                     self.error = nil
@@ -259,7 +255,7 @@ final class ReactionsViewController: UITableViewController {
                         self.dataSource.apply(snapshot, animatingDifferences: false)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Reaction request failure \(error)")
                 self.error = error
 
@@ -279,7 +275,7 @@ final class ReactionsViewController: UITableViewController {
         TraktAPIProvider.provider.request(.commentReactionsSummary(id: comment.identifier), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     let reactions = try response.map(ReactionSummary.self, using: TraktAPIProvider.decoder)
@@ -287,7 +283,7 @@ final class ReactionsViewController: UITableViewController {
                 } catch {
                     print(".commentReactionsSummary request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 if error.localizedDescription == "cancelled" { return }
                 print(".commentReactionsSummary request failure \(error)")
             }
@@ -307,7 +303,7 @@ extension ReactionsViewController {
         tableView.deselectRow(at: indexPath, animated: true)
 
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.reaction(like) = item else { return }
+        guard case Wrapper.reaction(let like) = item else { return }
 
         let nextType = CommentsCoordinator.ListType.user(like.user)
 

@@ -7,18 +7,16 @@
 //
 
 import Foundation
-
 import Receiver
 
 let (onCollaborationsChangedTransmitter, onCollaborationsChangedReceiver) = Receiver<[List]>.make(with: .warm(upTo: 1))
 
 final class CollaborationsManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
-    public var collaborations = [List]() {
+    var collaborations = [List]() {
         didSet {
             onCollaborationsChangedTransmitter.broadcast(collaborations)
             UserDefaults.standard.set(try? PropertyListEncoder().encode(collaborations), forKey: "CollaborationsManager.collaborations")
@@ -63,23 +61,22 @@ final class CollaborationsManager {
         refreshCollaborations()
     }
 
-    public func refresh() {
+    func refresh() {
         refreshCollaborations()
     }
 }
 
 private extension CollaborationsManager {
-
     private func refreshCollaborations() {
         if SessionManager.shared.isLoggedOut {
             return
         }
         TraktAPIProvider.noChacheProvider.request(.collaborations(),
-                                          callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
+                                                  callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -91,7 +88,7 @@ private extension CollaborationsManager {
                 } catch {
                     print("collaborations request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("collaborations request failure \(error)")
             }
         }

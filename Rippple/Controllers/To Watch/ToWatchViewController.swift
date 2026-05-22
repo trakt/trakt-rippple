@@ -6,12 +6,10 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class ToWatchViewController: UIViewController {
-
     @IBOutlet var moviesContainerView: UIView!
     @IBOutlet var episodesContainerView: UIView!
 
@@ -105,24 +103,24 @@ final class ToWatchViewController: UIViewController {
     private func updateBarButtonItems() {
         navigationItem.rightBarButtonItems = [UIBarButtonItem(image: UIImage(systemName: "slider.horizontal.3"),
                                                               primaryAction: UIAction { _ in
-            switch self.currentType {
-            case .movies:
-                self.performSegue(withIdentifier: "movies settings", sender: self)
-            case .episodes:
-                self.performSegue(withIdentifier: "episodes settings", sender: self)
-            }
-        }),
+                                                                  switch self.currentType {
+                                                                  case .movies:
+                                                                      self.performSegue(withIdentifier: "movies settings", sender: self)
+                                                                  case .episodes:
+                                                                      self.performSegue(withIdentifier: "episodes settings", sender: self)
+                                                                  }
+                                                              }),
                                               .fixedSpace(),
-        UIBarButtonItem(image: UIImage(systemName: "line.3.horizontal.decrease"),
-                        primaryAction: UIAction { _ in
-            switch self.currentType {
-            case .movies:
-                self.currentType = .episodes
-            case .episodes:
-                self.currentType = .movies
-            }
+                                              UIBarButtonItem(image: UIImage(systemName: "line.3.horizontal.decrease"),
+                                                              primaryAction: UIAction { _ in
+                                                                  switch self.currentType {
+                                                                  case .movies:
+                                                                      self.currentType = .episodes
+                                                                  case .episodes:
+                                                                      self.currentType = .movies
+                                                                  }
 
-                          })]
+                                                              })]
     }
 
     override func viewWillAppear(_ animated: Bool) {

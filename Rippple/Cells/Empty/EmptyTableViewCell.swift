@@ -9,11 +9,11 @@
 import UIKit
 
 final class EmptyTableViewCell: UITableViewCell {
-    @IBOutlet weak var emoji: UILabel!
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var subtitle: UILabel!
-    @IBOutlet weak var body: UILabel!
-    @IBOutlet weak var action: UIButton!
+    @IBOutlet var emoji: UILabel!
+    @IBOutlet var title: UILabel!
+    @IBOutlet var subtitle: UILabel!
+    @IBOutlet var body: UILabel!
+    @IBOutlet var action: UIButton!
 
     override func awakeFromNib() {
         super.awakeFromNib()

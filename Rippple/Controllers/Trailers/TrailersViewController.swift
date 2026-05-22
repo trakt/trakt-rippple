@@ -6,11 +6,10 @@
 //  Copyright © 2024 Trakt. All rights reserved.
 //
 
-import UIKit
 import SwiftUI
+import UIKit
 
 final class TrailersViewController: UIViewController {
-
     var media: MediaModel?
 
     override func viewDidLoad() {

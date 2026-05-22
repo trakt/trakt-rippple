@@ -6,17 +6,15 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
+import Moya
+import Receiver
 import UIKit
 
-import Receiver
-import Moya
-
 class SidebarViewController: UIViewController {
-
     private let disposeBag = DisposeBag()
 
-    private var dataSource: UICollectionViewDiffableDataSource<Section, Item>! = nil
-    private var collectionView: UICollectionView! = nil
+    private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
+    private var collectionView: UICollectionView!
     private var secondaryViewControllers = [UIViewController]()
 
     private let checkinView = CheckinView()
@@ -56,7 +54,6 @@ class SidebarViewController: UIViewController {
                                                 subtitle: subtitle(for: list),
                                                 image: UIImage()))
                 }
-
             }
 
             sectionSnapshot.append(customListItems, to: sectionSnapshot.items[0])
@@ -212,8 +209,8 @@ class SidebarViewController: UIViewController {
         }
 
         collectionView.selectItem(at: indexPath,
-                                      animated: false,
-                                      scrollPosition: UICollectionView.ScrollPosition.centeredVertically)
+                                  animated: false,
+                                  scrollPosition: UICollectionView.ScrollPosition.centeredVertically)
         if indexPath.section == 3 {
             // if it's a list, we check the number of lists
             if indexPath.row <= lists.count {
@@ -244,8 +241,8 @@ class SidebarViewController: UIViewController {
         if index < 0 {
             let indexPath = IndexPath(row: 0, section: 0)
             collectionView.selectItem(at: indexPath,
-                                          animated: false,
-                                          scrollPosition: UICollectionView.ScrollPosition.centeredVertically)
+                                      animated: false,
+                                      scrollPosition: UICollectionView.ScrollPosition.centeredVertically)
             splitViewController?.setViewController(secondaryViewControllers.first, for: column)
             return
         }
@@ -288,7 +285,6 @@ class SidebarViewController: UIViewController {
 // MARK: - Layout
 
 extension SidebarViewController {
-
     private func createLayout() -> UICollectionViewLayout {
         return UICollectionViewCompositionalLayout { section, layoutEnvironment in
             var config = UICollectionLayoutListConfiguration(appearance: .sidebar)
@@ -297,13 +293,11 @@ extension SidebarViewController {
             return NSCollectionLayoutSection.list(using: config, layoutEnvironment: layoutEnvironment)
         }
     }
-
 }
 
 // MARK: - Data
 
 extension SidebarViewController {
-
     private func configureHierarchy() {
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
         collectionView.isScrollEnabled = true
@@ -337,7 +331,7 @@ extension SidebarViewController {
     private func configureDataSource() {
         // Configuring cells
 
-        let headerRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { (cell, _, item) in
+        let headerRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { cell, _, item in
             var content = UIListContentConfiguration.header()
             content.text = item.title
 //            content.textProperties.font = UIFont.preferredFont(forTextStyle: .headline)
@@ -349,7 +343,7 @@ extension SidebarViewController {
             cell.accessories = [.outlineDisclosure()]
         }
 
-        let cellRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { (cell, _, item) in
+        let cellRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { cell, _, item in
             #if targetEnvironment(macCatalyst)
             var content = UIListContentConfiguration.cell() // Mac
             if let tooltip = item.subtitle {
@@ -443,13 +437,11 @@ extension SidebarViewController {
             }
         }
     }
-
 }
 
 // MARK: - UICollectionViewDelegate
 
 extension SidebarViewController: UICollectionViewDelegate {
-
     func collectionView(_ collectionView: UICollectionView, canFocusItemAt indexPath: IndexPath) -> Bool {
         if indexPath.section == 2 && indexPath.row == 0 { return false }
         if indexPath.section == 3 && indexPath.row == 0 { return false }
@@ -558,7 +550,7 @@ extension SidebarViewController: UICollectionViewDelegate {
         case 4:
             ShortcutManager.shared.shouldHandle(shortcut: ShortcutManager.shared.searchAndKeyboardShortcutItem)
             if SessionManager.shared.isLoggedIn,
-                DeeplinkManager.shared.shouldOpenDeeplink() {
+               DeeplinkManager.shared.shouldOpenDeeplink() {
                 UIApplication.shared.switchToDeeplink()
             }
         case 6:
@@ -645,7 +637,6 @@ private enum Section: String {
 }
 
 extension SidebarViewController: UICollectionViewDropDelegate {
-
     func collectionView(_ collectionView: UICollectionView, shouldSpringLoadItemAt indexPath: IndexPath, with context: UISpringLoadedInteractionContext) -> Bool {
         if indexPath.section == 2 && indexPath.row == 5 {
             return true
@@ -726,7 +717,7 @@ extension SidebarViewController: UICollectionViewDropDelegate {
         TraktAPIProvider.provider.request(.addToList(id: list.identifiers.trakt!,
                                                      item: WatchlistedItem(models: models)), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -742,7 +733,7 @@ extension SidebarViewController: UICollectionViewDropDelegate {
                         SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
                 }
@@ -753,9 +744,9 @@ extension SidebarViewController: UICollectionViewDropDelegate {
     private func addToCollection(models: [MediaModel]) {
         SwiftMessages.show(message: "Adding to Library...", style: .loading)
         TraktAPIProvider.provider.request(TraktAPIService.addToCollection(item: WatchlistedItem(models: models)),
-                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -771,7 +762,7 @@ extension SidebarViewController: UICollectionViewDropDelegate {
                         SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
                 }
@@ -782,9 +773,9 @@ extension SidebarViewController: UICollectionViewDropDelegate {
     private func addToRecommendations(models: [MediaModel]) {
         SwiftMessages.show(message: "Adding to Favorites...", style: .loading)
         TraktAPIProvider.provider.request(TraktAPIService.addToRecommendations(item: WatchlistedItem(models: models)),
-                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -800,7 +791,7 @@ extension SidebarViewController: UICollectionViewDropDelegate {
                         SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
                 }
@@ -811,9 +802,9 @@ extension SidebarViewController: UICollectionViewDropDelegate {
     private func addToWatchlist(models: [MediaModel]) {
         SwiftMessages.show(message: "Adding to Watchlist...", style: .loading)
         TraktAPIProvider.provider.request(TraktAPIService.addToWatchlist(item: WatchlistedItem(models: models)),
-                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -829,7 +820,7 @@ extension SidebarViewController: UICollectionViewDropDelegate {
                         SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
                 }

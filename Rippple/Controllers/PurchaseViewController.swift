@@ -6,26 +6,22 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Haring
+import Receiver
+import SafariServices
+import StoreKit
+import SwiftUI
 import UIKit
 
-import Receiver
-
-import SafariServices
-
-import StoreKit
-import Haring
-import SwiftUI
-
 final class PurchaseViewController: UIViewController {
-
     private let disposeBag = DisposeBag()
 
-    @IBOutlet weak var purchaseButton: UIButton!
+    @IBOutlet var purchaseButton: UIButton!
 
     private lazy var productManager = ProductManager.shared
     private lazy var purchaseManager = PurchaseManager.shared
 
-    @IBOutlet weak var purchaseStackView: UIStackView?
+    @IBOutlet var purchaseStackView: UIStackView?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -79,16 +75,16 @@ final class PurchaseViewController: UIViewController {
         configureHeader()
     }
 
-    @IBOutlet weak var headerLabel: UILabel!
+    @IBOutlet var headerLabel: UILabel!
     private func configureHeader() {
         let markdownParser = MarkdownParser(font: UIFont.preferredFont(forTextStyle: .title2),
                                             color: .label,
-                            automaticLinkDetectionEnabled: false)
+                                            automaticLinkDetectionEnabled: false)
         markdownParser.bold.color = UIColor(asset: .globalTint)
         let markdown = """
-Unlock more with **Trakt VIP**.
-VIP supports Trakt, unlocks powerful features, and higher limits for people who care about what they watch.
-"""
+        Unlock more with **Trakt VIP**.
+        VIP supports Trakt, unlocks powerful features, and higher limits for people who care about what they watch.
+        """
         headerLabel?.attributedText = markdownParser.parse(markdown)
     }
 
@@ -172,14 +168,14 @@ private extension String {
 
         attributedString.addAttribute(kCTFontAttributeName as NSAttributedString.Key,
                                       value: font,
-                                      range: NSRange(location: 0, length: self.count))
+                                      range: NSRange(location: 0, length: count))
 
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment = .center
 
         attributedString.addAttribute(kCTParagraphStyleAttributeName as NSAttributedString.Key,
                                       value: paragraphStyle,
-                                      range: NSRange(location: 0, length: self.count))
+                                      range: NSRange(location: 0, length: count))
 
         return attributedString
     }

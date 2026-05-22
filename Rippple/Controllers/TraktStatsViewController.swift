@@ -10,7 +10,6 @@ import UIKit
 import WebKit
 
 final class TraktStatsViewController: UIViewController {
-
     private let webView = WKWebView()
 
     enum StatsMode {
@@ -58,7 +57,7 @@ final class TraktStatsViewController: UIViewController {
 
         var dates: [Date] = []
 
-        for monthOffset in 0...(monthsBack-1) {
+        for monthOffset in 0...(monthsBack - 1) {
             if let targetMonth = calendar.date(byAdding: .month, value: -monthOffset, to: date) {
                 let components = calendar.dateComponents([.year, .month], from: targetMonth)
                 if let firstDayOfMonth = calendar.date(from: components),
@@ -166,7 +165,6 @@ final class TraktStatsViewController: UIViewController {
 }
 
 extension TraktStatsViewController: WKNavigationDelegate {
-
     private func openURL(url: URL) {
         if UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url, options: [:], completionHandler: { success in
@@ -189,7 +187,7 @@ extension TraktStatsViewController: WKNavigationDelegate {
             let urlString = url.absoluteString
             if urlString.hasPrefix("https://trakt.tv/shows") ||
                 urlString.hasPrefix("https://trakt.tv/movies"),
-               let ripppleUrl = URL(string: urlString.replacingOccurrences(of: "https://trakt.tv/", with: "ripl://")) {
+                let ripppleUrl = URL(string: urlString.replacingOccurrences(of: "https://trakt.tv/", with: "ripl://")) {
                 openURL(url: ripppleUrl)
             } else {
                 openURL(url: url)

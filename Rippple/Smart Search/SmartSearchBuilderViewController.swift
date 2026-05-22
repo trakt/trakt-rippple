@@ -7,15 +7,14 @@
 //
 
 import Foundation
-import UIKit
 import Moya
 import Receiver
+import UIKit
 
 let (onMovieSmartSearchChangedTransmitter, onMovieSmartSearchChangedReceiver) = Receiver<Int>.make(with: .hot)
 let (onShowSmartSearchChangedTransmitter, onShowSmartSearchChangedReceiver) = Receiver<Int>.make(with: .hot)
 
 struct SmartSearch: Codable, Equatable, Hashable {
-
     enum ContentType: String, Codable {
         case movie
         case show
@@ -53,16 +52,6 @@ struct SmartSearch: Codable, Equatable, Hashable {
         case ignoreWatched = "ignore_watched"
     }
 
-    static func == (lhs: SmartSearch, rhs: SmartSearch) -> Bool {
-        return lhs.uuid == rhs.uuid &&
-            lhs.contentType == rhs.contentType &&
-            lhs.contentKind == rhs.contentKind &&
-            lhs.count == rhs.count &&
-            lhs.period == rhs.period &&
-            lhs.name == rhs.name &&
-            lhs.filters == rhs.filters
-    }
-
     var contentType: ContentType {
         didSet {
             if contentType == .show && contentKind == .boxOffice {
@@ -80,6 +69,7 @@ struct SmartSearch: Codable, Equatable, Hashable {
             }
         }
     }
+
     var contentKind: ContentKind {
         didSet {
             if contentKind != oldValue {
@@ -90,6 +80,7 @@ struct SmartSearch: Codable, Equatable, Hashable {
             }
         }
     }
+
     var count: Int
     var period: Period?
 
@@ -142,250 +133,234 @@ struct SmartSearch: Codable, Equatable, Hashable {
 
         switch URL.path {
         case "/movies/boxoffice":
-            self.contentType = .movie
-            self.contentKind = .boxOffice
-            self.period = nil
-
+            contentType = .movie
+            contentKind = .boxOffice
+            period = nil
         case "/movies/trending":
-            self.contentType = .movie
-            self.contentKind = .trending
-            self.period = nil
-
+            contentType = .movie
+            contentKind = .trending
+            period = nil
         case "/movies/anticipated":
-            self.contentType = .movie
-            self.contentKind = .anticipated
-            self.period = nil
-
+            contentType = .movie
+            contentKind = .anticipated
+            period = nil
         case "/movies/popular":
-            self.contentType = .movie
-            self.contentKind = .popular
-            self.period = nil
-
+            contentType = .movie
+            contentKind = .popular
+            period = nil
         case "/movies/recommended/daily":
-            self.contentType = .movie
-            self.contentKind = .recommended
-            self.period = .daily
+            contentType = .movie
+            contentKind = .recommended
+            period = .daily
         case "/movies/recommended/weekly":
-            self.contentType = .movie
-            self.contentKind = .recommended
-            self.period = .weekly
+            contentType = .movie
+            contentKind = .recommended
+            period = .weekly
         case "/movies/recommended/monthly":
-            self.contentType = .movie
-            self.contentKind = .recommended
-            self.period = .monthly
+            contentType = .movie
+            contentKind = .recommended
+            period = .monthly
         case "/movies/recommended/yearly":
-            self.contentType = .movie
-            self.contentKind = .recommended
-            self.period = .yearly
+            contentType = .movie
+            contentKind = .recommended
+            period = .yearly
         case "/movies/recommended/all":
-            self.contentType = .movie
-            self.contentKind = .recommended
-            self.period = .all
-
+            contentType = .movie
+            contentKind = .recommended
+            period = .all
         case "/movies/favorited/daily":
-            self.contentType = .movie
-            self.contentKind = .recommended
-            self.period = .daily
+            contentType = .movie
+            contentKind = .recommended
+            period = .daily
         case "/movies/favorited/weekly":
-            self.contentType = .movie
-            self.contentKind = .recommended
-            self.period = .weekly
+            contentType = .movie
+            contentKind = .recommended
+            period = .weekly
         case "/movies/favorited/monthly":
-            self.contentType = .movie
-            self.contentKind = .recommended
-            self.period = .monthly
+            contentType = .movie
+            contentKind = .recommended
+            period = .monthly
         case "/movies/favorited/yearly":
-            self.contentType = .movie
-            self.contentKind = .recommended
-            self.period = .yearly
+            contentType = .movie
+            contentKind = .recommended
+            period = .yearly
         case "/movies/favorited/all":
-            self.contentType = .movie
-            self.contentKind = .recommended
-            self.period = .all
-
+            contentType = .movie
+            contentKind = .recommended
+            period = .all
         case "/movies/played/daily":
-            self.contentType = .movie
-            self.contentKind = .played
-            self.period = .daily
+            contentType = .movie
+            contentKind = .played
+            period = .daily
         case "/movies/played/weekly":
-            self.contentType = .movie
-            self.contentKind = .played
-            self.period = .weekly
+            contentType = .movie
+            contentKind = .played
+            period = .weekly
         case "/movies/played/monthly":
-            self.contentType = .movie
-            self.contentKind = .played
-            self.period = .monthly
+            contentType = .movie
+            contentKind = .played
+            period = .monthly
         case "/movies/played/yearly":
-            self.contentType = .movie
-            self.contentKind = .played
-            self.period = .yearly
+            contentType = .movie
+            contentKind = .played
+            period = .yearly
         case "/movies/played/all":
-            self.contentType = .movie
-            self.contentKind = .played
-            self.period = .all
-
+            contentType = .movie
+            contentKind = .played
+            period = .all
         case "/movies/watched/daily":
-            self.contentType = .movie
-            self.contentKind = .watched
-            self.period = .daily
+            contentType = .movie
+            contentKind = .watched
+            period = .daily
         case "/movies/watched/weekly":
-            self.contentType = .movie
-            self.contentKind = .watched
-            self.period = .weekly
+            contentType = .movie
+            contentKind = .watched
+            period = .weekly
         case "/movies/watched/monthly":
-            self.contentType = .movie
-            self.contentKind = .watched
-            self.period = .monthly
+            contentType = .movie
+            contentKind = .watched
+            period = .monthly
         case "/movies/watched/yearly":
-            self.contentType = .movie
-            self.contentKind = .watched
-            self.period = .yearly
+            contentType = .movie
+            contentKind = .watched
+            period = .yearly
         case "/movies/watched/all":
-            self.contentType = .movie
-            self.contentKind = .watched
-            self.period = .all
-
+            contentType = .movie
+            contentKind = .watched
+            period = .all
         case "/movies/collected/daily":
-            self.contentType = .movie
-            self.contentKind = .collected
-            self.period = .daily
+            contentType = .movie
+            contentKind = .collected
+            period = .daily
         case "/movies/collected/weekly":
-            self.contentType = .movie
-            self.contentKind = .collected
-            self.period = .weekly
+            contentType = .movie
+            contentKind = .collected
+            period = .weekly
         case "/movies/collected/monthly":
-            self.contentType = .movie
-            self.contentKind = .collected
-            self.period = .monthly
+            contentType = .movie
+            contentKind = .collected
+            period = .monthly
         case "/movies/collected/yearly":
-            self.contentType = .movie
-            self.contentKind = .collected
-            self.period = .yearly
+            contentType = .movie
+            contentKind = .collected
+            period = .yearly
         case "/movies/collected/all":
-            self.contentType = .movie
-            self.contentKind = .collected
-            self.period = .all
-
+            contentType = .movie
+            contentKind = .collected
+            period = .all
         // Shows
         case "/shows/trending":
-            self.contentType = .show
-            self.contentKind = .trending
-            self.period = nil
-
+            contentType = .show
+            contentKind = .trending
+            period = nil
         case "/shows/anticipated":
-            self.contentType = .show
-            self.contentKind = .anticipated
-            self.period = nil
-
+            contentType = .show
+            contentKind = .anticipated
+            period = nil
         case "/shows/popular":
-            self.contentType = .show
-            self.contentKind = .popular
-            self.period = nil
-
+            contentType = .show
+            contentKind = .popular
+            period = nil
         case "/shows/recommended/daily":
-            self.contentType = .show
-            self.contentKind = .recommended
-            self.period = .daily
+            contentType = .show
+            contentKind = .recommended
+            period = .daily
         case "/shows/recommended/weekly":
-            self.contentType = .show
-            self.contentKind = .recommended
-            self.period = .weekly
+            contentType = .show
+            contentKind = .recommended
+            period = .weekly
         case "/shows/recommended/monthly":
-            self.contentType = .show
-            self.contentKind = .recommended
-            self.period = .monthly
+            contentType = .show
+            contentKind = .recommended
+            period = .monthly
         case "/shows/recommended/yearly":
-            self.contentType = .show
-            self.contentKind = .recommended
-            self.period = .yearly
+            contentType = .show
+            contentKind = .recommended
+            period = .yearly
         case "/shows/recommended/all":
-            self.contentType = .show
-            self.contentKind = .recommended
-            self.period = .all
-
+            contentType = .show
+            contentKind = .recommended
+            period = .all
         case "/shows/favorited/daily":
-            self.contentType = .show
-            self.contentKind = .recommended
-            self.period = .daily
+            contentType = .show
+            contentKind = .recommended
+            period = .daily
         case "/shows/favorited/weekly":
-            self.contentType = .show
-            self.contentKind = .recommended
-            self.period = .weekly
+            contentType = .show
+            contentKind = .recommended
+            period = .weekly
         case "/shows/favorited/monthly":
-            self.contentType = .show
-            self.contentKind = .recommended
-            self.period = .monthly
+            contentType = .show
+            contentKind = .recommended
+            period = .monthly
         case "/shows/favorited/yearly":
-            self.contentType = .show
-            self.contentKind = .recommended
-            self.period = .yearly
+            contentType = .show
+            contentKind = .recommended
+            period = .yearly
         case "/shows/favorited/all":
-            self.contentType = .show
-            self.contentKind = .recommended
-            self.period = .all
-
+            contentType = .show
+            contentKind = .recommended
+            period = .all
         case "/shows/played/daily":
-            self.contentType = .show
-            self.contentKind = .played
-            self.period = .daily
+            contentType = .show
+            contentKind = .played
+            period = .daily
         case "/shows/played/weekly":
-            self.contentType = .show
-            self.contentKind = .played
-            self.period = .weekly
+            contentType = .show
+            contentKind = .played
+            period = .weekly
         case "/shows/played/monthly":
-            self.contentType = .show
-            self.contentKind = .played
-            self.period = .monthly
+            contentType = .show
+            contentKind = .played
+            period = .monthly
         case "/shows/played/yearly":
-            self.contentType = .show
-            self.contentKind = .played
-            self.period = .yearly
+            contentType = .show
+            contentKind = .played
+            period = .yearly
         case "/shows/played/all":
-            self.contentType = .show
-            self.contentKind = .played
-            self.period = .all
-
+            contentType = .show
+            contentKind = .played
+            period = .all
         case "/shows/watched/daily":
-            self.contentType = .show
-            self.contentKind = .watched
-            self.period = .daily
+            contentType = .show
+            contentKind = .watched
+            period = .daily
         case "/shows/watched/weekly":
-            self.contentType = .show
-            self.contentKind = .watched
-            self.period = .weekly
+            contentType = .show
+            contentKind = .watched
+            period = .weekly
         case "/shows/watched/monthly":
-            self.contentType = .show
-            self.contentKind = .watched
-            self.period = .monthly
+            contentType = .show
+            contentKind = .watched
+            period = .monthly
         case "/shows/watched/yearly":
-            self.contentType = .show
-            self.contentKind = .watched
-            self.period = .yearly
+            contentType = .show
+            contentKind = .watched
+            period = .yearly
         case "/shows/watched/all":
-            self.contentType = .show
-            self.contentKind = .watched
-            self.period = .all
-
+            contentType = .show
+            contentKind = .watched
+            period = .all
         case "/shows/collected/daily":
-            self.contentType = .show
-            self.contentKind = .collected
-            self.period = .daily
+            contentType = .show
+            contentKind = .collected
+            period = .daily
         case "/shows/collected/weekly":
-            self.contentType = .show
-            self.contentKind = .collected
-            self.period = .weekly
+            contentType = .show
+            contentKind = .collected
+            period = .weekly
         case "/shows/collected/monthly":
-            self.contentType = .show
-            self.contentKind = .collected
-            self.period = .monthly
+            contentType = .show
+            contentKind = .collected
+            period = .monthly
         case "/shows/collected/yearly":
-            self.contentType = .show
-            self.contentKind = .collected
-            self.period = .yearly
+            contentType = .show
+            contentKind = .collected
+            period = .yearly
         case "/shows/collected/all":
-            self.contentType = .show
-            self.contentKind = .collected
-            self.period = .all
+            contentType = .show
+            contentKind = .collected
+            period = .all
         default:
             fatalError()
         }
@@ -406,16 +381,12 @@ struct SmartSearch: Codable, Equatable, Hashable {
             switch (contentKind, period) {
             case (.boxOffice, nil):
                 return "Box office"
-
             case (.trending, nil):
                 return "Trending"
-
             case (.anticipated, nil):
                 return "Anticipated"
-
             case (.popular, nil):
                 return "Popular"
-
             case (.recommended, .daily):
                 return "Favorited Today"
             case (.recommended, .weekly):
@@ -426,7 +397,6 @@ struct SmartSearch: Codable, Equatable, Hashable {
                 return "Favorited This Year"
             case (.recommended, .all):
                 return "Favorited"
-
             case (.played, .daily):
                 return "Played Today"
             case (.played, .weekly):
@@ -437,7 +407,6 @@ struct SmartSearch: Codable, Equatable, Hashable {
                 return "Played This Year"
             case (.played, .all):
                 return "Played"
-
             case (.watched, .daily):
                 return "Watched Today"
             case (.watched, .weekly):
@@ -448,7 +417,6 @@ struct SmartSearch: Codable, Equatable, Hashable {
                 return "Watched This Year"
             case (.watched, .all):
                 return "Watched"
-
             case (.collected, .daily):
                 return "Collected Today"
             case (.collected, .weekly):
@@ -466,13 +434,10 @@ struct SmartSearch: Codable, Equatable, Hashable {
             switch (contentKind, period) {
             case (.trending, nil):
                 return "Trending"
-
             case (.anticipated, nil):
                 return "Anticipated"
-
             case (.popular, nil):
                 return "Popular"
-
             case (.recommended, .daily):
                 return "Favorited Today"
             case (.recommended, .weekly):
@@ -483,7 +448,6 @@ struct SmartSearch: Codable, Equatable, Hashable {
                 return "Favorited This Year"
             case (.recommended, .all):
                 return "Favorited"
-
             case (.played, .daily):
                 return "Played Today"
             case (.played, .weekly):
@@ -494,7 +458,6 @@ struct SmartSearch: Codable, Equatable, Hashable {
                 return "Played This Year"
             case (.played, .all):
                 return "Played"
-
             case (.watched, .daily):
                 return "Watched Today"
             case (.watched, .weekly):
@@ -505,7 +468,6 @@ struct SmartSearch: Codable, Equatable, Hashable {
                 return "Watched This Year"
             case (.watched, .all):
                 return "Watched"
-
             case (.collected, .daily):
                 return "Collected Today"
             case (.collected, .weekly):
@@ -594,7 +556,7 @@ struct SmartSearch: Codable, Equatable, Hashable {
         }
     }
 
-    static private func createDefaultSmartSearchesForShows() -> [SmartSearch] {
+    private static func createDefaultSmartSearchesForShows() -> [SmartSearch] {
         let defaultShows = [SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/shows/trending", count: 50, name: "Trending"),
                             SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/shows/popular", count: 50, name: "Popular"),
                             SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/shows/anticipated", count: 50, name: "Anticipated"),
@@ -605,11 +567,11 @@ struct SmartSearch: Codable, Equatable, Hashable {
         return defaultShows
     }
 
-    static private func createDefaultSmartSearchesForMovies() -> [SmartSearch] {
+    private static func createDefaultSmartSearchesForMovies() -> [SmartSearch] {
         let defaultMovies = [SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/trending", count: 50, name: "Trending"),
-                            SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/popular", count: 50, name: "Popular"),
-                            SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/anticipated", count: 50, name: "Anticipated"),
-                            SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/favorited/weekly", count: 50, name: "Favorited"),
+                             SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/popular", count: 50, name: "Popular"),
+                             SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/anticipated", count: 50, name: "Anticipated"),
+                             SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/favorited/weekly", count: 50, name: "Favorited"),
                              SmartSearch(urlString: "\(TraktAPIConfiguration.baseURL)/movies/boxoffice", count: 50, name: "Box Office")]
 
         save(smartSearches: defaultMovies, contentType: .movie, transmit: false)
@@ -659,7 +621,6 @@ struct SmartSearch: Codable, Equatable, Hashable {
 
 extension UILabel {
     func boundingRect(forCharacterRange range: NSRange) -> CGRect? {
-
         guard let attributedText = attributedText else { return nil }
 
         let layoutManager = NSLayoutManager()
@@ -693,8 +654,7 @@ extension UILabel {
 }
 
 final class SmartSearchBuilderViewController: SearchResultsViewController {
-
-    @IBOutlet weak var addConditionButton: UIButton!
+    @IBOutlet var addConditionButton: UIButton!
 
     var smartSearch: SmartSearch! {
         didSet {
@@ -719,8 +679,8 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
             tableView.tableHeaderView = headerView
             let sizeWithBigLabel = smartSearchLabel.bounds.size.height + 200
             headerView.frame = CGRect(origin: headerView.frame.origin,
-                                                     size: CGSize(width: 0.0,
-                                                                  height: max(self.view.bounds.size.height - 200, sizeWithBigLabel)))
+                                      size: CGSize(width: 0.0,
+                                                   height: max(view.bounds.size.height - 200, sizeWithBigLabel)))
         }
     }
 
@@ -730,7 +690,7 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                                                              .underlineStyle: NSUnderlineStyle.single.union(.patternDot).rawValue,
                                                              .underlineColor: UIColor.secondaryLabel]
         let lowAttributes = [NSAttributedString.Key.foregroundColor: UIColor.secondaryLabel,
-                          NSAttributedString.Key.font: UIFont.systemFont(ofSize: 22, weight: .regular)]
+                             NSAttributedString.Key.font: UIFont.systemFont(ofSize: 22, weight: .regular)]
 
         let attributedString = NSMutableAttributedString(string: "I’m looking for ", attributes: lowAttributes)
 
@@ -745,16 +705,12 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
             switch (smartSearch.contentKind, smartSearch.period) {
             case (.boxOffice, nil):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") in the US ", attributes: lowAttributes))
-
             case (.trending, nil):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") currently ", attributes: lowAttributes))
-
             case (.anticipated, nil):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") currently ", attributes: lowAttributes))
-
             case (.popular, nil):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") ", attributes: lowAttributes))
-
             case (.recommended, .daily):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.recommended, .weekly):
@@ -765,7 +721,6 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.recommended, .all):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") the most ", attributes: lowAttributes))
-
             case (.played, .daily):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.played, .weekly):
@@ -776,7 +731,6 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.played, .all):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") the most ", attributes: lowAttributes))
-
             case (.watched, .daily):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.watched, .weekly):
@@ -787,7 +741,6 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.watched, .all):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") the most ", attributes: lowAttributes))
-
             case (.collected, .daily):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.collected, .weekly):
@@ -806,13 +759,10 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
             switch (smartSearch.contentKind, smartSearch.period) {
             case (.trending, nil):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") currently ", attributes: lowAttributes))
-
             case (.anticipated, nil):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") currently ", attributes: lowAttributes))
-
             case (.popular, nil):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") ", attributes: lowAttributes))
-
             case (.recommended, .daily):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.recommended, .weekly):
@@ -823,7 +773,6 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.recommended, .all):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") the most ", attributes: lowAttributes))
-
             case (.played, .daily):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.played, .weekly):
@@ -834,7 +783,6 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.played, .all):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") the most ", attributes: lowAttributes))
-
             case (.watched, .daily):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.watched, .weekly):
@@ -845,7 +793,6 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.watched, .all):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "is" : "are") the most ", attributes: lowAttributes))
-
             case (.collected, .daily):
                 attributedString.append(NSAttributedString(string: " that \(smartSearch.count == 1 ? "was" : "were") most ", attributes: lowAttributes))
             case (.collected, .weekly):
@@ -1016,11 +963,11 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
         placeFiltersButtons()
 
         /*
-        for button in smartSearchLabel.subviews where button is UIButton {
-            button.layer.borderWidth = 1
-            button.layer.borderColor = UIColor.red.cgColor
-        }
-         */
+         for button in smartSearchLabel.subviews where button is UIButton {
+             button.layer.borderWidth = 1
+             button.layer.borderColor = UIColor.red.cgColor
+         }
+          */
     }
 
     private func placeFiltersButtons() {
@@ -1895,7 +1842,7 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
         if smartSearch.contentType == .movie {
             return UIMenu(children: [genres,
                                      certifications,
-                                     buildReleaseYearMenu(), /*a2, a3, a4,*/
+                                     buildReleaseYearMenu(), /* a2, a3, a4, */
                                      runtimeAction,
                                      ratingsAction,
                                      countries,
@@ -1906,7 +1853,7 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
             return UIMenu(children: [genres,
                                      certifications,
                                      buildReleaseYearMenu(),
-                                     statusMenu, /*, a3, a4,*/
+                                     statusMenu, /* , a3, a4, */
                                      runtimeAction,
                                      ratingsAction,
                                      networks,
@@ -1917,7 +1864,7 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
     }
 
     private func buildLanguagesMenu() -> UIMenuElement {
-        return UIDeferredMenuElement.uncached({ completion in
+        return UIDeferredMenuElement.uncached { completion in
             var service = TraktAPIService.movieLanguages
             if self.smartSearch.contentType == .show {
                 service = TraktAPIService.tvLanguages
@@ -1926,7 +1873,7 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                 guard let self = self else { return }
 
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1949,8 +1896,8 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                         let alreadySelected = current.split(separator: ",").contains { $0 == "en" }
                         let languageName = locale.localizedString(forLanguageCode: "en")!
                         let en = UIAction(title: languageName,
-                                              attributes: alreadySelected ? .disabled : [],
-                                              state: alreadySelected ? .on : .off) { [weak self] _ in
+                                          attributes: alreadySelected ? .disabled : [],
+                                          state: alreadySelected ? .on : .off) { [weak self] _ in
                             guard let self = self else { return }
                             self.smartSearch.add(slug: "en", for: .languages)
                         }
@@ -1959,8 +1906,8 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                             let alreadySelected = current.split(separator: ",").contains { $0 == localLanguage.prefix(2) }
                             let languageName = locale.localizedString(forLanguageCode: localLanguage)!
                             let localLanguage = UIAction(title: languageName,
-                                                  attributes: alreadySelected ? .disabled : [],
-                                                  state: alreadySelected ? .on : .off) { [weak self] _ in
+                                                         attributes: alreadySelected ? .disabled : [],
+                                                         state: alreadySelected ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
                                 self.smartSearch.add(slug: String(localLanguage.prefix(2)), for: .languages)
                             }
@@ -1984,18 +1931,18 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                             completion([])
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error Fetching Languages \(error)")
                     DispatchQueue.main.async {
                         completion([])
                     }
                 }
             }
-        })
+        }
     }
 
     private func buildCountriesMenu() -> UIMenuElement {
-        return UIDeferredMenuElement.uncached({ completion in
+        return UIDeferredMenuElement.uncached { completion in
             var service = TraktAPIService.movieCountries
             if self.smartSearch.contentType == .show {
                 service = TraktAPIService.tvCountries
@@ -2004,7 +1951,7 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                 guard let self = self else { return }
 
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -2027,8 +1974,8 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                         let alreadySelected = current.split(separator: ",").contains { $0 == "us" }
                         let countryName = locale.localizedString(forRegionCode: "us")!
                         let us = UIAction(title: countryName,
-                                              attributes: alreadySelected ? .disabled : [],
-                                              state: alreadySelected ? .on : .off) { [weak self] _ in
+                                          attributes: alreadySelected ? .disabled : [],
+                                          state: alreadySelected ? .on : .off) { [weak self] _ in
                             guard let self = self else { return }
                             self.smartSearch.add(slug: "us", for: .countries)
                         }
@@ -2037,8 +1984,8 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                             let alreadySelected = current.split(separator: ",").contains { $0 == localCountry.lowercased() }
                             let countryName = locale.localizedString(forRegionCode: localCountry)!
                             let localCountry = UIAction(title: countryName,
-                                                  attributes: alreadySelected ? .disabled : [],
-                                                  state: alreadySelected ? .on : .off) { [weak self] _ in
+                                                        attributes: alreadySelected ? .disabled : [],
+                                                        state: alreadySelected ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
                                 self.smartSearch.add(slug: localCountry.lowercased(), for: .countries)
                             }
@@ -2062,14 +2009,14 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                             completion([])
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error Fetching Countries \(error)")
                     DispatchQueue.main.async {
                         completion([])
                     }
                 }
             }
-        })
+        }
     }
 
     private func alphabeticalNetworks(networks: [Network]) -> [String: [Network]] {
@@ -2092,12 +2039,12 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
     }
 
     private func buildNetworkMenu() -> UIMenuElement {
-        return UIDeferredMenuElement.uncached({ completion in
+        return UIDeferredMenuElement.uncached { completion in
             TraktAPIProvider.provider.request(TraktAPIService.networks, callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
 
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -2108,19 +2055,19 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                         var children = [UIMenu]()
 
                         /*
-                        var actions = [UIAction]()
-                        for favoriteProvider in CountryManager.shared.favoriteProviders.compactMap({ $0.name }) where networks.map({ $0.name }).contains(where: { $0.lowercased() == favoriteProvider.lowercased() }) {
-                            let alreadySelected = current.split(separator: ",").contains { $0 == favoriteProvider }
-                            let action = UIAction(title: favoriteProvider,
-                                                  attributes: alreadySelected ? .disabled : [],
-                                                  state: alreadySelected ? .on : .off) { [weak self] _ in
-                                guard let self = self else { return }
-                                self.smartSearch.add(slug: favoriteProvider, for: .networks)
-                            }
-                            actions.append(action)
-                        }
-                        children.append(UIMenu(options: .displayInline, children: actions))
-                         */
+                         var actions = [UIAction]()
+                         for favoriteProvider in CountryManager.shared.favoriteProviders.compactMap({ $0.name }) where networks.map({ $0.name }).contains(where: { $0.lowercased() == favoriteProvider.lowercased() }) {
+                             let alreadySelected = current.split(separator: ",").contains { $0 == favoriteProvider }
+                             let action = UIAction(title: favoriteProvider,
+                                                   attributes: alreadySelected ? .disabled : [],
+                                                   state: alreadySelected ? .on : .off) { [weak self] _ in
+                                 guard let self = self else { return }
+                                 self.smartSearch.add(slug: favoriteProvider, for: .networks)
+                             }
+                             actions.append(action)
+                         }
+                         children.append(UIMenu(options: .displayInline, children: actions))
+                          */
 
                         for alphabet in alphabeticalNetworks.keys.sorted(by: { $0 < $1 }) {
                             var actions = [UIAction]()
@@ -2147,18 +2094,18 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                             completion([])
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error Fetching Networks \(error)")
                     DispatchQueue.main.async {
                         completion([])
                     }
                 }
             }
-        })
+        }
     }
 
     private func buildCertificationsMenu() -> UIMenuElement {
-        return UIDeferredMenuElement.uncached({ completion in
+        return UIDeferredMenuElement.uncached { completion in
             var service = TraktAPIService.movieCertifications
             if self.smartSearch.contentType == .show {
                 service = TraktAPIService.tvCertifications
@@ -2167,7 +2114,7 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                 guard let self = self else { return }
 
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -2196,18 +2143,18 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                             completion([])
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error Fetching Certification \(error)")
                     DispatchQueue.main.async {
                         completion([])
                     }
                 }
             }
-        })
+        }
     }
 
     private func buildGenresMenu() -> UIMenuElement {
-        return UIDeferredMenuElement.uncached({ completion in
+        return UIDeferredMenuElement.uncached { completion in
             var service = TraktAPIService.movieGenres
             if self.smartSearch.contentType == .show {
                 service = TraktAPIService.tvGenres
@@ -2216,7 +2163,7 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                 guard let self = self else { return }
 
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -2244,18 +2191,18 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
                             completion([])
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error Fetching Genres \(error)")
                     DispatchQueue.main.async {
                         completion([])
                     }
                 }
             }
-        })
+        }
     }
 
     private func buildStatusMenu() -> UIMenu {
-        let current = self.smartSearch.filters[.status] ?? ""
+        let current = smartSearch.filters[.status] ?? ""
         let split = current.split(separator: ",")
 
         let returning = UIAction(title: "Returning Series",
@@ -2334,8 +2281,8 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
         return UIMenu(title: "Release Date", children: [thisYear, decades, resetDefault])
     }
 
-    @IBOutlet weak var smartSearchLabel: UILabel!
-    @IBOutlet weak var saveButton: UIBarButtonItem!
+    @IBOutlet var smartSearchLabel: UILabel!
+    @IBOutlet var saveButton: UIBarButtonItem!
 
     override func viewDidLoad() {
         super.viewDidLoad()

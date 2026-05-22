@@ -6,53 +6,51 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import UIKit
 
 let (onNotificationsSettingsChangedTransmitter, onNotificationsSettingsChangedReceiver) = Receiver<NotificationSettingsViewController>.make(with: .hot)
 
 final class NotificationSettingsViewController: UITableViewController {
-
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         print("NotificationSettingsViewController should notify to update settings")
         onNotificationsSettingsChangedTransmitter.broadcast(self)
     }
 
-    @IBOutlet weak var stingerAlert: UISwitch!
+    @IBOutlet var stingerAlert: UISwitch!
 
-    @IBOutlet weak var groupEpisodes: UISwitch!
+    @IBOutlet var groupEpisodes: UISwitch!
 
-    @IBOutlet weak var watchlistMovieReleaseSwitch: UISwitch!
-    @IBOutlet weak var watchlistDVDMovieReleaseSwitch: UISwitch!
-    @IBOutlet weak var watchlistShowPremiereSwitch: UISwitch!
-    @IBOutlet weak var watchlistSeasonPremiereSwitch: UISwitch!
-    @IBOutlet weak var watchlistEpisodeReleaseSwitch: UISwitch!
+    @IBOutlet var watchlistMovieReleaseSwitch: UISwitch!
+    @IBOutlet var watchlistDVDMovieReleaseSwitch: UISwitch!
+    @IBOutlet var watchlistShowPremiereSwitch: UISwitch!
+    @IBOutlet var watchlistSeasonPremiereSwitch: UISwitch!
+    @IBOutlet var watchlistEpisodeReleaseSwitch: UISwitch!
 
-    @IBOutlet weak var toWatchMovieReleaseSwitch: UISwitch!
-    @IBOutlet weak var toWatchDVDMovieReleaseSwitch: UISwitch!
-    @IBOutlet weak var toWatchShowPremiereSwitch: UISwitch!
-    @IBOutlet weak var toWatchSeasonPremiereSwitch: UISwitch!
-    @IBOutlet weak var toWatchEpisodeReleaseSwitch: UISwitch!
+    @IBOutlet var toWatchMovieReleaseSwitch: UISwitch!
+    @IBOutlet var toWatchDVDMovieReleaseSwitch: UISwitch!
+    @IBOutlet var toWatchShowPremiereSwitch: UISwitch!
+    @IBOutlet var toWatchSeasonPremiereSwitch: UISwitch!
+    @IBOutlet var toWatchEpisodeReleaseSwitch: UISwitch!
 
-    @IBOutlet weak var commentNewLikeSwitch: UISwitch!
-    @IBOutlet weak var commentNewReplySwitch: UISwitch!
-    @IBOutlet weak var commentNewMentionSwitch: UISwitch!
+    @IBOutlet var commentNewLikeSwitch: UISwitch!
+    @IBOutlet var commentNewReplySwitch: UISwitch!
+    @IBOutlet var commentNewMentionSwitch: UISwitch!
 
-    @IBOutlet weak var activityFollowSwitch: UISwitch!
+    @IBOutlet var activityFollowSwitch: UISwitch!
 
-    @IBOutlet weak var trendingMoviesSwitch: UISwitch!
-    @IBOutlet weak var trendingShowsSwitch: UISwitch!
+    @IBOutlet var trendingMoviesSwitch: UISwitch!
+    @IBOutlet var trendingShowsSwitch: UISwitch!
 
-    @IBOutlet weak var recommendedMoviesSwitch: UISwitch!
-    @IBOutlet weak var recommendedShowsSwitch: UISwitch!
+    @IBOutlet var recommendedMoviesSwitch: UISwitch!
+    @IBOutlet var recommendedShowsSwitch: UISwitch!
 
-    @IBOutlet weak var anticipatedMoviesSwitch: UISwitch!
-    @IBOutlet weak var anticipatedShowsSwitch: UISwitch!
+    @IBOutlet var anticipatedMoviesSwitch: UISwitch!
+    @IBOutlet var anticipatedShowsSwitch: UISwitch!
 
-    @IBOutlet weak var appUpdateSwitch: UISwitch!
-    @IBOutlet weak var blogPostSwitch: UISwitch!
+    @IBOutlet var appUpdateSwitch: UISwitch!
+    @IBOutlet var blogPostSwitch: UISwitch!
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

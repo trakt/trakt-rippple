@@ -6,23 +6,21 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Kingfisher
-
 import Receiver
+import UIKit
 
 final class MediaCommentsCollectionViewCell: UICollectionViewCell {
     // Comment
-    @IBOutlet weak var ratingAndSpoilerLabel: UILabel!
-    @IBOutlet weak var commentLabel: UILabel!
+    @IBOutlet var ratingAndSpoilerLabel: UILabel!
+    @IBOutlet var commentLabel: UILabel!
 
-    @IBOutlet weak var wordCountLabel: UILabel!
+    @IBOutlet var wordCountLabel: UILabel!
 
-    @IBOutlet weak var replyCountButton: ReplyCountButton!
-    @IBOutlet weak var commentReactionButton: CommentReactionButton!
+    @IBOutlet var replyCountButton: ReplyCountButton!
+    @IBOutlet var commentReactionButton: CommentReactionButton!
 
-    // Sentiments
+    /// Sentiments
     var sentiments: CommentsSentiments? {
         didSet {
             if commentModel == nil { return }
@@ -32,13 +30,13 @@ final class MediaCommentsCollectionViewCell: UICollectionViewCell {
     }
 
     // User
-    @IBOutlet weak var avatarImageView: UIImageView?
-    @IBOutlet weak var byLabel: UILabel!
-    @IBOutlet weak var timeLabel: UILabel!
+    @IBOutlet var avatarImageView: UIImageView?
+    @IBOutlet var byLabel: UILabel!
+    @IBOutlet var timeLabel: UILabel!
 
-    @IBOutlet weak var pinImage: UIImageView!
+    @IBOutlet var pinImage: UIImageView!
 
-    // Filter
+    /// Filter
     private static let userFilter = RoundCornerImageProcessor(
         cornerRadius: 13.0,
         targetSize: CGSize(width: 26.0, height: 26.0)
@@ -54,7 +52,7 @@ final class MediaCommentsCollectionViewCell: UICollectionViewCell {
         contentView.autoresizingMask = .flexibleHeight
 
         if let avatarImageView = avatarImageView {
-            avatarImageView.layer.cornerRadius = avatarImageView.bounds.height/2.0
+            avatarImageView.layer.cornerRadius = avatarImageView.bounds.height / 2.0
             avatarImageView.layer.borderWidth = 1
             avatarImageView.layer.borderColor = UIColor.tertiarySystemFill.cgColor
             avatarImageView.clipsToBounds = true
@@ -139,7 +137,7 @@ final class MediaCommentsCollectionViewCell: UICollectionViewCell {
             for bad in sentiments.bad where bad.commentIds.contains(where: { $0 == comment.identifier }) {
                 isBad = true
             }
-            if isGood && isBad {
+            if isGood, isBad {
                 texts.append("● Neutral")
             } else if isGood {
                 texts.append("▲ Positive")

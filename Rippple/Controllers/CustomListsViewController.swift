@@ -6,15 +6,12 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import NVActivityIndicatorView
-
 import Receiver
 import SafariServices
+import UIKit
 
 final class CustomListsViewController: UITableViewController {
-
     enum Section: Int, Hashable {
         case loading
         case error
@@ -43,8 +40,8 @@ final class CustomListsViewController: UITableViewController {
 
         override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
             guard editingStyle == .delete else { return }
-            guard let item = self.itemIdentifier(for: indexPath) else { return }
-            guard case let .list(list, isLiked) = item, isLiked == false else { return }
+            guard let item = itemIdentifier(for: indexPath) else { return }
+            guard case .list(let list, let isLiked) = item, isLiked == false else { return }
 
             if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") {
                 UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/mylists")!))
@@ -56,14 +53,13 @@ final class CustomListsViewController: UITableViewController {
             SwiftMessages.show(message: "Deleting List...", style: .loading)
 
             TraktAPIProvider.provider.request(.deleteList(id: list.identifiers.trakt!), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
-
                 switch result {
                 case .success:
                     DispatchQueue.main.async {
                         ListsManager.shared.refresh()
                         SwiftMessages.show(message: "👍 Your list has been deleted")
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         print("customLists request failure \(error)")
                         ListsManager.shared.refresh()
@@ -74,7 +70,7 @@ final class CustomListsViewController: UITableViewController {
         }
 
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-            guard let item = self.itemIdentifier(for: indexPath) else { return false }
+            guard let item = itemIdentifier(for: indexPath) else { return false }
             switch item {
             case .list(_, let isLiked):
                 return !isLiked
@@ -98,7 +94,7 @@ final class CustomListsViewController: UITableViewController {
                 switch result {
                 case .success:
                     ListsManager.shared.refresh()
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         print("customLists request failure \(error)")
                         ListsManager.shared.refresh()
@@ -112,7 +108,7 @@ final class CustomListsViewController: UITableViewController {
     var user: User!
 
     required init?(coder aDecoder: NSCoder) {
-        self.user = UserManager.shared.currentUser
+        user = UserManager.shared.currentUser
         super.init(coder: aDecoder)
     }
 
@@ -139,12 +135,13 @@ final class CustomListsViewController: UITableViewController {
             }
         }
     }
-    @IBOutlet weak var errorLabel: UILabel!
+
+    @IBOutlet var errorLabel: UILabel!
 
     private lazy var dataSource = ListsDiffableDataSource(tableView: tableView) { [weak self] tableView, indexPath, item in
         guard let self = self else { return UITableViewCell() }
         switch item {
-        case let .standard(name, card, _):
+        case .standard(let name, let card, _):
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "standard list", for: indexPath) as? StandardListTableViewCell else {
                 return UITableViewCell()
             }
@@ -152,7 +149,7 @@ final class CustomListsViewController: UITableViewController {
             cell.card.cardType = card
             cell.chevron.isHidden = tableView.isEditing
             return cell
-        case let .list(list, isLiked):
+        case .list(let list, let isLiked):
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "custom list", for: indexPath) as? ListTableViewCell else {
                 return UITableViewCell()
             }
@@ -269,9 +266,9 @@ final class CustomListsViewController: UITableViewController {
         }.disposed(by: disposeBag)
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         commandReceiver.listen { [weak self] keyCommand in
             guard let self = self else { return }
@@ -288,16 +285,16 @@ final class CustomListsViewController: UITableViewController {
             var actions = [UIAction]()
             actions.append(UIAction(title: "New Custom List",
                                     handler: { _ in
-                self.performSegue(withIdentifier: "add", sender: nil)
-            }))
+                                        self.performSegue(withIdentifier: "add", sender: nil)
+                                    }))
             actions.append(UIAction(title: "New couchmoney.tv TV List",
                                     handler: { _ in
-                UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/tvaddlist")!))
-            }))
+                                        UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/tvaddlist")!))
+                                    }))
             actions.append(UIAction(title: "New couchmoney.tv Movie List",
                                     handler: { _ in
-                UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/addlist")!))
-            }))
+                                        UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/addlist")!))
+                                    }))
             addListBarButtonItem?.menu = UIMenu(children: actions)
             addListBarButtonItem?.target = nil
             addListBarButtonItem?.action = nil
@@ -316,7 +313,7 @@ final class CustomListsViewController: UITableViewController {
 
         alertController.addAction(UIAlertAction(title: "Get Trakt VIP", style: .default, handler: { _ in
             if let url = URL(string: "https://trakt.tv/vip/referral/b1f95ecff7339c031dd1a374150067b9"),
-                UIApplication.shared.canOpenURL(url) {
+               UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }
         }))
@@ -449,14 +446,14 @@ final class CustomListsViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(lists):
+            case .success(let lists):
                 DispatchQueue.main.async {
                     self.lists = lists
                     self.showLoading = false
                     self.error = nil
                     self.applySnapshot(animating: true)
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("customLists request failure \(error)")
                     self.error = error
@@ -469,20 +466,20 @@ final class CustomListsViewController: UITableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "edit",
-            let listFormViewController = (segue.destination as? UINavigationController)?.viewControllers.first as? ListFormViewController,
-            let list = sender as? List {
+           let listFormViewController = (segue.destination as? UINavigationController)?.viewControllers.first as? ListFormViewController,
+           let list = sender as? List {
             listFormViewController.list = list
         }
 
         if segue.identifier == "user",
-            let list = sender as? List,
-            let commentsViewController = segue.destination as? CommentsViewController {
+           let list = sender as? List,
+           let commentsViewController = segue.destination as? CommentsViewController {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.user(list.user))
         }
 
         if segue.identifier == "user",
-            let user = sender as? User,
-            let commentsViewController = segue.destination as? CommentsViewController {
+           let user = sender as? User,
+           let commentsViewController = segue.destination as? CommentsViewController {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.user(user))
         }
 
@@ -517,7 +514,6 @@ final class CustomListsViewController: UITableViewController {
 }
 
 extension CustomListsViewController {
-
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else {
             tableView.deselectRow(at: indexPath, animated: true)
@@ -660,7 +656,6 @@ extension CustomListsViewController: ListTableViewCellDelegate {
 }
 
 extension CustomListsViewController: UITableViewDropDelegate {
-
     func tableView(_ tableView: UITableView, canHandle session: UIDropSession) -> Bool {
         for item in session.items where item.itemProvider.canLoadObject(ofClass: NSURL.self) {
             return true
@@ -739,7 +734,7 @@ extension CustomListsViewController: UITableViewDropDelegate {
         TraktAPIProvider.provider.request(.addToList(id: list.identifiers.trakt!,
                                                      item: WatchlistedItem(models: models)), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -756,7 +751,7 @@ extension CustomListsViewController: UITableViewDropDelegate {
                         SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Error adding to recommendations \(error)")
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
@@ -768,9 +763,9 @@ extension CustomListsViewController: UITableViewDropDelegate {
     private func addToCollection(models: [MediaModel]) {
         SwiftMessages.show(message: "Adding to Library...", style: .loading)
         TraktAPIProvider.provider.request(TraktAPIService.addToCollection(item: WatchlistedItem(models: models)),
-                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -787,7 +782,7 @@ extension CustomListsViewController: UITableViewDropDelegate {
                         SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Error adding to collection \(error)")
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
@@ -799,9 +794,9 @@ extension CustomListsViewController: UITableViewDropDelegate {
     private func addToRecommendations(models: [MediaModel]) {
         SwiftMessages.show(message: "Adding to Favorites...", style: .loading)
         TraktAPIProvider.provider.request(TraktAPIService.addToRecommendations(item: WatchlistedItem(models: models)),
-                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -818,7 +813,7 @@ extension CustomListsViewController: UITableViewDropDelegate {
                         SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Error adding to recommendations \(error)")
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
@@ -830,9 +825,9 @@ extension CustomListsViewController: UITableViewDropDelegate {
     private func addToWatchlist(models: [MediaModel]) {
         SwiftMessages.show(message: "Adding to Watchlist...", style: .loading)
         TraktAPIProvider.provider.request(TraktAPIService.addToWatchlist(item: WatchlistedItem(models: models)),
-                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -849,7 +844,7 @@ extension CustomListsViewController: UITableViewDropDelegate {
                         SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Error adding to watchlist \(error)")
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))

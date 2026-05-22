@@ -6,25 +6,21 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
-import Foundation
 import BackgroundTasks
-
+import Foundation
 import Receiver
 #if !targetEnvironment(macCatalyst)
-import WidgetKit
 import ActivityKit
+import WidgetKit
 
 final class LiveActivityManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() {
-
-    }
+    private init() {}
 
     func setup() {
         // just to make sure no activity are running when we restart the app
-        Task.init {
+        Task {
             await self.stopActivity()
         }
 
@@ -43,7 +39,7 @@ final class LiveActivityManager {
                                                                                progress: WatchingManager.shared.progress,
                                                                                runtime: Int(watchingItem.expireDate.timeIntervalSinceReferenceDate - watchingItem.startDate.timeIntervalSinceReferenceDate),
                                                                                endDate: watchingItem.expireDate),
-                                                 url: url)
+                                                      url: url)
                     }
                 } else if let show = watchingItem.show {
                     show.mediaModel.posterURL(targetSize: CGSize(width: 200, height: 300)) { [weak self] url in
@@ -57,11 +53,11 @@ final class LiveActivityManager {
                                                                                progress: WatchingManager.shared.progress,
                                                                                runtime: Int(watchingItem.expireDate.timeIntervalSinceReferenceDate - watchingItem.startDate.timeIntervalSinceReferenceDate),
                                                                                endDate: watchingItem.expireDate),
-                                                 url: url)
+                                                      url: url)
                     }
                 }
             } else {
-                Task.init {
+                Task {
                     await self.stopActivity()
                 }
             }
@@ -69,7 +65,7 @@ final class LiveActivityManager {
 
         WatchingManager.shared.onProgressChangedReceiver.hotOnly().listen { [weak self] progress in
             guard let self = self else { return }
-            Task.init {
+            Task {
                 if progress >= 1.0 {
                     await self.stopActivity()
                 }
@@ -83,16 +79,15 @@ final class LiveActivityManager {
             DispatchQueue.global(qos: .background).async {
                 if let url = url {
                     do {
-
                         let data = try Data(contentsOf: url)
                         if let image = UIImage(data: data) {
                             let poster = self.downscaleImage(image: image,
-                                                             toSize: CGSize(width: 60, height: (60*1.5)),
+                                                             toSize: CGSize(width: 60, height: 60 * 1.5),
                                                              scale: scale)
                             UserDefaults(suiteName: "group.tv.trakt.rippple")!.setValue(poster.jpegData(compressionQuality: 1.0), forKey: "LiveActivityManager.poster")
 
                             let thumb = self.downscaleImage(image: image,
-                                                            toSize: CGSize(width: 28, height: (28*1.5)),
+                                                            toSize: CGSize(width: 28, height: 28 * 1.5),
                                                             scale: scale)
                             UserDefaults(suiteName: "group.tv.trakt.rippple")!.setValue(thumb.jpegData(compressionQuality: 1.0), forKey: "LiveActivityManager.thumb")
                         } else {
@@ -100,7 +95,7 @@ final class LiveActivityManager {
                             UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.thumb")
                         }
                         DispatchQueue.main.async {
-                            Task.init {
+                            Task {
                                 await self.startActivity(model: widgetModel)
                             }
                         }
@@ -108,7 +103,7 @@ final class LiveActivityManager {
                         UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.poster")
                         UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.thumb")
                         DispatchQueue.main.async {
-                            Task.init {
+                            Task {
                                 await self.startActivity(model: widgetModel)
                             }
                         }
@@ -117,7 +112,7 @@ final class LiveActivityManager {
                     UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.poster")
                     UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.thumb")
                     DispatchQueue.main.async {
-                        Task.init {
+                        Task {
                             await self.startActivity(model: widgetModel)
                         }
                     }
@@ -139,7 +134,7 @@ final class LiveActivityManager {
             return image
         }
 
-        let widthRatio  = targetSize.width  / size.width
+        let widthRatio = targetSize.width / size.width
         let heightRatio = targetSize.height / size.height
 
         // This part is based on https://gist.github.com/hcatlin/180e81cd961573e3c54d
@@ -185,16 +180,16 @@ final class LiveActivityManager {
                                      content: content)
 
             await AppManager.shared.scheduleNewBackgroundRefresh()
-/*
-            let activity = try Activity<RipppleLiveActivityAttributes>.request(attributes: pizzaDeliveryAttributes,
-                                                                            contentState: initialContentState)
-            if let endDate = model.endDate {
-                await activity.end(using: initialContentState,
-                                   dismissalPolicy: .after(endDate))
-            }
-*/
+            /*
+             let activity = try Activity<RipppleLiveActivityAttributes>.request(attributes: pizzaDeliveryAttributes,
+                                                                             contentState: initialContentState)
+             if let endDate = model.endDate {
+                 await activity.end(using: initialContentState,
+                                    dismissalPolicy: .after(endDate))
+             }
+             */
             print("Live Activity started...")
-        } catch let error {
+        } catch {
             print("Error requesting Live Activity \(error.localizedDescription)")
         }
     }
@@ -217,7 +212,7 @@ final class LiveActivityManager {
         }
     }
 
-    public func stopActivityIfNeeded() async {
+    func stopActivityIfNeeded() async {
         for activity in Activity<RipppleLiveActivityAttributes>.activities {
             if let endDate = activity.content.state.entry.endDate, endDate >= .now {
                 await activity.end(nil, dismissalPolicy: .immediate)

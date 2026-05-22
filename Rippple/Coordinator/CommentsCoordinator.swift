@@ -7,9 +7,7 @@
 //
 
 import Foundation
-
 import Moya
-
 import Receiver
 
 extension Array where Element: Hashable {
@@ -22,13 +20,12 @@ extension Array where Element: Hashable {
     }
 
     mutating func removeDuplicates() {
-        self = self.removingDuplicates()
+        self = removingDuplicates()
     }
 }
 
 final class CommentsCoordinator {
-
-    public var copy: CommentsCoordinator {
+    var copy: CommentsCoordinator {
         switch type! {
         case .user(let user):
             return CommentsCoordinator(type: .user(user))
@@ -50,13 +47,13 @@ final class CommentsCoordinator {
     enum ListType: Equatable {
         static func == (lhs: CommentsCoordinator.ListType, rhs: CommentsCoordinator.ListType) -> Bool {
             switch (lhs, rhs) {
-            case let (.user(left), .user(right)): return left == right
-            case let (.replies(left, _), .replies(right, _)): return left == right
-            case let (.media(left), .media(right)): return left == right
+            case (.user(let left), .user(let right)): return left == right
+            case (.replies(let left, _), .replies(let right, _)): return left == right
+            case (.media(let left), .media(let right)): return left == right
             case (.feed, .feed): return true
             case (.forYou, .forYou): return true
             case (.trending, .trending): return true
-            case let (.preview(left), .preview(right)): return left == right
+            case (.preview(let left), .preview(let right)): return left == right
             default: return false
             }
         }
@@ -130,6 +127,7 @@ final class CommentsCoordinator {
             onCommentsChangedTransmitter.broadcast(comments.removingDuplicates())
         }
     }
+
     var commentCount: Int {
         return comments.count
     }
@@ -139,7 +137,7 @@ final class CommentsCoordinator {
     var type: ListType! {
         didSet {
             if type != oldValue {
-                if let request = self.request {
+                if let request = request {
                     request.cancel()
                 }
                 request = nil
@@ -166,13 +164,14 @@ final class CommentsCoordinator {
             }
         }
     }
+
     var spoilerStrategy = SpoilerStrategy.showAllSpoilers
 
     deinit {
         print("DEINITING COORDINATOR OF COMMENTS")
     }
 
-    // Empty
+    /// Empty
     var showEmpty: Bool {
         if type.isPreview { return false }
 
@@ -211,7 +210,7 @@ final class CommentsCoordinator {
         return false
     }
 
-    // Error Management
+    /// Error Management
     private var error: Error? {
         didSet {
             if let error = error {
@@ -219,9 +218,11 @@ final class CommentsCoordinator {
             }
         }
     }
+
     var showError: Bool {
         return error != nil
     }
+
     var errorMessage: String {
         let errorMessage = error?.localizedDescription ?? ""
         if let moyaError = error as? MoyaError, let response = moyaError.response {
@@ -233,7 +234,7 @@ final class CommentsCoordinator {
         return errorMessage
     }
 
-    // request
+    /// request
     private var request: Cancellable?
 
     convenience init(type: ListType) {
@@ -315,8 +316,8 @@ final class CommentsCoordinator {
         }.disposed(by: disposeBag)
     }
 
-    public func reset() {
-        if let request = self.request {
+    func reset() {
+        if let request = request {
             request.cancel()
         }
         request = nil
@@ -327,7 +328,7 @@ final class CommentsCoordinator {
         fetchNext()
     }
 
-    // Sorting
+    /// Sorting
     var sort = CommentsSort.likes {
         didSet {
             UserDefaults.standard.set(sort.rawValue, forKey: "CommentsCoordinator.sort")
@@ -355,17 +356,17 @@ extension CommentsCoordinator {
                                  replies: nil)
             case .episode(let episode, let show):
                 return .comments(type: .episode(showId: show.identifiers.trakt!,
-                                        season: episode.season,
-                                        episode: episode.number),
-                                        pageInfo: pageInfo,
-                                        sortBy: sort,
-                                        replies: nil)
+                                                season: episode.season,
+                                                episode: episode.number),
+                                 pageInfo: pageInfo,
+                                 sortBy: sort,
+                                 replies: nil)
             case .season(let season, let show):
                 return .comments(type: .season(showId: show.identifiers.trakt!,
-                                       season: season.number),
-                                       pageInfo: pageInfo,
-                                       sortBy: sort,
-                                       replies: nil)
+                                               season: season.number),
+                                 pageInfo: pageInfo,
+                                 sortBy: sort,
+                                 replies: nil)
             case .list:
                 fatalError()
             case .showProgress:
@@ -481,13 +482,13 @@ extension CommentsCoordinator {
             }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     do {
                         if let response = response.response,
-                            let pageInfo = PageInfo(headers: response.allHeaderFields) {
+                           let pageInfo = PageInfo(headers: response.allHeaderFields) {
                             self.currentPage = pageInfo
                         }
                         self.error = nil
@@ -517,7 +518,7 @@ extension CommentsCoordinator {
                     self.error = error
                     self.onCommentsChangedTransmitter.broadcast(nil)
                 }
-            case let .failure(error):
+            case .failure(let error):
                 if let request = self.request, request.isCancelled == false {
                     self.error = error
                     self.onCommentsChangedTransmitter.broadcast(nil)

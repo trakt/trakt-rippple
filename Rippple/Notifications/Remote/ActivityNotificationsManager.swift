@@ -9,28 +9,30 @@
 import Foundation
 
 final class ActivityNotificationsManager {
-
     static let shared = ActivityNotificationsManager()
 
-    // Settings
+    /// Settings
     var commentNewLikes: Bool {
         didSet {
             UserDefaults.standard.set(commentNewLikes, forKey: "ActivityNotificationsManager.commentNewLikes")
             UserDefaults.standard.synchronize()
         }
     }
+
     var commentNewReply: Bool {
         didSet {
             UserDefaults.standard.set(commentNewReply, forKey: "ActivityNotificationsManager.commentNewReply")
             UserDefaults.standard.synchronize()
         }
     }
+
     var commentNewMention: Bool {
         didSet {
             UserDefaults.standard.set(commentNewMention, forKey: "ActivityNotificationsManager.commentNewMention")
             UserDefaults.standard.synchronize()
         }
     }
+
     var activityNewFollower: Bool {
         didSet {
             UserDefaults.standard.set(activityNewFollower, forKey: "ActivityNotificationsManager.activityNewFollower")

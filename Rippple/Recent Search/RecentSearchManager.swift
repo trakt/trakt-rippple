@@ -7,7 +7,6 @@
 //
 
 import Foundation
-
 import Receiver
 
 typealias RecentSearch = SavedFilter
@@ -34,19 +33,20 @@ extension RecentSearch {
 }
 
 final class RecentSearchManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     static let shared = RecentSearchManager()
 
-    public var recentSearches = [RecentSearch]() {
+    var recentSearches = [RecentSearch]() {
         didSet {
             if recentSearches != oldValue {
                 recentSearches.removeDuplicates()
 
-                while recentSearches.count > 5 { recentSearches.removeLast() }
+                while recentSearches.count > 5 {
+                    recentSearches.removeLast()
+                }
 
                 onRecentSearchChangedTransmitter.broadcast(recentSearches)
                 NSUbiquitousKeyValueStore.default.set(try? PropertyListEncoder().encode(recentSearches), forKey: "RecentSearchManager.recentSearches")
@@ -71,10 +71,10 @@ final class RecentSearchManager {
         }
     }
 
-    public func save(title: String,
-                     query: String,
-                     path: String = "/search/movie,show",
-                     limit: Int = 50) {
+    func save(title: String,
+              query: String,
+              path: String = "/search/movie,show",
+              limit: Int = 50) {
         let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard query.isEmpty == false else { return }
@@ -87,7 +87,7 @@ final class RecentSearchManager {
         recentSearches.insert(recent, at: 0)
     }
 
-    public func removeAll() {
+    func removeAll() {
         recentSearches = [RecentSearch]()
     }
 

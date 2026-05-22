@@ -7,7 +7,6 @@
 //
 
 import Foundation
-
 import Receiver
 
 protocol NotesTableViewCellDelegate: AnyObject {
@@ -15,7 +14,6 @@ protocol NotesTableViewCellDelegate: AnyObject {
 }
 
 final class NotesTableViewCell: UITableViewCell {
-
     enum Action {
         case media(MediaModel)
         case person(Person)
@@ -23,13 +21,13 @@ final class NotesTableViewCell: UITableViewCell {
 
     weak var delegate: NotesTableViewCellDelegate?
 
-    @IBOutlet weak var metadata: UILabel!
-    @IBOutlet weak var notes: NotesLabel!
+    @IBOutlet var metadata: UILabel!
+    @IBOutlet var notes: NotesLabel!
 
-    @IBOutlet weak var contentPoster: PosterImageView!
-    @IBOutlet weak var contentShot: PeopleProfileImageView!
-    @IBOutlet weak var contentTitle: UILabel!
-    @IBOutlet weak var contentSubtitle: UILabel!
+    @IBOutlet var contentPoster: PosterImageView!
+    @IBOutlet var contentShot: PeopleProfileImageView!
+    @IBOutlet var contentTitle: UILabel!
+    @IBOutlet var contentSubtitle: UILabel!
 
     private let disposeBag = DisposeBag()
 
@@ -114,7 +112,7 @@ final class NotesTableViewCell: UITableViewCell {
                 contentTitle.text = show.title
                 var info = [String]()
                 if let airedEpisodes = show.airedEpisodes, airedEpisodes != 0 {
-                    info.append("\(airedEpisodes) episode\((airedEpisodes > 1 ? "s" : ""))")
+                    info.append("\(airedEpisodes) episode\(airedEpisodes > 1 ? "s" : "")")
                 } else if let release = show.releaseYear {
                     info.append("\(release)")
                 }
@@ -154,13 +152,13 @@ final class NotesTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        contentPoster.layer.cornerRadius = contentPoster.bounds.size.height/2.0
+        contentPoster.layer.cornerRadius = contentPoster.bounds.size.height / 2.0
         contentPoster.layer.cornerCurve = .circular
         contentPoster.layer.masksToBounds = true
         contentPoster.layer.borderWidth = 1
         contentPoster.layer.borderColor = UIColor.tertiarySystemFill.cgColor
 
-        contentShot.layer.cornerRadius = contentShot.bounds.size.height/2.0
+        contentShot.layer.cornerRadius = contentShot.bounds.size.height / 2.0
         contentShot.layer.cornerCurve = .circular
         contentShot.layer.masksToBounds = true
         contentShot.layer.borderWidth = 1

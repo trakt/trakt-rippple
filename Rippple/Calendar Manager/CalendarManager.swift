@@ -44,6 +44,7 @@ final class CalendarManager {
             nextEpisodesTransmitter.broadcast(data.nextEpisodes)
         }
     }
+
     private let storage = TinyStorage.cache
     private let storageKey = "CalendarManager.calendarCache"
 
@@ -75,7 +76,7 @@ final class CalendarManager {
             case .didFinishLaunching:
                 break
             case .didBecomeActive(let time):
-                if time > 60*60*2 {
+                if time > 60 * 60 * 2 {
                     self.debouncedReload.call()
                 }
             case .didEnterBackground:
@@ -165,7 +166,7 @@ final class CalendarManager {
 
     @discardableResult
     private func reload(referenceDate: Date = .now, force: Bool = false) async throws -> CalendarData {
-        if force == false, let cachedData = self.cachedData {
+        if force == false, let cachedData = cachedData {
             return cachedData
         }
 
@@ -185,8 +186,8 @@ final class CalendarManager {
         let dayRange: TimeInterval = 33 * 60 * 60 * 24
 
         // Shows
-        let myPastShows: [ShowEpisodeCalendarItem] = myShows ? (try await fetchMyShowCalendar(date: referenceDate.addingTimeInterval(-dayRange), days: 33)) : []
-        let myFutureShows: [ShowEpisodeCalendarItem] = myShows ? (try await fetchMyShowCalendar(date: referenceDate, days: 33)) : []
+        let myPastShows: [ShowEpisodeCalendarItem] = try myShows ? (await fetchMyShowCalendar(date: referenceDate.addingTimeInterval(-dayRange), days: 33)) : []
+        let myFutureShows: [ShowEpisodeCalendarItem] = try myShows ? (await fetchMyShowCalendar(date: referenceDate, days: 33)) : []
         let rawMyShows = (myPastShows + myFutureShows)
         let filteredMyShows = rawMyShows.filter { (filtersShowToWatch ? $0.show.isInToWatch : true) && $0.episode.season != 0 }
 
@@ -213,8 +214,8 @@ final class CalendarManager {
         }
 
         // Movies
-        let myPastMovies: [MovieCalendarItem] = myMovies ? (try await fetchMyMovieCalendar(date: referenceDate.addingTimeInterval(-dayRange), days: 33)) : []
-        let myFutureMovies: [MovieCalendarItem] = myMovies ? (try await fetchMyMovieCalendar(date: referenceDate, days: 33)) : []
+        let myPastMovies: [MovieCalendarItem] = try myMovies ? (await fetchMyMovieCalendar(date: referenceDate.addingTimeInterval(-dayRange), days: 33)) : []
+        let myFutureMovies: [MovieCalendarItem] = try myMovies ? (await fetchMyMovieCalendar(date: referenceDate, days: 33)) : []
         let myMoviesList = (myPastMovies + myFutureMovies).map { $0.movie }
 
         let anticipatedMoviesList: [Movie] = addAnticipatedMovies ? try await fetchAnticipatedMovies(count: 20).filter { !myMoviesList.contains($0) } : []
@@ -246,7 +247,7 @@ final class CalendarManager {
         let nextMovieModels: [MediaModel] = {
             let moviesWithDates: [(movie: Movie, date: Date)] = movies.compactMap { movie in
                 guard let released = movie.released,
-                        let date = formatter.date(from: released) else { return nil }
+                      let date = formatter.date(from: released) else { return nil }
                 return (movie, date)
             }.filter { $0.date >= now }
                 .sorted { lhs, rhs in
@@ -288,7 +289,7 @@ final class CalendarManager {
             nextMovies: nextMovieModels
         )
 
-        self.cachedData = data
+        cachedData = data
         saveCacheToDisk(data)
 
         return data
@@ -296,13 +297,13 @@ final class CalendarManager {
 }
 
 // MARK: - fetch helpers
-private extension CalendarManager {
 
+private extension CalendarManager {
     func fetchMyShowCalendar(date: Date, days: Int) async throws -> [ShowEpisodeCalendarItem] {
-        let result: [ShowEpisodeCalendarItem] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.myShowsCalendar(startDate: date, days: days), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let items = try response.map([ShowEpisodeCalendarItem].self, using: TraktAPIProvider.decoder)
@@ -311,20 +312,19 @@ private extension CalendarManager {
                         print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     func fetchMyMovieCalendar(date: Date, days: Int) async throws -> [MovieCalendarItem] {
-        let result: [MovieCalendarItem] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.myMoviesCalendar(startDate: date, days: days), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let items = try response.map([MovieCalendarItem].self, using: TraktAPIProvider.decoder)
@@ -333,20 +333,19 @@ private extension CalendarManager {
                         print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     func fetchPremiereCalendar(date: Date, days: Int) async throws -> [ShowEpisodeCalendarItem] {
-        let result: [ShowEpisodeCalendarItem] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.premiereCalendar(startDate: date, days: days), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let items = try response.map([ShowEpisodeCalendarItem].self, using: TraktAPIProvider.decoder)
@@ -355,20 +354,19 @@ private extension CalendarManager {
                         print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     func fetchMovieCalendar(date: Date, days: Int) async throws -> [MovieCalendarItem] {
-        let result: [MovieCalendarItem] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.moviesCalendar(startDate: date, days: days, filters: [String: String]()), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let items = try response.map([MovieCalendarItem].self, using: TraktAPIProvider.decoder)
@@ -377,20 +375,19 @@ private extension CalendarManager {
                         print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     func fetchAnticipatedMovies(count: Int) async throws -> [Movie] {
-        let result: [Movie] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.anticipatedMovies(filters: [String: String](), extended: .full, pageInfo: PageInfo.firstPage(with: count)), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let movies = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).compactMap { $0.movie }
@@ -399,20 +396,19 @@ private extension CalendarManager {
                         print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     func fetchTrendingMovies(count: Int) async throws -> [Movie] {
-        let result: [Movie] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.trendingMovies(filters: [String: String](), extended: .full, pageInfo: PageInfo.firstPage(with: count)), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let movies = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).compactMap { $0.movie }
@@ -421,20 +417,19 @@ private extension CalendarManager {
                         print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     func fetchAnticipatedShows(count: Int) async throws -> [Show] {
-        let result: [Show] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.anticipatedShows(filters: [String: String](), extended: .full, pageInfo: PageInfo.firstPage(with: count)), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let shows = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).compactMap { $0.show }
@@ -443,20 +438,19 @@ private extension CalendarManager {
                         print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     func fetchTrendingShows(count: Int) async throws -> [Show] {
-        let result: [Show] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.trendingShows(filters: [String: String](), extended: .full, pageInfo: PageInfo.firstPage(with: count)), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let shows = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).compactMap { $0.show }
@@ -465,12 +459,11 @@ private extension CalendarManager {
                         print("CalendarManager error \(#function) : \(error)")
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("CalendarManager error \(#function) : \(error)")
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 }

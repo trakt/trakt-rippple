@@ -7,20 +7,17 @@
 //
 
 import Foundation
-
-import UIKit
-
 import Moya
 import Receiver
+import UIKit
 
 final class EpisodeShowTableViewCell: UITableViewCell {
+    @IBOutlet var title: UILabel!
+    @IBOutlet var subtitle: UILabel!
+    @IBOutlet var additionalInfo: UILabel!
+    @IBOutlet var watched: UIView!
 
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var subtitle: UILabel!
-    @IBOutlet weak var additionalInfo: UILabel!
-    @IBOutlet weak var watched: UIView!
-
-    @IBOutlet weak var card: CardView!
+    @IBOutlet var card: CardView!
 
     private let disposeBag = DisposeBag()
 
@@ -29,6 +26,7 @@ final class EpisodeShowTableViewCell: UITableViewCell {
         dateFormatter.formattingContext = .beginningOfSentence
         return dateFormatter
     }()
+
     private let fullDateFormatter: DateFormatter = {
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .medium
@@ -63,7 +61,7 @@ final class EpisodeShowTableViewCell: UITableViewCell {
         }
     }
 
-    @IBOutlet weak var menuButton: UIButton!
+    @IBOutlet var menuButton: UIButton!
 
     private let menuButtonContextMenu = MediaContextMenuInteractionDelegate()
 
@@ -87,7 +85,7 @@ final class EpisodeShowTableViewCell: UITableViewCell {
             self.menuButton.menu = self.menuButtonContextMenu.menu
             UISelectionFeedbackGenerator().selectionChanged()
             self.menuButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-         }, for: .menuActionTriggered)
+        }, for: .menuActionTriggered)
 
         selectionStyle = .default
         let backgroundView = UIView()
@@ -164,20 +162,20 @@ final class EpisodeShowTableViewCell: UITableViewCell {
             // Default state while loading history
             if let firstAired = episode.firstAired {
                 if firstAired < Date() {
-                    self.watched.alpha = 0.2
+                    watched.alpha = 0.2
                 } else {
-                    self.watched.alpha = 0.0
+                    watched.alpha = 0.0
                 }
             } else {
-                self.watched.alpha = 0.0
+                watched.alpha = 0.0
             }
 
             // Fetch history for this specific episode to determine watched status
             historyRequest = TraktAPIProvider.provider.request(.history(slug: UserManager.shared.currentUser?.slug ?? "me",
-                                                       type: .episodes,
-                                                       id: episode.identifiers.trakt,
-                                                       pageInfo: PageInfo.firstPage(with: 1),
-                                                       endDate: nil), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                                                                        type: .episodes,
+                                                                        id: episode.identifiers.trakt,
+                                                                        pageInfo: PageInfo.firstPage(with: 1),
+                                                                        endDate: nil), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 if self.historyRequest?.isCancelled == true { return }
                 self.historyRequest = nil

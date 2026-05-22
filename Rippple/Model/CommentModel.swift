@@ -6,15 +6,11 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import Foundation
-
-import Haring
-
-import Receiver
-
 import Emoji
-
+import Foundation
+import Haring
 import NaturalLanguage
+import Receiver
 
 enum SpoilerStrategy {
     case hideAllSpoilers
@@ -27,7 +23,6 @@ let (userBlockedTransmitter, userBlockedReceiver) = Receiver<User>.make(with: .h
 let (commentModelRefreshedTransmitter, commentModelRefreshedReceiver) = Receiver<CommentModel>.make(with: .hot)
 
 final class CommentModel: Equatable, Hashable {
-
     static func == (lhs: CommentModel, rhs: CommentModel) -> Bool {
         return lhs.comment == rhs.comment && lhs.media == rhs.media && lhs.spoilerStrategy == rhs.spoilerStrategy
     }
@@ -62,18 +57,18 @@ final class CommentModel: Equatable, Hashable {
     }
 
     init(commentItem: CommentItem, spoilerStrategy: SpoilerStrategy) {
-        self.comment = commentItem.comment
+        comment = commentItem.comment
         switch commentItem.type {
         case .episode:
-            self.media = .episode(commentItem.episode!, commentItem.show!)
+            media = .episode(commentItem.episode!, commentItem.show!)
         case .show:
-            self.media = .show(commentItem.show!)
+            media = .show(commentItem.show!)
         case .movie:
-            self.media = .movie(commentItem.movie!)
+            media = .movie(commentItem.movie!)
         case .list, .officiallist:
-            self.media = .list(commentItem.list!)
+            media = .list(commentItem.list!)
         case .season:
-            self.media = .season(commentItem.season!, commentItem.show!)
+            media = .season(commentItem.season!, commentItem.show!)
         case .unknown:
             fatalError("Unknow comment media type")
         }
@@ -89,19 +84,20 @@ final class CommentModel: Equatable, Hashable {
 
     @MainActor private var markdownParser: SpoilerMarkdownParser {
         SpoilerMarkdownParser(font: UIFont.preferredFont(forTextStyle: .body, compatibleWith: UITraitCollection(preferredContentSizeCategory: min(UIApplication.shared.preferredContentSizeCategory, .extraExtraExtraLarge))),
-                                     automaticLinkDetectionEnabled: true)
+                              automaticLinkDetectionEnabled: true)
     }
+
     @MainActor private var markdownUserParser: BoldMarkdownParser {
         BoldMarkdownParser(font: UIFont.preferredFont(forTextStyle: .footnote, compatibleWith: UITraitCollection(preferredContentSizeCategory: min(UIApplication.shared.preferredContentSizeCategory, .extraExtraExtraLarge))),
-                                                                     color: .secondaryLabel,
-                                                                     automaticLinkDetectionEnabled: true)
+                           color: .secondaryLabel,
+                           automaticLinkDetectionEnabled: true)
     }
 
     private func commonInit() {
         commentFilteredReceiver.listen { [weak self] comment in
             guard let self = self else { return }
             if comment == self.comment {
-                Task.init {
+                Task {
                     await self.processComment()
                 }
             }
@@ -109,14 +105,14 @@ final class CommentModel: Equatable, Hashable {
 
         onWatchedShowsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            Task.init {
+            Task {
                 await self.processComment()
             }
         }.disposed(by: disposeBag)
 
         onWatchedMoviesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            Task.init {
+            Task {
                 await self.processComment()
             }
         }.disposed(by: disposeBag)
@@ -126,13 +122,13 @@ final class CommentModel: Equatable, Hashable {
                                                name: UIContentSizeCategory.didChangeNotification,
                                                object: nil)
 
-        Task.init {
+        Task {
             await processComment()
         }
     }
 
     @objc func preferredContentSizeChanged(_ notification: Notification) {
-        Task.init {
+        Task {
             await processComment()
         }
     }

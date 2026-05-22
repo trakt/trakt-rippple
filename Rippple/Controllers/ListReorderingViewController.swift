@@ -8,7 +8,6 @@
 import UIKit
 
 final class ListReorderingViewController: UITableViewController {
-
     enum Destination {
         case list(List, User?)
         case watchlist
@@ -105,8 +104,8 @@ final class ListReorderingViewController: UITableViewController {
         self.destination = destination
         self.onCommit = onCommit
         let ranked = items.sorted { $0.rank < $1.rank }
-        self.rankedItems = ranked
-        self.initialIDs = ranked.map(\.id)
+        rankedItems = ranked
+        initialIDs = ranked.map(\.id)
         super.init(style: .plain)
     }
 
@@ -114,6 +113,7 @@ final class ListReorderingViewController: UITableViewController {
         self.init(destination: .list(list, user), items: items, onCommit: onCommit)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -238,11 +238,10 @@ final class ListReorderingViewController: UITableViewController {
 }
 
 extension ListReorderingViewController: UITableViewDragDelegate, UITableViewDropDelegate {
-
     func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
         guard let contentSection = diffableDataSource.snapshot().indexOfSection(.content),
               indexPath.section == contentSection else { return [] }
-        guard let row = diffableDataSource.itemIdentifier(for: indexPath), case let .item(watchlistItem) = row else { return [] }
+        guard let row = diffableDataSource.itemIdentifier(for: indexPath), case .item(let watchlistItem) = row else { return [] }
 
         let itemProvider = NSItemProvider(object: NSString(string: String(watchlistItem.id)))
         let dragItem = UIDragItem(itemProvider: itemProvider)

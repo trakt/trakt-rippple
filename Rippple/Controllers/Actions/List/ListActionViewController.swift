@@ -6,16 +6,13 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Moya
-
 import Receiver
+import UIKit
 
 let (onListChangedTransmitter, onListChangedReceiver) = Receiver<[List]>.make(with: .hot)
 
 final class ListActionViewController: UITableViewController {
-
     var media: MediaModel!
 
     private var updatedLists = Set<List>()
@@ -36,7 +33,6 @@ final class ListActionViewController: UITableViewController {
         super.viewDidLoad()
 
         if let presentationController = presentationController as? UISheetPresentationController {
-
             presentationController.detents = [
                 .medium(),
                 .large()
@@ -53,7 +49,7 @@ final class ListActionViewController: UITableViewController {
         onCustomListsChangedReceiver.listen { [weak self] lists in
             guard let self = self else { return }
             if self.lists != lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
-                self.lists = lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") })
+                self.lists = lists.filter { !$0.name.localizedStandardContains("[couchmoney.tv]") }
                 self.tableView.reloadSections(IndexSet(integer: 2), with: .none)
             }
         }.disposed(by: disposeBag)
@@ -115,11 +111,11 @@ final class ListActionViewController: UITableViewController {
             }
         }()
 
-        let result: [List]? = await withCheckedContinuation { continuation in
+        return await withCheckedContinuation { continuation in
             TraktAPIProvider.noChacheProvider.request(service,
                                                       callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
@@ -131,7 +127,7 @@ final class ListActionViewController: UITableViewController {
                         }
                         continuation.resume(returning: nil)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         print("Listed request failure \(error)")
                         SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
@@ -140,7 +136,6 @@ final class ListActionViewController: UITableViewController {
                 }
             }
         }
-        return result
     }
 }
 
@@ -442,7 +437,7 @@ extension ListActionViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -458,7 +453,7 @@ extension ListActionViewController {
                         self.reload(list: list)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("List items request failure \(error)")
                     SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
@@ -481,11 +476,11 @@ extension ListActionViewController {
 
         TraktAPIProvider.provider.request(.removeFromList(slug: list.user.slug,
                                                           id: list.identifiers.trakt!,
-                                                     item: item), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                                                          item: item), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -501,7 +496,7 @@ extension ListActionViewController {
                         self.reload(list: list)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("List items request failure \(error)")
                     SwiftMessages.show(message: "😓 Removing failed", style: .error(error))

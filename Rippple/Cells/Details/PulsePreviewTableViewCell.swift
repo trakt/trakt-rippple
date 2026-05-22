@@ -9,21 +9,21 @@
 import UIKit
 
 final class PulsePreviewTableViewCell: UITableViewCell {
-    @IBOutlet weak var pulseSymbol: UIImageView!
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var subtitle: UILabel!
+    @IBOutlet var pulseSymbol: UIImageView!
+    @IBOutlet var title: UILabel!
+    @IBOutlet var subtitle: UILabel!
 
-    @IBOutlet weak var recommendedStatus: RecommendedImageView?
-    @IBOutlet weak var watchlistedStatus: WatchlistImageView?
-    @IBOutlet weak var watchedStatus: WatchedImageView?
-    @IBOutlet weak var toWatchStatus: ToWatchImageView?
-    @IBOutlet weak var collectedStatus: CollectedImageView?
-    @IBOutlet weak var commentedStatus: CommentedImageView?
-    @IBOutlet weak var ratedStatus: RatingImageView?
-    @IBOutlet weak var hiddenStatus: HiddenImageView?
-    @IBOutlet weak var droppedStatus: DroppedImageView?
-    @IBOutlet weak var pinnedStatus: PinnedImageView?
-    @IBOutlet weak var listedStatus: ListedImageView?
+    @IBOutlet var recommendedStatus: RecommendedImageView?
+    @IBOutlet var watchlistedStatus: WatchlistImageView?
+    @IBOutlet var watchedStatus: WatchedImageView?
+    @IBOutlet var toWatchStatus: ToWatchImageView?
+    @IBOutlet var collectedStatus: CollectedImageView?
+    @IBOutlet var commentedStatus: CommentedImageView?
+    @IBOutlet var ratedStatus: RatingImageView?
+    @IBOutlet var hiddenStatus: HiddenImageView?
+    @IBOutlet var droppedStatus: DroppedImageView?
+    @IBOutlet var pinnedStatus: PinnedImageView?
+    @IBOutlet var listedStatus: ListedImageView?
 
     override func awakeFromNib() {
         super.awakeFromNib()

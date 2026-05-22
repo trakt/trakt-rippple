@@ -9,7 +9,6 @@
 import SwiftUI
 
 struct WhereToWatchSettingsView: View {
-
     @State private var selectedMode = "Display All"
     @State private var country = CountryManager.userCountry
     @State private var favorites = CountryManager.shared.favoriteProviders
@@ -195,19 +194,16 @@ struct WhereToWatchSettingsView: View {
             .toolbar {
                 if loading {
                     ProgressView()
-                } else {
-                    EmptyView()
                 }
             }
     }
 
     private func fetchTVProviders(in region: String) async throws -> [ProviderType] {
-        let result: [ProviderType] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TmdbAPIProvider.provider.request(.providersForTVInRegion(region),
                                              callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -225,21 +221,19 @@ struct WhereToWatchSettingsView: View {
                     } catch {
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     private func fetchMovieProviders(in region: String) async throws -> [ProviderType] {
-        let result: [ProviderType] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TmdbAPIProvider.provider.request(.providersForMovieInRegion(region),
                                              callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -257,11 +251,10 @@ struct WhereToWatchSettingsView: View {
                     } catch {
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 }

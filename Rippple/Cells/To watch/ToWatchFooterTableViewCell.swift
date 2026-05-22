@@ -6,15 +6,13 @@
 //  Copyright © 2021 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class ToWatchFooterTableViewCell: UITableViewCell {
-
-    @IBOutlet weak var emoji: UILabel!
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var label: UILabel!
+    @IBOutlet var emoji: UILabel!
+    @IBOutlet var title: UILabel!
+    @IBOutlet var label: UILabel!
 
     private let disposeBag = DisposeBag()
 
@@ -71,13 +69,13 @@ final class ToWatchFooterTableViewCell: UITableViewCell {
                             attributtedString.append(NSAttributedString(string: " from your "))
                             var listCount = 0
                             for group in showsInList.filter({ PinnedShowsManager.shared.pinnedShows.count != 0 ||
-                                $0.name != "Pinned" }) {
+                                    $0.name != "Pinned" }) {
                                 // it's the first one
                                 if listCount == 0 {
                                     attributtedString.append(NSAttributedString(string: "\(group.name.emojiUnescapedString)", attributes: attributes))
                                     listCount += 1
                                 } else if showsInList.last?.name == group.name,
-                                   showsInList.last?.order == group.order {
+                                          showsInList.last?.order == group.order {
                                     attributtedString.append(NSMutableAttributedString(string: " and "))
                                     attributtedString.append(NSAttributedString(string: "\(group.name.emojiUnescapedString)", attributes: attributes))
                                     listCount += 1
@@ -112,7 +110,6 @@ final class ToWatchFooterTableViewCell: UITableViewCell {
                                     }
                                 }
                                 attributtedString.append(s)
-
                             }
                             attributtedString.append(NSMutableAttributedString(string: ", we"))
                         }
@@ -141,13 +138,13 @@ final class ToWatchFooterTableViewCell: UITableViewCell {
                         attributtedString.append(NSAttributedString(string: " from your "))
                         var listCount = 0
                         for group in showsInList.filter({ PinnedShowsManager.shared.pinnedShows.count != 0 ||
-                            $0.name != "Pinned" }) {
+                                $0.name != "Pinned" }) {
                             // it's the first one
                             if listCount == 0 {
                                 attributtedString.append(NSAttributedString(string: "\(group.name.emojiUnescapedString)", attributes: attributes))
                                 listCount += 1
                             } else if showsInList.last?.name == group.name,
-                               showsInList.last?.order == group.order {
+                                      showsInList.last?.order == group.order {
                                 attributtedString.append(NSMutableAttributedString(string: " and "))
                                 attributtedString.append(NSAttributedString(string: "\(group.name.emojiUnescapedString)", attributes: attributes))
                                 listCount += 1
@@ -182,7 +179,6 @@ final class ToWatchFooterTableViewCell: UITableViewCell {
                                 }
                             }
                             attributtedString.append(s)
-
                         }
                         attributtedString.append(NSMutableAttributedString(string: ", we"))
                     }
@@ -321,5 +317,4 @@ final class ToWatchFooterTableViewCell: UITableViewCell {
         title.text = nil
         emoji.text = nil
     }
-
 }

@@ -1,5 +1,5 @@
 //
-//  MArkdown+Extensions.swift
+//  Markdown+Spoilers.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 22/11/2017.
@@ -22,7 +22,7 @@ class MarkdownSpoiler: MarkdownCommonElement {
         return try NSRegularExpression(pattern: regex, options: .dotMatchesLineSeparators)
     }
 
-    public init(font: UIFont? = nil, color: UIColor? = nil) {
+    init(font: UIFont? = nil, color: UIColor? = nil) {
         self.font = font
         self.color = color
     }
@@ -63,13 +63,12 @@ class MarkdownSpoiler: MarkdownCommonElement {
                 let newLength = attributedString.length
                 location = regexMatch.range.location + regexMatch.range.length + newLength - oldLength
             }
-        } catch { }
+        } catch {}
     }
 }
 
 final class MarkdownAllSpoiler: MarkdownSpoiler {
-
-    override public var regex: String {
+    override var regex: String {
         return "([\\s\\S]*)"
     }
 
@@ -79,7 +78,6 @@ final class MarkdownAllSpoiler: MarkdownSpoiler {
 }
 
 final class MarkdownDisplaySpoiler: MarkdownSpoiler {
-
     override var attributes: [NSAttributedString.Key: Any] {
         return [NSAttributedString.Key.strikethroughStyle: 7,
                 NSAttributedString.Key.baselineOffset: 0,

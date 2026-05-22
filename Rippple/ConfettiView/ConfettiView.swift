@@ -15,7 +15,7 @@ public enum Content {
         /// A square.
         case square
 
-        // A custom shape.
+        /// A custom shape.
         case custom(CGPath)
     }
 
@@ -36,7 +36,7 @@ public final class ConfettiView: UIView {
         commonInit()
     }
 
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         commonInit()
     }
@@ -48,17 +48,17 @@ public final class ConfettiView: UIView {
     // MARK: -
 
     /**
-     Emits the provided confetti content for a specified duration.
+      Emits the provided confetti content for a specified duration.
 
-     - Parameters:
-        - contents: The contents to be emitted as confetti.
-        - duration: The amount of time in seconds to emit confetti before fading out;
-                    3.0 seconds by default.
-    */
+      - Parameters:
+         - contents: The contents to be emitted as confetti.
+         - duration: The amount of time in seconds to emit confetti before fading out;
+                     3.0 seconds by default.
+     */
     public func emit(with contents: [Content]) {
         let layer = Layer()
         layer.configure(with: contents)
-        layer.frame = self.bounds
+        layer.frame = bounds
         layer.needsDisplayOnBoundsChange = true
         self.layer.addSublayer(layer)
 
@@ -155,7 +155,7 @@ extension ConfettiView: CAAnimationDelegate {
 
 // MARK: -
 
-fileprivate extension Content.Shape {
+private extension Content.Shape {
     func path(in rect: CGRect) -> CGPath {
         switch self {
         case .circle:
@@ -187,11 +187,11 @@ fileprivate extension Content.Shape {
     }
 }
 
-fileprivate extension Content {
+private extension Content {
     var color: UIColor? {
         switch self {
-        case let .image(_, color?),
-             let .shape(_, color):
+        case .image(_, let color?),
+             .shape(_, let color):
             return color
         default:
             return nil
@@ -200,11 +200,11 @@ fileprivate extension Content {
 
     var image: UIImage {
         switch self {
-        case let .shape(shape, _):
+        case .shape(let shape, _):
             return shape.image(with: .white)
-        case let .image(image, _):
+        case .image(let image, _):
             return image
-        case let .text(string):
+        case .text(let string):
             let defaultAttributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: 20.0)
             ]
@@ -214,7 +214,7 @@ fileprivate extension Content {
     }
 }
 
-fileprivate extension NSAttributedString {
+private extension NSAttributedString {
     func image() -> UIImage {
         return UIGraphicsImageRenderer(size: size()).image { _ in
             self.draw(at: .zero)

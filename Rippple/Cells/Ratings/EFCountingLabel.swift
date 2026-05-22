@@ -34,6 +34,7 @@ public enum EFLabelCountingMethod: Int {
 }
 
 // MARK: - UILabelCounter
+
 let kUILabelCounterRate = Float(3.0)
 
 public protocol UILabelCounter {
@@ -70,8 +71,8 @@ public class UILabelCounterEaseInOut: UILabelCounter {
 }
 
 // MARK: - EFCountingLabel
-open class EFCountingLabel: UILabel {
 
+open class EFCountingLabel: UILabel {
     public var format = "%f"
     public var method = EFLabelCountingMethod.linear
     public var animationDuration = TimeInterval(2)
@@ -90,12 +91,12 @@ open class EFCountingLabel: UILabel {
     private var counter: UILabelCounter = UILabelCounterLinear()
 
     public func countFrom(_ startValue: CGFloat, to endValue: CGFloat) {
-        self.countFrom(startValue, to: endValue, withDuration: self.animationDuration)
+        countFrom(startValue, to: endValue, withDuration: animationDuration)
     }
 
     public func countFrom(_ startValue: CGFloat, to endValue: CGFloat, withDuration duration: TimeInterval) {
-        self.startingValue = startValue
-        self.destinationValue = endValue
+        startingValue = startValue
+        destinationValue = endValue
 
         // remove any (possible) old timers
         self.timer?.invalidate()
@@ -103,25 +104,25 @@ open class EFCountingLabel: UILabel {
 
         if duration == 0.0 {
             // No animation
-            self.setTextValue(endValue)
-            self.runCompletionBlock()
+            setTextValue(endValue)
+            runCompletionBlock()
             return
         }
 
-        self.easingRate = 3.0
-        self.progress = 0
-        self.totalTime = duration
-        self.lastUpdate = Date.timeIntervalSinceReferenceDate
+        easingRate = 3.0
+        progress = 0
+        totalTime = duration
+        lastUpdate = Date.timeIntervalSinceReferenceDate
 
-        switch self.method {
+        switch method {
         case .linear:
-            self.counter = UILabelCounterLinear()
+            counter = UILabelCounterLinear()
         case .easeIn:
-            self.counter = UILabelCounterEaseIn()
+            counter = UILabelCounterEaseIn()
         case .easeOut:
-            self.counter = UILabelCounterEaseOut()
+            counter = UILabelCounterEaseOut()
         case .easeInOut:
-            self.counter = UILabelCounterEaseInOut()
+            counter = UILabelCounterEaseInOut()
         }
 
         let timer = CADisplayLink(target: self, selector: #selector(EFCountingLabel.updateValue(_:)))
@@ -132,79 +133,79 @@ open class EFCountingLabel: UILabel {
     }
 
     public func countFromCurrentValueTo(_ endValue: CGFloat) {
-        self.countFrom(self.currentValue(), to: endValue)
+        countFrom(currentValue(), to: endValue)
     }
 
     public func countFromCurrentValueTo(_ endValue: CGFloat, withDuration duration: TimeInterval) {
-        self.countFrom(self.currentValue(), to: endValue, withDuration: duration)
+        countFrom(currentValue(), to: endValue, withDuration: duration)
     }
 
     public func countFromZeroTo(_ endValue: CGFloat) {
-        self.countFrom(0, to: endValue)
+        countFrom(0, to: endValue)
     }
 
     public func countFromZeroTo(_ endValue: CGFloat, withDuration duration: TimeInterval) {
-        self.countFrom(0, to: endValue, withDuration: duration)
+        countFrom(0, to: endValue, withDuration: duration)
     }
 
     public func currentValue() -> CGFloat {
-        if self.progress == 0 {
+        if progress == 0 {
             return 0
-        } else if self.progress >= self.totalTime {
-            return self.destinationValue
+        } else if progress >= totalTime {
+            return destinationValue
         }
 
-        let percent = self.progress / self.totalTime
-        let updateVal = self.counter.update(CGFloat(percent))
+        let percent = progress / totalTime
+        let updateVal = counter.update(CGFloat(percent))
 
-        return self.startingValue + updateVal * (self.destinationValue - self.startingValue)
+        return startingValue + updateVal * (destinationValue - startingValue)
     }
 
     @objc public func updateValue(_ timer: Timer) {
         // update progress
         let now = Date.timeIntervalSinceReferenceDate
-        self.progress += (now - self.lastUpdate)
-        self.lastUpdate = now
+        progress += (now - lastUpdate)
+        lastUpdate = now
 
-        if self.progress >= self.totalTime {
+        if progress >= totalTime {
             self.timer?.invalidate()
             self.timer = nil
-            self.progress = self.totalTime
+            progress = totalTime
         }
 
-        self.setTextValue(self.currentValue())
+        setTextValue(currentValue())
 
-        if self.progress == self.totalTime {
-            self.runCompletionBlock()
+        if progress == totalTime {
+            runCompletionBlock()
         }
     }
 
     private func setTextValue(_ value: CGFloat) {
-        if let tryAttributedFormatBlock = self.attributedFormatBlock {
-            self.attributedText = tryAttributedFormatBlock(value)
-        } else if let tryFormatBlock = self.formatBlock {
-            self.text = tryFormatBlock(value)
+        if let tryAttributedFormatBlock = attributedFormatBlock {
+            attributedText = tryAttributedFormatBlock(value)
+        } else if let tryFormatBlock = formatBlock {
+            text = tryFormatBlock(value)
         } else {
             // check if counting with ints - cast to int
-            if nil != self.format.range(of: "%(.*)d", options: String.CompareOptions.regularExpression, range: nil)
-                || nil != self.format.range(of: "%(.*)i") {
-                self.text = String(format: self.format, Int(value))
+            if format.range(of: "%(.*)d", options: String.CompareOptions.regularExpression, range: nil) != nil
+                || format.range(of: "%(.*)i") != nil {
+                text = String(format: format, Int(value))
             } else {
-                self.text = String(format: self.format, value)
+                text = String(format: format, value)
             }
         }
     }
 
     private func setFormat(_ format: String) {
         self.format = format
-        self.setTextValue(self.currentValue())
+        setTextValue(currentValue())
     }
 
     private func runCompletionBlock() {
-        if let tryCompletionBlock = self.completionBlock {
+        if let tryCompletionBlock = completionBlock {
             tryCompletionBlock()
 
-            self.completionBlock = nil
+            completionBlock = nil
         }
     }
 }

@@ -7,22 +7,21 @@
 //
 
 import Foundation
-
-import Receiver
 import LRUCache
+import Receiver
 
 struct ShowShowProgress {
     let show: Show
     let showProgress: ShowProgress
 }
+
 let (onProgressCacheChangedTransmitter, onProgressCacheChangedReceiver) = Receiver<ShowShowProgress>.make(with: .hot)
 let (onProgressCacheHitTransmitter, onProgressCacheHitReceiver) = Receiver<ShowShowProgress>.make(with: .hot)
 
 final class ProgressManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     fileprivate var cache = LRUCache<Int64, ShowShowProgress>()
 
@@ -67,14 +66,14 @@ final class ProgressManager {
         }.disposed(by: disposeBag)
     }
 
-    public func refreshProgress(for show: Show) {
+    func refreshProgress(for show: Show) {
         print("ProgressCache - FORCE REFRESHING progress for \(show.title)")
         guard let key = show.identifiers.trakt else { return }
         cache.removeValue(forKey: key)
         show.mediaModel.progress { _ in }
     }
 
-    public func resetCache(for show: Show) {
+    func resetCache(for show: Show) {
         print("ProgressCache - RESET progress for \(show.title)")
         guard let key = show.identifiers.trakt else { return }
         cache.removeValue(forKey: key)
@@ -103,7 +102,7 @@ final class ProgressManager {
                                                    episode: nextToRewatch.1.number),
                                           callbackQueue: .global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
@@ -113,7 +112,7 @@ final class ProgressManager {
                     print("Error fetching episode for next to rewatch \(error)")
                     cacheAndComplete(progress)
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Failed fetching episode for next to rewatch \(error)")
                 cacheAndComplete(progress)
             }
@@ -139,9 +138,8 @@ extension MediaModel {
 
         print("ProgressCache - FORCED Fecthing progress on Trakt for \(show.title)")
         TraktAPIProvider.noChacheProvider.request(TraktAPIService.showProgress(id: showId, includesSpecials: false), callbackQueue: .global(qos: .utility)) { result in
-
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -156,7 +154,7 @@ extension MediaModel {
                     print("Error Fetching Show progress \(error)")
                     completion(nil)
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Error Fetching Show progress \(error)")
                 completion(nil)
             }
@@ -186,9 +184,8 @@ extension MediaModel {
         } else {
             print("ProgressCache - Fecthing progress on Trakt for \(show.title)")
             TraktAPIProvider.noChacheProvider.request(TraktAPIService.showProgress(id: showId, includesSpecials: false), callbackQueue: .global(qos: .utility)) { result in
-
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -203,7 +200,7 @@ extension MediaModel {
                         print("Error Fetching Show progress \(error)")
                         completion(nil)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error Fetching Show progress \(error)")
                     completion(nil)
                 }
@@ -234,7 +231,7 @@ extension MediaModel {
                 let result: ShowProgress = try await withCheckedThrowingContinuation { continuation in
                     TraktAPIProvider.noChacheProvider.request(.showProgress(id: showId, includesSpecials: false), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                         switch result {
-                        case let .success(moyaResponse):
+                        case .success(let moyaResponse):
                             do {
                                 let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -249,7 +246,7 @@ extension MediaModel {
                                 print("Error Fetching Show progress \(error)")
                                 continuation.resume(throwing: error)
                             }
-                        case let .failure(error):
+                        case .failure(let error):
                             print("Error Fetching Show progress \(error)")
                             continuation.resume(throwing: error)
                         }

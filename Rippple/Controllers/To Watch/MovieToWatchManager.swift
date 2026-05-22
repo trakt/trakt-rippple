@@ -7,11 +7,8 @@
 //
 
 import Foundation
-
-import Receiver
-
 import Moya
-
+import Receiver
 import TinyStorage
 
 let (onMovieToWatchChangedTransmitter, onMovieToWatchChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
@@ -25,7 +22,6 @@ struct MovieToWatchGroup: Codable {
 }
 
 final class MovieToWatchManager {
-
     private var debouncedForceRefresh: Debouncer!
     private var debouncedTransmit: Debouncer!
     private var debouncedRefreshProgress: Debouncer!
@@ -54,7 +50,7 @@ final class MovieToWatchManager {
         }
     }
 
-    public var moviesInList: [MovieToWatchGroup]? {
+    var moviesInList: [MovieToWatchGroup]? {
         didSet {
             TinyStorage.cache.store(moviesInList, forKey: "MovieToWatchManager.moviesInList")
         }
@@ -65,7 +61,7 @@ final class MovieToWatchManager {
         queue.name = "Movie to-watch operation queue"
         queue.maxConcurrentOperationCount = 1
         queue.qualityOfService = .userInitiated
-      return queue
+        return queue
     }()
 
     private var status = Status.content {
@@ -87,6 +83,7 @@ final class MovieToWatchManager {
             }
         }
     }
+
     private var mediaModels = [MediaModel]() {
         didSet {
             if oldValue.isEmpty {
@@ -98,15 +95,18 @@ final class MovieToWatchManager {
             TinyStorage.cache.store(mediaModels, forKey: "MovieToWatchManager.mediaModels")
         }
     }
-    public var filteredMediaModels: [MediaModel] {
+
+    var filteredMediaModels: [MediaModel] {
         return mediaModels
     }
+
     private var timer: Timer?
     private var dateFormatter: DateFormatter {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         return dateFormatter
     }
+
     private var futureMediaModels = [MediaModel]() {
         didSet {
             debouncedTransmit.call()
@@ -173,10 +173,10 @@ final class MovieToWatchManager {
                 print("MovieToWatchManager.forceRefresh because app didFifnish launching")
                 self.debouncedForceRefresh.call()
             case .didBecomeActive(let time):
-                if time > 60*60*4 {
+                if time > 60 * 60 * 4 {
                     print("MovieToWatchManager.forceRefresh because did Become active after 4h")
                     self.debouncedForceRefresh.call()
-                } else if time > 60*60*2 {
+                } else if time > 60 * 60 * 2 {
                     print("MovieToWatchManager.refresh progress because did become active after 2h")
                     self.debouncedRefreshProgress.call()
                 }
@@ -383,7 +383,6 @@ extension Movie {
 }
 
 private class UpdateMoviesOperation: Operation, @unchecked Sendable {
-
     private let moviesDispatchGroup = DispatchGroup()
     private var cancellables = [Cancellable?]()
 
@@ -423,8 +422,14 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
         }
     }
 
-    override var isAsynchronous: Bool { true }
-    override var isExecuting: Bool { state == .isExecuting }
+    override var isAsynchronous: Bool {
+        true
+    }
+
+    override var isExecuting: Bool {
+        state == .isExecuting
+    }
+
     override var isFinished: Bool {
         if isCancelled && state != .isExecuting { return true }
         return state == .isFinished
@@ -515,13 +520,13 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
             defer { completion() }
             if self.isCancelled { return }
             switch result {
-            case let .success(items):
+            case .success(let items):
                 let movies = items.map { $0.movie! }
                 DispatchQueue.main.async {
                     self.movies.formUnion(movies)
                     self.moviesInList.append(MovieToWatchGroup(name: "Watchlisted", order: 1, shows: Set(movies)))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchWatchlistedMovies (towatch) request failure \(error)")
             }
         }
@@ -541,13 +546,13 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
             defer { completion() }
             if self.isCancelled { return }
             switch result {
-            case let .success(items):
+            case .success(let items):
                 let movies = items.map { $0.movie! }
                 DispatchQueue.main.async {
                     self.movies.formUnion(movies)
                     self.moviesInList.append(MovieToWatchGroup(name: "Favorites", order: 2, shows: Set(movies)))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchRecommendedMovies (towatch) request failure \(error)")
             }
         }
@@ -567,13 +572,13 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
             defer { completion() }
             if self.isCancelled { return }
             switch result {
-            case let .success(items):
+            case .success(let items):
                 let movies = items.map { $0.movie! }
                 DispatchQueue.main.async {
                     self.movies.formUnion(movies)
                     self.moviesInList.append(MovieToWatchGroup(name: "Collected", order: 3, shows: Set(movies)))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchCollectedMovies (towatch) request failure \(error)")
             }
         }
@@ -592,13 +597,13 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
             defer { completion() }
             if self.isCancelled { return }
             switch result {
-            case let .success(items):
+            case .success(let items):
                 let movies = items.map { $0.movie! }
                 DispatchQueue.main.async {
                     self.movies.formUnion(movies)
                     self.moviesInList.append(MovieToWatchGroup(name: list.name, order: order, shows: Set(movies)))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchMoviesforlist (towatch) request failure \(error)")
             }
         }
@@ -621,7 +626,7 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
             }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -640,7 +645,7 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
                 } catch {
                     print("fetchMovies for Smart Search (towatch) request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchMovies for Smart Search (towatch) request failure \(error)")
             }
         }
@@ -649,7 +654,6 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
 }
 
 private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
-
     private let watchedDispatchGroup = DispatchGroup()
 
     private var cancellables = [Cancellable?]()
@@ -694,7 +698,7 @@ private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
                 return false
             }
             if let released = movie.released,
-                let releaseDate = dateFormatter.date(from: released) {
+               let releaseDate = dateFormatter.date(from: released) {
                 return now > releaseDate
             }
             return false
@@ -703,13 +707,13 @@ private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
 
     private var futureMovies: [Movie] {
         if isCancelled { return [Movie]() }
-        let now = Date.now.advanced(by: -60*60*24*5)
+        let now = Date.now.advanced(by: -60 * 60 * 24 * 5)
         return unwatchedMovies.filter { movie -> Bool in
             if movie.status == "planned" || movie.status == "rumored" || movie.status == "canceled" {
                 return false
             }
             if let released = movie.released,
-                let releaseDate = dateFormatter.date(from: released) {
+               let releaseDate = dateFormatter.date(from: released) {
                 return now <= releaseDate
             }
             return false
@@ -727,8 +731,14 @@ private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
         }
     }
 
-    override var isAsynchronous: Bool { true }
-    override var isExecuting: Bool { state == .isExecuting }
+    override var isAsynchronous: Bool {
+        true
+    }
+
+    override var isExecuting: Bool {
+        state == .isExecuting
+    }
+
     override var isFinished: Bool {
         if isCancelled && state != .isExecuting { return true }
         return state == .isFinished
@@ -780,15 +790,15 @@ private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
         if isCancelled { return }
 
         var mediaModels = [MediaModel]()
-        for movie in filteredMovies.sorted(by: { (movie, anotherMovie) -> Bool in
+        for movie in filteredMovies.sorted(by: { movie, anotherMovie -> Bool in
             let m = 3000.0
             let C = 6.5
             var v = Double(movie.votes ?? 0)
             var R = movie.rating ?? 0
-            let firstWeightedRating = (v / (v+m)) * R + (m / (v+m)) * C
+            let firstWeightedRating = (v / (v + m)) * R + (m / (v + m)) * C
             v = Double(anotherMovie.votes ?? 0)
             R = anotherMovie.rating ?? 0
-            let secondWeightedRating = (v / (v+m)) * R + (m / (v+m)) * C
+            let secondWeightedRating = (v / (v + m)) * R + (m / (v + m)) * C
             return (firstWeightedRating, anotherMovie.title.sortableString) > (secondWeightedRating, movie.title.sortableString)
         }) {
             mediaModels.append(movie.mediaModel)

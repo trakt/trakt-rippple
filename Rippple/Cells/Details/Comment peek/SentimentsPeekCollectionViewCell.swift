@@ -9,12 +9,11 @@
 import UIKit
 
 final class SentimentsPeekCollectionViewCell: UICollectionViewCell {
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var bodyLabel: UILabel!
+    @IBOutlet var metaLabel: UILabel!
 
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var bodyLabel: UILabel!
-    @IBOutlet weak var metaLabel: UILabel!
-
-    @IBOutlet weak var cardView: UIView!
+    @IBOutlet var cardView: UIView!
 
     override func awakeFromNib() {
         super.awakeFromNib()

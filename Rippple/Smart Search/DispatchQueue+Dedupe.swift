@@ -27,8 +27,7 @@
 
 import Foundation
 
-extension DispatchQueue {
-
+public extension DispatchQueue {
     /**
      - parameters:
         - target: Object used as the sentinel for de-duplication.
@@ -47,7 +46,7 @@ extension DispatchQueue {
      }
      ```
      */
-    public func asyncDeduped(target: AnyObject, after delay: TimeInterval, execute work: @escaping @convention(block) () -> Void) {
+    func asyncDeduped(target: AnyObject, after delay: TimeInterval, execute work: @escaping @convention(block) () -> Void) {
         let dedupeIdentifier = DispatchQueue.dedupeIdentifierFor(target)
         if let existingWorkItem = DispatchQueue.workItems.removeValue(forKey: dedupeIdentifier) {
             existingWorkItem.cancel()
@@ -68,13 +67,11 @@ extension DispatchQueue {
 
         asyncAfter(deadline: .now() + delay, execute: workItem)
     }
-
 }
 
 // MARK: - Static Properties for De-Duping
 
 private extension DispatchQueue {
-
     static var workItems = [AnyHashable: DispatchWorkItem]()
 
     static var weakTargets = NSPointerArray.weakObjects()
@@ -82,5 +79,4 @@ private extension DispatchQueue {
     static func dedupeIdentifierFor(_ object: AnyObject) -> String {
         return "\(Unmanaged.passUnretained(object).toOpaque())." + String(describing: object)
     }
-
 }

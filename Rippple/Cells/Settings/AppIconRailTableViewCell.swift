@@ -20,7 +20,7 @@ extension AppIcon {
 }
 
 final class AppIconRailTableViewCell: UITableViewCell {
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet var collectionView: UICollectionView!
 
     var items: [AppIcon]? {
         didSet {
@@ -53,9 +53,7 @@ final class AppIconRailTableViewCell: UITableViewCell {
         section.interGroupSpacing = 10
         section.contentInsets = .init(top: 10, leading: 16, bottom: 10, trailing: 16)
 
-        let layout = UICollectionViewCompositionalLayout(section: section)
-
-        return layout
+        return UICollectionViewCompositionalLayout(section: section)
     }
 }
 

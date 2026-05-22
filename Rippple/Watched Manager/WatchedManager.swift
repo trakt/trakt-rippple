@@ -7,11 +7,9 @@
 //
 
 import Foundation
-import UIKit
-
 import Receiver
-
 import TinyStorage
+import UIKit
 
 extension TinyStorage {
     static let cache: TinyStorage = {
@@ -24,7 +22,6 @@ let (onWatchedMoviesChangedTransmitter, onWatchedMoviesChangedReceiver) = Receiv
 let (onWatchedShowsChangedTransmitter, onWatchedShowsChangedReceiver) = Receiver<Set<Int64>>.make(with: .warm(upTo: 1))
 
 final class WatchedManager {
-
     private let disposeBag = DisposeBag()
 
     private var debouncedRefreshWatchedMovies: Debouncer!
@@ -179,6 +176,7 @@ final class WatchedManager {
     var watchedMoviesMediaModels: [MediaModel] {
         return moviesHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }.compactMap { $0.movie?.mediaModel }
     }
+
     var watchedShowsMediaModels: [MediaModel] {
         return showsHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }.compactMap { $0.show?.mediaModel }
     }
@@ -186,6 +184,7 @@ final class WatchedManager {
     var watchedMoviesItems: [WatchedItem] {
         return moviesHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }
     }
+
     var watchedShowsItems: [WatchedItem] {
         return showsHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }
     }
@@ -209,6 +208,7 @@ final class WatchedManager {
             onWatchedShowsChangedTransmitter.broadcast(watchedShows)
         }
     }
+
     fileprivate var moviesHistoryItems = [WatchedItem]() {
         didSet {
             watchedMovies = Set(moviesHistoryItems.compactMap { $0.movie?.identifiers.trakt })
@@ -232,7 +232,6 @@ final class WatchedManager {
 }
 
 extension WatchedManager {
-
     private func refreshWatchedEpisodes() {
         debouncedRefreshWatchedEpisodes.call()
     }
@@ -252,7 +251,7 @@ extension WatchedManager {
         TraktAPIProvider.provider.request(.history(type: .episodes, id: nil, pageInfo: PageInfo.firstPage(with: 100), endDate: nil),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -266,7 +265,7 @@ extension WatchedManager {
                 } catch {
                     print("History request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("History request failure \(error)")
             }
         }
@@ -279,11 +278,11 @@ extension WatchedManager {
         TraktAPIProvider.fetchAllWatchedItems(type: .movies,
                                               extended: .full) { result in
             switch result {
-            case let .success(items):
+            case .success(let items):
                 DispatchQueue.main.async {
                     self.moviesHistoryItems = items
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Watched Movies request failure \(error)")
                 DispatchQueue.main.async {
                     onWatchedMoviesChangedTransmitter.broadcast(self.watchedMovies)
@@ -300,11 +299,11 @@ extension WatchedManager {
                                               type: .shows,
                                               extended: .fullnoseasons) { result in
             switch result {
-            case let .success(items):
+            case .success(let items):
                 DispatchQueue.main.async {
                     self.showsHistoryItems = items
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Watched Shows request failure \(error)")
                 DispatchQueue.main.async {
                     onWatchedShowsChangedTransmitter.broadcast(self.watchedShows)

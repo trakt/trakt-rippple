@@ -9,7 +9,7 @@
 import UIKit
 
 final class ListMediaCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var posterImageView: PosterImageView!
+    @IBOutlet var posterImageView: PosterImageView!
 
     override func awakeFromNib() {
         super.awakeFromNib()

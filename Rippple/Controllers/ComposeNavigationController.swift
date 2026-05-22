@@ -9,7 +9,6 @@
 import UIKit
 
 class ComposeNavigationController: StyledNavigationController {
-
     var mediaModel: MediaModel!
     var editedComment: Comment?
 }

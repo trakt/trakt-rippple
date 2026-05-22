@@ -8,6 +8,4 @@
 
 import UIKit
 
-final class SplitViewController: UISplitViewController {
-
-}
+final class SplitViewController: UISplitViewController {}

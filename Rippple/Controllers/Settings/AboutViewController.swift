@@ -6,20 +6,14 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import MessageUI
+import Receiver
+import SafariServices
+import StoreKit
+import SwiftUI
 import UIKit
 
-import StoreKit
-
-import MessageUI
-
-import Receiver
-
-import SafariServices
-
-import SwiftUI
-
 final class AboutViewController: UITableViewController {
-
     enum AboutSection: Int {
         case premium
         case account
@@ -81,7 +75,7 @@ final class AboutViewController: UITableViewController {
                 UIApplication.shared.open(url)
             }
             #else
-            Task.init {
+            Task {
                 await AppManager.shared.presentOfferCodeRedeemSheet()
             }
             #endif
@@ -237,7 +231,7 @@ final class AboutViewController: UITableViewController {
             }
         case .premium:
             if PurchaseManager.shared.purchased == false {
-                 performSegue(withIdentifier: "subscribe", sender: nil)
+                performSegue(withIdentifier: "subscribe", sender: nil)
             } else {
                 AppManager.shared.emitEmoji(emoji: "👑")
             }
@@ -335,13 +329,13 @@ final class AboutViewController: UITableViewController {
         case .data:
             if indexPath.row == 0 {
                 present(SFSafariViewController(url: URL(string: "https://trakt.tv")!),
-                animated: true,
-                completion: nil)
+                        animated: true,
+                        completion: nil)
                 tableView.deselectRow(at: indexPath, animated: true)
             } else if indexPath.row == 1 {
                 present(SFSafariViewController(url: URL(string: "https://www.themoviedb.org")!),
-                animated: true,
-                completion: nil)
+                        animated: true,
+                        completion: nil)
                 tableView.deselectRow(at: indexPath, animated: true)
             }
         }
@@ -419,14 +413,14 @@ final class AboutViewController: UITableViewController {
                         if PurchaseManager.shared.traktVIPIAP {
                             Button("Manage your Subscription") { [weak self] in
                                 guard let self = self else { return }
-#if targetEnvironment(macCatalyst)
+                                #if targetEnvironment(macCatalyst)
                                 self.appStoreManageSubscription()
-#else
+                                #else
                                 Task { [weak self] in
                                     guard let self = self else { return }
                                     await self.manageSubscriptions()
                                 }
-#endif
+                                #endif
                             }.bold()
                         } else {
                             Button("Manage Trakt VIP →") {
@@ -437,9 +431,9 @@ final class AboutViewController: UITableViewController {
                         }
                     }
                 }.buttonStyle(.borderless)
-#if targetEnvironment(macCatalyst)
+                #if targetEnvironment(macCatalyst)
                     .padding(8)
-#endif
+                #endif
             }
             cell.accessoryType = .none
         }

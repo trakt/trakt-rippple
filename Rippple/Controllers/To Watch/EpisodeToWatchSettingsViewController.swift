@@ -6,10 +6,9 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-import SwiftUI
-
 import Receiver
+import SwiftUI
+import UIKit
 
 let (episodeToWatchSettingsUpdatedTransmitter, episodeToWatchSettingsUpdatedReceiver) = Receiver<EpisodeToWatchSettings>.make(with: .hot)
 
@@ -147,7 +146,6 @@ struct EpisodeToWatchListItem: Codable, Identifiable, Hashable {
 
 @MainActor
 final class EpisodeToWatchSettingsViewModel: ObservableObject {
-
     @Published var watched: Bool
     @Published var watchlist: Bool
     @Published var recommended: Bool
@@ -496,7 +494,6 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 }
 
 struct EpisodeToWatchSettingsView: View {
-
     @ObservedObject var viewModel: EpisodeToWatchSettingsViewModel
     @State private var editMode: EditMode = .inactive
     @State private var isPresentingAddListPicker = false
@@ -505,15 +502,15 @@ struct EpisodeToWatchSettingsView: View {
         SwiftUI.List {
             Section {
                 toggleRow(title: "Watched",
-                                 value: Binding(get: { viewModel.watched },
-                                                set: { viewModel.setWatched($0) }))
+                          value: Binding(get: { viewModel.watched },
+                                         set: { viewModel.setWatched($0) }))
                 watchlistedRow
                 toggleRow(title: "Favorites",
-                                 value: Binding(get: { viewModel.recommended },
-                                                set: { viewModel.setRecommended($0) }))
+                          value: Binding(get: { viewModel.recommended },
+                                         set: { viewModel.setRecommended($0) }))
                 toggleRow(title: "Collected",
-                                 value: Binding(get: { viewModel.collected },
-                                                set: { viewModel.setCollected($0) }))
+                          value: Binding(get: { viewModel.collected },
+                                         set: { viewModel.setCollected($0) }))
             } header: {
                 Text("Find next episodes for shows in:")
             }
@@ -710,7 +707,6 @@ struct EpisodeToWatchSettingsView: View {
 }
 
 struct AddListPickerView: View {
-
     @ObservedObject var viewModel: EpisodeToWatchSettingsViewModel
     @Environment(\.dismiss) private var dismiss
 
@@ -763,9 +759,9 @@ struct AddListPickerView: View {
 
     private var hasNoResults: Bool {
         filteredSmartSearches.isEmpty &&
-        filteredCustomLists.isEmpty &&
-        filteredLikedLists.isEmpty &&
-        filteredCollaborations.isEmpty
+            filteredCustomLists.isEmpty &&
+            filteredLikedLists.isEmpty &&
+            filteredCollaborations.isEmpty
     }
 
     private var filteredSmartSearches: [SmartSearch] {
@@ -891,7 +887,6 @@ struct AddListPickerView: View {
 }
 
 final class EpisodeToWatchSettingsViewController: UIHostingController<EpisodeToWatchSettingsView> {
-
     private let viewModel = EpisodeToWatchSettingsViewModel()
 
     required init?(coder aDecoder: NSCoder) {
@@ -917,7 +912,6 @@ final class EpisodeToWatchSettingsViewController: UIHostingController<EpisodeToW
 }
 
 final class EpisodeToWatchSettings {
-
     private let disposeBag = DisposeBag()
 
     private init() {
@@ -998,7 +992,7 @@ final class EpisodeToWatchSettings {
         }
     }
 
-    // Computed properties for backward compatibility
+    /// Computed properties for backward compatibility
     var smartSearches: [SmartSearch] {
         let ordered = otherLists.sorted { $0.rank < $1.rank }
         return ordered.compactMap { config in
@@ -1027,30 +1021,35 @@ final class EpisodeToWatchSettings {
             UserDefaults.standard.synchronize()
         }
     }
+
     var recommended = true {
         didSet {
             UserDefaults.standard.set(recommended, forKey: "EpisodeToWatchSettings.recommended")
             UserDefaults.standard.synchronize()
         }
     }
+
     var collected = true {
         didSet {
             UserDefaults.standard.set(collected, forKey: "EpisodeToWatchSettings.collected")
             UserDefaults.standard.synchronize()
         }
     }
+
     var watched = true {
         didSet {
             UserDefaults.standard.set(watched, forKey: "EpisodeToWatchSettings.watched")
             UserDefaults.standard.synchronize()
         }
     }
+
     var sort = Sort.automatic {
         didSet {
             UserDefaults.standard.set(sort.rawValue, forKey: "EpisodeToWatchSettings.sort")
             UserDefaults.standard.synchronize()
         }
     }
+
     var reverse = false {
         didSet {
             UserDefaults.standard.set(reverse, forKey: "EpisodeToWatchSettings.reverse")

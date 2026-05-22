@@ -6,13 +6,11 @@
 //  Copyright © 2026 Trakt. All rights reserved.
 //
 
-import SwiftUI
-
 import Receiver
 import SFSymbols
+import SwiftUI
 
 struct OpenInSettingsView: View {
-
     enum PresentationStyle {
         case modal
         case pushed
@@ -83,8 +81,8 @@ struct OpenInSettingsView: View {
                 HStack(alignment: .center) {
                     Button {
                         editorState = EditorState(action: CustomOpenAction(name: "",
-                                                                          urlTemplate: "",
-                                                                          mediaTypes: Set(OpenActionMediaType.allCases)),
+                                                                           urlTemplate: "",
+                                                                           mediaTypes: Set(OpenActionMediaType.allCases)),
                                                   isNew: true)
                     } label: {
                         HStack {
@@ -153,13 +151,13 @@ struct OpenInSettingsView: View {
             OpenInItemEditView(action: state.action,
                                isNew: state.isNew,
                                onSave: { updated in
-                saveCustomAction(updated, isNew: state.isNew)
-            }, onDelete: {
-                deleteCustomAction(id: state.action.id)
-            })
-#if targetEnvironment(macCatalyst)
-            .frame(minWidth: 620, minHeight: 720)
-#endif
+                                   saveCustomAction(updated, isNew: state.isNew)
+                               }, onDelete: {
+                                   deleteCustomAction(id: state.action.id)
+                               })
+            #if targetEnvironment(macCatalyst)
+                               .frame(minWidth: 620, minHeight: 720)
+            #endif
         }
     }
 
@@ -457,8 +455,7 @@ struct OpenInItemEditView: View {
                     ForEach(OpenActionMediaType.allCases) { type in
                         Toggle(type.displayName,
                                isOn: Binding(get: { mediaTypes.contains(type) },
-                                             set: { if $0 { mediaTypes.insert(type) } else { mediaTypes.remove(type) } })
-                        ).tint(Color(uiColor: UIColor(asset: .globalTint)))
+                                             set: { if $0 { mediaTypes.insert(type) } else { mediaTypes.remove(type) } })).tint(Color(uiColor: UIColor(asset: .globalTint)))
                             .toggleStyle(.switch)
                     }
                 }
@@ -515,7 +512,7 @@ struct OpenInItemEditView: View {
                     onDelete()
                     dismiss()
                 }
-                Button("Cancel", role: .cancel) { }
+                Button("Cancel", role: .cancel) {}
             } message: {
                 Text("This will delete the custom \"Open In\" action. This cannot be undone.")
             }
@@ -535,7 +532,6 @@ struct OpenInItemEditView: View {
         let insertedEnd = urlTemplate.index(insertionStart, offsetBy: value.count)
         urlTemplateSelection = TextSelection(insertionPoint: insertedEnd)
     }
-
 }
 
 private enum OpenActionURLTemplateValidator {

@@ -6,13 +6,11 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import NVActivityIndicatorView
 import Receiver
+import UIKit
 
 final class MediaPosterTableViewCell: UITableViewCell {
-
     let (posterDownloadResultTransmitter, posterDownloadResultReceiver) = Receiver<Bool>.make(with: .hot)
 
     var media: MediaModel! {
@@ -47,12 +45,12 @@ final class MediaPosterTableViewCell: UITableViewCell {
         }
     }
 
-    @IBOutlet weak var previewPosterImageView: PosterImageView!
-    @IBOutlet weak var posterImageView: PosterImageView!
-    @IBOutlet weak var blurryPosterImageView: PosterImageView!
-    @IBOutlet weak var loadingIndicator: NVActivityIndicatorView!
+    @IBOutlet var previewPosterImageView: PosterImageView!
+    @IBOutlet var posterImageView: PosterImageView!
+    @IBOutlet var blurryPosterImageView: PosterImageView!
+    @IBOutlet var loadingIndicator: NVActivityIndicatorView!
 
-    @IBOutlet weak var cardView: UIView!
+    @IBOutlet var cardView: UIView!
 
     override func awakeFromNib() {
         super.awakeFromNib()

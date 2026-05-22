@@ -6,20 +6,16 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
+import Moya
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import NVActivityIndicatorView
-
-import Moya
-
-import Receiver
-
 final class CollaborationsViewController: UITableViewController {
-
     var user: User!
 
     required init?(coder aDecoder: NSCoder) {
-        self.user = UserManager.shared.currentUser
+        user = UserManager.shared.currentUser
         super.init(coder: aDecoder)
     }
 
@@ -49,7 +45,8 @@ final class CollaborationsViewController: UITableViewController {
             }
         }
     }
-    @IBOutlet weak var errorLabel: UILabel!
+
+    @IBOutlet var errorLabel: UILabel!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -98,9 +95,9 @@ final class CollaborationsViewController: UITableViewController {
         }
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         commandReceiver.listen { [weak self] keyCommand in
             guard let self = self else { return }
@@ -131,14 +128,14 @@ final class CollaborationsViewController: UITableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "user",
-            let list = sender as? List,
-            let commentsViewController = segue.destination as? CommentsViewController {
+           let list = sender as? List,
+           let commentsViewController = segue.destination as? CommentsViewController {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.user(list.user))
         }
 
         if segue.identifier == "user",
-            let user = sender as? User,
-            let commentsViewController = segue.destination as? CommentsViewController {
+           let user = sender as? User,
+           let commentsViewController = segue.destination as? CommentsViewController {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.user(user))
         }
     }
@@ -167,7 +164,7 @@ final class CollaborationsViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -187,7 +184,7 @@ final class CollaborationsViewController: UITableViewController {
                         self.tableView.reloadData()
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("customLists request failure \(error)")
                     self.error = error
@@ -332,7 +329,7 @@ extension CollaborationsViewController: UITableViewDropDelegate {
                                                      id: list.identifiers.trakt!,
                                                      item: WatchlistedItem(models: models)), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -348,7 +345,7 @@ extension CollaborationsViewController: UITableViewDropDelegate {
                         SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
                 }

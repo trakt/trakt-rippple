@@ -6,14 +6,14 @@
 //  Copyright © 2021 Trakt. All rights reserved.
 //
 
+import Receiver
 import SwiftUI
 import UIKit
 import UserNotifications
-import Receiver
 
 let (badgeModeTransmitter, badgeModeReceiver) = Receiver<Int>.make(with: .hot)
 
-// SwiftUI view that mirrors the original table content and behavior
+/// SwiftUI view that mirrors the original table content and behavior
 struct BadgeAppIconView: View {
     @State private var footerText: String = ""
     @State private var selectedMode: Int = UserDefaults.standard.integer(forKey: "Badge.mode")
@@ -21,7 +21,9 @@ struct BadgeAppIconView: View {
     private let disposeBag = DisposeBag()
 
     private struct BadgeOption: Identifiable, Hashable {
-        var id: Int { identifier }
+        var id: Int {
+            identifier
+        }
 
         let identifier: Int
         let string: String
@@ -139,13 +141,13 @@ struct BadgeAppIconView: View {
     }
 }
 
-// Hosting controller to preserve the original type name and integration points
+/// Hosting controller to preserve the original type name and integration points
 final class BadgeAppIconViewController: UIHostingController<BadgeAppIconView> {
     init() {
         super.init(rootView: BadgeAppIconView())
     }
 
-    @objc required dynamic init?(coder aDecoder: NSCoder) {
+    @objc dynamic required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: BadgeAppIconView())
     }
 }

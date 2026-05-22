@@ -6,20 +6,16 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
+import Moya
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import Receiver
-
-import NVActivityIndicatorView
-
-import Moya
-
 final class WatchlistViewController: UITableViewController {
-
     var user: User!
 
     required init?(coder aDecoder: NSCoder) {
-        self.user = UserManager.shared.currentUser
+        user = UserManager.shared.currentUser
         super.init(coder: aDecoder)
     }
 
@@ -43,6 +39,7 @@ final class WatchlistViewController: UITableViewController {
             reset()
         }
     }
+
     private var cancellable: Cancellable?
 
     private let disposeBag = DisposeBag()
@@ -55,12 +52,12 @@ final class WatchlistViewController: UITableViewController {
     private let searchController = UISearchController(searchResultsController: nil)
     private var searchQuery = ""
 
-    // Empty
+    /// Empty
     @IBOutlet private var emptyView: UIView!
 
     // Paging Management
     @IBOutlet private var loadingView: UIView!
-    @IBOutlet private weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet private var animationViewContainer: NVActivityIndicatorView!
 
     // Error Management
     @IBOutlet private var errorView: UIView!
@@ -73,10 +70,11 @@ final class WatchlistViewController: UITableViewController {
             }
         }
     }
-    @IBOutlet weak var errorLabel: UILabel!
+
+    @IBOutlet var errorLabel: UILabel!
 
     // Filters
-    @IBOutlet weak var filterButtonItem: UIBarButtonItem!
+    @IBOutlet var filterButtonItem: UIBarButtonItem!
     private var currentFilter = Filter.none {
         didSet {
             if user.isCurrentUser {
@@ -132,7 +130,7 @@ final class WatchlistViewController: UITableViewController {
         case random
     }
 
-    // Sort
+    /// Sort
     private var currentSorting = Sort.rank {
         didSet {
             UserDefaults.standard.set(currentSorting.rawValue, forKey: "WatchlistViewController.currentSorting")
@@ -152,9 +150,9 @@ final class WatchlistViewController: UITableViewController {
         } else {
             navigationItem.rightBarButtonItems = [UIBarButtonItem(image: UIImage(systemName: "rectangle.grid.3x2"),
                                                                   primaryAction: UIAction { [weak self] _ in
-                guard let self = self else { return }
-                self.performSegue(withIdentifier: "grid", sender: nil)
-            }),
+                                                                      guard let self = self else { return }
+                                                                      self.performSegue(withIdentifier: "grid", sender: nil)
+                                                                  }),
                                                   .fixedSpace(),
                                                   filterButtonItem]
         }
@@ -209,8 +207,8 @@ final class WatchlistViewController: UITableViewController {
 
     private class WatchlistDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> {
         override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-            guard let item = self.itemIdentifier(for: indexPath) else { return false }
-            guard case let Wrapper.watchlist(watchlistItem) = item else { return false }
+            guard let item = itemIdentifier(for: indexPath) else { return false }
+            guard case Wrapper.watchlist(let watchlistItem) = item else { return false }
             let media = MediaModel(item: watchlistItem)
             switch media {
             case .movie:
@@ -344,7 +342,7 @@ final class WatchlistViewController: UITableViewController {
                     self.displayNotes(for: watchlistItem)
                     UISelectionFeedbackGenerator().selectionChanged()
                 },
-                                            for: .touchUpInside)
+                for: .touchUpInside)
             }
 
             cell.delegate = self
@@ -447,9 +445,9 @@ final class WatchlistViewController: UITableViewController {
         navigationItem.searchController = searchController
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         commandReceiver.listen { [weak self] keyCommand in
             guard let self = self else { return }
@@ -502,18 +500,18 @@ final class WatchlistViewController: UITableViewController {
             }
         }
 
-        guard case let .watchlist(slug, type, extended, sort, _) = self.service else { return }
+        guard case .watchlist(let slug, let type, let extended, let sort, _) = service else { return }
         TraktAPIProvider.fetchAllWatchlistItems(slug: slug,
                                                 type: type,
                                                 extended: extended,
                                                 sort: sort) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(items):
+            case .success(let items):
                 DispatchQueue.main.async {
                     self.watchlistItems = Array(Set(items))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Watchlist request failure \(error)")
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
                 snapshot.appendSections([.error])
@@ -527,11 +525,10 @@ final class WatchlistViewController: UITableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let commentsViewController = segue.destination as? CommentsViewController,
-            let cell = sender as? MediaTableViewCell,
-            let index = tableView.indexPath(for: cell) {
-
+           let cell = sender as? MediaTableViewCell,
+           let index = tableView.indexPath(for: cell) {
             guard let item = dataSource.itemIdentifier(for: index) else { return }
-            guard case let Wrapper.watchlist(watchlistItem) = item else { return }
+            guard case Wrapper.watchlist(let watchlistItem) = item else { return }
 
             switch watchlistItem.type {
             case .movie:
@@ -546,88 +543,88 @@ final class WatchlistViewController: UITableViewController {
                 fatalError("Unhandled media type fed to search results view controller")
             }
         } else if let mediaViewController = segue.destination as? MediaViewController,
-            let media = sender as? MediaModel {
+                  let media = sender as? MediaModel {
             mediaViewController.media = media
         } else if let gridViewController = segue.destination as? GridViewController {
             gridViewController.savedFilter = SavedFilter(section: "watchlist",
-                                                       name: "Watchlist",
-                                                       path: "/sync/watchlist",
-                                                       query: "",
-                                                       limit: 250)
+                                                         name: "Watchlist",
+                                                         path: "/sync/watchlist",
+                                                         query: "",
+                                                         limit: 250)
             return
         }
     }
 
     private func filterMenu() -> UIMenu {
         let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
-            let all = UIAction(title: "Everything", image: nil, state: (self.currentFilter == .none ? .on : .off)) { [weak self] _ in
+            let all = UIAction(title: "Everything", image: nil, state: self.currentFilter == .none ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .none
             }
 
-            let movies = UIAction(title: "Movies", image: nil, state: (self.currentFilter == .movies ? .on : .off)) { [weak self] _ in
+            let movies = UIAction(title: "Movies", image: nil, state: self.currentFilter == .movies ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .movies
             }
 
-            let shows = UIAction(title: "Shows", image: nil, state: (self.currentFilter == .shows ? .on : .off)) { [weak self] _ in
+            let shows = UIAction(title: "Shows", image: nil, state: self.currentFilter == .shows ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .shows
             }
 
-            let seasons = UIAction(title: "Seasons", image: nil, state: (self.currentFilter == .seasons ? .on : .off)) { [weak self] _ in
+            let seasons = UIAction(title: "Seasons", image: nil, state: self.currentFilter == .seasons ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .seasons
             }
 
-            let episodes = UIAction(title: "Episodes", image: nil, state: (self.currentFilter == .episodes ? .on : .off)) { [weak self] _ in
+            let episodes = UIAction(title: "Episodes", image: nil, state: self.currentFilter == .episodes ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .episodes
             }
 
             let filters = UIMenu(title: "What do you want to see?", options: .displayInline, children: [all, movies, shows, seasons, episodes])
 
-            let rank = UIAction(title: "Rank", image: nil, state: (self.currentSorting == .rank ? .on : .off)) { [weak self] _ in
+            let rank = UIAction(title: "Rank", image: nil, state: self.currentSorting == .rank ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .rank
             }
 
-            let added = UIAction(title: "Recently Added", image: nil, state: (self.currentSorting == .listed ? .on : .off)) { [weak self] _ in
+            let added = UIAction(title: "Recently Added", image: nil, state: self.currentSorting == .listed ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .listed
             }
 
-            let title = UIAction(title: "Title", image: nil, state: (self.currentSorting == .title ? .on : .off)) { [weak self] _ in
+            let title = UIAction(title: "Title", image: nil, state: self.currentSorting == .title ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .title
             }
 
-            let release = UIAction(title: "Release Date", image: nil, state: (self.currentSorting == .releaseDate ? .on : .off)) { [weak self] _ in
+            let release = UIAction(title: "Release Date", image: nil, state: self.currentSorting == .releaseDate ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .releaseDate
             }
 
-            let runtime = UIAction(title: "Runtime", image: nil, state: (self.currentSorting == .runtime ? .on : .off)) { [weak self] _ in
+            let runtime = UIAction(title: "Runtime", image: nil, state: self.currentSorting == .runtime ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .runtime
             }
 
-            let weightedRating = UIAction(title: "Weighted Ratings", image: nil, state: (self.currentSorting == .weightedRating ? .on : .off)) { [weak self] _ in
+            let weightedRating = UIAction(title: "Weighted Ratings", image: nil, state: self.currentSorting == .weightedRating ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .weightedRating
             }
 
-            let rating = UIAction(title: "Ratings", image: nil, state: (self.currentSorting == .rating ? .on : .off)) { [weak self] _ in
+            let rating = UIAction(title: "Ratings", image: nil, state: self.currentSorting == .rating ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .rating
             }
 
-            let votes = UIAction(title: "Votes", image: nil, state: (self.currentSorting == .votes ? .on : .off)) { [weak self] _ in
+            let votes = UIAction(title: "Votes", image: nil, state: self.currentSorting == .votes ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .votes
             }
 
-            let random = UIAction(title: "Random", image: nil, state: (self.currentSorting == .random ? .on : .off)) { [weak self] _ in
+            let random = UIAction(title: "Random", image: nil, state: self.currentSorting == .random ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .random
             }
@@ -709,9 +706,9 @@ extension WatchlistViewController {
             contextMenu.controller = self
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return self.contextMenu.previewViewController
+                self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         case .header:
             return nil
@@ -735,7 +732,7 @@ extension WatchlistViewController {
 
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.watchlist(watchlistItem) = item else { return nil }
+        guard case Wrapper.watchlist(let watchlistItem) = item else { return nil }
         let media = MediaModel(item: watchlistItem)
         return media.trailingSwipeActions(for: self)
     }
@@ -744,11 +741,11 @@ extension WatchlistViewController {
         if !user.isCurrentUser { return nil }
 
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.watchlist(watchlistItem) = item else { return nil }
+        guard case Wrapper.watchlist(let watchlistItem) = item else { return nil }
         let media = MediaModel(item: watchlistItem)
 
         let remove = UIContextualAction(style: .normal,
-                                         title: "Remove") { _, _, boolValue in
+                                        title: "Remove") { _, _, boolValue in
             media.removeFromWatchlist()
             boolValue(true)
         }
@@ -757,7 +754,7 @@ extension WatchlistViewController {
 
         if UserManager.shared.isCurrentVIP {
             let note = UIContextualAction(style: .normal,
-                                             title: "Notes") { [weak self] _, _, boolValue in
+                                          title: "Notes") { [weak self] _, _, boolValue in
                 guard let self = self else { return }
                 self.promptForNote(on: watchlistItem)
                 boolValue(true)
@@ -796,12 +793,12 @@ extension WatchlistViewController: MediaTableViewCellDelegate {
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.watchlist(watchlistItem) = item else { return }
+        guard case Wrapper.watchlist(let watchlistItem) = item else { return }
 
         if action == .details {
             switch watchlistItem.type {
             case .movie, .show:
-                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel.init(item: watchlistItem))
+                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel(item: watchlistItem))
             case .episode, .season:
                 performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel.show(watchlistItem.show!))
             default:
@@ -812,7 +809,6 @@ extension WatchlistViewController: MediaTableViewCellDelegate {
 }
 
 extension WatchlistViewController: UISearchResultsUpdating {
-
     func updateSearchResults(for searchController: UISearchController) {
         searchQuery = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         updateDatasource()

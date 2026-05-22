@@ -6,44 +6,43 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
+import Alamofire
 import Foundation
 import UIKit
-
-import Alamofire
 
 /// A retry policy that retries requests using an exponential backoff for allowed HTTP methods and HTTP status codes
 /// as well as certain types of networking errors.
 final class RipppleRetryPolicy: RequestInterceptor {
     /// The default retry limit for retry policies.
-    public static let defaultRetryLimit: UInt = 2
+    static let defaultRetryLimit: UInt = 2
 
     /// The default exponential backoff base for retry policies (must be a minimum of 2).
-    public static let defaultExponentialBackoffBase: UInt = 2
+    static let defaultExponentialBackoffBase: UInt = 2
 
     /// The default exponential backoff scale for retry policies.
-    public static let defaultExponentialBackoffScale: Double = 0.5
+    static let defaultExponentialBackoffScale: Double = 0.5
 
     /// The default HTTP methods to retry.
     /// See [RFC 2616 - Section 9.1.2](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html) for more information.
-    public static let defaultRetryableHTTPMethods: Set<HTTPMethod> = [.delete, // [Delete](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.7) - not always idempotent
-                                                                      .get, // [GET](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3) - generally idempotent
-                                                                      .head, // [HEAD](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.4) - generally idempotent
-                                                                      .options, // [OPTIONS](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.2) - inherently idempotent
-                                                                      .put, // [PUT](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6) - not always idempotent
-                                                                      .trace // [TRACE](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8) - inherently idempotent
+    static let defaultRetryableHTTPMethods: Set<HTTPMethod> = [.delete, // [Delete](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.7) - not always idempotent
+                                                               .get, // [GET](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3) - generally idempotent
+                                                               .head, // [HEAD](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.4) - generally idempotent
+                                                               .options, // [OPTIONS](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.2) - inherently idempotent
+                                                               .put, // [PUT](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6) - not always idempotent
+                                                               .trace // [TRACE](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8) - inherently idempotent
     ]
 
     /// The default HTTP status codes to retry.
     /// See [RFC 2616 - Section 10](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10) for more information.
-    public static let defaultRetryableHTTPStatusCodes: Set<Int> = [408, // [Request Timeout](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.9)
-                                                                   500, // [Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1)
-                                                                   502, // [Bad Gateway](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.3)
-                                                                   503, // [Service Unavailable](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.4)
-                                                                   504 // [Gateway Timeout](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.5)
+    static let defaultRetryableHTTPStatusCodes: Set<Int> = [408, // [Request Timeout](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.9)
+                                                            500, // [Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1)
+                                                            502, // [Bad Gateway](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.3)
+                                                            503, // [Service Unavailable](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.4)
+                                                            504 // [Gateway Timeout](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.5)
     ]
 
     /// The default URL error codes to retry.
-    public static let defaultRetryableURLErrorCodes: Set<URLError.Code> = [// [Security] App Transport Security disallowed a connection because there is no secure network connection.
+    static let defaultRetryableURLErrorCodes: Set<URLError.Code> = [ // [Security] App Transport Security disallowed a connection because there is no secure network connection.
         //   - [Disabled] ATS settings do not change at runtime.
         // .appTransportSecurityRequiresSecureConnection,
 
@@ -247,22 +246,22 @@ final class RipppleRetryPolicy: RequestInterceptor {
     ]
 
     /// The total number of times the request is allowed to be retried.
-    public let retryLimit: UInt
+    let retryLimit: UInt
 
     /// The base of the exponential backoff policy (should always be greater than or equal to 2).
-    public let exponentialBackoffBase: UInt
+    let exponentialBackoffBase: UInt
 
     /// The scale of the exponential backoff.
-    public let exponentialBackoffScale: Double
+    let exponentialBackoffScale: Double
 
     /// The HTTP methods that are allowed to be retried.
-    public let retryableHTTPMethods: Set<HTTPMethod>
+    let retryableHTTPMethods: Set<HTTPMethod>
 
     /// The HTTP status codes that are automatically retried by the policy.
-    public let retryableHTTPStatusCodes: Set<Int>
+    let retryableHTTPStatusCodes: Set<Int>
 
     /// The URL error codes that are automatically retried by the policy.
-    public let retryableURLErrorCodes: Set<URLError.Code>
+    let retryableURLErrorCodes: Set<URLError.Code>
 
     /// Creates an `ExponentialBackoffRetryPolicy` from the specified parameters.
     ///
@@ -276,12 +275,12 @@ final class RipppleRetryPolicy: RequestInterceptor {
     ///                               `RetryPolicy.defaultRetryableHTTPStatusCodes` by default.
     ///   - retryableURLErrorCodes:   The URL error codes that are automatically retried by the policy.
     ///                               `RetryPolicy.defaultRetryableURLErrorCodes` by default.
-    public init(retryLimit: UInt = RetryPolicy.defaultRetryLimit,
-                exponentialBackoffBase: UInt = RetryPolicy.defaultExponentialBackoffBase,
-                exponentialBackoffScale: Double = RetryPolicy.defaultExponentialBackoffScale,
-                retryableHTTPMethods: Set<HTTPMethod> = RetryPolicy.defaultRetryableHTTPMethods,
-                retryableHTTPStatusCodes: Set<Int> = RetryPolicy.defaultRetryableHTTPStatusCodes,
-                retryableURLErrorCodes: Set<URLError.Code> = RetryPolicy.defaultRetryableURLErrorCodes) {
+    init(retryLimit: UInt = RetryPolicy.defaultRetryLimit,
+         exponentialBackoffBase: UInt = RetryPolicy.defaultExponentialBackoffBase,
+         exponentialBackoffScale: Double = RetryPolicy.defaultExponentialBackoffScale,
+         retryableHTTPMethods: Set<HTTPMethod> = RetryPolicy.defaultRetryableHTTPMethods,
+         retryableHTTPStatusCodes: Set<Int> = RetryPolicy.defaultRetryableHTTPStatusCodes,
+         retryableURLErrorCodes: Set<URLError.Code> = RetryPolicy.defaultRetryableURLErrorCodes) {
         precondition(exponentialBackoffBase >= 2, "The `exponentialBackoffBase` must be a minimum of 2.")
 
         self.retryLimit = retryLimit
@@ -292,12 +291,11 @@ final class RipppleRetryPolicy: RequestInterceptor {
         self.retryableURLErrorCodes = retryableURLErrorCodes
     }
 
-    public func retry(_ request: Request,
-                      for session: Session,
-                      dueTo error: Error,
-                      completion: @escaping (RetryResult) -> Void) {
+    func retry(_ request: Request,
+               for session: Session,
+               dueTo error: Error,
+               completion: @escaping (RetryResult) -> Void) {
         if let retry = request.response?.allHeaderFields["x-ratelimit"] as? String, !retry.localizedStandardContains("API_POST_LIMIT"), let retryAfter = request.response?.allHeaderFields["retry-after"] as? String {
-
             DispatchQueue.main.async {
                 SwiftMessages.show(message: "Rate Limit Reached", style: .retry(Int(retryAfter)!))
             }
@@ -360,7 +358,7 @@ final class RipppleRetryPolicy: RequestInterceptor {
     ///     - error:   `Error` encountered while executing the `Request`.
     ///
     /// - Returns:     `Bool` determining whether or not to retry the `Request`.
-    public func shouldRetry(request: Request, dueTo error: Error) -> Bool {
+    func shouldRetry(request: Request, dueTo error: Error) -> Bool {
         guard let httpMethod = request.request?.method, retryableHTTPMethods.contains(httpMethod) else { return false }
 
         if let statusCode = request.response?.statusCode, retryableHTTPStatusCodes.contains(statusCode) {

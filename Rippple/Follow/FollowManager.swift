@@ -7,14 +7,12 @@
 //
 
 import Foundation
-
 import Receiver
 
 final class FollowManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     func setup() {
         applicationLifecycleReceiver.listen { applicationLifecycle in
@@ -34,7 +32,7 @@ final class FollowManager {
             self.refreshFollowing()
         }.disposed(by: disposeBag)
 
-        self.refreshFollowing()
+        refreshFollowing()
     }
 
     static let shared = FollowManager()
@@ -47,6 +45,7 @@ final class FollowManager {
             onFollowingChangedTransmitter.broadcast(following)
         }
     }
+
     private var pendingFollowing = [User]() {
         didSet {
             onPendingFollowingChangedTransmitter.broadcast(pendingFollowing)
@@ -56,6 +55,7 @@ final class FollowManager {
     var followingCount: Int {
         return following.count
     }
+
     var pendingFollowingCount: Int {
         return pendingFollowing.count
     }
@@ -63,6 +63,7 @@ final class FollowManager {
     func following(at index: Int) -> User {
         return following[index]
     }
+
     func pendingFollowing(at index: Int) -> User {
         return pendingFollowing[index]
     }
@@ -70,6 +71,7 @@ final class FollowManager {
     func followed(user: User) -> Bool {
         return following.contains(user)
     }
+
     func isPendingFollowing(user: User) -> Bool {
         return pendingFollowing.contains(user)
     }
@@ -80,7 +82,7 @@ final class FollowManager {
                 switch result {
                 case .success:
                     SwiftMessages.show(message: "👍 @\(user.slug) unfollowed")
-                case let .failure(error):
+                case .failure(let error):
                     SwiftMessages.show(message: "😓 Unfollow failed", style: .error(error))
                 }
             }
@@ -110,7 +112,7 @@ final class FollowManager {
                     case .success:
                         remove(user: user)
                         SwiftMessages.show(message: "👍 @\(user.slug) unfollowed")
-                    case let .failure(error):
+                    case .failure(let error):
                         add(user: user)
                         SwiftMessages.show(message: "😓 Unfollow failed", style: .error(error))
                     }
@@ -125,7 +127,7 @@ final class FollowManager {
                     case .success:
                         add(user: user)
                         SwiftMessages.show(message: "👍 @\(user.slug) followed")
-                    case let .failure(error):
+                    case .failure(let error):
                         remove(user: user)
                         SwiftMessages.show(message: "😓 Follow failed", style: .error(error))
                     }
@@ -136,7 +138,6 @@ final class FollowManager {
 }
 
 private extension FollowManager {
-
     private func refreshFollowing() {
         if SessionManager.shared.isLoggedOut {
             return
@@ -145,7 +146,7 @@ private extension FollowManager {
         TraktAPIProvider.provider.request(.following(slug: nil),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     let following = try response.map([Follow].self, using: TraktAPIProvider.decoder).reversed().map { $0.user }
@@ -155,7 +156,7 @@ private extension FollowManager {
                 } catch {
                     print("Following request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Following request failure \(error)")
             }
         }
@@ -163,7 +164,7 @@ private extension FollowManager {
         TraktAPIProvider.provider.request(.pendingFollowing,
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     let pendingFollowing = try response.map([Follow].self, using: TraktAPIProvider.decoder).reversed().map { $0.user }
@@ -173,7 +174,7 @@ private extension FollowManager {
                 } catch {
                     print("Pending following request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Pending following request failure \(error)")
             }
         }
@@ -192,7 +193,7 @@ extension String {
     public func slugify() -> String {
         var result: String?
 
-        if let latin = self.applyingTransform(StringTransform("Any-Latin; Latin-ASCII; Lower;"), reverse: false) {
+        if let latin = applyingTransform(StringTransform("Any-Latin; Latin-ASCII; Lower;"), reverse: false) {
             let urlComponents = latin.components(separatedBy: String.slugSafeCharacters.inverted)
             let joined = urlComponents.filter { $0 != "" }.joined(separator: "-").lowercased()
             if let regex = try? NSRegularExpression(pattern: "-+", options: []) {
@@ -220,7 +221,7 @@ extension String {
     public func hashtagify() -> String {
         var result: String?
 
-        if let latin = self.applyingTransform(StringTransform("Any-Latin; Latin-ASCII; Lower;"), reverse: false) {
+        if let latin = applyingTransform(StringTransform("Any-Latin; Latin-ASCII; Lower;"), reverse: false) {
             let urlComponents = latin.components(separatedBy: String.hashtagSafeCharacters.inverted)
             result = urlComponents.filter { $0 != "" }.map { $0.capitalizingFirstLetter() }
                 .joined(separator: "")

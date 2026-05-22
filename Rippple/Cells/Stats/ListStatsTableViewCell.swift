@@ -6,20 +6,18 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class ListStatsTableViewCell: UITableViewCell {
-
-    @IBOutlet weak var items: EFCountingLabel!
-    @IBOutlet weak var watchedMovies: EFCountingLabel!
-    @IBOutlet weak var watchedShows: EFCountingLabel!
-    @IBOutlet weak var rated: EFCountingLabel!
-    @IBOutlet weak var watchlisted: EFCountingLabel!
-    @IBOutlet weak var recommended: EFCountingLabel!
-    @IBOutlet weak var collected: EFCountingLabel!
-    @IBOutlet weak var commented: EFCountingLabel!
+    @IBOutlet var items: EFCountingLabel!
+    @IBOutlet var watchedMovies: EFCountingLabel!
+    @IBOutlet var watchedShows: EFCountingLabel!
+    @IBOutlet var rated: EFCountingLabel!
+    @IBOutlet var watchlisted: EFCountingLabel!
+    @IBOutlet var recommended: EFCountingLabel!
+    @IBOutlet var collected: EFCountingLabel!
+    @IBOutlet var commented: EFCountingLabel!
 
     private let disposeBag = DisposeBag()
 
@@ -141,7 +139,7 @@ final class ListStatsTableViewCell: UITableViewCell {
         }
     }
 
-    private let numberFormatter: NumberFormatter = NumberFormatter()
+    private let numberFormatter: NumberFormatter = .init()
 
     private func update() {
         guard let mediaItems = mediaItems else {

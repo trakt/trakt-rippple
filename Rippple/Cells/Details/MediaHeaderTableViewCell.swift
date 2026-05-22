@@ -13,22 +13,21 @@ protocol MediaHeaderTableViewCellDelegate: AnyObject {
 }
 
 final class MediaHeaderTableViewCell: UITableViewCell {
-
     enum Action {
         case presentEpisodeList
     }
 
     weak var delegate: MediaHeaderTableViewCellDelegate?
 
-    @IBOutlet weak var title: UILabel!
+    @IBOutlet var title: UILabel!
 
-    @IBOutlet weak var copyButton: UIButton!
-    @IBOutlet weak var listButton: UIButton!
+    @IBOutlet var copyButton: UIButton!
+    @IBOutlet var listButton: UIButton!
 
     var media: MediaModel! {
         didSet {
             var finalMenuElements = [UIAction]()
-            switch self.media! {
+            switch media! {
             case .movie(let movie):
                 var titleElements = [String]()
                 titleElements.append("Movie")
@@ -44,42 +43,42 @@ final class MediaHeaderTableViewCell: UITableViewCell {
                     let fullTitle = "\(movie.officialTitle)\((movie.releaseYear != nil) ? " \(movie.releaseYear!)" : "")"
                     finalMenuElements.append(UIAction(title: originalTitle,
                                                       handler: { _ in
-                        UIPasteboard.general.string = originalTitle
-                    }))
+                                                          UIPasteboard.general.string = originalTitle
+                                                      }))
                     finalMenuElements.append(UIAction(title: movie.officialTitle,
                                                       handler: { _ in
-                        UIPasteboard.general.string = movie.officialTitle
-                    }))
+                                                          UIPasteboard.general.string = movie.officialTitle
+                                                      }))
                     finalMenuElements.append(UIAction(title: fullTitle,
                                                       handler: { _ in
-                        UIPasteboard.general.string = fullTitle
-                    }))
+                                                          UIPasteboard.general.string = fullTitle
+                                                      }))
                     finalMenuElements.append(UIAction(title: fullTitle.slugify(),
                                                       handler: { _ in
-                        UIPasteboard.general.string = fullTitle.slugify()
-                    }))
+                                                          UIPasteboard.general.string = fullTitle.slugify()
+                                                      }))
                     finalMenuElements.append(UIAction(title: movie.officialTitle.hashtagify(),
                                                       handler: { _ in
-                        UIPasteboard.general.string = movie.officialTitle.hashtagify()
-                    }))
+                                                          UIPasteboard.general.string = movie.officialTitle.hashtagify()
+                                                      }))
                 } else {
-                    let fullTitle = self.media!.mediaTitle
+                    let fullTitle = media!.mediaTitle
                     finalMenuElements.append(UIAction(title: movie.title,
                                                       handler: { _ in
-                        UIPasteboard.general.string = movie.title
-                    }))
+                                                          UIPasteboard.general.string = movie.title
+                                                      }))
                     finalMenuElements.append(UIAction(title: fullTitle,
                                                       handler: { _ in
-                        UIPasteboard.general.string = fullTitle
-                    }))
+                                                          UIPasteboard.general.string = fullTitle
+                                                      }))
                     finalMenuElements.append(UIAction(title: fullTitle.slugify(),
                                                       handler: { _ in
-                        UIPasteboard.general.string = fullTitle.slugify()
-                    }))
+                                                          UIPasteboard.general.string = fullTitle.slugify()
+                                                      }))
                     finalMenuElements.append(UIAction(title: movie.title.hashtagify(),
                                                       handler: { _ in
-                        UIPasteboard.general.string = movie.title.hashtagify()
-                    }))
+                                                          UIPasteboard.general.string = movie.title.hashtagify()
+                                                      }))
                 }
             case .show(let show):
                 var titleElements = [String]()
@@ -94,42 +93,42 @@ final class MediaHeaderTableViewCell: UITableViewCell {
                     let fullTitle = "\(show.officialTitle)\((show.releaseYear != nil) ? " \(show.releaseYear!)" : "")"
                     finalMenuElements.append(UIAction(title: originalTitle,
                                                       handler: { _ in
-                        UIPasteboard.general.string = originalTitle
-                    }))
+                                                          UIPasteboard.general.string = originalTitle
+                                                      }))
                     finalMenuElements.append(UIAction(title: show.officialTitle,
                                                       handler: { _ in
-                        UIPasteboard.general.string = show.officialTitle
-                    }))
+                                                          UIPasteboard.general.string = show.officialTitle
+                                                      }))
                     finalMenuElements.append(UIAction(title: fullTitle,
                                                       handler: { _ in
-                        UIPasteboard.general.string = fullTitle
-                    }))
+                                                          UIPasteboard.general.string = fullTitle
+                                                      }))
                     finalMenuElements.append(UIAction(title: fullTitle.slugify(),
                                                       handler: { _ in
-                        UIPasteboard.general.string = fullTitle.slugify()
-                    }))
+                                                          UIPasteboard.general.string = fullTitle.slugify()
+                                                      }))
                     finalMenuElements.append(UIAction(title: show.officialTitle.hashtagify(),
                                                       handler: { _ in
-                        UIPasteboard.general.string = show.officialTitle.hashtagify()
-                    }))
+                                                          UIPasteboard.general.string = show.officialTitle.hashtagify()
+                                                      }))
                 } else {
-                    let fullTitle = self.media!.mediaTitle
+                    let fullTitle = media!.mediaTitle
                     finalMenuElements.append(UIAction(title: show.title,
                                                       handler: { _ in
-                        UIPasteboard.general.string = show.title
-                    }))
+                                                          UIPasteboard.general.string = show.title
+                                                      }))
                     finalMenuElements.append(UIAction(title: fullTitle,
                                                       handler: { _ in
-                        UIPasteboard.general.string = fullTitle
-                    }))
+                                                          UIPasteboard.general.string = fullTitle
+                                                      }))
                     finalMenuElements.append(UIAction(title: fullTitle.slugify(),
                                                       handler: { _ in
-                        UIPasteboard.general.string = fullTitle.slugify()
-                    }))
+                                                          UIPasteboard.general.string = fullTitle.slugify()
+                                                      }))
                     finalMenuElements.append(UIAction(title: show.title.hashtagify(),
                                                       handler: { _ in
-                        UIPasteboard.general.string = show.title.hashtagify()
-                    }))
+                                                          UIPasteboard.general.string = show.title.hashtagify()
+                                                      }))
                 }
             case .episode(let episode, let show):
                 var titleElements = [String]()
@@ -138,29 +137,29 @@ final class MediaHeaderTableViewCell: UITableViewCell {
                 titleElements.append(episode.localizedEpisodeNumber)
                 title.text = titleElements.joined(separator: " · ")
 
-                let fullTitle = self.media!.mediaTitle
+                let fullTitle = media!.mediaTitle
                 finalMenuElements.append(UIAction(title: show.title,
                                                   handler: { _ in
-                    UIPasteboard.general.string = show.title
-                }))
+                                                      UIPasteboard.general.string = show.title
+                                                  }))
                 if let episodeTitle = episode.title {
                     finalMenuElements.append(UIAction(title: "\(show.title) \(episodeTitle)",
                                                       handler: { _ in
-                        UIPasteboard.general.string = "\(show.title) \(episodeTitle)"
-                    }))
+                                                          UIPasteboard.general.string = "\(show.title) \(episodeTitle)"
+                                                      }))
                 }
                 finalMenuElements.append(UIAction(title: fullTitle,
                                                   handler: { _ in
-                    UIPasteboard.general.string = fullTitle
-                }))
+                                                      UIPasteboard.general.string = fullTitle
+                                                  }))
                 finalMenuElements.append(UIAction(title: fullTitle.slugify(),
                                                   handler: { _ in
-                    UIPasteboard.general.string = fullTitle.slugify()
-                }))
+                                                      UIPasteboard.general.string = fullTitle.slugify()
+                                                  }))
                 finalMenuElements.append(UIAction(title: fullTitle.hashtagify(),
                                                   handler: { _ in
-                    UIPasteboard.general.string = fullTitle.hashtagify()
-                }))
+                                                      UIPasteboard.general.string = fullTitle.hashtagify()
+                                                  }))
             case .season(let season, let show):
                 var titleElements = [String]()
                 titleElements.append("Season")
@@ -168,25 +167,25 @@ final class MediaHeaderTableViewCell: UITableViewCell {
                 titleElements.append(season.title ?? "\(season.localizedSeasonNumber)")
                 title.text = titleElements.joined(separator: " · ")
 
-                let fullTitle = self.media!.mediaTitle
+                let fullTitle = media!.mediaTitle
                 if let title = season.title {
                     finalMenuElements.append(UIAction(title: "\(show.title) \(title)",
                                                       handler: { _ in
-                        UIPasteboard.general.string = show.title
-                    }))
+                                                          UIPasteboard.general.string = show.title
+                                                      }))
                 }
                 finalMenuElements.append(UIAction(title: fullTitle,
                                                   handler: { _ in
-                    UIPasteboard.general.string = fullTitle
-                }))
+                                                      UIPasteboard.general.string = fullTitle
+                                                  }))
                 finalMenuElements.append(UIAction(title: fullTitle.slugify(),
                                                   handler: { _ in
-                    UIPasteboard.general.string = fullTitle.slugify()
-                }))
+                                                      UIPasteboard.general.string = fullTitle.slugify()
+                                                  }))
                 finalMenuElements.append(UIAction(title: fullTitle.hashtagify(),
                                                   handler: { _ in
-                    UIPasteboard.general.string = fullTitle.hashtagify()
-                }))
+                                                      UIPasteboard.general.string = fullTitle.hashtagify()
+                                                  }))
             case .list:
                 break
             case .showProgress:

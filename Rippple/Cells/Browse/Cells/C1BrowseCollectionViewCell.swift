@@ -10,10 +10,10 @@ import UIKit
 import YouTubePlayerKit
 
 final class C1BrowseCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var backdrop: BackdropImageView!
-    @IBOutlet weak var logo: LogoImageView?
+    @IBOutlet var backdrop: BackdropImageView!
+    @IBOutlet var logo: LogoImageView?
 
-    @IBOutlet weak var playButton: UIButton?
+    @IBOutlet var playButton: UIButton?
 
     private var youTubePlayer: YouTubePlayer?
     private var youTubePlayerHostingView: YouTubePlayerHostingView?

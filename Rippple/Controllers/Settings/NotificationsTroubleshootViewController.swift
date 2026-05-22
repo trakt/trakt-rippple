@@ -1,23 +1,21 @@
 //
-//  NotificationsTroubleshootingViewController.swift
+//  NotificationsTroubleshootViewController.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 11/06/2020.
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class NotificationsTroubleshootViewController: UITableViewController {
-
     private let disposeBag = DisposeBag()
 
-    @IBOutlet weak var appSettings: UIImageView!
-    @IBOutlet weak var deviceSettings: UIImageView!
-    @IBOutlet weak var tokenRegistration: UIImageView!
-    @IBOutlet weak var testNotification: UIImageView!
+    @IBOutlet var appSettings: UIImageView!
+    @IBOutlet var deviceSettings: UIImageView!
+    @IBOutlet var tokenRegistration: UIImageView!
+    @IBOutlet var testNotification: UIImageView!
 
     private var notificationsAllDisabled: Bool {
         return MovieNotificationsManager.shared.toWatchMovieRelease == false &&
@@ -131,7 +129,7 @@ final class NotificationsTroubleshootViewController: UITableViewController {
                 self.testNotificationReceived = nil
                 self.scheduleTestNotification()
 
-                UNUserNotificationCenter.current().getNotificationSettings { [weak self] (settings) in
+                UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
                     guard let self = self else { return }
                     self.notificationSettings = settings
                 }
@@ -185,7 +183,7 @@ final class NotificationsTroubleshootViewController: UITableViewController {
         if onlyOnce {
             onlyOnce = false
 
-            UNUserNotificationCenter.current().getNotificationSettings { [weak self] (settings) in
+            UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
                 guard let self = self else { return }
                 self.notificationSettings = settings
             }
@@ -210,8 +208,8 @@ final class NotificationsTroubleshootViewController: UITableViewController {
         if indexPath.row == 0 {
             if notificationsAllDisabled {
                 let alertController = UIAlertController(title: "Something's off",
-                    message: "It seems like you disabled all notifications in the previous screen.",
-                    preferredStyle: .alert)
+                                                        message: "It seems like you disabled all notifications in the previous screen.",
+                                                        preferredStyle: .alert)
 
                 let cancel = UIAlertAction(title: "I understand", style: .cancel) { _ in
                     self.navigationController?.popViewController(animated: true)
@@ -224,8 +222,8 @@ final class NotificationsTroubleshootViewController: UITableViewController {
             switch notificationSettings.authorizationStatus {
             case .denied:
                 let alertController = UIAlertController(title: "Something's off",
-                    message: "Currently, notifications are off for Rippple. To change this, head to your device settings.",
-                    preferredStyle: .alert)
+                                                        message: "Currently, notifications are off for Rippple. To change this, head to your device settings.",
+                                                        preferredStyle: .alert)
 
                 let cancel = UIAlertAction(title: "Cancel", style: .cancel)
                 alertController.addAction(cancel)
@@ -243,8 +241,8 @@ final class NotificationsTroubleshootViewController: UITableViewController {
                 break
             default:
                 let alertController = UIAlertController(title: "What just happened?",
-                    message: "We don't know what's up, but your device notifications authorization status for Rippple is in an unknown state. Try to open the settings and disable/enable notifications to try to solve the issue",
-                    preferredStyle: .alert)
+                                                        message: "We don't know what's up, but your device notifications authorization status for Rippple is in an unknown state. Try to open the settings and disable/enable notifications to try to solve the issue",
+                                                        preferredStyle: .alert)
 
                 let cancel = UIAlertAction(title: "Cancel", style: .cancel)
                 alertController.addAction(cancel)
@@ -261,7 +259,7 @@ final class NotificationsTroubleshootViewController: UITableViewController {
             if let pushTokenError = pushTokenError {
                 let alertController = UIAlertController(title: "Where's your yoken?",
                                                         message: "Something wrong happened with the token we need to use on our server to push activities to you. Don't worry it's not lost. You can try to restart the app or try again later. If the problem persists, you'll need to contact us. (\(pushTokenError.localizedDescription))",
-                    preferredStyle: .alert)
+                                                        preferredStyle: .alert)
 
                 let cancel = UIAlertAction(title: "Okay", style: .cancel)
                 alertController.addAction(cancel)
@@ -271,7 +269,7 @@ final class NotificationsTroubleshootViewController: UITableViewController {
             if let testNotificationError = testNotificationError {
                 let alertController = UIAlertController(title: "Don't wait for it",
                                                         message: "Looks like we couldn't even schedule the test notification. (\(testNotificationError.localizedDescription))",
-                    preferredStyle: .alert)
+                                                        preferredStyle: .alert)
 
                 let cancel = UIAlertAction(title: "Okay", style: .cancel)
                 alertController.addAction(cancel)
@@ -279,7 +277,7 @@ final class NotificationsTroubleshootViewController: UITableViewController {
             } else if testNotificationReceived == false {
                 let alertController = UIAlertController(title: "Something's wrong",
                                                         message: "We're still waiting for that test notification to show up but it didn't in the expected time. So maybe you shouldn't wait either and try again later.",
-                    preferredStyle: .alert)
+                                                        preferredStyle: .alert)
 
                 let cancel = UIAlertAction(title: "Okay", style: .cancel)
                 alertController.addAction(cancel)
@@ -306,7 +304,7 @@ final class NotificationsTroubleshootViewController: UITableViewController {
                                             trigger: nil)
 
         let notificationCenter = UNUserNotificationCenter.current()
-        notificationCenter.add(request) {  [weak self] (error) in
+        notificationCenter.add(request) { [weak self] error in
             guard let self = self else { return }
             if error != nil {
                 self.testNotificationError = error

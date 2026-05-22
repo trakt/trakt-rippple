@@ -7,11 +7,8 @@
 //
 
 import Foundation
-
-import Receiver
-
 import Moya
-
+import Receiver
 import TinyStorage
 
 let (onEpisodeToWatchChangedTransmitter, onEpisodeToWatchChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
@@ -27,7 +24,6 @@ struct ToWatchGroup: Codable {
 }
 
 final class EpisodeToWatchManager {
-
     private var debouncedForceRefresh: Debouncer!
     private var debouncedTransmit: Debouncer!
     private var debouncedRefreshProgress: Debouncer!
@@ -56,7 +52,7 @@ final class EpisodeToWatchManager {
         }
     }
 
-    public var showsInList: [ToWatchGroup]? {
+    var showsInList: [ToWatchGroup]? {
         didSet {
             TinyStorage.cache.store(showsInList, forKey: "EpisodeToWatchManager.showsInList")
         }
@@ -67,7 +63,7 @@ final class EpisodeToWatchManager {
         queue.name = "Episode to-watch operation queue"
         queue.maxConcurrentOperationCount = 1
         queue.qualityOfService = .userInitiated
-      return queue
+        return queue
     }()
 
     private var status = Status.content {
@@ -78,7 +74,7 @@ final class EpisodeToWatchManager {
         }
     }
 
-    public var shows: Set<Show>? {
+    var shows: Set<Show>? {
         didSet {
             if let shows = shows {
                 print("EpisodeToWatchManager.shows didSet -> Transmitting showsToWatch")
@@ -97,6 +93,7 @@ final class EpisodeToWatchManager {
             }
         }
     }
+
     private var mediaModels = [MediaModel]() {
         didSet {
             if oldValue.isEmpty {
@@ -108,6 +105,7 @@ final class EpisodeToWatchManager {
             TinyStorage.cache.store(mediaModels, forKey: "EpisodeToWatchManager.mediaModels")
         }
     }
+
     private var timer: Timer?
     private var futureMediaModels = [MediaModel]() {
         didSet {
@@ -121,8 +119,8 @@ final class EpisodeToWatchManager {
                     timer?.invalidate()
                     print("FIRST AIRED: \(firstAired)")
                     timer = Timer(fire: firstAired,
-                                      interval: 0,
-                                      repeats: false) { [weak self] _ in
+                                  interval: 0,
+                                  repeats: false) { [weak self] _ in
                         guard let self = self else { return }
                         print("EpisodeToWatchManager.forceRefresh because timer for future media was set")
                         self.debouncedForceRefresh.call()
@@ -134,7 +132,7 @@ final class EpisodeToWatchManager {
         }
     }
 
-    public var filteredMediaModels: [MediaModel] {
+    var filteredMediaModels: [MediaModel] {
         return mediaModels.filter { media -> Bool in
             if case .showProgress(let show, let showProgress) = media {
                 if show.isHiddenFromProgress == true { return false }
@@ -303,10 +301,10 @@ final class EpisodeToWatchManager {
                 print("EpisodeToWatchManager.forceRefresh because app didFifnish launching")
                 self.debouncedForceRefresh.call()
             case .didBecomeActive(let time):
-                if time > 60*60*4 {
+                if time > 60 * 60 * 4 {
                     print("EpisodeToWatchManager.forceRefresh because did Become active after 4h")
                     self.debouncedForceRefresh.call()
-                } else if time > 60*60*2 {
+                } else if time > 60 * 60 * 2 {
                     print("EpisodeToWatchManager.refresh progress because did become active after 2h")
                     self.debouncedRefreshProgress.call()
                 }
@@ -427,14 +425,14 @@ final class EpisodeToWatchManager {
             guard let self = self else { return }
             if self.status == .loading { return }
             if showShowProgress.show.isInToWatch {
-                for case let .showProgress(show, progress) in mediaModels where show == showShowProgress.show {
+                for case .showProgress(let show, let progress) in mediaModels where show == showShowProgress.show {
                     if !(progress.aired == showShowProgress.showProgress.aired &&
-                         progress.completed == showShowProgress.showProgress.completed &&
-                         progress.lastWatchedAt == showShowProgress.showProgress.lastWatchedAt &&
-                         progress.nextEpisodeToWatch == showShowProgress.showProgress.nextEpisodeToWatch &&
-                         progress.resetAt == showShowProgress.showProgress.resetAt &&
-                         progress.seasons == showShowProgress.showProgress.seasons &&
-                         progress.lastEpisode == showShowProgress.showProgress.lastEpisode) {
+                        progress.completed == showShowProgress.showProgress.completed &&
+                        progress.lastWatchedAt == showShowProgress.showProgress.lastWatchedAt &&
+                        progress.nextEpisodeToWatch == showShowProgress.showProgress.nextEpisodeToWatch &&
+                        progress.resetAt == showShowProgress.showProgress.resetAt &&
+                        progress.seasons == showShowProgress.showProgress.seasons &&
+                        progress.lastEpisode == showShowProgress.showProgress.lastEpisode) {
                         print("EpisodeToWatchManager.refreshProgress because the progress cache changed and checked found diff")
                         self.refreshProgress(shows: [showShowProgress.show])
                         return
@@ -545,7 +543,6 @@ final class EpisodeToWatchManager {
 }
 
 private class UpdateShowsOperation: Operation, @unchecked Sendable {
-
     private let showsDispatchGroup = DispatchGroup()
     private var cancellables = [Cancellable?]()
 
@@ -585,8 +582,14 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
         }
     }
 
-    override var isAsynchronous: Bool { true }
-    override var isExecuting: Bool { state == .isExecuting }
+    override var isAsynchronous: Bool {
+        true
+    }
+
+    override var isExecuting: Bool {
+        state == .isExecuting
+    }
+
     override var isFinished: Bool {
         if isCancelled && state != .isExecuting { return true }
         return state == .isFinished
@@ -685,13 +688,13 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
             defer { completion() }
             if self.isCancelled { return }
             switch result {
-            case let .success(items):
+            case .success(let items):
                 let shows = items.map { $0.show! }
                 DispatchQueue.main.async {
                     self.shows.formUnion(shows)
                     self.showsInList.append(ToWatchGroup(name: "Watchlisted", order: 2, shows: Set(shows)))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchWatchlistedShows (towatch) request failure \(error)")
             }
         }
@@ -711,13 +714,13 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
             defer { completion() }
             if self.isCancelled { return }
             switch result {
-            case let .success(items):
+            case .success(let items):
                 let shows = items.map { $0.show! }
                 DispatchQueue.main.async {
                     self.shows.formUnion(shows)
                     self.showsInList.append(ToWatchGroup(name: "Favorites", order: 3, shows: Set(shows)))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchRecommendedShows (towatch) request failure \(error)")
             }
         }
@@ -737,13 +740,13 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
             defer { completion() }
             if self.isCancelled { return }
             switch result {
-            case let .success(items):
+            case .success(let items):
                 let shows = items.map { $0.show! }
                 DispatchQueue.main.async {
                     self.shows.formUnion(shows)
                     self.showsInList.append(ToWatchGroup(name: "Collected", order: 4, shows: Set(shows)))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchCollectedShows (towatch) request failure \(error)")
             }
         }
@@ -762,13 +765,13 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
             defer { completion() }
             if self.isCancelled { return }
             switch result {
-            case let .success(items):
+            case .success(let items):
                 let shows = items.map { $0.show! }
                 DispatchQueue.main.async {
                     self.shows.formUnion(shows)
                     self.showsInList.append(ToWatchGroup(name: list.name, order: order, shows: Set(shows)))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchShowsforlist (towatch) request failure \(error)")
             }
         }
@@ -791,7 +794,7 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
             }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -812,7 +815,7 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
                 } catch {
                     print("fetchShows for Smart Search (towatch) request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchShows for Smart Search (towatch) request failure \(error)")
             }
         }
@@ -821,7 +824,6 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
 }
 
 private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
-
     private let progressDispatchGroup = DispatchGroup()
 
     private var cancellables = [Cancellable?]()
@@ -868,8 +870,14 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
         }
     }
 
-    override var isAsynchronous: Bool { true }
-    override var isExecuting: Bool { state == .isExecuting }
+    override var isAsynchronous: Bool {
+        true
+    }
+
+    override var isExecuting: Bool {
+        state == .isExecuting
+    }
+
     override var isFinished: Bool {
         if isCancelled && state != .isExecuting { return true }
         return state == .isFinished
@@ -932,7 +940,7 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
                 var showProgressMapCopy = [Show: ShowProgress]().merging(self.showProgressMap) { $1 }
 
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let showEpisodeCalendarItems = try response.map([ShowEpisodeCalendarItem].self, using: TraktAPIProvider.decoder)
@@ -944,7 +952,7 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
                             if let nextEpisodeToWatch = progress.nextEpisodeToWatch, let nextEpisodeFirstAired = nextEpisodeToWatch.firstAired {
                                 // if the date of the next episode to watch is in the past, take the one from the calendar
                                 // Otherwise, take the closest airing from now
-                                if nextEpisodeFirstAired < Date.now.advanced(by: -60*60*8) {
+                                if nextEpisodeFirstAired < Date.now.advanced(by: -60 * 60 * 8) {
                                     showProgressMapCopy[showEpisodeCalendarItem.show] = ShowProgress(aired: progress.aired, completed: progress.completed, lastWatchedAt: progress.lastWatchedAt, nextEpisodeToWatch: showEpisodeCalendarItem.episode, resetAt: progress.resetAt, seasons: progress.seasons, lastEpisode: progress.lastEpisode)
                                 } else if let episodeFirstAired = showEpisodeCalendarItem.episode.firstAired, nextEpisodeFirstAired > episodeFirstAired {
                                     showProgressMapCopy[showEpisodeCalendarItem.show] = ShowProgress(aired: progress.aired, completed: progress.completed, lastWatchedAt: progress.lastWatchedAt, nextEpisodeToWatch: showEpisodeCalendarItem.episode, resetAt: progress.resetAt, seasons: progress.seasons, lastEpisode: progress.lastEpisode)
@@ -955,13 +963,13 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
                         }
 
                         // Filter and set the futureMediaModels
-                        self.futureMediaModels = showProgressMapCopy.filter { $0.1.nextEpisodeToWatch != nil && $0.1.nextEpisodeToWatch!.season != 0 && $0.1.nextEpisodeToWatch!.firstAired != nil && $0.1.nextEpisodeToWatch!.firstAired!.distance(to: Date.now.advanced(by: -60*60*8)) < 0 }
-                        .sorted { ($0.1.nextEpisodeToWatch!.firstAired!, $0.0.title) < ($1.1.nextEpisodeToWatch!.firstAired!, $1.0.title) }
-                        .map { MediaModel.showProgress($0.key, $0.value) }
+                        self.futureMediaModels = showProgressMapCopy.filter { $0.1.nextEpisodeToWatch != nil && $0.1.nextEpisodeToWatch!.season != 0 && $0.1.nextEpisodeToWatch!.firstAired != nil && $0.1.nextEpisodeToWatch!.firstAired!.distance(to: Date.now.advanced(by: -60 * 60 * 8)) < 0 }
+                            .sorted { ($0.1.nextEpisodeToWatch!.firstAired!, $0.0.title) < ($1.1.nextEpisodeToWatch!.firstAired!, $1.0.title) }
+                            .map { MediaModel.showProgress($0.key, $0.value) }
                     } catch {
                         print("showsCalendar request JSON mapping failed! \(error)")
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("showsCalendar request failure \(error)")
                 }
             }
@@ -1021,7 +1029,6 @@ extension Show {
 }
 
 private class UpdateShowProgressOperation: Operation, @unchecked Sendable {
-
     private let progressDispatchGroup = DispatchGroup()
 
     private var cancellables = [Cancellable?]()
@@ -1075,8 +1082,14 @@ private class UpdateShowProgressOperation: Operation, @unchecked Sendable {
         }
     }
 
-    override var isAsynchronous: Bool { true }
-    override var isExecuting: Bool { state == .isExecuting }
+    override var isAsynchronous: Bool {
+        true
+    }
+
+    override var isExecuting: Bool {
+        state == .isExecuting
+    }
+
     override var isFinished: Bool {
         if isCancelled && state != .isExecuting { return true }
         return state == .isFinished
@@ -1143,12 +1156,12 @@ private class UpdateShowProgressOperation: Operation, @unchecked Sendable {
     }
 }
 
-extension Dictionary where Key == Show, Value == ShowProgress {
-    fileprivate func sortByRandom() -> [MediaModel] {
+private extension Dictionary where Key == Show, Value == ShowProgress {
+    func sortByRandom() -> [MediaModel] {
         return shuffled().compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByAutomatic() -> [MediaModel] {
+    func sortByAutomatic() -> [MediaModel] {
         var mediaModels = [MediaModel]()
 
         let referenceDate = Date.now // copy the data to make sure we're working on the same dataset
@@ -1160,7 +1173,6 @@ extension Dictionary where Key == Show, Value == ShowProgress {
         var hidden = [Show: ShowProgress]() // it's hidden (we put it in the bottom)
 
         for showProgress in self {
-
             if showProgress.key.isHiddenFromProgress {
                 hidden[showProgress.key] = showProgress.value
                 continue
@@ -1171,7 +1183,7 @@ extension Dictionary where Key == Show, Value == ShowProgress {
                 continue
             }
 
-            if let nextEpisodeToWatchFirstAired = showProgress.value.nextEpisodeToWatch?.firstAired, nextEpisodeToWatchFirstAired  > referenceDate.advanced(by: -(3*86400)), nextEpisodeToWatchFirstAired <= referenceDate {
+            if let nextEpisodeToWatchFirstAired = showProgress.value.nextEpisodeToWatch?.firstAired, nextEpisodeToWatchFirstAired > referenceDate.advanced(by: -(3 * 86400)), nextEpisodeToWatchFirstAired <= referenceDate {
                 justOut[showProgress.key] = showProgress.value
                 continue
             }
@@ -1211,7 +1223,7 @@ extension Dictionary where Key == Show, Value == ShowProgress {
         return mediaModels
     }
 
-    fileprivate func sortByLeastEpisodeRemaining() -> [MediaModel] {
+    func sortByLeastEpisodeRemaining() -> [MediaModel] {
         return sorted {
             let count1 = $0.value.toRewatchCount > 0 ? $0.value.toRewatchCount : $0.value.behind
             let count2 = $1.value.toRewatchCount > 0 ? $1.value.toRewatchCount : $1.value.behind
@@ -1219,37 +1231,37 @@ extension Dictionary where Key == Show, Value == ShowProgress {
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByTitle() -> [MediaModel] {
+    func sortByTitle() -> [MediaModel] {
         return sorted {
             $0.key.title.sortableString < $1.key.title.sortableString
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByShowVotes() -> [MediaModel] {
+    func sortByShowVotes() -> [MediaModel] {
         return sorted {
             ($0.key.votes ?? 0, $1.key.sortableTitle) > ($1.key.votes ?? 0, $0.key.sortableTitle)
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByUserShowRating() -> [MediaModel] {
+    func sortByUserShowRating() -> [MediaModel] {
         return sorted {
             ($0.key.userRating ?? 0, $1.key.sortableTitle) > ($1.key.userRating ?? 0, $0.key.sortableTitle)
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByEpisodeRelease() -> [MediaModel] {
+    func sortByEpisodeRelease() -> [MediaModel] {
         return sorted {
             ($0.value.nextEpisodeToWatch?.firstAired ?? Date.distantPast, $1.key.sortableTitle) > ($1.value.nextEpisodeToWatch?.firstAired ?? Date.distantPast, $0.key.sortableTitle)
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByLastWatched() -> [MediaModel] {
+    func sortByLastWatched() -> [MediaModel] {
         return sorted {
             ($0.value.lastWatchedAt ?? Date.distantPast, $1.key.sortableTitle) > ($1.value.lastWatchedAt ?? Date.distantPast, $0.key.sortableTitle)
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByMostCompleted() -> [MediaModel] {
+    func sortByMostCompleted() -> [MediaModel] {
         return sorted {
             let completionRatio0 = $0.value.aired > 0 ? Double($0.value.completed) / Double($0.value.aired) : 0.0
             let completionRatio1 = $1.value.aired > 0 ? Double($1.value.completed) / Double($1.value.aired) : 0.0
@@ -1260,13 +1272,13 @@ extension Dictionary where Key == Show, Value == ShowProgress {
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByMostPlayed() -> [MediaModel] {
+    func sortByMostPlayed() -> [MediaModel] {
         return sorted {
             ($0.value.completed, $1.key.sortableTitle) > ($1.value.completed, $0.key.sortableTitle)
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByMostEpisodeRemaining() -> [MediaModel] {
+    func sortByMostEpisodeRemaining() -> [MediaModel] {
         return sorted {
             let count1 = $0.value.toRewatchCount > 0 ? $0.value.toRewatchCount : $0.value.behind
             let count2 = $1.value.toRewatchCount > 0 ? $1.value.toRewatchCount : $1.value.behind
@@ -1274,7 +1286,7 @@ extension Dictionary where Key == Show, Value == ShowProgress {
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByTimeLeft() -> [MediaModel] {
+    func sortByTimeLeft() -> [MediaModel] {
         return sorted {
             let defaultRuntime = 45
 
@@ -1290,15 +1302,15 @@ extension Dictionary where Key == Show, Value == ShowProgress {
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByShowReleaseYear() -> [MediaModel] {
+    func sortByShowReleaseYear() -> [MediaModel] {
         return sorted {
-            return ($0.key.releaseYear ?? 1970, $0.key.sortableTitle) < ($1.key.releaseYear ?? 1970, $1.key.sortableTitle)
+            ($0.key.releaseYear ?? 1970, $0.key.sortableTitle) < ($1.key.releaseYear ?? 1970, $1.key.sortableTitle)
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 
-    fileprivate func sortByShowRating() -> [MediaModel] {
+    func sortByShowRating() -> [MediaModel] {
         return sorted {
-            return ($0.key.rating ?? 0, $1.key.sortableTitle) > ($1.key.rating ?? 0, $0.key.sortableTitle)
+            ($0.key.rating ?? 0, $1.key.sortableTitle) > ($1.key.rating ?? 0, $0.key.sortableTitle)
         }.compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
 }
@@ -1309,6 +1321,6 @@ extension Show {
         let C = 6.5
         let v = Double(votes ?? 0)
         let R = rating ?? 0
-        return (v / (v+m)) * R + (m / (v+m)) * C
+        return (v / (v + m)) * R + (m / (v + m)) * C
     }
 }

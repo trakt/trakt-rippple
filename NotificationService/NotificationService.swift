@@ -6,11 +6,10 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
-import UserNotifications
 import UIKit
+import UserNotifications
 
 class NotificationService: UNNotificationServiceExtension {
-
     var contentHandler: ((UNNotificationContent) -> Void)?
     var bestAttemptContent: UNMutableNotificationContent?
 
@@ -71,7 +70,6 @@ class NotificationService: UNNotificationServiceExtension {
         }
 
         contentHandler(bestAttemptContent)
-        return
     }
 
     override func serviceExtensionTimeWillExpire() {
@@ -82,5 +80,4 @@ class NotificationService: UNNotificationServiceExtension {
         }
         contentHandler(bestAttemptContent)
     }
-
 }

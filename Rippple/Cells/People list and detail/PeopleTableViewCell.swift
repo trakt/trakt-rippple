@@ -9,13 +9,13 @@
 import UIKit
 
 final class PeopleTableViewCell: UITableViewCell {
-    @IBOutlet weak var avatarImageView: PeopleProfileImageView!
-    @IBOutlet weak var avatarContainer: UIView!
-    @IBOutlet weak var avatarInitialLabel: UILabel!
+    @IBOutlet var avatarImageView: PeopleProfileImageView!
+    @IBOutlet var avatarContainer: UIView!
+    @IBOutlet var avatarInitialLabel: UILabel!
 
-    @IBOutlet weak var personNameLabel: UILabel!
-    @IBOutlet weak var asLabel: UILabel!
-    @IBOutlet weak var additionalInfoLabel: UILabel!
+    @IBOutlet var personNameLabel: UILabel!
+    @IBOutlet var asLabel: UILabel!
+    @IBOutlet var additionalInfoLabel: UILabel!
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -38,9 +38,9 @@ final class PeopleTableViewCell: UITableViewCell {
                 return
             }
             if let person = person {
-                self.crew = nil
-                self.cast = nil
-                self.guest = nil
+                crew = nil
+                cast = nil
+                guest = nil
                 personNameLabel.text = person.name
                 avatarInitialLabel.text = person.name.initials
                 if let knownForDepartment = person.knownForDepartment, knownForDepartment.isEmpty == false {
@@ -59,9 +59,9 @@ final class PeopleTableViewCell: UITableViewCell {
         didSet {
             if cast?.person?.ids == oldValue?.person?.ids { return }
             if let cast = cast {
-                self.crew = nil
-                self.person = nil
-                self.guest = nil
+                crew = nil
+                person = nil
+                guest = nil
                 personNameLabel.text = cast.person!.name
                 avatarInitialLabel.text = cast.person!.name.initials
                 asLabel.text = "as \(cast.characters.joined(separator: ", "))"
@@ -81,9 +81,9 @@ final class PeopleTableViewCell: UITableViewCell {
         didSet {
             if guest?.person?.ids == oldValue?.person?.ids { return }
             if let guest = guest {
-                self.crew = nil
-                self.person = nil
-                self.cast = nil
+                crew = nil
+                person = nil
+                cast = nil
                 personNameLabel.text = guest.person!.name
                 avatarInitialLabel.text = guest.person!.name.initials
                 asLabel.text = "as \(guest.characters.joined(separator: ", "))"
@@ -104,9 +104,9 @@ final class PeopleTableViewCell: UITableViewCell {
         didSet {
             if crew?.person?.ids == oldValue?.person?.ids { return }
             if let crew = crew {
-                self.cast = nil
-                self.person = nil
-                self.guest = nil
+                cast = nil
+                person = nil
+                guest = nil
                 personNameLabel.text = crew.person!.name
                 avatarInitialLabel.text = crew.person!.name.initials
                 asLabel.text = "as \(crew.jobs.joined(separator: ", "))"

@@ -6,19 +6,18 @@
 //  Copyright © 2025 Trakt. All rights reserved.
 //
 
-import UIKit
-import NVActivityIndicatorView
 import Moya
+import NVActivityIndicatorView
 import Receiver
+import UIKit
 
 final class PendingFollowingRequestsViewController: UITableViewController {
-
-    // Empty
+    /// Empty
     @IBOutlet private var emptyView: UIView!
 
     // Paging Management
     @IBOutlet private var loadingView: UIView!
-    @IBOutlet private weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet private var animationViewContainer: NVActivityIndicatorView!
 
     // Error Management
     @IBOutlet private var errorView: UIView!
@@ -78,12 +77,11 @@ final class PendingFollowingRequestsViewController: UITableViewController {
     }
 
     private func fetch() {
-
         TraktAPIProvider.provider.request(.pendingFollowing, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -105,7 +103,7 @@ final class PendingFollowingRequestsViewController: UITableViewController {
                         self.dataSource.apply(snapshot, animatingDifferences: false)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("/users/requests/pendingFollowing request failure \(error)")
                 self.error = error
 
@@ -129,7 +127,7 @@ final class PendingFollowingRequestsViewController: UITableViewController {
 extension PendingFollowingRequestsViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.pending(user) = item else { return }
+        guard case Wrapper.pending(let user) = item else { return }
 
         let nextType = CommentsCoordinator.ListType.user(user)
         performSegue(withIdentifier: "user", sender: nextType)

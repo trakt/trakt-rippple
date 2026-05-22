@@ -1,5 +1,5 @@
 //
-//  ActionTableViewCell.swift
+//  ActionDateTableViewCell.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 10/02/2019.
@@ -9,10 +9,10 @@
 import UIKit
 
 final class ActionDateTableViewCell: UITableViewCell {
-    @IBOutlet weak var actionTitle: UILabel!
-    @IBOutlet weak var actionImage: UIImageView!
+    @IBOutlet var actionTitle: UILabel!
+    @IBOutlet var actionImage: UIImageView!
 
-    @IBOutlet weak var datePicker: UIDatePicker!
+    @IBOutlet var datePicker: UIDatePicker!
 
     override func awakeFromNib() {
         super.awakeFromNib()

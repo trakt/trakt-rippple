@@ -6,11 +6,9 @@
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Moya
-
 import Receiver
+import UIKit
 
 final class SearchViewController: UITableViewController {
     let searchController = UISearchController(searchResultsController: nil)
@@ -23,7 +21,7 @@ final class SearchViewController: UITableViewController {
         }
     }
 
-    // request
+    /// request
     private var request: Cancellable?
 
     var isDeeplink = false
@@ -40,6 +38,7 @@ final class SearchViewController: UITableViewController {
             updateDatasource()
         }
     }
+
     private var moviesSmartSearches = [SmartSearch]() {
         didSet {
             updateDatasource()
@@ -117,7 +116,7 @@ final class SearchViewController: UITableViewController {
 
     private class WatchlistDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> {
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-            guard let item = self.sectionIdentifier(for: indexPath.section) else { return false }
+            guard let item = sectionIdentifier(for: indexPath.section) else { return false }
 
             switch item {
             case .editingSeries, .editingMovies:
@@ -128,7 +127,7 @@ final class SearchViewController: UITableViewController {
         }
 
         override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-            guard let item = self.sectionIdentifier(for: indexPath.section) else { return false }
+            guard let item = sectionIdentifier(for: indexPath.section) else { return false }
 
             switch item {
             case .editingSeries, .editingMovies:
@@ -144,7 +143,7 @@ final class SearchViewController: UITableViewController {
 
         override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
             if editingStyle == .delete {
-                guard let item = self.itemIdentifier(for: indexPath) else { return }
+                guard let item = itemIdentifier(for: indexPath) else { return }
 
                 switch item {
                 case .smartSearch(_, let smartSearch):
@@ -156,7 +155,7 @@ final class SearchViewController: UITableViewController {
         }
 
         override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-            guard let item = self.itemIdentifier(for: sourceIndexPath) else { return }
+            guard let item = itemIdentifier(for: sourceIndexPath) else { return }
 
             switch item {
             case .smartSearch(_, let smartSearch):
@@ -168,7 +167,7 @@ final class SearchViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
-        guard let item = self.dataSource.sectionIdentifier(for: indexPath.section) else { return .none }
+        guard let item = dataSource.sectionIdentifier(for: indexPath.section) else { return .none }
 
         switch item {
         case .editingSeries, .editingMovies:
@@ -187,7 +186,7 @@ final class SearchViewController: UITableViewController {
         }
 
         if sourceIndexPath.section == 0 && proposedDestinationIndexPath.section > 0 {
-            return IndexPath(item: moviesSmartSearches.count-1, section: 0)
+            return IndexPath(item: moviesSmartSearches.count - 1, section: 0)
         }
 
         if sourceIndexPath.section == 1 && proposedDestinationIndexPath.section == 0 {
@@ -195,7 +194,7 @@ final class SearchViewController: UITableViewController {
         }
 
         if sourceIndexPath.section == 1 && proposedDestinationIndexPath.section == 2 {
-            return IndexPath(item: showsSmartSearches.count-1, section: 1)
+            return IndexPath(item: showsSmartSearches.count - 1, section: 1)
         }
 
         return sourceIndexPath
@@ -328,10 +327,10 @@ final class SearchViewController: UITableViewController {
 
             snapshot.appendSections([.editingSeries])
             snapshot.appendItems(showsSmartSearches.map { .smartSearch(CellConfig(identifier: "Edit \($0.uuid)",
-                                                                                   cardType: cardType(for: $0, in: showsSmartSearches),
-                                                                                   title: $0.name!,
-                                                                                   subtitle: nil,
-                                                                                   query: nil,
+                                                                                  cardType: cardType(for: $0, in: showsSmartSearches),
+                                                                                  title: $0.name!,
+                                                                                  subtitle: nil,
+                                                                                  query: nil,
                                                                                   segue: "browse"), $0) })
 
             DispatchQueue.main.async {
@@ -340,7 +339,7 @@ final class SearchViewController: UITableViewController {
             return
         }
 
-        if searchController.isActive && searchQuery.isEmpty == false {
+        if searchController.isActive, searchQuery.isEmpty == false {
             snapshot.appendSections([.search])
             snapshot.appendItems([.search(CellConfig(identifier: "Movies & TV with \"\(searchQuery)\"",
                                                      cardType: .top,
@@ -365,11 +364,11 @@ final class SearchViewController: UITableViewController {
                                                          segue: "lists"), .search(type: .list, query: searchQuery))])
 
                 snapshot.appendItems([.user(CellConfig(identifier: "Go to user @\(searchQuery.lowercased())",
-                                                         cardType: .bottom,
-                                                         title: "Go to user @\(searchQuery.lowercased())",
-                                                         subtitle: nil,
-                                                         query: searchQuery,
-                                                         segue: ""))])
+                                                       cardType: .bottom,
+                                                       title: "Go to user @\(searchQuery.lowercased())",
+                                                       subtitle: nil,
+                                                       query: searchQuery,
+                                                       segue: ""))])
             } else {
                 snapshot.appendItems([.search(CellConfig(identifier: "Lists with \"\(searchQuery)\"",
                                                          cardType: .bottom,
@@ -413,16 +412,16 @@ final class SearchViewController: UITableViewController {
             return
         }
 
-        if searchController.isActive && searchQuery.isEmpty == true {
+        if searchController.isActive, searchQuery.isEmpty == true {
             let recentSearches = RecentSearchManager.shared.recentSearches
             if recentSearches.isEmpty == false {
                 snapshot.appendSections([.recents])
                 snapshot.appendItems(recentSearches.removingDuplicates().map { .recentSearch(CellConfig(identifier: UUID().uuidString,
-                                                                                cardType: cardType(for: $0, in: recentSearches),
-                                                                                title: $0.name,
-                                                                                subtitle: nil,
-                                                                                query: nil,
-                                                                                segue: "results"), $0) })
+                                                                                                        cardType: cardType(for: $0, in: recentSearches),
+                                                                                                        title: $0.name,
+                                                                                                        subtitle: nil,
+                                                                                                        query: nil,
+                                                                                                        segue: "results"), $0) })
             }
 
             snapshot.appendSections([.trending])
@@ -477,10 +476,10 @@ final class SearchViewController: UITableViewController {
 
         snapshot.appendSections([.series])
         snapshot.appendItems(showsSmartSearches.map { .smartSearch(CellConfig(identifier: $0.uuid,
-                                                                               cardType: cardType(for: $0, in: showsSmartSearches),
-                                                                               title: $0.name!,
-                                                                               subtitle: nil,
-                                                                               query: nil,
+                                                                              cardType: cardType(for: $0, in: showsSmartSearches),
+                                                                              title: $0.name!,
+                                                                              subtitle: nil,
+                                                                              query: nil,
                                                                               segue: "results"), $0) })
 
         snapshot.appendSections([.lists])
@@ -668,7 +667,7 @@ final class SearchViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -680,7 +679,7 @@ final class SearchViewController: UITableViewController {
                 } catch {
                     print("TmdbAPIService.trending Error: \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("TmdbAPIService.trending Failure: \(error)")
             }
         }
@@ -691,12 +690,13 @@ final class SearchViewController: UITableViewController {
             updateDatasource()
         }
     }
+
     private func fetchSuggestions() {
         TmdbAPIProvider.provider.request(.search(searchQuery), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -708,7 +708,7 @@ final class SearchViewController: UITableViewController {
                 } catch {
                     print("TmdbAPIService.search Error: \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("TmdbAPIService.search Failure: \(error)")
             }
         }
@@ -734,8 +734,8 @@ final class SearchViewController: UITableViewController {
             shouldOpenKeyboard = true
             let buttonItem = UIBarButtonItem(systemItem: .close,
                                              primaryAction: UIAction(handler: { _ in
-                self.dismiss(animated: true, completion: nil)
-            }))
+                                                 self.dismiss(animated: true, completion: nil)
+                                             }))
             buttonItem.style = .plain
             navigationItem.leftBarButtonItem = buttonItem
         }
@@ -775,13 +775,13 @@ final class SearchViewController: UITableViewController {
             header.button.isHidden = false
             header.button.setTitle("Add Smart Search", for: .normal)
             header.button.removeTarget(self, action: nil, for: .touchUpInside)
-            header.button.addTarget(self, action: #selector(self.smartMovie), for: .touchUpInside)
+            header.button.addTarget(self, action: #selector(smartMovie), for: .touchUpInside)
         case .series:
             header.title.text = "📺 Browse TV Shows"
             header.button.isHidden = false
             header.button.setTitle("Add Smart Search", for: .normal)
             header.button.removeTarget(self, action: nil, for: .touchUpInside)
-            header.button.addTarget(self, action: #selector(self.smartShow), for: .touchUpInside)
+            header.button.addTarget(self, action: #selector(smartShow), for: .touchUpInside)
         case .lists:
             header.title.text = "📝 Browse Lists"
             header.button.isHidden = true
@@ -805,7 +805,7 @@ final class SearchViewController: UITableViewController {
             header.button.isHidden = false
             header.button.setTitle("Clear All", for: .normal)
             header.button.removeTarget(self, action: nil, for: .touchUpInside)
-            header.button.addTarget(self, action: #selector(self.clearRecents), for: .touchUpInside)
+            header.button.addTarget(self, action: #selector(clearRecents), for: .touchUpInside)
         }
 
         return header
@@ -946,7 +946,7 @@ final class SearchViewController: UITableViewController {
             }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     let searchResults = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
@@ -1091,7 +1091,7 @@ final class SearchViewController: UITableViewController {
         }
     }
 
-    @IBOutlet weak var editBarButtonItem: UIBarButtonItem!
+    @IBOutlet var editBarButtonItem: UIBarButtonItem!
     @IBAction func editTableView(sender: UIBarButtonItem) {
         if !PurchaseManager.shared.purchased {
             UIApplication.shared.switchToPurchase()
@@ -1119,9 +1119,8 @@ final class SearchViewController: UITableViewController {
         }
 
         if segue.identifier == "user" {
-
             if let commentsViewController = segue.destination as? CommentsViewController,
-                let coordinator = sender as? CommentsCoordinator {
+               let coordinator = sender as? CommentsCoordinator {
                 commentsViewController.coordinator = coordinator
             }
 
@@ -1224,7 +1223,7 @@ extension SearchViewController {
             }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1254,7 +1253,7 @@ extension SearchViewController {
                         self.present(alertController, animated: true)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     let alertController = UIAlertController(title: "Oooops",
                                                             message: nil,
@@ -1273,7 +1272,6 @@ extension SearchViewController {
 }
 
 extension SearchViewController: UISearchResultsUpdating {
-
     func updateSearchResults(for searchController: UISearchController) {
         searchQuery = (searchController.searchBar.text ?? "").capitalized.trimmingCharacters(in: .whitespacesAndNewlines)
         if searchQuery.isEmpty {
@@ -1292,7 +1290,6 @@ extension SearchViewController: UISearchResultsUpdating {
 }
 
 extension SearchViewController: UISearchBarDelegate {
-
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         tableView.scrollRectToVisible(CGRect(x: 0, y: 0,
                                              width: 1, height: 1), animated: true)

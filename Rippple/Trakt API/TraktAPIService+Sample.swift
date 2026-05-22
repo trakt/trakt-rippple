@@ -9,8 +9,8 @@
 import Foundation
 
 // MARK: - Helpers
-private extension String {
 
+private extension String {
     var urlEscaped: String {
         return addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
     }
@@ -18,7 +18,6 @@ private extension String {
     var utf8Encoded: Data {
         return data(using: .utf8)!
     }
-
 }
 
 extension TraktAPIService {
@@ -26,94 +25,94 @@ extension TraktAPIService {
         switch self {
         case .token:
             return """
-                {
-                  "access_token": "dbaf9757982a9e738f05d249b7b5b4a266b3a139049317c4909f2f263572c781",
-                  "token_type": "bearer",
-                  "expires_in": 7200,
-                  "refresh_token": "76ba4c5c75c96f6087f58a4de10be6c00b29ea1ddc3b2022ee2016d1363e3a7c",
-                  "scope": "public",
-                  "created_at": 1487889741
-                }
-                """.utf8Encoded
+            {
+              "access_token": "dbaf9757982a9e738f05d249b7b5b4a266b3a139049317c4909f2f263572c781",
+              "token_type": "bearer",
+              "expires_in": 7200,
+              "refresh_token": "76ba4c5c75c96f6087f58a4de10be6c00b29ea1ddc3b2022ee2016d1363e3a7c",
+              "scope": "public",
+              "created_at": 1487889741
+            }
+            """.utf8Encoded
         case .revoke:
             return "{}".utf8Encoded
         case .watching:
             return """
-                {
-                  "expires_at": "2014-10-23T07:09:12.000Z",
-                  "started_at": "2014-10-23T06:24:12.000Z",
-                  "action": "scrobble",
-                  "type": "episode",
-                  "episode": {
-                    "season": 0,
-                    "number": 2,
-                    "title": "Wedding Day",
-                    "ids": {
-                      "trakt": 2,
-                      "tvdb": 3859791,
-                      "imdb": "",
-                      "tmdb": 62133,
-                      "tvrage": null
-                    }
-                  },
-                  "show": {
-                    "title": "Breaking Bad",
-                    "year": 2008,
-                    "ids": {
-                      "trakt": 1,
-                      "slug": "breaking-bad",
-                      "tvdb": 81189,
-                      "imdb": "tt0903747",
-                      "tmdb": 1396,
-                      "tvrage": 18164
-                    }
-                  }
+            {
+              "expires_at": "2014-10-23T07:09:12.000Z",
+              "started_at": "2014-10-23T06:24:12.000Z",
+              "action": "scrobble",
+              "type": "episode",
+              "episode": {
+                "season": 0,
+                "number": 2,
+                "title": "Wedding Day",
+                "ids": {
+                  "trakt": 2,
+                  "tvdb": 3859791,
+                  "imdb": "",
+                  "tmdb": 62133,
+                  "tvrage": null
                 }
-                """.utf8Encoded
+              },
+              "show": {
+                "title": "Breaking Bad",
+                "year": 2008,
+                "ids": {
+                  "trakt": 1,
+                  "slug": "breaking-bad",
+                  "tvdb": 81189,
+                  "imdb": "tt0903747",
+                  "tmdb": 1396,
+                  "tvrage": 18164
+                }
+              }
+            }
+            """.utf8Encoded
         case .settings:
             return """
-                {
-                  "user": {
-                    "username": "justin",
-                    "private": false,
-                    "name": "Justin Nemeth",
-                    "vip": true,
-                    "vip_ep": false,
-                    "ids": {
-                      "slug": "justin"
-                    },
-                    "joined_at": "2010-09-25T17:49:25.000Z",
-                    "location": "San Diego, CA",
-                    "about": "Co-founder of trakt.",
-                    "gender": "male",
-                    "age": 32,
-                    "images": {
-                      "avatar": {
-                        "full": "https://secure.gravatar.com/avatar/30c2f0dfbc39e48656f40498aa871e33?r=pg&s=256"
-                      }
-                    },
-                    "vip_og": true,
-                    "vip_years": 5
-                  },
-                  "account": {
-                    "timezone": "America/Los_Angeles",
-                    "time_24hr": false,
-                    "cover_image": "https://walter.trakt.tv/images/movies/000/001/545/fanarts/original/0abb604492.jpg"
-                  },
-                  "connections": {
-                    "facebook": true,
-                    "twitter": true,
-                    "google": true,
-                    "tumblr": false,
-                    "medium": false,
-                    "slack": false
-                  },
-                  "sharing_text": {
-                    "watching": "I'm watching [item]",
-                    "watched": "I just watched [item]"
+            {
+              "user": {
+                "username": "justin",
+                "private": false,
+                "name": "Justin Nemeth",
+                "vip": true,
+                "vip_ep": false,
+                "ids": {
+                  "slug": "justin"
+                },
+                "joined_at": "2010-09-25T17:49:25.000Z",
+                "location": "San Diego, CA",
+                "about": "Co-founder of trakt.",
+                "gender": "male",
+                "age": 32,
+                "images": {
+                  "avatar": {
+                    "full": "https://secure.gravatar.com/avatar/30c2f0dfbc39e48656f40498aa871e33?r=pg&s=256"
                   }
-                }
-                """.utf8Encoded
+                },
+                "vip_og": true,
+                "vip_years": 5
+              },
+              "account": {
+                "timezone": "America/Los_Angeles",
+                "time_24hr": false,
+                "cover_image": "https://walter.trakt.tv/images/movies/000/001/545/fanarts/original/0abb604492.jpg"
+              },
+              "connections": {
+                "facebook": true,
+                "twitter": true,
+                "google": true,
+                "tumblr": false,
+                "medium": false,
+                "slack": false
+              },
+              "sharing_text": {
+                "watching": "I'm watching [item]",
+                "watched": "I just watched [item]"
+              }
+            }
+            """.utf8Encoded
         case .comments:
             return """
                 [

@@ -7,7 +7,6 @@
 //
 
 import Foundation
-
 import Moya
 
 extension TraktAPIProvider {
@@ -62,7 +61,7 @@ extension TraktAPIProvider {
                                                        pageInfo: pageInfo),
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder)
@@ -71,11 +70,10 @@ extension TraktAPIProvider {
                     } catch {
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     continuation.resume(throwing: error)
                 }
             }
         }
     }
-
 }

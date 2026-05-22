@@ -9,13 +9,13 @@
 import UIKit
 
 final class CastCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var avatarImageView: PeopleProfileImageView!
-    @IBOutlet weak var avatarContainer: UIView!
-    @IBOutlet weak var avatarInitialLabel: UILabel!
+    @IBOutlet var avatarImageView: PeopleProfileImageView!
+    @IBOutlet var avatarContainer: UIView!
+    @IBOutlet var avatarInitialLabel: UILabel!
 
-    @IBOutlet weak var personNameLabel: UILabel!
-    @IBOutlet weak var asLabel: UILabel!
-    @IBOutlet weak var additionalInfoLabel: UILabel!
+    @IBOutlet var personNameLabel: UILabel!
+    @IBOutlet var asLabel: UILabel!
+    @IBOutlet var additionalInfoLabel: UILabel!
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -33,7 +33,7 @@ final class CastCollectionViewCell: UICollectionViewCell {
         didSet {
             if cast?.person?.ids == oldValue?.person?.ids { return }
             if let cast = cast {
-                self.crew = nil
+                crew = nil
                 personNameLabel.text = cast.person!.name
                 asLabel.text = cast.characters.joined(separator: ", ")
                 avatarImageView.person = cast.person
@@ -51,7 +51,7 @@ final class CastCollectionViewCell: UICollectionViewCell {
         didSet {
             if crew?.person?.ids == oldValue?.person?.ids { return }
             if let crew = crew {
-                self.cast = nil
+                cast = nil
                 personNameLabel.text = crew.person!.name
                 avatarInitialLabel.text = crew.person!.name.initials
                 asLabel.text = crew.jobs.joined(separator: ", ")

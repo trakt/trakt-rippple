@@ -6,14 +6,13 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import NVActivityIndicatorView
+import UIKit
 
 final class MediaShowNextLoadingViewController: UIViewController {
     var media: MediaModel!
 
-    @IBOutlet weak var loading: NVActivityIndicatorView!
+    @IBOutlet var loading: NVActivityIndicatorView!
 
     deinit {
         print("deinit MediaShowNextLoadingViewController")
@@ -75,7 +74,7 @@ final class MediaShowNextLoadingViewController: UIViewController {
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -91,18 +90,18 @@ final class MediaShowNextLoadingViewController: UIViewController {
                         self.performSegue(withIdentifier: "error", sender: nil)
                         AppManager.shared.isUserInteractionEnabled = true
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Failed fetching episode \(error)")
                     self.performSegue(withIdentifier: "error", sender: nil)
                     AppManager.shared.isUserInteractionEnabled = true
                 }
             }
         } else if let nextEpisode = showProgress.nextEpisodeToWatch {
-            self.performSegue(withIdentifier: "media",
-                              sender: nextEpisode.mediaModel(given: show))
+            performSegue(withIdentifier: "media",
+                         sender: nextEpisode.mediaModel(given: show))
             AppManager.shared.isUserInteractionEnabled = true
         } else {
-            self.performSegue(withIdentifier: "no next", sender: nil)
+            performSegue(withIdentifier: "no next", sender: nil)
             AppManager.shared.isUserInteractionEnabled = true
         }
     }

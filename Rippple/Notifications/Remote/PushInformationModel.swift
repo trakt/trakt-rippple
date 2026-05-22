@@ -6,9 +6,8 @@
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
-import Foundation
-
 import AWSDynamoDB
+import Foundation
 
 final class PushInformationModel: AWSDynamoDBObjectModel, AWSDynamoDBModeling {
     @objc var traktId: String?

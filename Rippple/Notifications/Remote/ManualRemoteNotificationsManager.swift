@@ -6,10 +6,8 @@
 //  Copyright © 2024 Trakt. All rights reserved.
 //
 
-import Foundation
-
 import AWSSNS
-
+import Foundation
 import Receiver
 
 final class ManualRemoteNotificationsManager {
@@ -21,7 +19,7 @@ final class ManualRemoteNotificationsManager {
         return UserDefaults.standard.string(forKey: "Rippple.endpointArnForSNS")
     }
 
-    // Settings
+    /// Settings
     var appUpdate: Bool {
         didSet {
             UserDefaults.standard.set(appUpdate, forKey: "ManualRemoteNotificationsManager.appUpdate")
@@ -29,6 +27,7 @@ final class ManualRemoteNotificationsManager {
             pushInfoToAWS()
         }
     }
+
     var blogPost: Bool {
         didSet {
             UserDefaults.standard.set(blogPost, forKey: "ManualRemoteNotificationsManager.blogPost")
@@ -154,7 +153,7 @@ final class ManualRemoteNotificationsManager {
 
     private func listSubscriptions(topic: AWSSNSListSubscriptionsByTopicInput, subscriptions: [AWSSNSSubscription], arn: String, unsubscibeTopic: String) {
         let sns = AWSSNS.default()
-        sns.listSubscriptions(byTopic: topic) { [weak self] (response, error) in
+        sns.listSubscriptions(byTopic: topic) { [weak self] response, error in
             guard let self = self else { return }
             if let error = error {
                 print("💀 AWS listSubscriptions: \(String(describing: error))")
@@ -164,9 +163,9 @@ final class ManualRemoteNotificationsManager {
                     guard let listSubscriptionsByTopic = AWSSNSListSubscriptionsByTopicInput() else { return }
                     listSubscriptionsByTopic.topicArn = topic.topicArn
                     listSubscriptionsByTopic.nextToken = nextToken
-                    self.listSubscriptions(topic: listSubscriptionsByTopic, subscriptions: subscriptions+newSubscriptions, arn: arn, unsubscibeTopic: unsubscibeTopic)
+                    self.listSubscriptions(topic: listSubscriptionsByTopic, subscriptions: subscriptions + newSubscriptions, arn: arn, unsubscibeTopic: unsubscibeTopic)
                 } else {
-                    self.unsubscribe(arn: arn, to: unsubscibeTopic, subscriptions: subscriptions+newSubscriptions)
+                    self.unsubscribe(arn: arn, to: unsubscibeTopic, subscriptions: subscriptions + newSubscriptions)
                 }
             }
         }

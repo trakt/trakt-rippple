@@ -6,13 +6,12 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
+import Moya
 import UIKit
 
-import Moya
-
 final class MultipleWatchTableViewCell: UITableViewCell {
-    @IBOutlet weak var mainLabel: UILabel!
-    @IBOutlet weak var secondaryLabel: UILabel!
+    @IBOutlet var mainLabel: UILabel!
+    @IBOutlet var secondaryLabel: UILabel!
 
     private var cancellable: Cancellable? {
         willSet {
@@ -45,7 +44,7 @@ final class MultipleWatchTableViewCell: UITableViewCell {
     }()
 
     private let dateFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter.init()
+        let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .medium
         dateFormatter.timeStyle = .short
         return dateFormatter
@@ -55,13 +54,13 @@ final class MultipleWatchTableViewCell: UITableViewCell {
         mainLabel.text = "Loading history"
         secondaryLabel.text = "Wait for it..."
         switch media! {
-        case let .movie(movie):
+        case .movie(let movie):
             cancellable = fetchActivities(for: .history(type: .movies, id: movie.identifiers.trakt!, pageInfo: PageInfo.firstPage(with: 1), endDate: nil))
-        case let .episode(episode, _):
+        case .episode(let episode, _):
             cancellable = fetchActivities(for: .history(type: .episodes, id: episode.identifiers.trakt!, pageInfo: PageInfo.firstPage(with: 1), endDate: nil))
-        case let .season(season, show):
+        case .season(let season, let show):
             cancellable = fetchSeasonProgress(for: show, season: season)
-        case let .show(show):
+        case .show(let show):
             cancellable = fetchShowProgress(for: show)
         case .list:
             fatalError()
@@ -74,7 +73,7 @@ final class MultipleWatchTableViewCell: UITableViewCell {
         return TraktAPIProvider.provider.request(type, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -96,7 +95,7 @@ final class MultipleWatchTableViewCell: UITableViewCell {
                         self.secondaryLabel.text = "Try again..."
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("MultipleWatchTableViewCell (/activities) request failure \(error)")
                     self.mainLabel.text = "An error occurred"
@@ -110,7 +109,7 @@ final class MultipleWatchTableViewCell: UITableViewCell {
         return TraktAPIProvider.provider.request(.showProgress(id: show.identifiers.trakt!, includesSpecials: false), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -133,7 +132,7 @@ final class MultipleWatchTableViewCell: UITableViewCell {
                         self.secondaryLabel.text = "Try again..."
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("MultipleWatchTableViewCell (/progress) request failure \(error)")
                     self.mainLabel.text = "An error occurred"
@@ -147,7 +146,7 @@ final class MultipleWatchTableViewCell: UITableViewCell {
         return TraktAPIProvider.provider.request(.showProgress(id: show.identifiers.trakt!, includesSpecials: true), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -173,7 +172,7 @@ final class MultipleWatchTableViewCell: UITableViewCell {
                         self.secondaryLabel.text = "Try again..."
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("MultipleWatchTableViewCell (/progress) request failure \(error)")
                     self.mainLabel.text = "An error occurred"

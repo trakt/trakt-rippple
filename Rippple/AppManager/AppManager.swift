@@ -6,17 +6,12 @@
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
-import Foundation
-
-import SafariServices
-
-import UIKit
-
 import AuthenticationServices
-
-import Toast
-
 import BackgroundTasks
+import Foundation
+import SafariServices
+import Toast
+import UIKit
 #if !targetEnvironment(macCatalyst)
 import ActivityKit
 #endif
@@ -24,7 +19,6 @@ import ActivityKit
 import StoreKit
 
 final class AppManager: NSObject, ASWebAuthenticationPresentationContextProviding {
-
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         return mainWindow!
     }
@@ -71,8 +65,8 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
 //        confettiWindow?.isUserInteractionEnabled = false
 
         _ = NotificationCenter.default.addObserver(forName: UIWindow.didBecomeVisibleNotification,
-                                               object: nil,
-                                               queue: nil) { [weak self] notification in
+                                                   object: nil,
+                                                   queue: nil) { [weak self] notification in
             guard let self = self else { return }
             if let window = notification.object as? UIWindow {
                 window.overrideUserInterfaceStyle = self.currentUserInterfaceStyle ?? .unspecified
@@ -157,7 +151,7 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
         }
     }
 
-    private override init() {
+    override private init() {
         super.init()
     }
 
@@ -212,13 +206,13 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
             ])
             Timer.scheduledTimer(withTimeInterval: 2.0,
                                  repeats: false) { _ in
-                                    UIView.animate(withDuration: 0.5,
-                                                   animations: {
-                                                    confettiView.alpha = 0
-                                    },
-                                                   completion: { _ in
-                                                    confettiView.removeFromSuperview()
-                                    })
+                UIView.animate(withDuration: 0.5,
+                               animations: {
+                                   confettiView.alpha = 0
+                               },
+                               completion: { _ in
+                                   confettiView.removeFromSuperview()
+                               })
             }
         }
     }
@@ -230,13 +224,13 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
             confettiView.emit(with: [.text(emoji), .text(emoji)])
             Timer.scheduledTimer(withTimeInterval: 2.0,
                                  repeats: false) { _ in
-                                    UIView.animate(withDuration: 0.5,
-                                                   animations: {
-                                                    confettiView.alpha = 0
-                                    },
-                                                   completion: { _ in
-                                                    confettiView.removeFromSuperview()
-                                    })
+                UIView.animate(withDuration: 0.5,
+                               animations: {
+                                   confettiView.alpha = 0
+                               },
+                               completion: { _ in
+                                   confettiView.removeFromSuperview()
+                               })
             }
         }
     }
@@ -267,14 +261,14 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
             UserDefaults.standard.set(twoMonths, forKey: "SKStoreReviewController.checkRating.nextCheckTimeInterval")
             return
         }
-        let nextCheckTimeInterval: TimeInterval = TimeInterval(UserDefaults.standard.integer(forKey: "SKStoreReviewController.checkRating.nextCheckTimeInterval"))
+        let nextCheckTimeInterval = TimeInterval(UserDefaults.standard.integer(forKey: "SKStoreReviewController.checkRating.nextCheckTimeInterval"))
         if nextCheckTimeInterval == 0 { // just a failsafe
             UserDefaults.standard.set(twoMonths, forKey: "SKStoreReviewController.checkRating.nextCheckTimeInterval")
             return
         }
         if Date.now >= dateFirstChecked.addingTimeInterval(nextCheckTimeInterval) {
             print("⭐️ App asked for rating because \(Date.now) is >= to \(dateFirstChecked.addingTimeInterval(nextCheckTimeInterval))!")
-            guard let windowScene = self.mainWindow?.windowScene else { return }
+            guard let windowScene = mainWindow?.windowScene else { return }
             AppStore.requestReview(in: windowScene)
             // reset the reference date
             UserDefaults.standard.set(Date.now, forKey: "SKStoreReviewController.checkRating.dateFirstChecked")
@@ -290,23 +284,22 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
     }
 
     func presentOfferCodeRedeemSheet() async {
-        guard let windowScene = self.mainWindow?.windowScene else { return }
+        guard let windowScene = mainWindow?.windowScene else { return }
         try? await AppStore.presentOfferCodeRedeemSheet(in: windowScene)
     }
 }
 
-extension UIApplication {
-
-    var currentUserInterfaceStyle: UIUserInterfaceStyle {
+public extension UIApplication {
+    internal var currentUserInterfaceStyle: UIUserInterfaceStyle {
         AppManager.shared.setup()
         return AppManager.shared.mainWindow?.overrideUserInterfaceStyle ?? .unspecified
     }
 
-    var currentTint: RipppleTintColor {
+    internal var currentTint: RipppleTintColor {
         return AppManager.shared.currentTint ?? .original
     }
 
-    public func setTintColor(tint: RipppleTintColor) {
+    func setTintColor(tint: RipppleTintColor) {
         AppManager.shared.currentTint = tint
         for windowScene in UIApplication.shared.connectedScenes {
             if let windowScene = windowScene as? UIWindowScene {
@@ -316,7 +309,7 @@ extension UIApplication {
         }
     }
 
-    public func setDarkMode() {
+    func setDarkMode() {
         for windowScene in UIApplication.shared.connectedScenes {
             if let sceneDelegate = windowScene.delegate as? SceneDelegate,
                let window = sceneDelegate.window {
@@ -326,7 +319,7 @@ extension UIApplication {
         AppManager.shared.currentUserInterfaceStyle = .dark
     }
 
-    public func setLightMode() {
+    func setLightMode() {
         for windowScene in UIApplication.shared.connectedScenes {
             if let sceneDelegate = windowScene.delegate as? SceneDelegate,
                let window = sceneDelegate.window {
@@ -336,7 +329,7 @@ extension UIApplication {
         AppManager.shared.currentUserInterfaceStyle = .light
     }
 
-    public func setSystemMode() {
+    func setSystemMode() {
         for windowScene in UIApplication.shared.connectedScenes {
             if let sceneDelegate = windowScene.delegate as? SceneDelegate,
                let window = sceneDelegate.window {
@@ -346,7 +339,7 @@ extension UIApplication {
         AppManager.shared.currentUserInterfaceStyle = .unspecified
     }
 
-    public func switchToMainApp() {
+    func switchToMainApp() {
         if AppManager.shared.mainAppIsDisplayed == true {
             // we already are on the Main app
             return
@@ -381,7 +374,7 @@ extension UIApplication {
         }
     }
 
-    public func switchToLogin() {
+    func switchToLogin() {
         SessionManager.shared.logout()
         UserManager.shared.logout()
 
@@ -391,7 +384,7 @@ extension UIApplication {
         AppManager.shared.mainWindow?.setRootViewController(login, options: transitionOptions)
     }
 
-    public func switchToLogin401() {
+    func switchToLogin401() {
         SessionManager.shared.logout()
         UserManager.shared.logout()
 
@@ -410,7 +403,7 @@ extension UIApplication {
         login.present(alertController, animated: true)
     }
 
-    public func switchToLogin423() {
+    func switchToLogin423() {
         SessionManager.shared.logout()
         UserManager.shared.logout()
 
@@ -430,7 +423,7 @@ extension UIApplication {
         login.present(alertController, animated: true)
     }
 
-    public func vipOnly() {
+    func vipOnly() {
         let alertController = UIAlertController(title: "Trakt VIP Only",
                                                 message: "This feature is only available to Trakt VIP users.",
                                                 preferredStyle: .alert)
@@ -438,7 +431,7 @@ extension UIApplication {
 
         alertController.addAction(UIAlertAction(title: "Get Trakt VIP", style: .default, handler: { _ in
             if let url = URL(string: "https://trakt.tv/vip/referral/b1f95ecff7339c031dd1a374150067b9"),
-                UIApplication.shared.canOpenURL(url) {
+               UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }
         }))
@@ -447,7 +440,7 @@ extension UIApplication {
         present(alertController)
     }
 
-    public func accountLimitExceeded() {
+    func accountLimitExceeded() {
         let alertController = UIAlertController(title: "Trakt Limit Reached",
                                                 message: "You have reach a limit imposed by Trakt. Upgrading to Track VIP may help. If you are VIP, you've just hit a hard limit.",
                                                 preferredStyle: .alert)
@@ -455,7 +448,7 @@ extension UIApplication {
 
         alertController.addAction(UIAlertAction(title: "Get Trakt VIP", style: .default, handler: { _ in
             if let url = URL(string: "https://trakt.tv/vip/referral/b1f95ecff7339c031dd1a374150067b9"),
-                UIApplication.shared.canOpenURL(url) {
+               UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }
         }))
@@ -464,12 +457,12 @@ extension UIApplication {
         present(alertController)
     }
 
-    public func comeBackToMainApp() {
+    func comeBackToMainApp() {
         AppManager.shared.setup()
         AppManager.shared.mainWindow?.rootViewController?.dismiss(animated: true, completion: nil)
     }
 
-    public func isModalDisplayed() -> Bool {
+    func isModalDisplayed() -> Bool {
         guard let mainWindow = AppManager.shared.mainWindow else { return false }
         var presentingViewController = mainWindow.rootViewController
         while let presentedViewController = presentingViewController?.presentedViewController {
@@ -478,7 +471,7 @@ extension UIApplication {
         return presentingViewController != mainWindow.rootViewController
     }
 
-    public func present(_ viewControllerToPresent: UIViewController) {
+    func present(_ viewControllerToPresent: UIViewController) {
         guard var presentingViewController = AppManager.shared.mainWindow?.rootViewController else { return }
         while let presentedViewController = presentingViewController.presentedViewController {
             presentingViewController = presentedViewController
@@ -491,7 +484,7 @@ extension UIApplication {
         presentingViewController.present(viewControllerToPresent, animated: true)
     }
 
-    func openStats(mode: TraktStatsViewController.StatsMode) {
+    internal func openStats(mode: TraktStatsViewController.StatsMode) {
         if UserManager.shared.isCurrentVIP {
             let embed = TraktStatsViewController()
             embed.mode = mode
@@ -503,11 +496,11 @@ extension UIApplication {
         }
     }
 
-    public func checkVersionNow(version: Int) {
+    func checkVersionNow(version: Int) {
         guard let buildNumber = Int(Bundle.main.buildVersionNumber ?? "") else { return }
         if version > buildNumber {
             if let url = URL(string: "https://apps.apple.com/app/id6758765611"),
-                UIApplication.shared.canOpenURL(url) {
+               UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }
         } else {
@@ -515,12 +508,12 @@ extension UIApplication {
         }
     }
 
-    public func switchToDeeplink() {
+    func switchToDeeplink() {
         let main = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "deeplink")
         present(main)
     }
 
-    public func switchToPurchase() {
+    func switchToPurchase() {
         if UserManager.shared.currentUser == nil {
             onNeedsToShowLoginTransmitter.broadcast(true)
             return
@@ -529,7 +522,7 @@ extension UIApplication {
         present(main)
     }
 
-    public func switchToCurrentlyWatching(zoomSourceView: UIView?) {
+    func switchToCurrentlyWatching(zoomSourceView: UIView?) {
         guard let watchingItem = WatchingManager.shared.watchingItem else { return }
 
         guard let navigationController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "watching") as? UINavigationController else { return }
@@ -550,11 +543,10 @@ extension UIApplication {
     }
 }
 
-final class SwiftMessages {
-
+enum SwiftMessages {
     private static var toasts = [(Toast, Style)]()
 
-    public enum Style {
+    enum Style {
         case content
         case error(Error)
         case standout
@@ -562,8 +554,7 @@ final class SwiftMessages {
         case retry(Int)
     }
 
-    public static func show(message: String, style: Style? = .content) {
-
+    static func show(message: String, style: Style? = .content) {
         if UserManager.shared.currentUser == nil {
             return
         }

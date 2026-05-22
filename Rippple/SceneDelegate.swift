@@ -9,7 +9,6 @@
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-
     private var inactiveTimestamp = Date()
 
     var window: UIWindow?
@@ -42,14 +41,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Get URL components from the incoming user activity.
         guard let userActivity = connectionOptions.userActivities.first,
-            userActivity.activityType == NSUserActivityTypeBrowsingWeb,
-            let incomingURL = userActivity.webpageURL else {
+              userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+              let incomingURL = userActivity.webpageURL else {
             return
         }
 
         if DeeplinkManager.shared.registerDeeplink(url: incomingURL) {
             if SessionManager.shared.isLoggedIn,
-                DeeplinkManager.shared.shouldOpenDeeplink() {
+               DeeplinkManager.shared.shouldOpenDeeplink() {
                 UIApplication.shared.switchToDeeplink()
             }
         }
@@ -58,13 +57,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
         // Get URL components from the incoming user activity.
         guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
-            let incomingURL = userActivity.webpageURL else {
+              let incomingURL = userActivity.webpageURL else {
             return
         }
 
         if DeeplinkManager.shared.registerDeeplink(url: incomingURL) {
             if SessionManager.shared.isLoggedIn,
-                DeeplinkManager.shared.shouldOpenDeeplink() {
+               DeeplinkManager.shared.shouldOpenDeeplink() {
                 UIApplication.shared.switchToDeeplink()
             }
         }
@@ -89,7 +88,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         dispatchGroup.wait()
 
         if SessionManager.shared.isLoggedIn,
-            DeeplinkManager.shared.shouldOpenDeeplink() {
+           DeeplinkManager.shared.shouldOpenDeeplink() {
             UIApplication.shared.switchToDeeplink()
         }
 
@@ -133,7 +132,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             print("register in SceneDelegate")
             if DeeplinkManager.shared.registerDeeplink(url: URLContext.url) {
                 if SessionManager.shared.isLoggedIn,
-                    DeeplinkManager.shared.shouldOpenDeeplink() {
+                   DeeplinkManager.shared.shouldOpenDeeplink() {
                     UIApplication.shared.switchToDeeplink()
                 }
             }

@@ -33,7 +33,7 @@ final class CardView: UIView {
         }
     }
 
-    var cardType: CardType = CardType.alone {
+    var cardType: CardType = .alone {
         didSet {
             switch cardType {
             case .top:
@@ -82,12 +82,12 @@ final class CardView: UIView {
 
         insertSubview(borderView, at: 0)
 
-        constraint = borderView.topAnchor.constraint(equalTo: self.topAnchor)
+        constraint = borderView.topAnchor.constraint(equalTo: topAnchor)
         NSLayoutConstraint.activate([
             constraint!,
-            borderView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            borderView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            borderView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
+            borderView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            borderView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            borderView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
 
         backgroundView.layer.cornerRadius = ViewRadius.large.rawValue
@@ -97,10 +97,10 @@ final class CardView: UIView {
         insertSubview(backgroundView, at: 1)
 
         NSLayoutConstraint.activate([
-            backgroundView.topAnchor.constraint(equalTo: self.topAnchor),
-            backgroundView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            backgroundView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
+            backgroundView.topAnchor.constraint(equalTo: topAnchor),
+            backgroundView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            backgroundView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
 
         applyMode()

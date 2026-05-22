@@ -7,7 +7,6 @@
 //
 
 import Foundation
-
 import Receiver
 
 let (onShelfChangedTransmitter, onShelfChangedReceiver) = Receiver<String>.make(with: .warm(upTo: 1))
@@ -63,13 +62,17 @@ enum ShelfBrowseActionButtonStyle: String, Codable, CaseIterable, Equatable, Has
     }
 }
 
-extension StringProtocol {
-    fileprivate var lines: [SubSequence] { split(whereSeparator: \.isNewline) }
-    fileprivate var removingAllExtraNewLines: String { lines.joined(separator: "\n") }
+private extension StringProtocol {
+    var lines: [SubSequence] {
+        split(whereSeparator: \.isNewline)
+    }
+
+    var removingAllExtraNewLines: String {
+        lines.joined(separator: "\n")
+    }
 }
 
 final class ShelfManager {
-
     static let shared = ShelfManager()
 
     private let disposeBag = DisposeBag()
@@ -89,7 +92,7 @@ final class ShelfManager {
             }
             self.shelf = sanitizedShelf.removingAllExtraNewLines
         } else {
-            self.shelf = ""
+            shelf = ""
         }
         broadcastShelf()
     }
@@ -181,8 +184,8 @@ final class ShelfManager {
     }
 }
 
-extension BrowseViewController.ModuleType {
-    fileprivate var shelfLine: String {
+private extension BrowseViewController.ModuleType {
+    var shelfLine: String {
         let encoder = JSONEncoder()
         guard let data = try? encoder.encode(self),
               let string = String(data: data, encoding: .utf8) else {
@@ -200,13 +203,13 @@ extension SavedFilter {
         }
 
         if onTop {
-            ShelfManager.shared.shelf =  """
-{ "module": "\(module ?? "L1")", \(filterString) }\n
-""" + ShelfManager.shared.shelf
+            ShelfManager.shared.shelf = """
+            { "module": "\(module ?? "L1")", \(filterString) }\n
+            """ + ShelfManager.shared.shelf
         } else {
             ShelfManager.shared.shelf += """
-\n{ "module": "\(module ?? "L1")", \(filterString) }
-"""
+            \n{ "module": "\(module ?? "L1")", \(filterString) }
+            """
         }
     }
 
@@ -221,8 +224,8 @@ extension SavedFilter {
 
     fileprivate var filterString: String {
         return """
-"filter": { "section": "\(section)", "name": "\(name.replacingOccurrences(of: "\"", with: "\\\""))", "path": "\(path)", "query": "\(query)" }
-"""
+        "filter": { "section": "\(section)", "name": "\(name.replacingOccurrences(of: "\"", with: "\\\""))", "path": "\(path)", "query": "\(query)" }
+        """
     }
 
     fileprivate func filterString(with name: String, ignoreWatched: Bool, sort: ShelfSortConfiguration) -> String {
@@ -267,12 +270,12 @@ extension SavedFilter {
 
     private func matchesShelf(line: String) -> Bool {
         let section = """
-"section": "\(section)"
-"""
+        "section": "\(section)"
+        """
         return line.localizedStandardContains(section) && shelfPaths.contains { shelfPath in
             let pathAndQuery = """
-"path": "\(shelfPath)", "query": "\(query)"
-"""
+            "path": "\(shelfPath)", "query": "\(query)"
+            """
             return line.localizedStandardContains(pathAndQuery)
         }
     }
