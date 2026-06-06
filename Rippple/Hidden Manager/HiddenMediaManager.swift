@@ -9,6 +9,7 @@
 import Foundation
 import Receiver
 import TinyStorage
+import UIKit
 
 let (onShowsHiddenFromProgressMediaChangedTransmitter, onShowsHiddenFromProgressMediaChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
 let (onShowsHiddenFromCalendarMediaChangedTransmitter, onShowsHiddenFromCalendarMediaChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))

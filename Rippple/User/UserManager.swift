@@ -9,6 +9,7 @@
 import Foundation
 import Moya
 import Receiver
+import UIKit
 
 let (onSettingsChangedTransmitter, onSettingsChangedReceiver) = Receiver<Settings?>.make(with: .warm(upTo: 1))
 let (onSettingsRefreshedTransmitter, onSettingsRefreshedReceiver) = Receiver<Bool>.make(with: .hot)

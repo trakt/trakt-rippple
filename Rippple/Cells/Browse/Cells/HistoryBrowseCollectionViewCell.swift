@@ -8,7 +8,6 @@
 
 import Kingfisher
 import Receiver
-import RPCircularProgress
 import UIKit
 
 final class HistoryBrowseCollectionViewCell: UICollectionViewCell {
@@ -18,7 +17,7 @@ final class HistoryBrowseCollectionViewCell: UICollectionViewCell {
     @IBOutlet var poster: PosterImageView!
     @IBOutlet var commentCount: CommentCountLabel!
 
-    @IBOutlet var progress: RPCircularProgress!
+    @IBOutlet var progress: CircularProgressView!
 
     private let disposeBag = DisposeBag()
 

@@ -8,6 +8,7 @@
 
 import Foundation
 import Receiver
+import UserNotifications
 
 let (onMoviesNotificationsChangedTransmitter, onMoviesNotificationsChangedReceiver) = Receiver<[UNNotificationRequest]>.make(with: .warm(upTo: 1))
 

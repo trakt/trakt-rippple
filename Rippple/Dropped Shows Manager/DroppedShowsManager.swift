@@ -9,6 +9,7 @@
 import Foundation
 import Receiver
 import TinyStorage
+import UIKit
 
 let (onDroppedShowsChangedTransmitter, onDroppedShowsChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
 

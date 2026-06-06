@@ -46,13 +46,9 @@ With **Trakt VIP** you get:
    cd trakt-rippple
    ```
 
-2. Install CocoaPods dependencies:
+2. Open the project in Xcode. App dependencies are resolved through Swift Package Manager:
    ```bash
-   pod install
-   ```
-   Then open the workspace (not the project) in Xcode:
-   ```bash
-   open Rippple.xcworkspace
+   open Rippple.xcodeproj
    ```
 
 3. **Secrets** — Copy `Rippple/Secrets-Template.swift` to `Rippple/Secrets.swift` and fill in the required values (see [Secrets setup](#secrets-setup) below). `Secrets.swift` is gitignored.
@@ -90,7 +86,7 @@ The build includes a run script that fails if `Secrets.swift` is missing or stil
   
 - **`NotificationService/`** — Notification Service Extension to enrich notifications
 
-- **Dependencies** — Swift Package Manager (Xcode project) and **CocoaPods** (`Podfile`; run `pod install` and use `Rippple.xcworkspace`). See [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md) for more info about dependencies.
+- **Dependencies** — Swift Package Manager through the Xcode project. See [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md) for more info about dependencies.
 
 - **Key libraries:** The app relies heavily on [Receiver](https://github.com/kevincador/Receiver) for observability (Observer pattern—broadcast/listen). All API networking is built on [Moya](https://github.com/Moya/Moya) (network abstraction layer on top of Alamofire).
 

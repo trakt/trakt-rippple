@@ -6,7 +6,9 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Foundation
 import Haring
+import UIKit
 
 class MarkdownSpoiler: MarkdownCommonElement {
     fileprivate static let regex = "(\\[spoiler\\])(.*?)(\\[\\/spoiler\\])"

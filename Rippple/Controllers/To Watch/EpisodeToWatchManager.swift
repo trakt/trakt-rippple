@@ -10,6 +10,7 @@ import Foundation
 import Moya
 import Receiver
 import TinyStorage
+import UserNotifications
 
 let (onEpisodeToWatchChangedTransmitter, onEpisodeToWatchChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
 let (onShowsToWatchChangedTransmitter, onShowsToWatchChangedReceiver) = Receiver<[Show]>.make(with: .warm(upTo: 1))

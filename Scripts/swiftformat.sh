@@ -58,7 +58,7 @@ changed_filelist() {
 
   sort -u "$tmpfile" | while IFS= read -r path; do
     case "$path" in
-      BuildTools/*|Pods/*|build/*|Rippple/Secrets.swift)
+      BuildTools/*|build/*|Rippple/Secrets.swift)
         continue
         ;;
     esac

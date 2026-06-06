@@ -7,6 +7,7 @@
 //
 
 import Receiver
+import UIKit
 
 class HiddenTableViewController: UITableViewController {
     // Private

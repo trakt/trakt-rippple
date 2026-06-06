@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct AppIconChooserView: View {
     private let glass = [AppIcon(name: "Liquid", identifier: .original)]

@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct SharingView: View {
     @State private var enableText: Bool = true

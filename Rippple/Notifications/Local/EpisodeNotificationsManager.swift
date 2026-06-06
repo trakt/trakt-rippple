@@ -8,6 +8,8 @@
 
 import Foundation
 import Receiver
+import UIKit
+import UserNotifications
 
 let (onEpisodesNotificationsChangedTransmitter, onEpisodesNotificationsChangedReceiver) = Receiver<[UNNotificationRequest]>.make(with: .warm(upTo: 1))
 

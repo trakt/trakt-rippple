@@ -8,24 +8,19 @@ build/*
 !default.mode2v3
 *.perspectivev3
 !default.perspectivev3
-*.xcworkspace
-!default.xcworkspace
+/*.xcworkspace/
 xcuserdata
 profile
 *.moved-aside
 
 # Playgrounds
 timeline.xctimeline
-playground.xcworkspace
 
 # Swift Package Manager (inside this repo)
 .build/
 .swiftpm/
 BuildTools/.build/
 BuildTools/.swiftpm/
-
-# CocoaPods
-Pods/
 
 # Carthage
 Carthage/

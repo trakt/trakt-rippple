@@ -17,6 +17,7 @@
 		090851C82E3CC25000D71E48 /* MediaHeaderTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 090851C72E3CC25000D71E48 /* MediaHeaderTableViewCell.xib */; };
 		0929C5AE2ECCE40B00172E74 /* PinnedMoviesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0929C5AD2ECCE40A00172E74 /* PinnedMoviesManager.swift */; };
 		092A51472E0A7FC000DD0C15 /* CheckinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 092A51462E0A7FC000DD0C15 /* CheckinView.swift */; };
+		092A51482E0A7FC000DD0C15 /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 092A51492E0A7FC000DD0C15 /* CircularProgressView.swift */; };
 		09570F932ED5B34C00EB91CE /* WallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09570F922ED5B34C00EB91CE /* WallViewController.swift */; };
 		09570F952ED738E200EB91CE /* EmptyCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09570F942ED738E200EB91CE /* EmptyCollectionViewCell.swift */; };
 		0960BCBC2E52591400A93556 /* YouTubePlayerKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0960BCBB2E52591400A93556 /* YouTubePlayerKit */; };
@@ -30,10 +31,13 @@
 		0998A7B72E2D2B9900079A2C /* CommentReactionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0998A7B62E2D2B9900079A2C /* CommentReactionButton.swift */; };
 		0998A7BD2E322FDA00079A2C /* ReactionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0998A7BC2E322FDA00079A2C /* ReactionsManager.swift */; };
 		09A1B2C32FB3C4D500E6F701 /* SFSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 09A1B2C22FB3C4D500E6F701 /* SFSymbols */; };
+		09A1B2C52FB3C4D500E6F701 /* HTMLEntities in Frameworks */ = {isa = PBXBuildFile; productRef = 09A1B2C42FB3C4D500E6F701 /* HTMLEntities */; };
+		09C0DEAD2FC1100000D00004 /* Haring in Frameworks */ = {isa = PBXBuildFile; productRef = 09C0DEAF2FC1100000D00006 /* Haring */; };
 		09A5A0F62E96A52300BFC59C /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A5A0F52E96A52300BFC59C /* TransactionsView.swift */; };
 		09A5A0F82E98F00100BFC59C /* CalendarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A5A0F72E98F00100BFC59C /* CalendarManager.swift */; };
 		09A94A952F1BF69200642C38 /* ToWatchInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A94A942F1BF69200642C38 /* ToWatchInfoView.swift */; };
 		09B898F52F1CE2EB00DC202D /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09B898F42F1CE2EB00DC202D /* AppIntents.framework */; };
+		09C0DEAA2FC1000000D00001 /* Receiver in Frameworks */ = {isa = PBXBuildFile; productRef = 09C0DEAC2FC1000000D00003 /* Receiver */; };
 		09B898F72F1CE3A800DC202D /* OpenRipppleIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B898F62F1CE3A800DC202D /* OpenRipppleIntent.swift */; };
 		09B898F92F1CE3A800DC202D /* OpenRipppleIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B898F62F1CE3A800DC202D /* OpenRipppleIntent.swift */; };
 		09B899032F21184200DC202D /* TraktAPIProvider+List.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899022F21184200DC202D /* TraktAPIProvider+List.swift */; };
@@ -70,6 +74,10 @@
 		3A0551942567BFE300E12647 /* UserStatsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0551932567BFE300E12647 /* UserStatsTableViewCell.swift */; };
 		3A0551972567BFF400E12647 /* UserStatsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A0551962567BFF400E12647 /* UserStatsTableViewCell.xib */; };
 		3A06B643277B0DF800E8DDB3 /* SeasonsRatingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A06B642277B0DF800E8DDB3 /* SeasonsRatingsViewController.swift */; };
+		3A06B645277B0DF800E8DDB3 /* SeasonsRatingsGridAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A06B644277B0DF800E8DDB3 /* SeasonsRatingsGridAdapter.swift */; };
+		3A06B647277B0DF800E8DDB3 /* SeasonsRatingsFixedGridLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A06B646277B0DF800E8DDB3 /* SeasonsRatingsFixedGridLayout.swift */; };
+		3A06B649277B0DF800E8DDB3 /* SeasonsRatingsGridCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A06B648277B0DF800E8DDB3 /* SeasonsRatingsGridCells.swift */; };
+		3A06B64B277B0DF800E8DDB3 /* SeasonsRatingsGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A06B64A277B0DF800E8DDB3 /* SeasonsRatingsGridView.swift */; };
 		3A06FC342710812500529B0C /* GeneralSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A06FC332710812500529B0C /* GeneralSettingsViewController.swift */; };
 		3A0C7EBB26F509B400FD1F27 /* LinkTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0C7EBA26F509B400FD1F27 /* LinkTableViewCell.swift */; };
 		3A0C7EBD26F509C400FD1F27 /* LinkTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A0C7EBC26F509C400FD1F27 /* LinkTableViewCell.xib */; };
@@ -282,6 +290,10 @@
 		3A8E8B382DBBB68B00D89756 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B372DBBB68B00D89756 /* Alamofire */; };
 		3A8E8B3E2DBBB88D00D89756 /* NVActivityIndicatorView in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B3D2DBBB88D00D89756 /* NVActivityIndicatorView */; };
 		3A8E8B412DBBB8DD00D89756 /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B402DBBB8DD00D89756 /* Toast */; };
+		3A8E8B4D2DBBCED600D89756 /* AWSCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B4A2DBBCED600D89756 /* AWSCore */; };
+		3A8E8B4E2DBBCED600D89756 /* AWSSNS in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B4B2DBBCED600D89756 /* AWSSNS */; };
+		3A8E8B4F2DBBCED600D89756 /* AWSDynamoDB in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B4C2DBBCED600D89756 /* AWSDynamoDB */; };
+		3A8E8B502DBBCED600D89756 /* Emoji in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B522DBBCED600D89756 /* Emoji */; };
 		3A90313B287B032600FA27D4 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A90313A287B032600FA27D4 /* WidgetKit.framework */; };
 		3A90313D287B032600FA27D4 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A90313C287B032600FA27D4 /* SwiftUI.framework */; };
 		3A903140287B032600FA27D4 /* Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A90313F287B032600FA27D4 /* Widget.swift */; };
@@ -476,7 +488,6 @@
 		3AFD2B2F2A54616B0021D5BC /* GenresBrowseTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD2B2E2A54616B0021D5BC /* GenresBrowseTableViewCell.swift */; };
 		3AFD3F0E1FB733360003B966 /* TraktAPIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD3F0D1FB733360003B966 /* TraktAPIProvider.swift */; };
 		3AFDDDA12A63EFF70069840D /* BrowseConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFDDDA02A63EFF70069840D /* BrowseConfigViewController.swift */; };
-		4DC88EE64268F17592BC8D20 /* Pods_Rippple.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 547CA419A56EAC586083B060 /* Pods_Rippple.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -600,6 +611,10 @@
 		3A0551932567BFE300E12647 /* UserStatsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStatsTableViewCell.swift; sourceTree = "<group>"; };
 		3A0551962567BFF400E12647 /* UserStatsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UserStatsTableViewCell.xib; sourceTree = "<group>"; };
 		3A06B642277B0DF800E8DDB3 /* SeasonsRatingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonsRatingsViewController.swift; sourceTree = "<group>"; };
+		3A06B644277B0DF800E8DDB3 /* SeasonsRatingsGridAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonsRatingsGridAdapter.swift; sourceTree = "<group>"; };
+		3A06B646277B0DF800E8DDB3 /* SeasonsRatingsFixedGridLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonsRatingsFixedGridLayout.swift; sourceTree = "<group>"; };
+		3A06B648277B0DF800E8DDB3 /* SeasonsRatingsGridCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonsRatingsGridCells.swift; sourceTree = "<group>"; };
+		3A06B64A277B0DF800E8DDB3 /* SeasonsRatingsGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonsRatingsGridView.swift; sourceTree = "<group>"; };
 		3A06FC332710812500529B0C /* GeneralSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralSettingsViewController.swift; sourceTree = "<group>"; };
 		3A0C7EBA26F509B400FD1F27 /* LinkTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkTableViewCell.swift; sourceTree = "<group>"; };
 		3A0C7EBC26F509C400FD1F27 /* LinkTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LinkTableViewCell.xib; sourceTree = "<group>"; };
@@ -820,9 +835,6 @@
 		3A8E05A324780AFC006B5B13 /* EpisodeNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeNotificationsManager.swift; sourceTree = "<group>"; };
 		3A8E05A524793BCD006B5B13 /* MovieNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieNotificationsManager.swift; sourceTree = "<group>"; };
 		3A8E05A7247ACB98006B5B13 /* MediaWithoutActionsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaWithoutActionsTableViewCell.xib; sourceTree = "<group>"; };
-		3A8E8B462DBBCED600D89756 /* AWSCore.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AWSCore.xcframework; path = "../../Downloads/aws-sdk-ios-carthage/AWSCore.xcframework"; sourceTree = "<group>"; };
-		3A8E8B472DBBCED600D89756 /* AWSSNS.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AWSSNS.xcframework; path = "../../Downloads/aws-sdk-ios-carthage/AWSSNS.xcframework"; sourceTree = "<group>"; };
-		3A8E8B482DBBCED600D89756 /* AWSDynamoDB.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AWSDynamoDB.xcframework; path = "../../Downloads/aws-sdk-ios-carthage/AWSDynamoDB.xcframework"; sourceTree = "<group>"; };
 		3A903139287B032600FA27D4 /* WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A90313A287B032600FA27D4 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		3A90313C287B032600FA27D4 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -969,6 +981,7 @@
 		3ADB6F17218B66F300465658 /* RatingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingsManager.swift; sourceTree = "<group>"; };
 		3ADE1DAA2492A15A0066F85D /* NotificationsTroubleshootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsTroubleshootViewController.swift; sourceTree = "<group>"; };
 		3ADED0FB28576604008C7AB1 /* ShowProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowProgressBar.swift; sourceTree = "<group>"; };
+		092A51492E0A7FC000DD0C15 /* CircularProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		3ADFA0AF23365C1500D8DD79 /* CastCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CastCollectionViewCell.swift; sourceTree = "<group>"; };
 		3ADFA0B123365C6900D8DD79 /* CastCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CastCollectionViewCell.xib; sourceTree = "<group>"; };
 		3ADFA0B323365FD600D8DD79 /* CastTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CastTableViewCell.swift; sourceTree = "<group>"; };
@@ -1014,9 +1027,6 @@
 		3AFD3F0D1FB733360003B966 /* TraktAPIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraktAPIProvider.swift; sourceTree = "<group>"; };
 		3AFD3F0F1FB734630003B966 /* TraktAPIModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraktAPIModel.swift; sourceTree = "<group>"; };
 		3AFDDDA02A63EFF70069840D /* BrowseConfigViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseConfigViewController.swift; sourceTree = "<group>"; };
-		547CA419A56EAC586083B060 /* Pods_Rippple.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Rippple.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		854253A1107BE8BB9B5949D6 /* Pods-Rippple.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Rippple.release.xcconfig"; path = "Target Support Files/Pods-Rippple/Pods-Rippple.release.xcconfig"; sourceTree = "<group>"; };
-		98D01CF4A683AA71A82D335B /* Pods-Rippple.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Rippple.debug.xcconfig"; path = "Target Support Files/Pods-Rippple/Pods-Rippple.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1043,11 +1053,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				09A1B2C32FB3C4D500E6F701 /* SFSymbols in Frameworks */,
+				3A8E8B4D2DBBCED600D89756 /* AWSCore in Frameworks */,
+				3A8E8B4F2DBBCED600D89756 /* AWSDynamoDB in Frameworks */,
+				3A8E8B4E2DBBCED600D89756 /* AWSSNS in Frameworks */,
+				3A8E8B502DBBCED600D89756 /* Emoji in Frameworks */,
+				09C0DEAD2FC1100000D00004 /* Haring in Frameworks */,
+				09A1B2C52FB3C4D500E6F701 /* HTMLEntities in Frameworks */,
+				09C0DEAA2FC1000000D00001 /* Receiver in Frameworks */,
 				3A8E8B412DBBB8DD00D89756 /* Toast in Frameworks */,
 				09F275D02E055A670059D7CD /* LRUCache in Frameworks */,
 				0960BCBC2E52591400A93556 /* YouTubePlayerKit in Frameworks */,
 				3A8E8B352DBBB5E000D89756 /* Moya in Frameworks */,
-				4DC88EE64268F17592BC8D20 /* Pods_Rippple.framework in Frameworks */,
 				3A8E8B382DBBB68B00D89756 /* Alamofire in Frameworks */,
 				3A8E8B262DBBB04E00D89756 /* AlamofireNetworkActivityIndicator in Frameworks */,
 				3A8E8B3E2DBBB88D00D89756 /* NVActivityIndicatorView in Frameworks */,
@@ -1142,15 +1158,11 @@
 			isa = PBXGroup;
 			children = (
 				09B898F42F1CE2EB00DC202D /* AppIntents.framework */,
-				3A8E8B462DBBCED600D89756 /* AWSCore.xcframework */,
-				3A8E8B482DBBCED600D89756 /* AWSDynamoDB.xcframework */,
-				3A8E8B472DBBCED600D89756 /* AWSSNS.xcframework */,
 				3A5938CA28B24E07007D5F46 /* ActivityKit.framework */,
 				3A90313A287B032600FA27D4 /* WidgetKit.framework */,
 				3A90313C287B032600FA27D4 /* SwiftUI.framework */,
 				3AD15CE1287C245A00FD0B2F /* Intents.framework */,
 				3AD15CEC287C245A00FD0B2F /* IntentsUI.framework */,
-				547CA419A56EAC586083B060 /* Pods_Rippple.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1945,7 +1957,6 @@
 				3A77A84A29FC18050006177D /* NotificationService */,
 				3A9119C51FADC7EB00457D28 /* Products */,
 				31F48457202A6704839BA0C4 /* Frameworks */,
-				FA7BEEC62F4E910F1B9AF9A3 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -2458,6 +2469,10 @@
 				3AF138D825D9B02200910ED8 /* WhatsNewViewController.swift */,
 				3A1C9071275E5CF400061AE9 /* HiddenTableViewController.swift */,
 				3A06B642277B0DF800E8DDB3 /* SeasonsRatingsViewController.swift */,
+				3A06B644277B0DF800E8DDB3 /* SeasonsRatingsGridAdapter.swift */,
+				3A06B646277B0DF800E8DDB3 /* SeasonsRatingsFixedGridLayout.swift */,
+				3A06B648277B0DF800E8DDB3 /* SeasonsRatingsGridCells.swift */,
+				3A06B64A277B0DF800E8DDB3 /* SeasonsRatingsGridView.swift */,
 				3A0FCF5D278ADE1600372519 /* SeasonsRatingsLegendViewController.swift */,
 				3A02A45827A817BB000B87A8 /* RatingsViewController.swift */,
 				3AEA95C229DDEA2C00BE9BA4 /* CalendarViewController.swift */,
@@ -2546,6 +2561,7 @@
 			isa = PBXGroup;
 			children = (
 				3ADED0FB28576604008C7AB1 /* ShowProgressBar.swift */,
+				092A51492E0A7FC000DD0C15 /* CircularProgressView.swift */,
 			);
 			path = "Progress bar";
 			sourceTree = "<group>";
@@ -2615,15 +2631,6 @@
 			path = Header;
 			sourceTree = "<group>";
 		};
-		FA7BEEC62F4E910F1B9AF9A3 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				98D01CF4A683AA71A82D335B /* Pods-Rippple.debug.xcconfig */,
-				854253A1107BE8BB9B5949D6 /* Pods-Rippple.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -2665,7 +2672,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3A9119D61FADC7EB00457D28 /* Build configuration list for PBXNativeTarget "Rippple" */;
 			buildPhases = (
-				446431FD91F095F90D3214F6 /* [CP] Check Pods Manifest.lock */,
 				3A6908432A3AFD8F00501A19 /* Run Script (version) */,
 				3AFD13AD2F6F2B4C00D1E2F6 /* Run Script (Secrets Check) */,
 				09B1F33A2FBD123400A1B2C3 /* Run Script (SwiftFormat) */,
@@ -2673,7 +2679,6 @@
 				3A9119C11FADC7EB00457D28 /* Frameworks */,
 				3A9119C21FADC7EB00457D28 /* Resources */,
 				3A90314E287B032700FA27D4 /* Embed Foundation Extensions */,
-				ADC8C476DD4CB8039BD89986 /* [CP] Embed Pods Frameworks */,
 				3A3EA9502DA949D5004D55A8 /* Embed Frameworks */,
 			);
 			buildRules = (
@@ -2758,6 +2763,11 @@
 				0960BCBA2E52591400A93556 /* XCRemoteSwiftPackageReference "YouTubePlayerKit" */,
 				0970258B2EBE48B3005E91B4 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				09A1B2C12FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "SFSymbols" */,
+				09A1B2C62FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "swift-html-entities" */,
+				09C0DEAE2FC1100000D00005 /* XCRemoteSwiftPackageReference "Haring" */,
+				09C0DEAB2FC1000000D00002 /* XCRemoteSwiftPackageReference "Receiver" */,
+				3A8E8B492DBBCED600D89756 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
+				3A8E8B512DBBCED600D89756 /* XCRemoteSwiftPackageReference "Emoji-Swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3A9119C51FADC7EB00457D28 /* Products */;
@@ -2987,49 +2997,6 @@
 			shellScript = "SECRETS_FILE=\"${SRCROOT}/Rippple/Secrets.swift\"\n\nif [ ! -f \"$SECRETS_FILE\" ]; then\n  echo \"error: Missing Secrets.swift file. Copy Secrets-Template.swift to Secrets.swift, fill in the required values, and include the file in all needed targets.\" >&2\n  exit 1\nfi\n\nFILTERED=$(grep -v '^[[:space:]]*//' \"$SECRETS_FILE\")\nif echo \"$FILTERED\" | grep -q '<#'; then\n  echo \"error: Secrets.swift contains template placeholders. Fill in all the required values.\" >&2\n  exit 1\nfi\n\nif echo \"$FILTERED\" | grep -E -q '=[[:space:]]*\"\"'; then\n  echo \"error: Secrets.swift contains empty string values. Fill in all the required values.\" >&2\n  exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		446431FD91F095F90D3214F6 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Rippple-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		ADC8C476DD4CB8039BD89986 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Rippple/Pods-Rippple-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Rippple/Pods-Rippple-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Rippple/Pods-Rippple-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -3219,6 +3186,10 @@
 				3A020B9720D3B64B0081FA3E /* SearchViewController.swift in Sources */,
 				3A24D5F21FC845410066314C /* Segue+Extension.swift in Sources */,
 				3A06B643277B0DF800E8DDB3 /* SeasonsRatingsViewController.swift in Sources */,
+				3A06B645277B0DF800E8DDB3 /* SeasonsRatingsGridAdapter.swift in Sources */,
+				3A06B647277B0DF800E8DDB3 /* SeasonsRatingsFixedGridLayout.swift in Sources */,
+				3A06B649277B0DF800E8DDB3 /* SeasonsRatingsGridCells.swift in Sources */,
+				3A06B64B277B0DF800E8DDB3 /* SeasonsRatingsGridView.swift in Sources */,
 				0998A7B72E2D2B9900079A2C /* CommentReactionButton.swift in Sources */,
 				3AD9329E1FB77932005289B5 /* ProfileViewController.swift in Sources */,
 				3A1770302638AD2E00F2F928 /* ToWatchFooterTableViewCell.swift in Sources */,
@@ -3351,6 +3322,7 @@
 				3ACBB57D2198605400AD48E5 /* ComposeNavigationController.swift in Sources */,
 				3AD62F55253ED27300F541EB /* SeasonShowTableViewCell.swift in Sources */,
 				3ADED0FC28576604008C7AB1 /* ShowProgressBar.swift in Sources */,
+				092A51482E0A7FC000DD0C15 /* CircularProgressView.swift in Sources */,
 				3A67B73A23A3FAA3003C5E4D /* ListActionViewController.swift in Sources */,
 				3AAF0DBA21ECDA41006BB569 /* MediaTitleTableViewCell.swift in Sources */,
 				3A02D05E2B49EB0200B6E51B /* DeepLinksViewController.swift in Sources */,
@@ -3754,7 +3726,6 @@
 		};
 		3A9119D71FADC7EB00457D28 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 98D01CF4A683AA71A82D335B /* Pods-Rippple.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Rippple Trakt";
@@ -3782,7 +3753,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 26.7;
-				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" -DDEBUG";
+				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3799,7 +3770,6 @@
 		};
 		3A9119D81FADC7EB00457D28 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 854253A1107BE8BB9B5949D6 /* Pods-Rippple.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Rippple Trakt";
@@ -3989,6 +3959,30 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		09A1B2C62FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "swift-html-entities" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Kitura/swift-html-entities.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.1;
+			};
+		};
+		09C0DEAB2FC1000000D00002 /* XCRemoteSwiftPackageReference "Receiver" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kevincador/Receiver.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		09C0DEAE2FC1100000D00005 /* XCRemoteSwiftPackageReference "Haring" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kevincador/Haring.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		09F275CE2E055A670059D7CD /* XCRemoteSwiftPackageReference "LRUCache" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/nicklockwood/LRUCache.git";
@@ -4045,6 +4039,22 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		3A8E8B492DBBCED600D89756 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/aws-amplify/aws-sdk-ios-spm";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 2.41.0;
+			};
+		};
+		3A8E8B512DBBCED600D89756 /* XCRemoteSwiftPackageReference "Emoji-Swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/safx/Emoji-Swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.3.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -4062,6 +4072,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 09A1B2C12FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "SFSymbols" */;
 			productName = SFSymbols;
+		};
+		09A1B2C42FB3C4D500E6F701 /* HTMLEntities */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09A1B2C62FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "swift-html-entities" */;
+			productName = HTMLEntities;
+		};
+		09C0DEAC2FC1000000D00003 /* Receiver */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09C0DEAB2FC1000000D00002 /* XCRemoteSwiftPackageReference "Receiver" */;
+			productName = Receiver;
+		};
+		09C0DEAF2FC1100000D00006 /* Haring */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09C0DEAE2FC1100000D00005 /* XCRemoteSwiftPackageReference "Haring" */;
+			productName = Haring;
 		};
 		09F275CF2E055A670059D7CD /* LRUCache */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -4102,6 +4127,26 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3A8E8B3F2DBBB8DD00D89756 /* XCRemoteSwiftPackageReference "toast-swift" */;
 			productName = Toast;
+		};
+		3A8E8B4A2DBBCED600D89756 /* AWSCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3A8E8B492DBBCED600D89756 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */;
+			productName = AWSCore;
+		};
+		3A8E8B4B2DBBCED600D89756 /* AWSSNS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3A8E8B492DBBCED600D89756 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */;
+			productName = AWSSNS;
+		};
+		3A8E8B4C2DBBCED600D89756 /* AWSDynamoDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3A8E8B492DBBCED600D89756 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */;
+			productName = AWSDynamoDB;
+		};
+		3A8E8B522DBBCED600D89756 /* Emoji */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3A8E8B512DBBCED600D89756 /* XCRemoteSwiftPackageReference "Emoji-Swift" */;
+			productName = Emoji;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

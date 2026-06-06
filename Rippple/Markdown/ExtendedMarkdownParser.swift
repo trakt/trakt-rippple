@@ -7,6 +7,7 @@
 //
 
 import Haring
+import UIKit
 
 final class SpoilerMarkdownParser: MarkdownParser {
     let highlight = MarkdownHighlight(font: UIFont.preferredFont(forTextStyle: .body), color: .label)

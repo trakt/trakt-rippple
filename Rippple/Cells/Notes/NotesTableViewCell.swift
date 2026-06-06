@@ -8,6 +8,7 @@
 
 import Foundation
 import Receiver
+import UIKit
 
 protocol NotesTableViewCellDelegate: AnyObject {
     func cell(_ cell: NotesTableViewCell, action: NotesTableViewCell.Action)

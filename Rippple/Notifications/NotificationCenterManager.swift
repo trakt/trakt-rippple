@@ -8,6 +8,7 @@
 
 import Foundation
 import Receiver
+import UIKit
 import UserNotifications
 
 let (onNotificationCenterChangedTransmitter, onNotificationCenterChangedReceiver) = Receiver<[RipppleNotification]>.make(with: .hot)

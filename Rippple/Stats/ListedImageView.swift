@@ -9,6 +9,7 @@
 import Foundation
 import Moya
 import Receiver
+import UIKit
 
 final class ListedImageView: UIImageView {
     private let disposeBag = DisposeBag()

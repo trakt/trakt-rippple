@@ -11,6 +11,7 @@ import Foundation
 import Haring
 import NaturalLanguage
 import Receiver
+import UIKit
 
 enum SpoilerStrategy {
     case hideAllSpoilers

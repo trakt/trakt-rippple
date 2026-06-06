@@ -7,7 +7,6 @@
 //
 
 import Receiver
-import RPCircularProgress
 import UIKit
 
 final class CheckinView: UIView {
@@ -61,8 +60,8 @@ final class CheckinView: UIView {
         return stack
     }()
 
-    private let progress: RPCircularProgress = {
-        let view = RPCircularProgress()
+    private let progress: CircularProgressView = {
+        let view = CircularProgressView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.widthAnchor.constraint(equalToConstant: 28).isActive = true
         view.heightAnchor.constraint(equalToConstant: 28).isActive = true

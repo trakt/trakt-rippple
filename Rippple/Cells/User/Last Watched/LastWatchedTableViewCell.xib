@@ -65,7 +65,7 @@
                                                 </subviews>
                                                 <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="0.0" right="0.0"/>
                                             </stackView>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UVs-gQ-Bas" customClass="RPCircularProgress" customModule="RPCircularProgress">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UVs-gQ-Bas" customClass="CircularProgressView" customModule="Rippple" customModuleProvider="target">
                                                 <rect key="frame" x="270.5" y="87" width="25" height="25"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>

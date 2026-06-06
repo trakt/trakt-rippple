@@ -1,7 +1,7 @@
 --min-version 0.61.1
 --swift-version 5.0
 
---exclude Pods,BuildTools/.build,BuildTools/.swiftpm,build,Rippple/Secrets.swift
+--exclude BuildTools/.build,BuildTools/.swiftpm,build,Rippple/Secrets.swift
 
 --disable wrapMultilineStatementBraces
 

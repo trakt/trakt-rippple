@@ -8,6 +8,7 @@
 
 import Foundation
 import Receiver
+import UIKit
 
 let (onShelfChangedTransmitter, onShelfChangedReceiver) = Receiver<String>.make(with: .warm(upTo: 1))
 

@@ -8,7 +8,6 @@
 
 import Moya
 import Receiver
-import RPCircularProgress
 import UIKit
 
 protocol LastWatchedTableViewCellDelegate: AnyObject {
@@ -30,7 +29,7 @@ final class LastWatchedTableViewCell: UITableViewCell {
     @IBOutlet var subtitle: UILabel!
     @IBOutlet var meta: UILabel!
 
-    @IBOutlet var progress: RPCircularProgress!
+    @IBOutlet var progress: CircularProgressView!
 
     @IBOutlet var poster: PosterButton!
     private let cellContextMenu = MediaContextMenuInteractionDelegate()

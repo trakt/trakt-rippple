@@ -9,6 +9,7 @@
 import Foundation
 import SafariServices
 import UIKit
+import UserNotifications
 
 enum MediaModel: Equatable, Hashable, Codable {
     enum CodingKeys: Int, CodingKey {

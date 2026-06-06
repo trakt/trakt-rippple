@@ -8,6 +8,7 @@
 
 import Foundation
 import Receiver
+import UIKit
 
 let (onNotesChangedTransmitter, onNotesChangedReceiver) = Receiver<[NoteItem]>.make(with: .warm(upTo: 1))
 

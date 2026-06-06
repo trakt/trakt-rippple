@@ -8,6 +8,7 @@
 import Foundation
 import Moya
 import Receiver
+import UIKit
 
 // MARK: - Pinned Movies Signals
 

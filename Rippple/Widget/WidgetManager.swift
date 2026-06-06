@@ -8,6 +8,7 @@
 
 import Foundation
 import Receiver
+import UIKit
 import WidgetKit
 
 final class WidgetManager {

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 private enum InReviewCardConstants {
     static let size = CGSize(width: 200, height: 280)

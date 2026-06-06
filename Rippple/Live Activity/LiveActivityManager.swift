@@ -9,6 +9,7 @@
 import BackgroundTasks
 import Foundation
 import Receiver
+import UIKit
 #if !targetEnvironment(macCatalyst)
 import ActivityKit
 import WidgetKit

@@ -9,6 +9,7 @@
 import Receiver
 import StoreKit
 import SwiftUI
+import UIKit
 
 struct PurchaseConfirmationView: View {
     @Environment(\.openURL) var openURL

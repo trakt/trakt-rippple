@@ -9,6 +9,7 @@
 import Foundation
 import Moya
 import Receiver
+import UIKit
 
 final class WatchedImageView: UIImageView {
     private let disposeBag = DisposeBag()

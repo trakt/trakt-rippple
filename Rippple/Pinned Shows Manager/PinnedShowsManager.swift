@@ -9,6 +9,7 @@
 import Foundation
 import Moya
 import Receiver
+import UIKit
 
 let (onPinnedShowsToWatchChangedTransmitter, onPinnedShowsToWatchChangedReceiver) = Receiver<[Show]>.make(with: .warm(upTo: 1))
 let (onPinnedShowToWatchAddedTransmitter, onPinnedShowToWatchAddedReceiver) = Receiver<Show>.make(with: .hot)
