@@ -173,9 +173,9 @@ final class SeasonsRatingsGridView: UIView {
         bodyCollectionView.scrollsToTop = true
 
         leftHeaderCollectionView.contentInset.bottom = Metrics.bottomInset
-        leftHeaderCollectionView.scrollIndicatorInsets.bottom = Metrics.bottomInset
+        leftHeaderCollectionView.verticalScrollIndicatorInsets.bottom = Metrics.bottomInset
         bodyCollectionView.contentInset.bottom = Metrics.bottomInset
-        bodyCollectionView.scrollIndicatorInsets.bottom = Metrics.bottomInset
+        bodyCollectionView.verticalScrollIndicatorInsets.bottom = Metrics.bottomInset
 
         for item in [cornerView, topHeaderCollectionView, leftHeaderCollectionView, bodyCollectionView] {
             item.translatesAutoresizingMaskIntoConstraints = false
