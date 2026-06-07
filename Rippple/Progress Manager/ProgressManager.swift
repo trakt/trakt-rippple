@@ -58,7 +58,7 @@ final class ProgressManager {
         onRemoveWatchMediaReceiver.listen { [weak self] media in
             guard let self = self else { return }
             switch media {
-            case .episode(_, let show):
+            case .episode(_, let show), .show(let show), .season(_, let show):
                 self.refreshProgress(for: show)
             default:
                 break
@@ -117,6 +117,22 @@ final class ProgressManager {
                 cacheAndComplete(progress)
             }
         }
+    }
+}
+
+extension SeasonProgress {
+    var isWatched: Bool {
+        return aired > 0 && completed >= aired
+    }
+}
+
+extension ShowProgress {
+    func progress(for season: Season) -> SeasonProgress? {
+        return seasons.first { $0.number == season.number }
+    }
+
+    func isWatched(season: Season) -> Bool {
+        return progress(for: season)?.isWatched == true
     }
 }
 

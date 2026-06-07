@@ -317,6 +317,14 @@ final class MediaTableViewCell: UITableViewCell {
             }
         }.disposed(by: disposeBag)
 
+        onProgressCacheChangedReceiver.hotOnly().listen { [weak self] progress in
+            guard let self = self else { return }
+            if dimmedIfWatched == false { return }
+            if case .season(let season, let show) = self.media, progress.show == show {
+                self.setDimmed(progress.showProgress.isWatched(season: season))
+            }
+        }.disposed(by: disposeBag)
+
         RatingsManager.shared.onRatedItemsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             guard let rateButton = self.rateButton else { return }
@@ -334,6 +342,14 @@ final class MediaTableViewCell: UITableViewCell {
         }.disposed(by: disposeBag)
 
         notesButton?.isUserInteractionEnabled = false
+    }
+
+    private func setDimmed(_ dimmed: Bool) {
+        if dimmedIfWatched == false || closeButton != nil {
+            contentView.alpha = 1.0
+        } else {
+            contentView.alpha = dimmed ? 0.6 : 1.0
+        }
     }
 
     override func prepareForReuse() {
@@ -623,7 +639,19 @@ final class MediaTableViewCell: UITableViewCell {
 
         poster.season = (show, season)
 
-        contentView.alpha = 1.0
+        setDimmed(false)
+        guard show.isWatchedAtLeastOnce else { return }
+
+        show.mediaModel.progress { [weak self] progress in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                guard case .season(let currentSeason, let currentShow) = self.media,
+                      currentSeason == season,
+                      currentShow == show else { return }
+
+                self.setDimmed(progress?.isWatched(season: season) == true)
+            }
+        }
     }
 
     private func setupShow(show: Show) {
