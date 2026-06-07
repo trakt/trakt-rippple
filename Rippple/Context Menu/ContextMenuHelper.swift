@@ -805,6 +805,7 @@ class ContextMenuHelper: NSObject {
 
     var toWatchMenu: UIMenu {
         guard let media = media else { return UIMenu(title: "Somthing wrong happened. Try again.", children: []) }
+        let openInSubmenu = makeOpenInSubmenu(for: media)
 
         let share = UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
             guard let self = self else { return }
@@ -900,7 +901,7 @@ class ContextMenuHelper: NSObject {
             let watchSubmenu = UIMenu(title: "", options: .displayInline, children: watchActions)
             let toWatchSubmenu = UIMenu(title: "", options: .displayInline, children: toWatchActions)
             let shortcutSubmenu = UIMenu(title: "", options: .displayInline, children: shortcutsActions)
-            let sharingSubmenu = UIMenu(title: "", options: .displayInline, children: [share])
+            let sharingSubmenu = UIMenu(title: "", options: .displayInline, children: [share, openInSubmenu])
 
             return UIMenu(title: "\(show.title) \(episode.localizedEpisodeNumber)",
                           children: [watchSubmenu, toWatchSubmenu, shortcutSubmenu, sharingSubmenu])
