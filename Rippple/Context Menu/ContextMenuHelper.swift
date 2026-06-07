@@ -1430,7 +1430,8 @@ class ContextMenuHelper: NSObject {
         let actions: [UIAction] = entries.map { entry in
             UIAction(title: entry.action.name,
                      image: UIImage(systemName: entry.action.systemImageName)) { [weak self] _ in
-                self?.openIn(entry.url)
+                guard let self = self else { return }
+                self.openIn(entry.url)
             }
         }
 

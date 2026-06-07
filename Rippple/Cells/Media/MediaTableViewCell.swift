@@ -318,17 +318,18 @@ final class MediaTableViewCell: UITableViewCell {
         }.disposed(by: disposeBag)
 
         RatingsManager.shared.onRatedItemsChangedReceiver.hotOnly().listen { [weak self] _ in
-            guard let rateButton = self?.rateButton else { return }
+            guard let self = self else { return }
+            guard let rateButton = self.rateButton else { return }
             if rateButton.isHidden == false {
                 var configuration = rateButton.configuration
-                if let rating = self?.media.userRating {
+                if let rating = self.media.userRating {
                     configuration?.image = UIImage(systemName: "\(rating).circle")
                 } else {
                     configuration?.image = UIImage(systemName: "heart")
                 }
                 rateButton.configuration = configuration
 
-                rateButton.menu = self?.media.rateMenu
+                rateButton.menu = self.media.rateMenu
             }
         }.disposed(by: disposeBag)
 

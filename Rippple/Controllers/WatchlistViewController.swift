@@ -168,12 +168,13 @@ final class WatchlistViewController: UITableViewController {
                                image: UIImage(systemName: "arrow.up.arrow.down")) { [weak self] _ in
             guard let self = self else { return }
             let listReorderingViewController = ListReorderingViewController(destination: .watchlist,
-                                                                            items: watchlistItems ?? []) { [weak self] in
-                self?.fetch()
+                                                                            items: self.watchlistItems ?? []) { [weak self] in
+                guard let self = self else { return }
+                self.fetch()
             }
             let navigation = UINavigationController(rootViewController: listReorderingViewController)
             navigation.modalPresentationStyle = .pageSheet
-            present(navigation, animated: true)
+            self.present(navigation, animated: true)
         }
 
         return UIMenu(children: [UIMenu(options: .displayInline, children: [reorder]), UIMenu(options: .displayInline, children: [browseAsGrid])])

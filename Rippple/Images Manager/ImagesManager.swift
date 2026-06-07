@@ -848,7 +848,8 @@ final class PosterImageView: UIImageView {
         if let imageURL = ImagesManager.shared.cachedMoviePoster(with: movie.identifiers,
                                                                  for: size) {
             setPosterImage(with: imageURL) { [weak self] in
-                movie == self?.movie
+                guard let self = self else { return false }
+                return movie == self.movie
             }
             return
         }
@@ -884,7 +885,8 @@ final class PosterImageView: UIImageView {
                     DispatchQueue.main.async {
                         if movie != self.movie { return }
                         self.setPosterImage(with: imageURL) { [weak self] in
-                            movie == self?.movie
+                            guard let self = self else { return false }
+                            return movie == self.movie
                         }
                     }
 
@@ -922,7 +924,8 @@ final class PosterImageView: UIImageView {
         if let imageURL = ImagesManager.shared.cachedShowPoster(with: show.identifiers,
                                                                 for: size) {
             setPosterImage(with: imageURL) { [weak self] in
-                show == self?.show
+                guard let self = self else { return false }
+                return show == self.show
             }
             return
         }
@@ -958,7 +961,8 @@ final class PosterImageView: UIImageView {
                     DispatchQueue.main.async {
                         if show != self.show { return }
                         self.setPosterImage(with: imageURL) { [weak self] in
-                            show == self?.show
+                            guard let self = self else { return false }
+                            return show == self.show
                         }
                     }
 
@@ -997,7 +1001,8 @@ final class PosterImageView: UIImageView {
                                                                   season: season.1.number,
                                                                   for: size) {
             setPosterImage(with: imageURL) { [weak self] in
-                season.0 == self?.season?.0 && season.1 == self?.season?.1
+                guard let self = self else { return false }
+                return season.0 == self.season?.0 && season.1 == self.season?.1
             }
             return
         }
@@ -1033,7 +1038,8 @@ final class PosterImageView: UIImageView {
                     DispatchQueue.main.async {
                         if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
                         self.setPosterImage(with: imageURL) { [weak self] in
-                            season.0 == self?.season?.0 && season.1 == self?.season?.1
+                            guard let self = self else { return false }
+                            return season.0 == self.season?.0 && season.1 == self.season?.1
                         }
                     }
 
@@ -1216,7 +1222,8 @@ final class BigPeopleProfileImageView: UIImageView {
 
         if let imageURL = ImagesManager.shared.cachedPeopleImage(with: person.ids, for: size) {
             setProfileImage(with: imageURL) { [weak self] in
-                person.ids == self?.person?.ids
+                guard let self = self else { return false }
+                return person.ids == self.person?.ids
             }
             return
         }
@@ -1250,7 +1257,8 @@ final class BigPeopleProfileImageView: UIImageView {
                     DispatchQueue.main.async {
                         if person.ids != self.person?.ids { return }
                         self.setProfileImage(with: imageURL) { [weak self] in
-                            person.ids == self?.person?.ids
+                            guard let self = self else { return false }
+                            return person.ids == self.person?.ids
                         }
                     }
 
@@ -1698,7 +1706,8 @@ final class BackdropImageView: UIImageView {
         if let imageURL = ImagesManager.shared.cachedMovieBackdrop(with: movie.identifiers,
                                                                    for: size) {
             setBackdropImage(with: imageURL) { [weak self] in
-                movie == self?.media?.movie
+                guard let self = self else { return false }
+                return movie == self.media?.movie
             }
             return
         }
@@ -1734,7 +1743,8 @@ final class BackdropImageView: UIImageView {
                     DispatchQueue.main.async {
                         if movie != self.media?.movie { return }
                         self.setBackdropImage(with: imageURL) { [weak self] in
-                            movie == self?.media?.movie
+                            guard let self = self else { return false }
+                            return movie == self.media?.movie
                         }
                     }
 
@@ -1772,7 +1782,8 @@ final class BackdropImageView: UIImageView {
         if let imageURL = ImagesManager.shared.cachedShowBackdrop(with: show.identifiers,
                                                                   for: size) {
             setBackdropImage(with: imageURL) { [weak self] in
-                show == self?.media?.show
+                guard let self = self else { return false }
+                return show == self.media?.show
             }
             return
         }
@@ -1808,7 +1819,8 @@ final class BackdropImageView: UIImageView {
                     DispatchQueue.main.async {
                         if show != self.media?.show { return }
                         self.setBackdropImage(with: imageURL) { [weak self] in
-                            show == self?.media?.show
+                            guard let self = self else { return false }
+                            return show == self.media?.show
                         }
                     }
 
@@ -1847,7 +1859,8 @@ final class BackdropImageView: UIImageView {
                                                                   for: size) {
             setBackdropImage(with: imageURL,
                              defaultTransitionDuration: 0.6) { [weak self] in
-                episode == self?.media?.episode
+                guard let self = self else { return false }
+                return episode == self.media?.episode
             }
             return
         }
@@ -1880,7 +1893,8 @@ final class BackdropImageView: UIImageView {
                         if episode != self.media?.episode { return }
                         self.setBackdropImage(with: imageURL,
                                               defaultTransitionDuration: 0.6) { [weak self] in
-                            episode == self?.media?.episode
+                            guard let self = self else { return false }
+                            return episode == self.media?.episode
                         }
                     }
 

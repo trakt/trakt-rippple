@@ -130,24 +130,24 @@ private struct LossyCommentArray<Element: Decodable>: Decodable {
             let decodedElement = try container.decode(LossyDecodableElement<Element>.self)
             if let element = decodedElement.value {
                 elements.append(element)
-            } else if let error = decodedElement.error, Self.shouldSkip(error) == false {
+            } else if let error = decodedElement.error, shouldSkip(error) == false {
                 throw error
             }
         }
 
         self.elements = elements
     }
+}
 
-    private static func shouldSkip(_ error: Error) -> Bool {
-        switch error {
-        case DecodingError.keyNotFound(let key, _):
-            return key.stringValue == "comment"
-        case DecodingError.valueNotFound(_, let context),
-             DecodingError.typeMismatch(_, let context):
-            return context.codingPath.last?.stringValue == "comment"
-        default:
-            return false
-        }
+private func shouldSkip(_ error: Error) -> Bool {
+    switch error {
+    case DecodingError.keyNotFound(let key, _):
+        return key.stringValue == "comment"
+    case DecodingError.valueNotFound(_, let context),
+         DecodingError.typeMismatch(_, let context):
+        return context.codingPath.last?.stringValue == "comment"
+    default:
+        return false
     }
 }
 

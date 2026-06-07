@@ -147,7 +147,8 @@ final class ListReorderingViewController: UITableViewController {
             return indexPath.section == contentSection
         }
         diffableDataSource.didMoveRow = { [weak self] source, destination in
-            self?.handleMoveRow(from: source, to: destination)
+            guard let self = self else { return }
+            self.handleMoveRow(from: source, to: destination)
         }
 
         applyItemsSnapshot()

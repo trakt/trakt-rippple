@@ -174,7 +174,8 @@ final class FullScreenImageViewController: UIViewController {
             image: UIImage(systemName: "doc.on.doc"),
             identifier: nil
         ) { [weak self] _ in
-            self?.copyCurrentImage()
+            guard let self = self else { return }
+            self.copyCurrentImage()
         }
 
         let saveAction = UIAction(
@@ -182,7 +183,8 @@ final class FullScreenImageViewController: UIViewController {
             image: UIImage(systemName: "square.and.arrow.down"),
             identifier: nil
         ) { [weak self] _ in
-            self?.saveCurrentImage()
+            guard let self = self else { return }
+            self.saveCurrentImage()
         }
 
         let shareAction = UIAction(
@@ -190,7 +192,8 @@ final class FullScreenImageViewController: UIViewController {
             image: UIImage(systemName: "square.and.arrow.up"),
             identifier: nil
         ) { [weak self] _ in
-            self?.shareCurrentImage()
+            guard let self = self else { return }
+            self.shareCurrentImage()
         }
 
         return UIMenu(children: [copyAction, saveAction, shareAction])
@@ -530,9 +533,10 @@ final class ZoomableScrollView: UIScrollView {
             .transition(.fade(FullScreenImageViewController.Constants.imageFadeDuration))
         ]
         imageView.kf.setImage(with: url, placeholder: previewImage, options: options) { [weak self] result in
-            guard previewImage == nil,
+            guard let self = self,
+                  previewImage == nil,
                   case .success = result else { return }
-            self?.fadeImageIn()
+            self.fadeImageIn()
         }
     }
 

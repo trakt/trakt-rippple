@@ -65,7 +65,8 @@ final class RatingsStatTableViewCell: UITableViewCell {
 
             action.showsMenuAsPrimaryAction = true
             let everyRating = UIAction(title: "All") { [weak self] _ in
-                guard let delegate = self?.delegate else { return }
+                guard let self = self else { return }
+                guard let delegate = self.delegate else { return }
                 delegate.updateFilteredRatings(filteredRatings: Array(1...10))
             }
 
@@ -73,7 +74,8 @@ final class RatingsStatTableViewCell: UITableViewCell {
 
             for i in 1...9 {
                 children.append(UIAction(title: "\(i)") { [weak self] _ in
-                    guard let delegate = self?.delegate else { return }
+                    guard let self = self else { return }
+                    guard let delegate = self.delegate else { return }
                     delegate.updateFilteredRatings(filteredRatings: Array((i + 1)...10))
                 })
             }
@@ -82,7 +84,8 @@ final class RatingsStatTableViewCell: UITableViewCell {
             children.removeAll()
             for i in 2...10 {
                 children.append(UIAction(title: "\(i)") { [weak self] _ in
-                    guard let delegate = self?.delegate else { return }
+                    guard let self = self else { return }
+                    guard let delegate = self.delegate else { return }
                     delegate.updateFilteredRatings(filteredRatings: Array(1...(i - 1)))
                 })
             }
@@ -91,7 +94,8 @@ final class RatingsStatTableViewCell: UITableViewCell {
             children.removeAll()
             for i in 1...10 {
                 children.append(UIAction(title: "\(i)") { [weak self] _ in
-                    guard let delegate = self?.delegate else { return }
+                    guard let self = self else { return }
+                    guard let delegate = self.delegate else { return }
                     delegate.updateFilteredRatings(filteredRatings: [i])
                 })
             }

@@ -15,20 +15,20 @@ let (movieToWatchSettingsUpdatedTransmitter, movieToWatchSettingsUpdatedReceiver
 let (movieUpcomingEnabledTransmitter, movieUpcomingEnabledReceiver) = Receiver<Bool>.make(with: .hot)
 let (movieToWatchGroupModeTransmitter, movieToWatchGroupModeReceiver) = Receiver<MovieToWatchGroupMode>.make(with: .hot)
 
+private let movieToWatchGroupModeStorageKey = "MovieToWatchSettings.groupMode"
+
 enum MovieToWatchGroupMode: Int, CaseIterable {
     case byLists = 0
     case singleList = 1
 }
 
 extension MovieToWatchGroupMode {
-    static let storageKey = "MovieToWatchSettings.groupMode"
-
     static func currentValue(using defaults: UserDefaults = .standard) -> MovieToWatchGroupMode {
-        MovieToWatchGroupMode(rawValue: defaults.integer(forKey: storageKey)) ?? .byLists
+        MovieToWatchGroupMode(rawValue: defaults.integer(forKey: movieToWatchGroupModeStorageKey)) ?? .byLists
     }
 
     func persist(using defaults: UserDefaults = .standard) {
-        defaults.set(rawValue, forKey: Self.storageKey)
+        defaults.set(rawValue, forKey: movieToWatchGroupModeStorageKey)
         defaults.synchronize()
     }
 
@@ -57,7 +57,7 @@ struct MovieToWatchListItem: Codable, Identifiable, Hashable {
     var rank: Int
 
     var id: String {
-        Self.identifier(kind: kind, smartSearch: smartSearch, list: list)
+        MovieToWatchListItem.identifier(kind: kind, smartSearch: smartSearch, list: list)
     }
 
     static func identifier(kind: Kind, smartSearch: SmartSearch?, list: List?) -> String {

@@ -673,8 +673,9 @@ final class CommentsViewController: UITableViewController {
         isListeningForFollowingChanges = true
 
         FollowManager.shared.onFollowingChangedReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
             DispatchQueue.main.async {
-                self?.updateHeaderForCurrentListType()
+                self.updateHeaderForCurrentListType()
             }
         }.disposed(by: disposeBag)
     }

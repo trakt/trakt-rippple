@@ -556,9 +556,10 @@ private extension PeoplesTableViewController {
     func makeFilterMenu() -> UIMenu {
         let actions: [UIAction] = PeopleFilter.allCases.map { filter in
             UIAction(title: filter.rawValue, state: filter == currentFilter ? .on : .off) { [weak self] _ in
-                self?.currentFilter = filter
+                guard let self = self else { return }
+                self.currentFilter = filter
                 // Rebuild menu to reflect the new checkmark state
-                self?.filterButtonItem.menu = self?.makeFilterMenu()
+                self.filterButtonItem.menu = self.makeFilterMenu()
             }
         }
         return UIMenu(children: actions)

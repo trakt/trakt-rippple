@@ -709,10 +709,12 @@ extension ImageBrowserViewController: UICollectionViewDelegate {
         fullScreenVC.images = filteredImages
         fullScreenVC.currentIndex = filteredImages.firstIndex(of: selectedImage) ?? 0
         fullScreenVC.imageURLProvider = { [weak self] imageItem, size in
-            self?.imageURL(for: imageItem, size: size)
+            guard let self = self else { return nil }
+            return self.imageURL(for: imageItem, size: size)
         }
         fullScreenVC.previewImageProvider = { [weak self] imageItem in
-            self?.zoomPreviewImage(for: imageItem)
+            guard let self = self else { return nil }
+            return self.zoomPreviewImage(for: imageItem)
         }
 
         let zoomOptions = UIViewController.Transition.ZoomOptions()
@@ -732,11 +734,12 @@ extension ImageBrowserViewController: UICollectionViewDelegate {
 
         fullScreenVC.modalPresentationStyle = .fullScreen
         fullScreenVC.preferredTransition = .zoom(options: zoomOptions, sourceViewProvider: { [weak self] context in
+            guard let self = self else { return nil }
             guard let fullScreenVC = context.zoomedViewController as? FullScreenImageViewController,
                   let imageItem = fullScreenVC.currentImageItem else {
                 return nil
             }
-            return self?.zoomSourceView(for: imageItem)
+            return self.zoomSourceView(for: imageItem)
         })
         present(fullScreenVC, animated: true)
     }

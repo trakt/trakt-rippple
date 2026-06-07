@@ -29,7 +29,7 @@ final class CircularProgressView: UIView {
 
     @IBInspectable var thicknessRatio: CGFloat = 0.3 {
         didSet {
-            thicknessRatio = Self.clamped(thicknessRatio, minValue: 0.01, maxValue: 1.0)
+            thicknessRatio = clamped(thicknessRatio, minValue: 0.01, maxValue: 1.0)
             updatePath()
         }
     }
@@ -40,6 +40,7 @@ final class CircularProgressView: UIView {
 
     private let trackLayer = CAShapeLayer()
     private let progressLayer = CAShapeLayer()
+    private let progressAnimationKey = "progress"
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -61,10 +62,10 @@ final class CircularProgressView: UIView {
                         initialDelay: CFTimeInterval = 0,
                         duration: CFTimeInterval? = nil,
                         completion: (() -> Void)? = nil) {
-        let targetProgress = Self.clamped(progress)
+        let targetProgress = clamped(progress)
         let currentProgress = progressLayer.presentation()?.strokeEnd ?? progressLayer.strokeEnd
 
-        progressLayer.removeAnimation(forKey: Self.progressAnimationKey)
+        progressLayer.removeAnimation(forKey: progressAnimationKey)
         self.progress = targetProgress
 
         CATransaction.begin()
@@ -93,14 +94,12 @@ final class CircularProgressView: UIView {
 
         CATransaction.begin()
         CATransaction.setCompletionBlock(completion)
-        progressLayer.add(animation, forKey: Self.progressAnimationKey)
+        progressLayer.add(animation, forKey: progressAnimationKey)
         CATransaction.commit()
     }
 }
 
 private extension CircularProgressView {
-    static let progressAnimationKey = "progress"
-
     func setup() {
         isOpaque = false
         backgroundColor = .clear
@@ -147,7 +146,7 @@ private extension CircularProgressView {
         CATransaction.commit()
     }
 
-    static func clamped(_ value: CGFloat, minValue: CGFloat = 0, maxValue: CGFloat = 1) -> CGFloat {
+    func clamped(_ value: CGFloat, minValue: CGFloat = 0, maxValue: CGFloat = 1) -> CGFloat {
         min(max(value, minValue), maxValue)
     }
 }

@@ -260,18 +260,21 @@ final class ShelfBrowseActionButtonController {
             button.showsMenuAsPrimaryAction = true
         case .checkmark:
             button.addAction(UIAction(title: "", image: nil, identifier: checkmarkActionIdentifier) { [weak self] _ in
-                self?.actionableMedia?.markWatched()
-                self?.animateButton()
+                guard let self = self else { return }
+                self.actionableMedia?.markWatched()
+                self.animateButton()
             }, for: .primaryActionTriggered)
         case .play:
             button.addAction(UIAction(title: "", image: nil, identifier: playActionIdentifier) { [weak self] _ in
-                self?.actionableMedia?.checkin()
-                self?.animateButton()
+                guard let self = self else { return }
+                self.actionableMedia?.checkin()
+                self.animateButton()
             }, for: .primaryActionTriggered)
         case .plus:
             button.addAction(UIAction(title: "", image: nil, identifier: plusActionIdentifier) { [weak self] _ in
-                self?.contextMenu.markWatched()
-                self?.animateButton()
+                guard let self = self else { return }
+                self.contextMenu.markWatched()
+                self.animateButton()
             }, for: .primaryActionTriggered)
         }
     }

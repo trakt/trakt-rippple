@@ -15,20 +15,20 @@ let (episodeToWatchSettingsUpdatedTransmitter, episodeToWatchSettingsUpdatedRece
 let (episodeUpcomingEnabledTransmitter, episodeUpcomingEnabledReceiver) = Receiver<Bool>.make(with: .hot)
 let (episodeToWatchGroupModeTransmitter, episodeToWatchGroupModeReceiver) = Receiver<EpisodeToWatchGroupMode>.make(with: .hot)
 
+private let episodeToWatchGroupModeStorageKey = "EpisodeToWatchSettings.groupMode"
+
 enum EpisodeToWatchGroupMode: Int, CaseIterable {
     case byLists = 0
     case singleList = 1
 }
 
 extension EpisodeToWatchGroupMode {
-    static let storageKey = "EpisodeToWatchSettings.groupMode"
-
     static func currentValue(using defaults: UserDefaults = .standard) -> EpisodeToWatchGroupMode {
-        EpisodeToWatchGroupMode(rawValue: defaults.integer(forKey: storageKey)) ?? .byLists
+        EpisodeToWatchGroupMode(rawValue: defaults.integer(forKey: episodeToWatchGroupModeStorageKey)) ?? .byLists
     }
 
     func persist(using defaults: UserDefaults = .standard) {
-        defaults.set(rawValue, forKey: Self.storageKey)
+        defaults.set(rawValue, forKey: episodeToWatchGroupModeStorageKey)
         defaults.synchronize()
     }
 
@@ -57,7 +57,7 @@ struct EpisodeToWatchListItem: Codable, Identifiable, Hashable {
     var rank: Int
 
     var id: String {
-        Self.identifier(kind: kind, smartSearch: smartSearch, list: list)
+        EpisodeToWatchListItem.identifier(kind: kind, smartSearch: smartSearch, list: list)
     }
 
     static func identifier(kind: Kind, smartSearch: SmartSearch?, list: List?) -> String {

@@ -42,7 +42,8 @@ public extension DispatchQueue {
      Example usage:
      ```
      DispatchQueue.main.asyncDeduped(target: self, after: 1.0) { [weak self] in
-         self?.doTheWork()
+         guard let self = self else { return }
+         self.doTheWork()
      }
      ```
      */
