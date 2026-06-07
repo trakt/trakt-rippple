@@ -956,11 +956,17 @@ final class MediaViewController: UITableViewController {
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                    // Filter seasons without episodes or special seasons
-                    let seasons = try response.map([Season].self, using: TraktAPIProvider.decoder).filter { $0.number != 0 && $0.episodes?.isEmpty == false }
+                    let allSeasons = try response.map([Season].self, using: TraktAPIProvider.decoder)
+
+                    // Filter seasons without episodes or special seasons for swipe navigation.
+                    let seasons = allSeasons.filter { $0.number != 0 && $0.episodes?.isEmpty == false }
 
                     DispatchQueue.main.async {
                         self.seasons = seasons
+                        if case .season(let currentSeason, let show) = self.media,
+                           let hydratedSeason = allSeasons.first(where: { $0.number == currentSeason.number }) {
+                            self.media = hydratedSeason.mediaModel(given: show)
+                        }
                     }
                 } catch {
                     print("Seasons request JSON mapping failed! \(error)")
