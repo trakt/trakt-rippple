@@ -478,6 +478,7 @@ enum OpenActionURLResolver {
                 "traktId": stringValue(show.identifiers.trakt),
                 "slug": stringValue(show.identifiers.slug),
                 "title": urlEscapedString(show.officialTitle),
+                "showTitle": urlEscapedString(show.officialTitle),
                 "year": stringValue(show.releaseYear)
             ]
         case .season(let season, let show):
