@@ -321,7 +321,9 @@ final class MediaTableViewCell: UITableViewCell {
             guard let self = self else { return }
             if dimmedIfWatched == false { return }
             if case .season(let season, let show) = self.media, progress.show == show {
-                self.setDimmed(progress.showProgress.isWatched(season: season))
+                DispatchQueue.main.async {
+                    self.setDimmed(progress.showProgress.isWatched(season: season))
+                }
             }
         }.disposed(by: disposeBag)
 
