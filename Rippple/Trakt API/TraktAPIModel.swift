@@ -6,6 +6,7 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Emoji
 import Foundation
 
 // MARK: - Unknown value Enum
@@ -376,7 +377,7 @@ struct List: Codable, Equatable, Hashable {
         return lhs.identifiers == rhs.identifiers
     }
 
-    let name: String
+    private let _name: String
     let description: String?
     let commentsAllowed: Bool
     let displayRank: Bool
@@ -395,7 +396,7 @@ struct List: Codable, Equatable, Hashable {
     let user: User
 
     enum CodingKeys: String, CodingKey {
-        case name
+        case _name = "name"
         case description
         case commentsAllowed = "allow_comments"
         case itemCount = "item_count"
@@ -407,6 +408,10 @@ struct List: Codable, Equatable, Hashable {
         case user
         case type
         case shareLink = "share_link"
+    }
+
+    var name: String {
+        return _name.emojiUnescapedString
     }
 }
 
@@ -1898,10 +1903,46 @@ struct AddHistoryEpisode: Codable {
 
 struct SavedFilter: Codable, Equatable, Hashable {
     let section: String
-    let name: String
+    private let _name: String
     let path: String
     let query: String
     let limit: Int?
+
+    init(section: String, name: String, path: String, query: String, limit: Int?) {
+        self.section = section
+        _name = name
+        self.path = path
+        self.query = query
+        self.limit = limit
+    }
+
+    static func == (lhs: SavedFilter, rhs: SavedFilter) -> Bool {
+        return lhs.section == rhs.section &&
+            lhs.name == rhs.name &&
+            lhs.path == rhs.path &&
+            lhs.query == rhs.query &&
+            lhs.limit == rhs.limit
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(section)
+        hasher.combine(name)
+        hasher.combine(path)
+        hasher.combine(query)
+        hasher.combine(limit)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case section
+        case _name = "name"
+        case path
+        case query
+        case limit
+    }
+
+    var name: String {
+        return _name.emojiUnescapedString
+    }
 
     var normalized: SavedFilter {
         if path != "/all/trending" { return self }
