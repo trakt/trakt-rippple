@@ -13,6 +13,11 @@ protocol CastTableViewCellDelegate: AnyObject {
 }
 
 final class CastTableViewCell: UITableViewCell {
+    private enum Layout {
+        static let compactCollectionHeight: CGFloat = 135
+        static let regularCollectionHeight: CGFloat = 148
+    }
+
     enum Action {
         case showAll
         case showCast(Cast)
@@ -32,6 +37,13 @@ final class CastTableViewCell: UITableViewCell {
     }
 
     weak var delegate: CastTableViewCellDelegate?
+
+    var showsCastEpisodeCount = true {
+        didSet {
+            updateCollectionViewHeight()
+            applySnapshot()
+        }
+    }
 
     private var isLoading = true {
         didSet {
@@ -67,6 +79,7 @@ final class CastTableViewCell: UITableViewCell {
     @IBOutlet var moreAction: UIButton!
 
     @IBOutlet var collectionView: UICollectionView!
+    @IBOutlet var collectionViewHeightConstraint: NSLayoutConstraint!
 
     private var people: People? {
         didSet {
@@ -106,6 +119,7 @@ final class CastTableViewCell: UITableViewCell {
 
         maximumContentSizeCategory = .large
         moreAction.maximumContentSizeCategory = .extraExtraLarge
+        updateCollectionViewHeight()
 
         dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) { [weak self] collectionView, indexPath, item in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cast", for: indexPath) as! CastCollectionViewCell
@@ -113,20 +127,31 @@ final class CastTableViewCell: UITableViewCell {
 
             switch item {
             case .placeholder:
+                cell.showsEpisodeCount = false
                 cell.avatarImageView.image = nil
                 cell.avatarInitialLabel.text = ""
-                cell.additionalInfoLabel.text = " "
+                cell.additionalInfoLabel.text = nil
+                cell.additionalInfoLabel.isHidden = true
                 cell.asLabel.text = self.isLoading ? "Loading..." : "as Unknown"
                 cell.personNameLabel.text = self.isLoading ? "" : "Unknown"
             case .cast(let cast):
+                cell.showsEpisodeCount = self.showsCastEpisodeCount
                 cell.cast = cast
             case .crew(let job):
+                cell.showsEpisodeCount = true
                 cell.crew = job
             }
             return cell
         }
         collectionView.dataSource = dataSource
         collectionView.delegate = self
+    }
+
+    private func updateCollectionViewHeight() {
+        guard let collectionViewHeightConstraint = collectionViewHeightConstraint else { return }
+        collectionViewHeightConstraint.constant = showsCastEpisodeCount ? Layout.regularCollectionHeight : Layout.compactCollectionHeight
+        collectionView?.collectionViewLayout.invalidateLayout()
+        invalidateIntrinsicContentSize()
     }
 
     var media: MediaModel! {
@@ -245,7 +270,7 @@ final class CastTableViewCell: UITableViewCell {
     private func updateTitle() {
         titleLabel.text = "Cast & Crew"
         switch media! {
-        case .episode, .season:
+        case .season:
             titleLabel.text = "Season Regulars"
         case .show:
             titleLabel.text = "Series Regulars"

@@ -270,6 +270,7 @@ final class MediaViewController: UITableViewController {
             return cell
         case .cast:
             let cell = tableView.dequeueReusableCell(withIdentifier: "cast") as! CastTableViewCell
+            cell.showsCastEpisodeCount = self.media.episode == nil
             cell.media = self.media
             cell.delegate = self
             return cell
