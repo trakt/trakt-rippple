@@ -813,7 +813,10 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                    "RecentSearchManager.recentSearches",
                                    "CommentDraftManager.drafts"]
 
-        let dataUserDefaultsKeys: Set = ["MainTabBarController.tab.positions",
+        let dataUserDefaultsKeys: Set = ["CustomListsViewController.customList",
+                                         "MainTabBarController.tab.positions",
+                                         "EpisodeToWatchSettings.otherLists",
+                                         "MovieToWatchSettings.otherLists",
                                          "WallViewController.savedFilter",
                                          "NotesManager.notes",
                                          "ListsManager.lists",
@@ -881,6 +884,8 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                 } else {
                     UserDefaults.standard.set(data, forKey: key)
                 }
+            } else if shouldStoreAsData {
+                print("[Migration Deeplink] \(key): invalid Data payload")
             } else {
                 if valueString == "1" || valueString.lowercased() == "true" {
                     if isUbiquitousKey {
