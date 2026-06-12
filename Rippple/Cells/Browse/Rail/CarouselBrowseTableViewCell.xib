@@ -20,7 +20,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="438" height="198"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="IPP-0C-zwr" firstAttribute="width" secondItem="OZS-KU-9mk" secondAttribute="height" multiplier="16:9" priority="750" id="84B-yQ-NQ2"/>
                             <constraint firstAttribute="height" relation="lessThanOrEqual" constant="300" id="V5G-N6-JFm"/>
                         </constraints>
                         <collectionViewLayout key="collectionViewLayout" id="Ofc-pD-aud"/>
@@ -37,6 +36,7 @@
                     </pageControl>
                 </subviews>
                 <constraints>
+                    <constraint firstItem="IPP-0C-zwr" firstAttribute="width" secondItem="OZS-KU-9mk" secondAttribute="height" multiplier="16:9" priority="750" id="84B-yQ-NQ2"/>
                     <constraint firstItem="OZS-KU-9mk" firstAttribute="leading" secondItem="IPP-0C-zwr" secondAttribute="leading" id="3hJ-B0-y8W"/>
                     <constraint firstItem="OZS-KU-9mk" firstAttribute="top" secondItem="IPP-0C-zwr" secondAttribute="top" id="NZa-33-nOP"/>
                     <constraint firstItem="OZS-KU-9mk" firstAttribute="bottom" secondItem="Ebk-BE-Cme" secondAttribute="bottom" constant="5" id="OlE-4M-Nb3"/>
