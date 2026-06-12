@@ -137,6 +137,10 @@ extension NotificationCenterManager: UNUserNotificationCenterDelegate {
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         save(latestNotifications: [response.notification])
 
+        if response.notification.request.identifier == "TestNotification" {
+            testPushTransmitter.broadcast("TestNotification")
+        }
+
         let userInfo = response.notification.request.content.userInfo
         if let link = userInfo["link"] as? String, let url = URL(string: link) {
             DeeplinkManager.shared.registerDeeplink(url: url)

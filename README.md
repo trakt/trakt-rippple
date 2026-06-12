@@ -65,7 +65,9 @@ With **Trakt VIP** you get:
 |--------|------------------|
 | **Trakt** | `clientId` and `secretId` from your [Trakt API application](https://trakt.tv/oauth/applications). Required for Trakt login and sync. |
 | **TMDb** | `apiKey` from [The Movie Database](https://www.themoviedb.org/settings/api). Used for fetching images and “where to watch” data. |
-| **AWS** | Optional. `identityPoolId` and the various topic ARNs if you want remote push notifications (e.g. trending/recommended). Leave as `nil` to disable. |
+| **Remote notifications** | Optional maintainer infrastructure. Public forks can leave `RemoteNotificationsConfiguration.remoteNotificationsBaseURL`, `remoteNotificationsAPIKey`, and all `AWSConfiguration` values as `nil`; remote push is disabled while local notifications still work. |
+
+Maintainer builds use a small REST API proxy for endpoint registration, push information, and topic subscription updates. Remote push backend details are intentionally not required for local development, and the app no longer depends on the AWS SDK.
 
 The build includes a run script that fails if `Secrets.swift` is missing or still contains template placeholders.
 

@@ -19,8 +19,15 @@ enum TmdbAPIConfiguration {
     static let apiKey = "<#TMDB_API_KEY#>"
 }
 
-/// Rippple uses AWS to manage notifications.
-/// Remote Push Notifications will be disabled if no identityPoolId is provided.
+/// Remote push notifications are optional maintainer infrastructure.
+/// Leave these values as `nil` when running a public fork or contributing locally.
+enum RemoteNotificationsConfiguration {
+    static let remoteNotificationsBaseURL: URL? = nil
+    static let remoteNotificationsAPIKey: String? = nil
+}
+
+/// Maintainer-only AWS notification resource identifiers used by the REST proxy.
+/// Leave these values as `nil` when running a public fork or contributing locally.
 enum AWSConfiguration {
     static let identityPoolId: String? = nil
     static let platformApplicationARN: String? = nil

@@ -1783,14 +1783,14 @@ Version 1.0 (123)</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="JtJ-Gb-gnv">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="JtJ-Gb-gnv">
                                         <rect key="frame" x="20" y="208.33333206176758" width="374" height="51"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="JtJ-Gb-gnv" id="VCz-lv-mlm">
                                             <rect key="frame" x="0.0" y="0.0" width="374" height="51"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Test Notification" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yd1-39-RYC">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Push API" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yd1-39-RYC">
                                                     <rect key="frame" x="20" y="15.333333333333334" width="299" height="20.333333333333329"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <nil key="textColor"/>
@@ -1813,6 +1813,62 @@ Version 1.0 (123)</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="GvS-jc-Ldd">
+                                        <rect key="frame" x="20" y="259.33333206176758" width="374" height="51"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="GvS-jc-Ldd" id="HgC-wr-Hr4">
+                                            <rect key="frame" x="0.0" y="0.0" width="374" height="51"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Test Notification" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NSv-BZ-RbT">
+                                                    <rect key="frame" x="20" y="15.333333333333334" width="299" height="20.333333333333329"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="JTP-nD-pix">
+                                                    <rect key="frame" x="329" y="10.333333333333332" width="25" height="30.333333333333339"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" secondItem="JTP-nD-pix" secondAttribute="height" multiplier="1:1" id="Qyy-Yq-Uat"/>
+                                                    </constraints>
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
+                                                </imageView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="NSv-BZ-RbT" firstAttribute="centerY" secondItem="HgC-wr-Hr4" secondAttribute="centerY" id="CZB-bz-fZP"/>
+                                                <constraint firstItem="JTP-nD-pix" firstAttribute="centerY" secondItem="HgC-wr-Hr4" secondAttribute="centerY" id="IOZ-EQ-Qaf"/>
+                                                <constraint firstItem="JTP-nD-pix" firstAttribute="leading" secondItem="NSv-BZ-RbT" secondAttribute="trailing" constant="10" id="Myz-dW-pvg"/>
+                                                <constraint firstAttribute="trailing" secondItem="JTP-nD-pix" secondAttribute="trailing" constant="20" id="dFQ-Qe-4Et"/>
+                                                <constraint firstItem="NSv-BZ-RbT" firstAttribute="leading" secondItem="HgC-wr-Hr4" secondAttribute="leadingMargin" id="jzm-sQ-yLM"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                            <tableViewSection headerTitle="Data" id="5cg-lu-lqV">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="7DR-CX-4SQ">
+                                        <rect key="frame" x="20" y="364.33333206176758" width="374" height="220"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="7DR-CX-4SQ" id="Tqa-Ou-r7q">
+                                            <rect key="frame" x="0.0" y="0.0" width="374" height="220"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loading..." textAlignment="natural" lineBreakMode="characterWrap" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" numberOfLines="0" translatesAutoresizingMaskIntoConstraints="NO" id="nLI-O3-eTI">
+                                                    <rect key="frame" x="20" y="16" width="334" height="188"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                    <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="bottomMargin" secondItem="nLI-O3-eTI" secondAttribute="bottom" id="CIU-qF-TQH"/>
+                                                <constraint firstItem="nLI-O3-eTI" firstAttribute="leading" secondItem="Tqa-Ou-r7q" secondAttribute="leadingMargin" id="H8Q-xy-Qos"/>
+                                                <constraint firstItem="nLI-O3-eTI" firstAttribute="top" secondItem="Tqa-Ou-r7q" secondAttribute="topMargin" id="Syk-j0-8a5"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="nLI-O3-eTI" secondAttribute="trailing" id="Wpr-Br-0ch"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
                                 </cells>
                             </tableViewSection>
                         </sections>
@@ -1825,7 +1881,10 @@ Version 1.0 (123)</string>
                     <connections>
                         <outlet property="appSettings" destination="LvR-v1-T0T" id="UDX-Zl-QcH"/>
                         <outlet property="deviceSettings" destination="DHa-aV-edq" id="j7M-oU-inz"/>
-                        <outlet property="testNotification" destination="HET-zD-kWK" id="akZ-NV-Mog"/>
+                        <outlet property="pushAPI" destination="HET-zD-kWK" id="shF-ef-xEh"/>
+                        <outlet property="pushAPICell" destination="JtJ-Gb-gnv" id="awf-I3-nhg"/>
+                        <outlet property="remoteNotificationsDebugLabel" destination="nLI-O3-eTI" id="82D-R7-t3K"/>
+                        <outlet property="testNotification" destination="JTP-nD-pix" id="akZ-NV-Mog"/>
                         <outlet property="tokenRegistration" destination="130-Pj-j23" id="uCx-Y4-gbS"/>
                     </connections>
                 </tableViewController>

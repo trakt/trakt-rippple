@@ -24,10 +24,6 @@ If you add, remove, or migrate dependencies, please update this file.
   - **Description**: Network activity indicator manager built on top of Alamofire.
   - **Source**: https://github.com/Alamofire/AlamofireNetworkActivityIndicator
 
-- **AWS SDK for iOS - Core and services** (`AWSCore`, `AWSDynamoDB`, `AWSSNS`)
-  - **Description**: AWS mobile SDK components used for core AWS functionality, DynamoDB, and SNS.
-  - **Source**: https://github.com/aws-amplify/aws-sdk-ios-spm
-
 - **Emoji-swift** (`Emoji`)
   - **Description**: Emoji utilities for Swift.
   - **Source**: https://github.com/safx/Emoji-Swift

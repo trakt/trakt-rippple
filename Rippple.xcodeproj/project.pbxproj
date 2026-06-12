@@ -32,6 +32,7 @@
 		0998A7BD2E322FDA00079A2C /* ReactionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0998A7BC2E322FDA00079A2C /* ReactionsManager.swift */; };
 		09A1B2C32FB3C4D500E6F701 /* SFSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 09A1B2C22FB3C4D500E6F701 /* SFSymbols */; };
 		09A1B2C52FB3C4D500E6F701 /* HTMLEntities in Frameworks */ = {isa = PBXBuildFile; productRef = 09A1B2C42FB3C4D500E6F701 /* HTMLEntities */; };
+		09A2F1012FC9000000A10001 /* RemoteNotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A2F1002FC9000000A10000 /* RemoteNotificationsManager.swift */; };
 		09A5A0F62E96A52300BFC59C /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A5A0F52E96A52300BFC59C /* TransactionsView.swift */; };
 		09A5A0F82E98F00100BFC59C /* CalendarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A5A0F72E98F00100BFC59C /* CalendarManager.swift */; };
 		09A94A952F1BF69200642C38 /* ToWatchInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A94A942F1BF69200642C38 /* ToWatchInfoView.swift */; };
@@ -290,9 +291,6 @@
 		3A8E8B382DBBB68B00D89756 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B372DBBB68B00D89756 /* Alamofire */; };
 		3A8E8B3E2DBBB88D00D89756 /* NVActivityIndicatorView in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B3D2DBBB88D00D89756 /* NVActivityIndicatorView */; };
 		3A8E8B412DBBB8DD00D89756 /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B402DBBB8DD00D89756 /* Toast */; };
-		3A8E8B4D2DBBCED600D89756 /* AWSCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B4A2DBBCED600D89756 /* AWSCore */; };
-		3A8E8B4E2DBBCED600D89756 /* AWSSNS in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B4B2DBBCED600D89756 /* AWSSNS */; };
-		3A8E8B4F2DBBCED600D89756 /* AWSDynamoDB in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B4C2DBBCED600D89756 /* AWSDynamoDB */; };
 		3A8E8B502DBBCED600D89756 /* Emoji in Frameworks */ = {isa = PBXBuildFile; productRef = 3A8E8B522DBBCED600D89756 /* Emoji */; };
 		3A90313B287B032600FA27D4 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A90313A287B032600FA27D4 /* WidgetKit.framework */; };
 		3A90313D287B032600FA27D4 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A90313C287B032600FA27D4 /* SwiftUI.framework */; };
@@ -565,6 +563,7 @@
 		0998A7B42E2D28B000079A2C /* ReplyCountButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplyCountButton.swift; sourceTree = "<group>"; };
 		0998A7B62E2D2B9900079A2C /* CommentReactionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentReactionButton.swift; sourceTree = "<group>"; };
 		0998A7BC2E322FDA00079A2C /* ReactionsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactionsManager.swift; sourceTree = "<group>"; };
+		09A2F1002FC9000000A10000 /* RemoteNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteNotificationsManager.swift; sourceTree = "<group>"; };
 		09A5A0F52E96A52300BFC59C /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		09A5A0F72E98F00100BFC59C /* CalendarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarManager.swift; sourceTree = "<group>"; };
 		09A94A942F1BF69200642C38 /* ToWatchInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchInfoView.swift; sourceTree = "<group>"; };
@@ -1053,9 +1052,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				09A1B2C32FB3C4D500E6F701 /* SFSymbols in Frameworks */,
-				3A8E8B4D2DBBCED600D89756 /* AWSCore in Frameworks */,
-				3A8E8B4F2DBBCED600D89756 /* AWSDynamoDB in Frameworks */,
-				3A8E8B4E2DBBCED600D89756 /* AWSSNS in Frameworks */,
 				3A8E8B502DBBCED600D89756 /* Emoji in Frameworks */,
 				09C0DEAD2FC1100000D00004 /* Haring in Frameworks */,
 				09A1B2C52FB3C4D500E6F701 /* HTMLEntities in Frameworks */,
@@ -2329,6 +2325,7 @@
 			children = (
 				3AEADF51248D12D3003C4481 /* ActivityNotificationsManager.swift */,
 				3A464554201A2D8C00A05B9F /* PushInformationModel.swift */,
+				09A2F1002FC9000000A10000 /* RemoteNotificationsManager.swift */,
 				3A383BF42567AE0900182477 /* TrendingNotificationsManager.swift */,
 				3A9F4EFF25EA7BEC002C3767 /* RecommendedNotificationsManager.swift */,
 				3A26D34B2BD69269002EF98E /* ManualRemoteNotificationsManager.swift */,
@@ -2766,7 +2763,6 @@
 				09A1B2C62FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "swift-html-entities" */,
 				09C0DEAE2FC1100000D00005 /* XCRemoteSwiftPackageReference "Haring" */,
 				09C0DEAB2FC1000000D00002 /* XCRemoteSwiftPackageReference "Receiver" */,
-				3A8E8B492DBBCED600D89756 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
 				3A8E8B512DBBCED600D89756 /* XCRemoteSwiftPackageReference "Emoji-Swift" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -3146,6 +3142,7 @@
 				3AC160D8201F52AF004A2A4F /* DeeplinkLoadingViewController.swift in Sources */,
 				3A7FF65229F3107700E2E08E /* EmptyTableViewCell.swift in Sources */,
 				3AEA95C329DDEA2C00BE9BA4 /* CalendarViewController.swift in Sources */,
+				09A2F1012FC9000000A10001 /* RemoteNotificationsManager.swift in Sources */,
 				3AFD3F0E1FB733360003B966 /* TraktAPIProvider.swift in Sources */,
 				3AD15D06287D936A00FD0B2F /* WidgetManager.swift in Sources */,
 				3AB2D84A201F2A6E00BAD105 /* DeeplinkParser.swift in Sources */,
@@ -4047,14 +4044,6 @@
 				minimumVersion = 2.0.0;
 			};
 		};
-		3A8E8B492DBBCED600D89756 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/aws-amplify/aws-sdk-ios-spm";
-			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 2.41.0;
-			};
-		};
 		3A8E8B512DBBCED600D89756 /* XCRemoteSwiftPackageReference "Emoji-Swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/safx/Emoji-Swift.git";
@@ -4135,21 +4124,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3A8E8B3F2DBBB8DD00D89756 /* XCRemoteSwiftPackageReference "toast-swift" */;
 			productName = Toast;
-		};
-		3A8E8B4A2DBBCED600D89756 /* AWSCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3A8E8B492DBBCED600D89756 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */;
-			productName = AWSCore;
-		};
-		3A8E8B4B2DBBCED600D89756 /* AWSSNS */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3A8E8B492DBBCED600D89756 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */;
-			productName = AWSSNS;
-		};
-		3A8E8B4C2DBBCED600D89756 /* AWSDynamoDB */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3A8E8B492DBBCED600D89756 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */;
-			productName = AWSDynamoDB;
 		};
 		3A8E8B522DBBCED600D89756 /* Emoji */ = {
 			isa = XCSwiftPackageProductDependency;
