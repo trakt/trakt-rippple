@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="dark"/>
+    <accessibilityOverrides dynamicTypePreference="3"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="social activity user" rowHeight="112" id="Pnb-9d-Yu1" customClass="SocialActivityUserTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="393" height="112"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Pnb-9d-Yu1" id="W9d-3b-RLa">
+                <rect key="frame" x="0.0" y="0.0" width="393" height="112"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uB6-bE-yCW" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="369" height="104"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="PqK-D7-Y2f">
+                                <rect key="frame" x="12" y="12" width="345" height="80"/>
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" image="bg_placeholder_avatar_big" translatesAutoresizingMaskIntoConstraints="NO" id="cPS-AC-FmT">
+                                        <rect key="frame" x="0.0" y="14" width="52" height="52"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="52" id="ekJ-6t-LFU"/>
+                                            <constraint firstAttribute="width" secondItem="cPS-AC-FmT" secondAttribute="height" multiplier="1:1" id="lR2-k7-2Z8"/>
+                                        </constraints>
+                                    </imageView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="fill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="GY9-rZ-pTI">
+                                        <rect key="frame" x="62" y="7" width="211" height="66"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="1000" text="John Snow" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BG8-dv-TbA">
+                                                <rect key="frame" x="0.0" y="0.0" width="211" height="20.333333333333332"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="1000" text="Last watched 3 days ago&#10;Watchlisted 3 months ago" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="oHO-ui-uT6">
+                                                <rect key="frame" x="0.0" y="24.333333333333336" width="211" height="41.666666666666664"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" text="8/10" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="q2s-Uh-pPl">
+                                        <rect key="frame" x="283" y="24.666666666666668" width="62" height="31"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="58" id="qMM-OJ-Qy2"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="PqK-D7-Y2f" secondAttribute="bottom" constant="12" id="1rG-rS-v16"/>
+                            <constraint firstItem="PqK-D7-Y2f" firstAttribute="leading" secondItem="uB6-bE-yCW" secondAttribute="leading" constant="12" id="BuZ-e2-CJd"/>
+                            <constraint firstItem="PqK-D7-Y2f" firstAttribute="top" secondItem="uB6-bE-yCW" secondAttribute="top" constant="12" id="LMN-Cc-p65"/>
+                            <constraint firstAttribute="trailing" secondItem="PqK-D7-Y2f" secondAttribute="trailing" constant="12" id="RYI-LD-63O"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <constraints>
+                    <constraint firstItem="uB6-bE-yCW" firstAttribute="leading" secondItem="W9d-3b-RLa" secondAttribute="leading" constant="12" id="2WD-cm-Pw4"/>
+                    <constraint firstAttribute="bottom" secondItem="uB6-bE-yCW" secondAttribute="bottom" constant="4" id="Bsp-Qv-ajm"/>
+                    <constraint firstAttribute="trailing" secondItem="uB6-bE-yCW" secondAttribute="trailing" constant="12" id="crh-e3-fWY"/>
+                    <constraint firstItem="uB6-bE-yCW" firstAttribute="top" secondItem="W9d-3b-RLa" secondAttribute="top" constant="4" id="x1w-CR-lMV"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="activityLabel" destination="oHO-ui-uT6" id="VYG-wa-Ya2"/>
+                <outlet property="avatarImageView" destination="cPS-AC-FmT" id="xcl-kt-7EK"/>
+                <outlet property="bottomConstraint" destination="Bsp-Qv-ajm" id="kLp-gQ-pn0"/>
+                <outlet property="card" destination="uB6-bE-yCW" id="V79-fM-JIh"/>
+                <outlet property="nameLabel" destination="BG8-dv-TbA" id="kx5-SU-gFR"/>
+                <outlet property="ratingLabel" destination="q2s-Uh-pPl" id="zUc-M7-hNG"/>
+                <outlet property="topConstraint" destination="x1w-CR-lMV" id="CVP-2Z-dDh"/>
+            </connections>
+            <point key="canvasLocation" x="-124" y="-274.66266866566717"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="bg_placeholder_avatar_big" width="60" height="60"/>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

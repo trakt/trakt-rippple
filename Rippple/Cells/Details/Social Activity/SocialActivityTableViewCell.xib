@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="social activity" rowHeight="88" id="hry-gA-wR8" customClass="SocialActivityTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="88"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="hry-gA-wR8" id="4zX-yw-PfA">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="88"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aKQ-Ia-Vcg" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="13" y="0.0" width="349" height="84"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="nyq-Wv-CUv">
+                        <rect key="frame" x="25" y="15" width="325" height="58"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" horizontalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Q72-ZU-zBA">
+                                <rect key="frame" x="0.0" y="12" width="132" height="34"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="34" id="6Ql-Fp-62G"/>
+                                    <constraint firstAttribute="width" constant="132" id="K74-BJ-wlG"/>
+                                </constraints>
+                            </view>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="VUk-NX-bms">
+                                <rect key="frame" x="144" y="18.5" width="181" height="20.5"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Loading..." lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mAQ-WL-WIN">
+                                        <rect key="frame" x="0.0" y="0.0" width="181" height="20.5"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                    </stackView>
+                </subviews>
+                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                <constraints>
+                    <constraint firstItem="aKQ-Ia-Vcg" firstAttribute="top" secondItem="4zX-yw-PfA" secondAttribute="top" id="1lX-FE-Ke7"/>
+                    <constraint firstAttribute="trailing" secondItem="nyq-Wv-CUv" secondAttribute="trailing" constant="25" id="2lF-wQ-Kfs"/>
+                    <constraint firstItem="nyq-Wv-CUv" firstAttribute="trailing" secondItem="aKQ-Ia-Vcg" secondAttribute="trailing" constant="-12" id="8nA-dp-YUM"/>
+                    <constraint firstItem="aKQ-Ia-Vcg" firstAttribute="leading" secondItem="nyq-Wv-CUv" secondAttribute="leading" constant="-12" id="JVU-nF-xfv"/>
+                    <constraint firstAttribute="bottom" secondItem="aKQ-Ia-Vcg" secondAttribute="bottom" constant="4" id="QNJ-4m-hCE"/>
+                    <constraint firstItem="nyq-Wv-CUv" firstAttribute="top" secondItem="4zX-yw-PfA" secondAttribute="top" constant="15" id="T6A-d7-zmH"/>
+                    <constraint firstItem="nyq-Wv-CUv" firstAttribute="leading" secondItem="4zX-yw-PfA" secondAttribute="leading" constant="25" id="kr2-V9-0c9"/>
+                    <constraint firstAttribute="bottom" secondItem="nyq-Wv-CUv" secondAttribute="bottom" constant="15" id="pRv-LS-nGx"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="avatarsContainer" destination="Q72-ZU-zBA" id="GDb-fJ-nTs"/>
+                <outlet property="avatarsContainerWidthConstraint" destination="K74-BJ-wlG" id="uTz-VG-qWQ"/>
+                <outlet property="card" destination="aKQ-Ia-Vcg" id="azS-m6-91D"/>
+                <outlet property="titleLabel" destination="mAQ-WL-WIN" id="nLg-BR-lVU"/>
+            </connections>
+            <point key="canvasLocation" x="65.94202898550725" y="50.892857142857139"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

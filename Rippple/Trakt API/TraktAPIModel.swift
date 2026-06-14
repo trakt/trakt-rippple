@@ -893,6 +893,74 @@ struct Follow: Codable {
     }
 }
 
+// MARK: - Social
+
+struct SocialEntry: Codable, Equatable, Hashable {
+    let followedAt: Date
+    let user: User
+    let watched: SocialWatched?
+    let watchlisted: SocialWatchlisted?
+
+    enum CodingKeys: String, CodingKey {
+        case followedAt = "followed_at"
+        case user
+        case watched
+        case watchlisted
+    }
+}
+
+struct SocialWatched: Codable, Equatable, Hashable {
+    let plays: Int
+    let lastWatchedAt: Date?
+    let lastUpdatedAt: Date?
+    let rating: SocialRating?
+    let comment: SocialComment?
+
+    enum CodingKeys: String, CodingKey {
+        case plays
+        case lastWatchedAt = "last_watched_at"
+        case lastUpdatedAt = "last_updated_at"
+        case rating
+        case comment
+    }
+}
+
+struct SocialRating: Codable, Equatable, Hashable {
+    let rating: Int
+    let ratedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case rating
+        case ratedAt = "rated_at"
+    }
+}
+
+struct SocialComment: Codable, Equatable, Hashable {
+    let identifiers: Identifiers
+    let body: String?
+    let containsSpoiler: Bool
+    let isReview: Bool
+    let createDate: Date?
+    let updateDate: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case identifiers = "ids"
+        case body = "comment"
+        case containsSpoiler = "spoiler"
+        case isReview = "review"
+        case createDate = "created_at"
+        case updateDate = "updated_at"
+    }
+}
+
+struct SocialWatchlisted: Codable, Equatable, Hashable {
+    let listedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case listedAt = "listed_at"
+    }
+}
+
 // MARK: - Media Item
 
 struct MediaItem: Codable, Equatable {

@@ -44,6 +44,15 @@
 		09B8990B2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */; };
 		09B8990D2F2A568900DC202D /* TraktAPIProvider+Recommended.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */; };
 		09B8990F2F9F000100DC202D /* TraktAPIProvider+Watched.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990E2F9F000100DC202D /* TraktAPIProvider+Watched.swift */; };
+		09B899112FCC000100DC202D /* TraktAPIProvider+Social.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899102FCC000100DC202D /* TraktAPIProvider+Social.swift */; };
+		09B899132FCC010100DC202D /* SocialActivityTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899122FCC010100DC202D /* SocialActivityTableViewCell.swift */; };
+		09B899152FCC010100DC202D /* SocialActivityTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B899142FCC010100DC202D /* SocialActivityTableViewCell.xib */; };
+		09B899172FCC020100DC202D /* SocialActivitiesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899182FCC020100DC202D /* SocialActivitiesViewController.swift */; };
+		09B899192FCC020100DC202D /* SocialActivityUserSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8991A2FCC020100DC202D /* SocialActivityUserSummary.swift */; };
+		09B8991B2FCC020100DC202D /* SocialActivityUserTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8991C2FCC020100DC202D /* SocialActivityUserTableViewCell.swift */; };
+		09B8991D2FCC020100DC202D /* SocialActivityUserTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B8991E2FCC020100DC202D /* SocialActivityUserTableViewCell.xib */; };
+		09B8991F2FCC030100DC202D /* SocialActivityCommentTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899202FCC030100DC202D /* SocialActivityCommentTableViewCell.swift */; };
+		09B899212FCC030100DC202D /* SocialActivityCommentTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B899222FCC030100DC202D /* SocialActivityCommentTableViewCell.xib */; };
 		09C0DEAA2FC1000000D00001 /* Receiver in Frameworks */ = {isa = PBXBuildFile; productRef = 09C0DEAC2FC1000000D00003 /* Receiver */; };
 		09C0DEAD2FC1100000D00004 /* Haring in Frameworks */ = {isa = PBXBuildFile; productRef = 09C0DEAF2FC1100000D00006 /* Haring */; };
 		09C0DEC22F9ABCD000000001 /* CommentsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */; };
@@ -574,6 +583,15 @@
 		09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Watchlist.swift"; sourceTree = "<group>"; };
 		09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Recommended.swift"; sourceTree = "<group>"; };
 		09B8990E2F9F000100DC202D /* TraktAPIProvider+Watched.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Watched.swift"; sourceTree = "<group>"; };
+		09B899102FCC000100DC202D /* TraktAPIProvider+Social.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Social.swift"; sourceTree = "<group>"; };
+		09B899122FCC010100DC202D /* SocialActivityTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialActivityTableViewCell.swift; sourceTree = "<group>"; };
+		09B899142FCC010100DC202D /* SocialActivityTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SocialActivityTableViewCell.xib; sourceTree = "<group>"; };
+		09B899182FCC020100DC202D /* SocialActivitiesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialActivitiesViewController.swift; sourceTree = "<group>"; };
+		09B8991A2FCC020100DC202D /* SocialActivityUserSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialActivityUserSummary.swift; sourceTree = "<group>"; };
+		09B8991C2FCC020100DC202D /* SocialActivityUserTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialActivityUserTableViewCell.swift; sourceTree = "<group>"; };
+		09B8991E2FCC020100DC202D /* SocialActivityUserTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SocialActivityUserTableViewCell.xib; sourceTree = "<group>"; };
+		09B899202FCC030100DC202D /* SocialActivityCommentTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialActivityCommentTableViewCell.swift; sourceTree = "<group>"; };
+		09B899222FCC030100DC202D /* SocialActivityCommentTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SocialActivityCommentTableViewCell.xib; sourceTree = "<group>"; };
 		09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsTabViewController.swift; sourceTree = "<group>"; };
 		09C0DEC32FA3B00100000001 /* ListBrowseCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListBrowseCollectionViewCell.swift; sourceTree = "<group>"; };
 		09D261392F76B1B000536D3D /* ListItemsMarkerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItemsMarkerManager.swift; sourceTree = "<group>"; };
@@ -1841,6 +1859,7 @@
 			isa = PBXGroup;
 			children = (
 				3A7AB4D02BF3896600116149 /* Media Pulse */,
+				09B8991F2FCC020100DC202D /* Social Activities */,
 			);
 			path = "Media Details";
 			sourceTree = "<group>";
@@ -2117,6 +2136,7 @@
 				09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */,
 				09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */,
 				09B8990E2F9F000100DC202D /* TraktAPIProvider+Watched.swift */,
+				09B899102FCC000100DC202D /* TraktAPIProvider+Social.swift */,
 				3A9119DB1FADDF3A00457D28 /* TraktAPIService.swift */,
 				3AD932A91FB9E885005289B5 /* TraktAPIService+Sample.swift */,
 				3AFD3F0F1FB734630003B966 /* TraktAPIModel.swift */,
@@ -2155,6 +2175,28 @@
 			path = "People list and detail";
 			sourceTree = "<group>";
 		};
+		09B899162FCC010100DC202D /* Social Activity */ = {
+			isa = PBXGroup;
+			children = (
+				09B899122FCC010100DC202D /* SocialActivityTableViewCell.swift */,
+				09B899142FCC010100DC202D /* SocialActivityTableViewCell.xib */,
+				09B8991C2FCC020100DC202D /* SocialActivityUserTableViewCell.swift */,
+				09B8991E2FCC020100DC202D /* SocialActivityUserTableViewCell.xib */,
+				09B899202FCC030100DC202D /* SocialActivityCommentTableViewCell.swift */,
+				09B899222FCC030100DC202D /* SocialActivityCommentTableViewCell.xib */,
+			);
+			path = "Social Activity";
+			sourceTree = "<group>";
+		};
+		09B8991F2FCC020100DC202D /* Social Activities */ = {
+			isa = PBXGroup;
+			children = (
+				09B899182FCC020100DC202D /* SocialActivitiesViewController.swift */,
+				09B8991A2FCC020100DC202D /* SocialActivityUserSummary.swift */,
+			);
+			path = "Social Activities";
+			sourceTree = "<group>";
+		};
 		3AAF0DAF21EA1F4E006BB569 /* Details */ = {
 			isa = PBXGroup;
 			children = (
@@ -2173,6 +2215,7 @@
 				3AAF0DB221EA1F88006BB569 /* MediaOverviewTableViewCell.xib */,
 				3ABBA49C24A7926F0063ACD7 /* PulsePreviewTableViewCell.swift */,
 				3ABBA49E24A792850063ACD7 /* PulsePreviewTableViewCell.xib */,
+				09B899162FCC010100DC202D /* Social Activity */,
 				090851C52E3CC24200D71E48 /* MediaHeaderTableViewCell.swift */,
 				090851C72E3CC25000D71E48 /* MediaHeaderTableViewCell.xib */,
 			);
@@ -2897,6 +2940,9 @@
 				3A7B6DB9234641F50014A0D8 /* PeopleMediaTableViewCell.xib in Resources */,
 				3A77A85E29FC22EF0006177D /* NotificationCenterTableViewCell.xib in Resources */,
 				3ABBA49F24A792850063ACD7 /* PulsePreviewTableViewCell.xib in Resources */,
+				09B899152FCC010100DC202D /* SocialActivityTableViewCell.xib in Resources */,
+				09B8991D2FCC020100DC202D /* SocialActivityUserTableViewCell.xib in Resources */,
+				09B899212FCC030100DC202D /* SocialActivityCommentTableViewCell.xib in Resources */,
 				3AD910442D68850A00E09D0D /* SeasonButtonCollectionViewCell.xib in Resources */,
 				3A53CC9C22D869D200E6B493 /* ActionTableViewCell.xib in Resources */,
 				3AB909A72C594232005EE32D /* Sharing.storyboard in Resources */,
@@ -3097,6 +3143,7 @@
 				09B8990B2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift in Sources */,
 				09B8990D2F2A568900DC202D /* TraktAPIProvider+Recommended.swift in Sources */,
 				09B8990F2F9F000100DC202D /* TraktAPIProvider+Watched.swift in Sources */,
+				09B899112FCC000100DC202D /* TraktAPIProvider+Social.swift in Sources */,
 				3A70632C1FF29A3B00D3B2BB /* ProductManager.swift in Sources */,
 				3A211D1824C824F200930DD3 /* SplitViewController.swift in Sources */,
 				3A44BF451FD2D4920026AADE /* UIWindow+Extension.swift in Sources */,
@@ -3246,6 +3293,11 @@
 				3A6B073523B4EB1300869D01 /* ToWatchViewController.swift in Sources */,
 				3AEADF52248D12D3003C4481 /* ActivityNotificationsManager.swift in Sources */,
 				3ABBA49D24A7926F0063ACD7 /* PulsePreviewTableViewCell.swift in Sources */,
+				09B899132FCC010100DC202D /* SocialActivityTableViewCell.swift in Sources */,
+				09B899172FCC020100DC202D /* SocialActivitiesViewController.swift in Sources */,
+				09B899192FCC020100DC202D /* SocialActivityUserSummary.swift in Sources */,
+				09B8991B2FCC020100DC202D /* SocialActivityUserTableViewCell.swift in Sources */,
+				09B8991F2FCC030100DC202D /* SocialActivityCommentTableViewCell.swift in Sources */,
 				3A7FCCBE2C85D70600E056E7 /* ShelfConfigViewController.swift in Sources */,
 				3A6F58B9264FC4430087345C /* BadgeAppIconViewController.swift in Sources */,
 				3A941F642DD728D80096B65A /* MirTableViewCell.swift in Sources */,

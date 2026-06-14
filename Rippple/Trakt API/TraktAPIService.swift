@@ -252,6 +252,11 @@ enum TraktAPIService {
 
     case stats(type: TraktObjectType)
 
+    case movieSocial(id: String, pageInfo: PageInfo)
+    case showSocial(id: String, pageInfo: PageInfo)
+    case seasonSocial(id: String, season: Int, pageInfo: PageInfo)
+    case episodeSocial(id: String, season: Int, episode: Int, pageInfo: PageInfo)
+
     case postComment(type: PostType, traktId: Int64, body: String, spoilers: Bool)
     case postReply(id: Int64, body: String, spoilers: Bool)
 
@@ -596,6 +601,14 @@ extension TraktAPIService: AuthorizedTargetType {
             case .trending:
                 fatalError()
             }
+        case .movieSocial(let id, _):
+            return "/movies/\(id)/social"
+        case .showSocial(let id, _):
+            return "/shows/\(id)/social"
+        case .seasonSocial(let id, let season, _):
+            return "/shows/\(id)/seasons/\(season)/social"
+        case .episodeSocial(let id, let season, let episode, _):
+            return "/shows/\(id)/seasons/\(season)/episodes/\(episode)/social"
         case .postComment:
             return "/comments"
         case .postReply(let id, _, _):
@@ -993,6 +1006,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .stats:
             return .get
+        case .movieSocial, .showSocial, .seasonSocial, .episodeSocial:
+            return .get
         case .commentCount:
             return .head
         case .postComment:
@@ -1271,6 +1286,13 @@ extension TraktAPIService: AuthorizedTargetType {
             return .requestPlain
         case .stats:
             return .requestPlain
+        case .movieSocial(_, let pageInfo),
+             .showSocial(_, let pageInfo),
+             .seasonSocial(_, _, let pageInfo),
+             .episodeSocial(_, _, _, let pageInfo):
+            return .requestParameters(parameters: ["page": "\(pageInfo.page)",
+                                                   "limit": "\(pageInfo.limit)"],
+                                      encoding: URLEncoding.default)
         case .commentCount, .commentLikesCount:
             return .requestPlain
         case .postComment(let type, let traktId, let body, let spoilers):

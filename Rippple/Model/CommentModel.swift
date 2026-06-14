@@ -179,6 +179,10 @@ extension CommentModel {
         return .shout
     }
 
+    var commentTypeText: String {
+        return commentLabel.rawValue.lowercased()
+    }
+
     private var releaseDate: Date? {
         switch media {
         case .movie(let movie):

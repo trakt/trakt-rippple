@@ -325,6 +325,47 @@ extension TraktAPIService {
                     }
                     ]
             """.utf8Encoded
+        case .movieSocial, .showSocial, .seasonSocial, .episodeSocial:
+            return """
+            [
+                {
+                    "followed_at": "2025-01-04T18:22:10.000Z",
+                    "user": {
+                        "username": "justin",
+                        "private": false,
+                        "name": "Justin N.",
+                        "vip": true,
+                        "vip_ep": false,
+                        "ids": {
+                            "slug": "justin",
+                            "trakt": 1
+                        }
+                    },
+                    "watched": {
+                        "plays": 2,
+                        "last_watched_at": "2026-06-01T20:15:00.000Z",
+                        "last_updated_at": "2026-06-01T20:16:00.000Z",
+                        "rating": {
+                            "rating": 8,
+                            "rated_at": "2026-06-01T20:20:00.000Z"
+                        },
+                        "comment": {
+                            "ids": {
+                                "trakt": 98765
+                            },
+                            "comment": "Loved this.",
+                            "spoiler": false,
+                            "review": false,
+                            "created_at": "2026-06-01T20:25:00.000Z",
+                            "updated_at": "2026-06-01T20:25:00.000Z"
+                        }
+                    },
+                    "watchlisted": {
+                        "listed_at": "2026-05-20T12:00:00.000Z"
+                    }
+                }
+            ]
+            """.utf8Encoded
         case .history:
             return """
             [

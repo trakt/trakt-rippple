@@ -9,6 +9,8 @@
 import UIKit
 
 final class PulsePreviewTableViewCell: UITableViewCell {
+    @IBOutlet var card: CardView!
+
     @IBOutlet var pulseSymbol: UIImageView!
     @IBOutlet var title: UILabel!
     @IBOutlet var subtitle: UILabel!
@@ -24,6 +26,12 @@ final class PulsePreviewTableViewCell: UITableViewCell {
     @IBOutlet var droppedStatus: DroppedImageView?
     @IBOutlet var pinnedStatus: PinnedImageView?
     @IBOutlet var listedStatus: ListedImageView?
+
+    var cardType: CardType = .alone {
+        didSet {
+            card.cardType = cardType
+        }
+    }
 
     override func awakeFromNib() {
         super.awakeFromNib()

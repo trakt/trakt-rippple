@@ -81,6 +81,18 @@ final class MediaViewController: UITableViewController {
     }
 
     private var linkCount = 0
+
+    private var shouldShowSocialActivity: Bool {
+        guard FollowManager.shared.followingCount > 0 else { return false }
+
+        switch media! {
+        case .movie, .show, .episode:
+            return true
+        case .season, .list, .showProgress:
+            return false
+        }
+    }
+
     private func updateDatasource() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.content])
@@ -154,8 +166,22 @@ final class MediaViewController: UITableViewController {
             snapshot.deleteItems([.whereToWatch])
         }
 
+        if snapshot.indexOfItem(.activity) != nil {
+            if shouldShowSocialActivity {
+                snapshot.insertItems([.socialActivity], afterItem: .activity)
+            } else {
+                snapshot.insertItems([.spacer(5.002)], afterItem: .activity)
+            }
+        }
+
         if media.noteItem != nil {
-            snapshot.insertItems([.notes], afterItem: .activity)
+            if snapshot.indexOfItem(.socialActivity) != nil {
+                snapshot.insertItems([.notes], afterItem: .socialActivity)
+            } else if snapshot.indexOfItem(.spacer(5.002)) != nil {
+                snapshot.insertItems([.notes], afterItem: .spacer(5.002))
+            } else if snapshot.indexOfItem(.activity) != nil {
+                snapshot.insertItems([.notes], afterItem: .activity)
+            }
         }
 
         linkCount = 0
@@ -213,6 +239,7 @@ final class MediaViewController: UITableViewController {
         case backdrop
         case title
         case activity
+        case socialActivity
         case rating
         case comments
         case cast
@@ -256,6 +283,12 @@ final class MediaViewController: UITableViewController {
             return cell
         case .activity:
             let cell = tableView.dequeueReusableCell(withIdentifier: "activity") as! PulsePreviewTableViewCell
+            cell.cardType = shouldShowSocialActivity ? .top : .alone
+            cell.media = self.media
+            return cell
+        case .socialActivity:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "social activity") as! SocialActivityTableViewCell
+            cell.cardType = .bottom
             cell.media = self.media
             return cell
         case .rating:
@@ -382,6 +415,7 @@ final class MediaViewController: UITableViewController {
 
         tableView.allowsFocus = false
         tableView.register(UINib(nibName: "PulsePreviewTableViewCell", bundle: nil), forCellReuseIdentifier: "activity")
+        tableView.register(UINib(nibName: "SocialActivityTableViewCell", bundle: nil), forCellReuseIdentifier: "social activity")
         tableView.register(UINib(nibName: "MediaBackdropTableViewCell", bundle: nil), forCellReuseIdentifier: "backdrop")
         tableView.register(UINib(nibName: "MediaPosterTableViewCell", bundle: nil), forCellReuseIdentifier: "poster")
         tableView.register(UINib(nibName: "MediaOverviewTableViewCell", bundle: nil), forCellReuseIdentifier: "overview")
@@ -465,6 +499,11 @@ final class MediaViewController: UITableViewController {
         }.disposed(by: disposeBag)
 
         onCommentsDisplayReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.updateDatasource()
+        }.disposed(by: disposeBag)
+
+        FollowManager.shared.onFollowingChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.updateDatasource()
         }.disposed(by: disposeBag)
@@ -1062,6 +1101,8 @@ extension MediaViewController {
             return UITableView.automaticDimension
         case .activity:
             return UITableView.automaticDimension
+        case .socialActivity:
+            return UITableView.automaticDimension
         case .rating:
             return UITableView.automaticDimension
         case .comments:
@@ -1105,6 +1146,10 @@ extension MediaViewController {
             present(browserNavigationController, animated: true, completion: nil)
         case .activity:
             performSegue(withIdentifier: "activities", sender: media)
+        case .socialActivity:
+            let socialActivitiesViewController = SocialActivitiesViewController(style: .plain)
+            socialActivitiesViewController.media = media
+            navigationController?.pushViewController(socialActivitiesViewController, animated: true)
         case .rating:
             return
         case .comments:
