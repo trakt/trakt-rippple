@@ -114,12 +114,12 @@ final class CalendarManager {
             self.debouncedReload.call()
         }.disposed(by: disposeBag)
 
-        onWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
+        onSyncWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedReload.call()
         }.disposed(by: disposeBag)
 
-        onWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
+        onSyncWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedReload.call()
         }.disposed(by: disposeBag)
@@ -206,7 +206,7 @@ final class CalendarManager {
                 }
             }
             if hideRecentlyWatchedShows {
-                if $0.episode.isRecentlyWatched {
+                if $0.episode.isWatched {
                     return false
                 }
             }

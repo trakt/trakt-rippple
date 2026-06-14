@@ -179,7 +179,7 @@ final class GridViewController: UICollectionViewController {
             }
         }.disposed(by: disposeBag)
 
-        onWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
+        onSyncWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if self.savedFilter.path != "/users/me/watched/movies" { return }
             DispatchQueue.main.async {
@@ -187,7 +187,7 @@ final class GridViewController: UICollectionViewController {
             }
         }.disposed(by: disposeBag)
 
-        onWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
+        onSyncWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if self.savedFilter.path != "/users/me/watched/shows" { return }
             DispatchQueue.main.async {

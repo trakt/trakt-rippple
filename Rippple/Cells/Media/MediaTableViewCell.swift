@@ -116,6 +116,8 @@ final class MediaTableViewCell: UITableViewCell {
                 setupShowProgress(episode: showProgress.nextEpisodeToWatch, show: show, progress: showProgress)
             }
 
+            updateSyncWatchedDimmingIfNeeded()
+
             if rateButton?.isHidden == false {
                 var configuration = rateButton?.configuration
                 configuration?.indicator = .popup
@@ -293,15 +295,17 @@ final class MediaTableViewCell: UITableViewCell {
             }
         }.disposed(by: disposeBag)
 
-        onWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
+        onSyncWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
-            if dimmedIfWatched == false { return }
-            if case .movie(let movie) = self.media {
-                if movie.isWatched, self.closeButton == nil {
-                    contentView.alpha = 0.6
-                } else {
-                    contentView.alpha = 1.0
-                }
+            if case .movie = self.media {
+                self.updateSyncWatchedDimmingIfNeeded()
+            }
+        }.disposed(by: disposeBag)
+
+        onSyncWatchedEpisodesChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self else { return }
+            if case .episode = self.media {
+                self.updateSyncWatchedDimmingIfNeeded()
             }
         }.disposed(by: disposeBag)
 
@@ -351,6 +355,19 @@ final class MediaTableViewCell: UITableViewCell {
             contentView.alpha = 1.0
         } else {
             contentView.alpha = dimmed ? 0.6 : 1.0
+        }
+    }
+
+    private func updateSyncWatchedDimmingIfNeeded() {
+        switch media {
+        case .movie(let movie):
+            setDimmed(SyncWatchedManager.shared.isWatched(type: .movies,
+                                                          traktId: movie.identifiers.trakt!))
+        case .episode(let episode, _):
+            setDimmed(SyncWatchedManager.shared.isWatched(type: .episodes,
+                                                          traktId: episode.identifiers.trakt!))
+        default:
+            break
         }
     }
 
@@ -448,16 +465,6 @@ final class MediaTableViewCell: UITableViewCell {
         }
 
         poster.movie = movie
-
-        if dimmedIfWatched == false {
-            contentView.alpha = 1.0
-        } else {
-            if movie.isWatched, closeButton == nil {
-                contentView.alpha = 0.6
-            } else {
-                contentView.alpha = 1.0
-            }
-        }
     }
 
     private func setupEpisode(episode: Episode, show: Show) {
@@ -472,7 +479,7 @@ final class MediaTableViewCell: UITableViewCell {
             toWatchStatus?.isHiddenInStackView = true
             commentedStatus?.media = media
 
-            if episode.isRecentlyWatched, let title = episode.title {
+            if episode.isWatched, let title = episode.title {
                 subtitle.text = episode.localizedEpisodeNumber + " · \(title)"
             } else {
                 if let episode = media.episode, episode.season == 1, episode.number == 1 {
@@ -530,8 +537,6 @@ final class MediaTableViewCell: UITableViewCell {
         listedStatus?.media = media
 
         poster.show = show
-
-        contentView.alpha = 1.0
     }
 
     private func setupShowProgress(episode: Episode?, show: Show, progress: ShowProgress) {
@@ -625,7 +630,7 @@ final class MediaTableViewCell: UITableViewCell {
         recommendedStatus?.isHiddenInStackView = true
         collectedStatus?.isHiddenInStackView = true
         watchlistedStatus?.media = media
-        watchedStatus?.isHiddenInStackView = true
+        watchedStatus?.media = media
         toWatchStatus?.isHiddenInStackView = true
         commentedStatus?.isHiddenInStackView = true
         if let ratedItem = ratedItem {

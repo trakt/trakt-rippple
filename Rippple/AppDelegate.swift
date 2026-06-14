@@ -241,6 +241,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         CompletedShowsManager.shared.setup()
         DroppedShowsManager.shared.setup()
         WatchedManager.shared.setup()
+        SyncWatchedManager.shared.setup()
         RecommendedManager.shared.setup()
         CollectionManager.shared.setup()
         FollowManager.shared.setup()

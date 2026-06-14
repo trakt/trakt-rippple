@@ -322,7 +322,7 @@ final class EpisodeToWatchManager {
             }
         }.disposed(by: disposeBag)
 
-        onWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
+        onSyncWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if EpisodeToWatchSettings.shared.watched {
                 print("EpisodeToWatchManager.forceRefresh because watched changed")
@@ -529,7 +529,7 @@ final class EpisodeToWatchManager {
             if let show = media.show,
                media.toRewatchCount == 0,
                let episode = media.episode,
-               episode.isRecentlyWatched || episode.isCurrentlyWatching {
+               episode.isWatched || episode.isCurrentlyWatching {
                 print("Refreshing \(show.title) again because it seems like it's watched but the To Watch didn't fetch it right")
                 ProgressManager.shared.resetCache(for: show)
                 showsToRetry.append(show)

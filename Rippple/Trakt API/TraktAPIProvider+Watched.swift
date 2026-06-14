@@ -10,6 +10,38 @@ import Foundation
 import Moya
 
 extension TraktAPIProvider {
+    static func fetchSyncWatchedItems(type: SyncWatchedType,
+                                      completion: @escaping (Result<SyncWatchedItems, Error>) -> Void) {
+        _Concurrency.Task {
+            do {
+                let items = try await fetchSyncWatchedItemsAsync(type: type)
+                completion(.success(items))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+
+    private static func fetchSyncWatchedItemsAsync(type: SyncWatchedType) async throws -> SyncWatchedItems {
+        return try await withCheckedThrowingContinuation { continuation in
+            TraktAPIProvider.provider.request(.syncWatched(type: type),
+                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                        let items = try response.map(SyncWatchedItems.self, using: TraktAPIProvider.decoder)
+                        continuation.resume(returning: items)
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
     static func fetchAllWatchedItems(slug: String = "me",
                                      type: WatchedType,
                                      extended: Extended?,

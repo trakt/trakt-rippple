@@ -407,16 +407,13 @@ extension CommentsCoordinator {
     func fetchFirst() {
         switch type! {
         case .user:
-            fetchComments(pageInfo: PageInfo.firstPage(with: 10))
+            fetchComments(pageInfo: PageInfo.firstPage(with: 25))
         case .replies:
-            fetchComments(pageInfo: PageInfo.firstPage(with: 10))
+            fetchComments(pageInfo: PageInfo.firstPage(with: 25))
         case .media:
-            fetchComments(pageInfo: PageInfo.firstPage(with: 10))
+            fetchComments(pageInfo: PageInfo.firstPage(with: 25))
         case .forYou:
-            ForYouManager.shared.refreshActivities { [weak self] _ in
-                guard let self = self else { return }
-                self.fetchComments(pageInfo: PageInfo.firstPage(with: 25))
-            }
+            fetchComments(pageInfo: PageInfo.firstPage(with: 25))
         case .feed, .trending:
             fetchComments(pageInfo: PageInfo.firstPage(with: 25))
         case .preview:

@@ -195,7 +195,7 @@ final class CalendarViewController: UITableViewController {
             cell.contentView.alpha = 1.0
             switch media {
             case .episode(let episode, let show):
-                if episode.isRecentlyWatched {
+                if episode.isWatched {
                     cell.contentView.alpha = 0.6
                 }
                 if show.isHiddenFromCalendar {

@@ -44,7 +44,7 @@ final class PinnedMoviesManager {
 
         onPinnedMoviesToWatchChangedTransmitter.broadcast([Movie](pinnedMovies.filter { !$0.isHiddenFromCalendar }))
 
-        onWatchedMoviesChangedReceiver.listen { [weak self] _ in
+        onSyncWatchedMoviesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedCleanup.call()
         }.disposed(by: disposeBag)

@@ -1861,6 +1861,70 @@ struct Job: Codable, Equatable, Hashable {
 
 // MARK: - Watched Item
 
+struct SyncWatchedItem: Equatable, Hashable {
+    let traktId: Int64
+    let watchedAt: [Date]
+}
+
+struct SyncWatchedItems: Codable, Equatable {
+    let watchedDatesByTraktId: [Int64: [Date]]
+
+    var items: [SyncWatchedItem] {
+        return watchedDatesByTraktId
+            .map { SyncWatchedItem(traktId: $0.key, watchedAt: $0.value) }
+            .sorted { $0.traktId < $1.traktId }
+    }
+
+    subscript(traktId: Int64) -> [Date]? {
+        return watchedDatesByTraktId[traktId]
+    }
+
+    init(watchedDatesByTraktId: [Int64: [Date]]) {
+        self.watchedDatesByTraktId = watchedDatesByTraktId
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: SyncWatchedCodingKey.self)
+        var watchedDatesByTraktId = [Int64: [Date]]()
+
+        for key in container.allKeys {
+            guard let traktId = Int64(key.stringValue) else {
+                throw DecodingError.dataCorruptedError(forKey: key,
+                                                       in: container,
+                                                       debugDescription: "Expected a Trakt id key, got \(key.stringValue)")
+            }
+
+            watchedDatesByTraktId[traktId] = try container.decode([Date].self, forKey: key)
+        }
+
+        self.watchedDatesByTraktId = watchedDatesByTraktId
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: SyncWatchedCodingKey.self)
+
+        for (traktId, watchedAt) in watchedDatesByTraktId {
+            let key = SyncWatchedCodingKey(stringValue: String(traktId))!
+            try container.encode(watchedAt, forKey: key)
+        }
+    }
+}
+
+private struct SyncWatchedCodingKey: CodingKey {
+    let stringValue: String
+    let intValue: Int?
+
+    init?(stringValue: String) {
+        self.stringValue = stringValue
+        intValue = Int(stringValue)
+    }
+
+    init?(intValue: Int) {
+        stringValue = String(intValue)
+        self.intValue = intValue
+    }
+}
+
 struct WatchedItem: Codable, Equatable, Hashable {
     var type: CommentType {
         if movie != nil { return .movie }

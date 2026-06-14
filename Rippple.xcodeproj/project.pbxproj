@@ -161,6 +161,7 @@
 		3A40A9A0286C94FC00737201 /* ListStatsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A40A99F286C94FC00737201 /* ListStatsTableViewCell.xib */; };
 		3A416EC924C88B19004B2122 /* SideBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A416EC824C88B19004B2122 /* SideBarViewController.swift */; };
 		3A41DE8A25AAF8B5008F133A /* WatchedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A41DE8925AAF8B5008F133A /* WatchedManager.swift */; };
+		3AC0DE022DFE000100000001 /* SyncWatchedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC0DE012DFE000100000001 /* SyncWatchedManager.swift */; };
 		3A432E8320FFCDA70091D504 /* UserInListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A432E8220FFCC5A0091D504 /* UserInListTableViewCell.xib */; };
 		3A4342812BCFE60800FD85FE /* PersonPreview.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3A4342802BCFE5F700FD85FE /* PersonPreview.storyboard */; };
 		3A43DF2E2182F307009AF3A4 /* RatingsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A43DF2C2182EE36009AF3A4 /* RatingsTableViewCell.swift */; };
@@ -709,6 +710,7 @@
 		3A40A99F286C94FC00737201 /* ListStatsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ListStatsTableViewCell.xib; sourceTree = "<group>"; };
 		3A416EC824C88B19004B2122 /* SideBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarViewController.swift; sourceTree = "<group>"; };
 		3A41DE8925AAF8B5008F133A /* WatchedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchedManager.swift; sourceTree = "<group>"; };
+		3AC0DE012DFE000100000001 /* SyncWatchedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncWatchedManager.swift; sourceTree = "<group>"; };
 		3A432E8220FFCC5A0091D504 /* UserInListTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UserInListTableViewCell.xib; sourceTree = "<group>"; };
 		3A4342802BCFE5F700FD85FE /* PersonPreview.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = PersonPreview.storyboard; sourceTree = "<group>"; };
 		3A4342832BDF947F00FD85FE /* new-blog-aws.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "new-blog-aws.json"; sourceTree = "<group>"; };
@@ -1452,6 +1454,7 @@
 			isa = PBXGroup;
 			children = (
 				3A41DE8925AAF8B5008F133A /* WatchedManager.swift */,
+				3AC0DE012DFE000100000001 /* SyncWatchedManager.swift */,
 			);
 			path = "Watched Manager";
 			sourceTree = "<group>";
@@ -3284,6 +3287,7 @@
 				3A5AEAB52441DA98002CD0C3 /* MarkWatchedActionViewController.swift in Sources */,
 				3ABF28BF2A58300E00469836 /* AppIconGeneratorView.swift in Sources */,
 				3A41DE8A25AAF8B5008F133A /* WatchedManager.swift in Sources */,
+				3AC0DE022DFE000100000001 /* SyncWatchedManager.swift in Sources */,
 				3AD932A41FB85D15005289B5 /* CommentTableViewCell.swift in Sources */,
 				3A541CF32A606C0A00E1A153 /* CommentsBrowseTableViewCell.swift in Sources */,
 				3A44BF401FD2C6610026AADE /* InitialViewController.swift in Sources */,

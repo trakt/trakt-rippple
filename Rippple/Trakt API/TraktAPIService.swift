@@ -165,6 +165,12 @@ enum WatchedType: String {
     case shows
 }
 
+enum SyncWatchedType: String {
+    case movies
+    case shows
+    case episodes
+}
+
 enum HiddenType: String {
     case movie
     case show
@@ -355,6 +361,7 @@ enum TraktAPIService {
     case addToListWithNotes(slug: String? = "me", id: Int64, item: WatchlistedItemWithNotes)
 
     case watched(slug: String = "me", type: WatchedType, extended: Extended?, pageInfo: PageInfo = PageInfo.firstPage(with: 1000))
+    case syncWatched(type: SyncWatchedType)
 
     case showsCalendar(startDate: Date, days: Int, filters: [String: String])
     case premiereCalendar(startDate: Date, days: Int)
@@ -834,6 +841,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/sync/favorites/reorder"
         case .watched(let slug, let type, _, _):
             return "/users/\(slug)/watched/\(type)"
+        case .syncWatched(let type):
+            return "/sync/watched/\(type.rawValue)"
         case .addEpisodeToHistory, .addMovieToHistory, .addSeasonToHistory, .addShowToHistory, .addEpisodesToHistory:
             return "/sync/history"
         case .showsCalendar(let startDate, let days, _):
@@ -1121,6 +1130,8 @@ extension TraktAPIService: AuthorizedTargetType {
         case .reorderListItems, .reorderWatchlistItems, .reorderFavoriteItems:
             return .post
         case .watched:
+            return .get
+        case .syncWatched:
             return .get
         case .addMovieToHistory, .addEpisodeToHistory, .addShowToHistory, .addSeasonToHistory, .addEpisodesToHistory:
             return .post
@@ -1634,6 +1645,9 @@ extension TraktAPIService: AuthorizedTargetType {
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             }
+        case .syncWatched:
+            return .requestParameters(parameters: ["extended": Extended.min.rawValue],
+                                      encoding: URLEncoding.default)
         case .addMovieToHistory(let traktId, let watchedAt):
             let formatter = DateFormatter()
             formatter.locale = Locale(identifier: "en_US_POSIX")

@@ -189,7 +189,7 @@ final class WatchedManager {
         return showsHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }
     }
 
-    fileprivate var showsHistoryItems = [WatchedItem]() {
+    private var showsHistoryItems = [WatchedItem]() {
         didSet {
             watchedShows = Set(showsHistoryItems.compactMap { $0.show?.identifiers.trakt })
             rewatchingShows = Set(showsHistoryItems.filter { $0.resetAt != nil }.compactMap { $0.show?.identifiers.trakt })
@@ -209,7 +209,7 @@ final class WatchedManager {
         }
     }
 
-    fileprivate var moviesHistoryItems = [WatchedItem]() {
+    private var moviesHistoryItems = [WatchedItem]() {
         didSet {
             watchedMovies = Set(moviesHistoryItems.compactMap { $0.movie?.identifiers.trakt })
             TinyStorage.cache.store(moviesHistoryItems, forKey: "WatchedManager.moviesHistoryItems")
@@ -225,8 +225,8 @@ final class WatchedManager {
 
     fileprivate var watchedEpisodes = [Int64]()
 
-    fileprivate var watchedShows = Set<Int64>()
-    fileprivate var watchedMovies = Set<Int64>()
+    private var watchedShows = Set<Int64>()
+    private var watchedMovies = Set<Int64>()
 
     fileprivate var rewatchingShows = Set<Int64>()
 }
@@ -316,7 +316,7 @@ extension WatchedManager {
 extension Movie {
     var isWatched: Bool {
         guard let traktId = identifiers.trakt else { return false }
-        return WatchedManager.shared.watchedMovies.contains(traktId)
+        return SyncWatchedManager.shared.isWatched(type: .movies, traktId: traktId)
     }
 }
 
@@ -325,12 +325,17 @@ extension Episode {
         guard let traktId = identifiers.trakt else { return false }
         return WatchedManager.shared.watchedEpisodes.contains(traktId)
     }
+
+    var isWatched: Bool {
+        guard let traktId = identifiers.trakt else { return false }
+        return SyncWatchedManager.shared.isWatched(type: .episodes, traktId: traktId)
+    }
 }
 
 extension Show {
     var isWatchedAtLeastOnce: Bool {
         guard let traktId = identifiers.trakt else { return false }
-        return WatchedManager.shared.watchedShows.contains(traktId)
+        return SyncWatchedManager.shared.isWatched(type: .shows, traktId: traktId)
     }
 
     var isBingeWatched: Bool {
@@ -361,14 +366,10 @@ extension Cast {
     }
 
     var recentlyWatchedAt: Date? {
-        if let show = show {
-            for item in WatchedManager.shared.showsHistoryItems where item.show == show {
-                return item.lastWatchedAt
-            }
-        } else if let movie = movie {
-            for item in WatchedManager.shared.moviesHistoryItems where item.movie == movie {
-                return item.lastWatchedAt
-            }
+        if let show = show, let traktId = show.identifiers.trakt {
+            return SyncWatchedManager.shared.lastWatchedAt(for: .shows, traktId: traktId)
+        } else if let movie = movie, let traktId = movie.identifiers.trakt {
+            return SyncWatchedManager.shared.lastWatchedAt(for: .movies, traktId: traktId)
         }
         return nil
     }

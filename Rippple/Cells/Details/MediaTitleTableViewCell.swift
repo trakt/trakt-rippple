@@ -138,12 +138,12 @@ final class MediaTitleTableViewCell: UITableViewCell {
             }
         }.disposed(by: disposeBag)
 
-        onWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
+        onSyncWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedUpdateQuickActions.call()
         }.disposed(by: disposeBag)
 
-        onWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
+        onSyncWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedUpdateQuickActions.call()
         }.disposed(by: disposeBag)

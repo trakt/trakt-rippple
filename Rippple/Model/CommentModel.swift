@@ -104,14 +104,14 @@ final class CommentModel: Equatable, Hashable {
             }
         }.disposed(by: disposeBag)
 
-        onWatchedShowsChangedReceiver.listen { [weak self] _ in
+        onSyncWatchedShowsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             Task {
                 await self.processComment()
             }
         }.disposed(by: disposeBag)
 
-        onWatchedMoviesChangedReceiver.listen { [weak self] _ in
+        onSyncWatchedMoviesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             Task {
                 await self.processComment()
@@ -266,7 +266,7 @@ extension CommentModel {
                 if show.isCompleted {
                     markdownParser.spoilerStrategy = .showAllSpoilers
                 } else {
-                    if episode.isRecentlyWatched {
+                    if episode.isWatched {
                         markdownParser.spoilerStrategy = .showAllSpoilers
                     } else {
                         switch spoilerStrategy {

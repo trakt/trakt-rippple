@@ -279,9 +279,9 @@ final class MovieToWatchManager {
             self.debouncedTransmit.call()
         }.disposed(by: disposeBag)
 
-        onWatchedMoviesChangedReceiver.skipRepeats().listen { [weak self] _ in
+        onSyncWatchedMoviesChangedReceiver.skipRepeats().listen { [weak self] _ in
             guard let self = self else { return }
-            print("MovieToWatchManager.debouncedRefreshProgress because onWatchedMoviesChangedReceiver")
+            print("MovieToWatchManager.debouncedRefreshProgress because onSyncWatchedMoviesChangedReceiver")
             self.debouncedRefreshProgress.call()
         }.disposed(by: disposeBag)
 
