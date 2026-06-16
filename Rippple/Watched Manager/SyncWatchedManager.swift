@@ -58,6 +58,7 @@ final class SyncWatchedManager {
     private(set) var showWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:]) {
         didSet {
             watchedShows = Set(showWatchedItems.watchedDatesByTraktId.keys)
+            watchedSeasons = showWatchedItems.watchedSeasonIds
             TinyStorage.cache.store(showWatchedItems, forKey: CacheKey.shows)
             onSyncWatchedShowsChangedTransmitter.broadcast(watchedShows)
         }
@@ -73,6 +74,7 @@ final class SyncWatchedManager {
 
     private(set) var watchedMovies = Set<Int64>()
     private(set) var watchedShows = Set<Int64>()
+    private(set) var watchedSeasons = Set<Int64>()
     private(set) var watchedEpisodes = Set<Int64>()
 
     func setup() {
@@ -111,6 +113,10 @@ final class SyncWatchedManager {
         case .episodes:
             return watchedEpisodes.contains(traktId)
         }
+    }
+
+    func isSeasonWatchedAtLeastOnce(traktId: Int64) -> Bool {
+        return watchedSeasons.contains(traktId)
     }
 
     func watchedDates(for type: SyncWatchedType, traktId: Int64) -> [Date] {

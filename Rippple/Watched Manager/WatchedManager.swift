@@ -332,6 +332,13 @@ extension Episode {
     }
 }
 
+extension Season {
+    var isWatchedAtLeastOnce: Bool {
+        guard let traktId = identifiers.trakt else { return false }
+        return SyncWatchedManager.shared.isSeasonWatchedAtLeastOnce(traktId: traktId)
+    }
+}
+
 extension Show {
     var isWatchedAtLeastOnce: Bool {
         guard let traktId = identifiers.trakt else { return false }

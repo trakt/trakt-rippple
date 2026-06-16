@@ -1868,6 +1868,7 @@ struct SyncWatchedItem: Equatable, Hashable {
 
 struct SyncWatchedItems: Codable, Equatable {
     let watchedDatesByTraktId: [Int64: [Date]]
+    let watchedSeasonIds: Set<Int64>
 
     var items: [SyncWatchedItem] {
         return watchedDatesByTraktId
@@ -1879,13 +1880,23 @@ struct SyncWatchedItems: Codable, Equatable {
         return watchedDatesByTraktId[traktId]
     }
 
-    init(watchedDatesByTraktId: [Int64: [Date]]) {
+    init(watchedDatesByTraktId: [Int64: [Date]],
+         watchedSeasonIds: Set<Int64> = []) {
         self.watchedDatesByTraktId = watchedDatesByTraktId
+        self.watchedSeasonIds = watchedSeasonIds
     }
 
     init(from decoder: Decoder) throws {
+        if let cacheContainer = try? decoder.container(keyedBy: SyncWatchedItemsCodingKeys.self),
+           cacheContainer.contains(.watchedDatesByTraktId) {
+            watchedDatesByTraktId = try cacheContainer.decode([Int64: [Date]].self, forKey: .watchedDatesByTraktId)
+            watchedSeasonIds = try cacheContainer.decodeIfPresent(Set<Int64>.self, forKey: .watchedSeasonIds) ?? []
+            return
+        }
+
         let container = try decoder.container(keyedBy: SyncWatchedCodingKey.self)
         var watchedDatesByTraktId = [Int64: [Date]]()
+        var watchedSeasonIds = Set<Int64>()
 
         for key in container.allKeys {
             guard let traktId = Int64(key.stringValue) else {
@@ -1894,20 +1905,52 @@ struct SyncWatchedItems: Codable, Equatable {
                                                        debugDescription: "Expected a Trakt id key, got \(key.stringValue)")
             }
 
-            watchedDatesByTraktId[traktId] = try container.decode([Date].self, forKey: key)
+            if let watchedDates = try? container.decode([Date].self, forKey: key) {
+                watchedDatesByTraktId[traktId] = watchedDates
+            } else {
+                let seasonsContainer = try container.nestedContainer(keyedBy: SyncWatchedCodingKey.self, forKey: key)
+                var watchedDates = [Date]()
+
+                for seasonKey in seasonsContainer.allKeys {
+                    guard let seasonTraktId = Int64(seasonKey.stringValue) else {
+                        throw DecodingError.dataCorruptedError(forKey: seasonKey,
+                                                               in: seasonsContainer,
+                                                               debugDescription: "Expected a season Trakt id key, got \(seasonKey.stringValue)")
+                    }
+
+                    let episodesContainer = try seasonsContainer.nestedContainer(keyedBy: SyncWatchedCodingKey.self, forKey: seasonKey)
+                    var hasWatchedEpisode = false
+                    for episodeKey in episodesContainer.allKeys {
+                        let episodeWatchedDates = try episodesContainer.decode([Date].self, forKey: episodeKey)
+                        if episodeWatchedDates.isEmpty == false {
+                            hasWatchedEpisode = true
+                        }
+                        watchedDates.append(contentsOf: episodeWatchedDates)
+                    }
+
+                    if hasWatchedEpisode {
+                        watchedSeasonIds.insert(seasonTraktId)
+                    }
+                }
+
+                watchedDatesByTraktId[traktId] = watchedDates
+            }
         }
 
         self.watchedDatesByTraktId = watchedDatesByTraktId
+        self.watchedSeasonIds = watchedSeasonIds
     }
 
     func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: SyncWatchedCodingKey.self)
-
-        for (traktId, watchedAt) in watchedDatesByTraktId {
-            let key = SyncWatchedCodingKey(stringValue: String(traktId))!
-            try container.encode(watchedAt, forKey: key)
-        }
+        var container = encoder.container(keyedBy: SyncWatchedItemsCodingKeys.self)
+        try container.encode(watchedDatesByTraktId, forKey: .watchedDatesByTraktId)
+        try container.encode(watchedSeasonIds, forKey: .watchedSeasonIds)
     }
+}
+
+private enum SyncWatchedItemsCodingKeys: String, CodingKey {
+    case watchedDatesByTraktId
+    case watchedSeasonIds
 }
 
 private struct SyncWatchedCodingKey: CodingKey {
