@@ -16,6 +16,7 @@ let (onShowsHiddenFromCalendarMediaChangedTransmitter, onShowsHiddenFromCalendar
 let (onMoviesHiddenFromCalendarMediaChangedTransmitter, onMoviesHiddenFromCalendarMediaChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
 let (onUsersHiddenFromCommentsChangedTransmitter, onUsersHiddenFromCommentsChangedReceiver) = Receiver<[User]>.make(with: .warm(upTo: 1))
 let (onShowsDroppedMediaChangedTransmitter, onShowsDroppedMediaChangedReceiver) = Receiver<[HiddenShow]>.make(with: .warm(upTo: 1))
+let (onRewatchingShowsChangedTransmitter, onRewatchingShowsChangedReceiver) = Receiver<[Show]>.make(with: .warm(upTo: 1))
 
 final class HiddenMediaManager {
     private let disposeBag = DisposeBag()
@@ -135,9 +136,24 @@ final class HiddenMediaManager {
             guard let rewatchingShowsMediaList = rewatchingShowsMediaList else { return }
             if rewatchingShowsMediaList == oldValue { return }
 
-            rewatchingShowsSet = Set(rewatchingShowsMediaList.compactMap { $0.showShow?.identifiers.trakt })
+            let rewatchingShows = rewatchingShowsMediaList.compactMap { $0.showShow }
+            rewatchingShowsSet = Set(rewatchingShows.compactMap { $0.identifiers.trakt })
+            onRewatchingShowsChangedTransmitter.broadcast(rewatchingShows)
             TinyStorage.cache.store(rewatchingShowsMediaList, forKey: "HiddenMediaManager.rewatchingShowsMediaList")
         }
+    }
+
+    func missingRewatchingShows(excluding watchedShows: Set<Int64>) -> [Show] {
+        let missingRewatchingShows = rewatchingShowsSet.subtracting(watchedShows)
+        guard missingRewatchingShows.isEmpty == false else { return [Show]() }
+
+        return rewatchingShowsMediaList?.compactMap { mediaModel in
+            guard let show = mediaModel.showShow,
+                  let traktId = show.identifiers.trakt,
+                  missingRewatchingShows.contains(traktId) else { return nil }
+
+            return show
+        } ?? [Show]()
     }
 
     var showsHiddenFromCalendarMediaList: [MediaModel]? {

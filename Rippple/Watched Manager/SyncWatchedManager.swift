@@ -198,6 +198,10 @@ private extension SyncWatchedManager {
                 self.episodeWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
             }
         }.disposed(by: disposeBag)
+
+        onRewatchingShowsChangedReceiver.listen { [weak self] _ in
+            self?.refreshWatchedShows()
+        }.disposed(by: disposeBag)
     }
 
     func performRefreshWatchedMovies() {
@@ -210,7 +214,7 @@ private extension SyncWatchedManager {
     func performRefreshWatchedShows() {
         performRefreshWatchedItems(type: .shows) { [weak self] items in
             guard let self = self else { return }
-            self.showWatchedItems = items
+            self.showWatchedItems = self.polyfilledWatchedShows(items)
         }
     }
 
@@ -236,5 +240,20 @@ private extension SyncWatchedManager {
                 print("Sync Watched \(type.rawValue.capitalized) request failure \(error)")
             }
         }
+    }
+
+    func polyfilledWatchedShows(_ items: SyncWatchedItems) -> SyncWatchedItems {
+        var watchedDatesByTraktId = items.watchedDatesByTraktId
+        let watchedShowIds = Set(watchedDatesByTraktId.keys)
+        let missingRewatchingShows = HiddenMediaManager.shared.missingRewatchingShows(excluding: watchedShowIds)
+        guard missingRewatchingShows.isEmpty == false else { return items }
+
+        for show in missingRewatchingShows {
+            guard let traktId = show.identifiers.trakt else { continue }
+            watchedDatesByTraktId[traktId] = [.now]
+        }
+
+        return SyncWatchedItems(watchedDatesByTraktId: watchedDatesByTraktId,
+                                watchedSeasonIds: items.watchedSeasonIds)
     }
 }

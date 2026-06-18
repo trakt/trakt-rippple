@@ -163,6 +163,10 @@ final class WatchedManager {
             self.refreshWatchedShows()
         }.disposed(by: disposeBag)
 
+        onRewatchingShowsChangedReceiver.listen { _ in
+            self.refreshWatchedShows()
+        }.disposed(by: disposeBag)
+
         lastShowsAndEpisodesCheck = .now
         lastMoviesCheck = .now
         refreshWatchedEpisodes()
@@ -297,7 +301,7 @@ extension WatchedManager {
             switch result {
             case .success(let items):
                 DispatchQueue.main.async {
-                    self.showsHistoryItems = items
+                    self.showsHistoryItems = self.polyfilledWatchedShows(items)
                 }
             case .failure(let error):
                 print("Watched Shows request failure \(error)")
@@ -306,6 +310,27 @@ extension WatchedManager {
                 }
             }
         }
+    }
+
+    private func polyfilledWatchedShows(_ items: [WatchedItem]) -> [WatchedItem] {
+        let watchedShowIds = Set(items.compactMap { $0.show?.identifiers.trakt })
+        let missingRewatchingShows = HiddenMediaManager.shared.missingRewatchingShows(excluding: watchedShowIds)
+
+        guard missingRewatchingShows.isEmpty == false else { return items }
+
+        let polyfilledItems = missingRewatchingShows.map { show in
+            WatchedItem(plays: 1,
+                        lastWatchedAt: .now,
+                        lastUpdatedAt: .now,
+                        resetAt: nil,
+                        movie: nil,
+                        show: show,
+                        episode: nil,
+                        season: nil,
+                        list: nil)
+        }
+
+        return items + polyfilledItems
     }
 }
 
