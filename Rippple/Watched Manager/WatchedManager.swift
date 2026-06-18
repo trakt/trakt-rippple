@@ -116,7 +116,6 @@ final class WatchedManager {
                 self.watchedEpisodes.removeAll()
                 self.watchedShows.removeAll()
                 self.watchedMovies.removeAll()
-                self.rewatchingShows.removeAll()
             }
         }.disposed(by: disposeBag)
 
@@ -192,7 +191,6 @@ final class WatchedManager {
     private var showsHistoryItems = [WatchedItem]() {
         didSet {
             watchedShows = Set(showsHistoryItems.compactMap { $0.show?.identifiers.trakt })
-            rewatchingShows = Set(showsHistoryItems.filter { $0.resetAt != nil }.compactMap { $0.show?.identifiers.trakt })
 
             if oldValue.isEmpty == false {
                 let oldShows = Set(oldValue)
@@ -227,8 +225,6 @@ final class WatchedManager {
 
     private var watchedShows = Set<Int64>()
     private var watchedMovies = Set<Int64>()
-
-    fileprivate var rewatchingShows = Set<Int64>()
 }
 
 extension WatchedManager {
@@ -355,13 +351,6 @@ extension Show {
         } else {
             return false
         }
-    }
-}
-
-extension Show {
-    var isRewatching: Bool {
-        guard let traktId = identifiers.trakt else { return false }
-        return WatchedManager.shared.rewatchingShows.contains(traktId)
     }
 }
 

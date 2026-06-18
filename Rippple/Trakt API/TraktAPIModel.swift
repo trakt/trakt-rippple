@@ -1371,7 +1371,7 @@ struct ShowProgress: Codable, Hashable {
     var toRewatchCount: Int {
         guard let resetDate = resetAt else { return 0 }
         var index = 0
-        for season in seasons {
+        for season in seasons where season.number != 0 {
             for episode in season.episodes {
                 if let lastWatchedDate = episode.lastWatchedAt {
                     if lastWatchedDate < resetDate {
@@ -1385,7 +1385,7 @@ struct ShowProgress: Codable, Hashable {
 
     var nextToRewatch: (SeasonProgress, EpisodeProgress)? {
         guard let resetDate = resetAt else { return nil }
-        for season in seasons {
+        for season in seasons where season.number != 0 {
             for episode in season.episodes {
                 if let lastWatchedDate = episode.lastWatchedAt {
                     if lastWatchedDate < resetDate {

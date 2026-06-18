@@ -45,6 +45,10 @@ final class HiddenMediaManager {
             showsDroppedList = array
         }
 
+        if let array = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "HiddenMediaManager.rewatchingShowsMediaList") {
+            rewatchingShowsMediaList = array
+        }
+
         onLastDroppedShowActivitiesChangedReceiver.listen { _ in
             self.refreshDroppedShows()
         }.disposed(by: disposeBag)
@@ -53,7 +57,12 @@ final class HiddenMediaManager {
             if self.lastShowsCheck < lastShowsActivities.hiddenAt {
                 self.lastShowsCheck = .now
                 self.refreshHiddenShowsFromProgress()
+                self.refreshRewatchingShows()
             }
+        }.disposed(by: disposeBag)
+
+        onRewatchingChangedReceiver.listen { _ in
+            self.refreshRewatchingShows()
         }.disposed(by: disposeBag)
 
         onLastHiddenUsersFromCommentsActivitiesChangedReceiver.listen { _ in
@@ -66,6 +75,7 @@ final class HiddenMediaManager {
                 break
             case .didBecomeActive(let time):
                 if time > 3600 {
+                    self.refreshRewatchingShows()
                     self.refreshHiddenShowsFromCalendar()
                     self.refreshHiddenMoviesFromCalendar()
                 }
@@ -86,6 +96,7 @@ final class HiddenMediaManager {
     func refresh() {
         lastShowsCheck = .now
         refreshHiddenShowsFromProgress()
+        refreshRewatchingShows()
         refreshHiddenShowsFromCalendar()
         refreshHiddenMoviesFromCalendar()
         refreshHiddenUsersFromComments()
@@ -116,6 +127,17 @@ final class HiddenMediaManager {
 
     var showsHiddenFromProgressCount: Int {
         return showsHiddenFromProgressSet.count
+    }
+
+    fileprivate var rewatchingShowsSet = Set<Int64>()
+    private var rewatchingShowsMediaList: [MediaModel]? {
+        didSet {
+            guard let rewatchingShowsMediaList = rewatchingShowsMediaList else { return }
+            if rewatchingShowsMediaList == oldValue { return }
+
+            rewatchingShowsSet = Set(rewatchingShowsMediaList.compactMap { $0.showShow?.identifiers.trakt })
+            TinyStorage.cache.store(rewatchingShowsMediaList, forKey: "HiddenMediaManager.rewatchingShowsMediaList")
+        }
     }
 
     var showsHiddenFromCalendarMediaList: [MediaModel]? {
@@ -189,6 +211,43 @@ private extension HiddenMediaManager {
                 }
             case .failure(let error):
                 print("refreshHiddenShowsFromProgress request failure \(error)")
+            }
+        }
+    }
+
+    private func refreshRewatchingShows(pageInfo: PageInfo = PageInfo.firstPage(with: 50), rewatchingMedia: [MediaItem] = [MediaItem]()) {
+        if SessionManager.shared.isLoggedOut {
+            return
+        }
+        TraktAPIProvider.provider.request(.hidden(section: .progressWatchedReset,
+                                                  type: .show,
+                                                  extended: .full,
+                                                  pageInfo: pageInfo),
+                                          callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+
+                    let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
+
+                    if let response = response.response,
+                       let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
+                        DispatchQueue.main.async {
+                            if pageInfo.page <= pageInfo.pageCount {
+                                self.refreshRewatchingShows(pageInfo: pageInfo, rewatchingMedia: rewatchingMedia + items)
+                            } else {
+                                self.rewatchingShowsMediaList = (rewatchingMedia + items)
+                                    .sorted { ($0.hiddenAt ?? .distantPast) > ($1.hiddenAt ?? .distantPast) }
+                                    .map { MediaModel(item: $0) }
+                            }
+                        }
+                    }
+                } catch {
+                    print("refreshRewatchingShows request JSON mapping failed! \(error)")
+                }
+            case .failure(let error):
+                print("refreshRewatchingShows request failure \(error)")
             }
         }
     }
@@ -342,6 +401,11 @@ extension Show {
 
     var isHiddenFromCalendar: Bool {
         return HiddenMediaManager.shared.showsHiddenFromCalendarMediaList?.contains(mediaModel) == true
+    }
+
+    var isRewatching: Bool {
+        guard let traktId = identifiers.trakt else { return false }
+        return HiddenMediaManager.shared.rewatchingShowsSet.contains(traktId)
     }
 }
 

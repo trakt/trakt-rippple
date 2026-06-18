@@ -188,6 +188,7 @@ enum ListType: String {
 
 enum HiddenSection: String {
     case progressWatched = "progress_watched"
+    case progressWatchedReset = "progress_watched_reset"
     case calendar
     case comments
     case dropped
