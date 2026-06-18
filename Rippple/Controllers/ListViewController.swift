@@ -203,9 +203,15 @@ final class ListViewController: UITableViewController {
     }
 
     private var fetchTask: Task<Void, Never>?
+    private let progressContext = ListProgressContext()
 
     private var watchlistItems: [WatchlistItem]? {
         didSet {
+            if let watchlistItems = watchlistItems {
+                progressContext.update(items: watchlistItems)
+            } else {
+                progressContext.reset()
+            }
             updateDatasource()
         }
     }
@@ -447,6 +453,8 @@ final class ListViewController: UITableViewController {
             }
 
             cell.mediaItems = mediaModels
+            cell.listProgressContext = progressContext
+            cell.delegate = self
 
             return cell
         }
@@ -918,6 +926,23 @@ final class ListViewController: UITableViewController {
 
     private var isListEditable: Bool {
         list.user.isCurrentUser || CollaborationsManager.shared.collaborations.contains(list)
+    }
+
+    private func showProgress() {
+        let progressViewController = ListProgressViewController(list: list,
+                                                                user: user,
+                                                                progressContext: progressContext,
+                                                                sorting: currentSorting.rawValue)
+        navigationController?.pushViewController(progressViewController, animated: true)
+    }
+}
+
+extension ListViewController: ListStatsTableViewCellDelegate {
+    func cell(_ cell: ListStatsTableViewCell, action: ListStatsTableViewCell.Action) {
+        switch action {
+        case .progress:
+            showProgress()
+        }
     }
 }
 

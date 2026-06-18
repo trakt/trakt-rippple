@@ -48,6 +48,7 @@
 		09B899132FCC010100DC202D /* SocialActivityTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899122FCC010100DC202D /* SocialActivityTableViewCell.swift */; };
 		09B899152FCC010100DC202D /* SocialActivityTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B899142FCC010100DC202D /* SocialActivityTableViewCell.xib */; };
 		09B899172FCC020100DC202D /* SocialActivitiesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899182FCC020100DC202D /* SocialActivitiesViewController.swift */; };
+		09F100022FCC100000000001 /* ListProgressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F100012FCC100000000001 /* ListProgressViewController.swift */; };
 		09B899192FCC020100DC202D /* SocialActivityUserSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8991A2FCC020100DC202D /* SocialActivityUserSummary.swift */; };
 		09B8991B2FCC020100DC202D /* SocialActivityUserTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8991C2FCC020100DC202D /* SocialActivityUserTableViewCell.swift */; };
 		09B8991D2FCC020100DC202D /* SocialActivityUserTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B8991E2FCC020100DC202D /* SocialActivityUserTableViewCell.xib */; };
@@ -597,6 +598,7 @@
 		09C0DEC32FA3B00100000001 /* ListBrowseCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListBrowseCollectionViewCell.swift; sourceTree = "<group>"; };
 		09D261392F76B1B000536D3D /* ListItemsMarkerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItemsMarkerManager.swift; sourceTree = "<group>"; };
 		09D261512F76B2200536D40 /* ListReorderingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListReorderingViewController.swift; sourceTree = "<group>"; };
+		09F100012FCC100000000001 /* ListProgressViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListProgressViewController.swift; sourceTree = "<group>"; };
 		09DA10562F4C990200DD80F5 /* CONTRIBUTING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CONTRIBUTING.md; sourceTree = "<group>"; };
 		09DA10572F4C990F00DD80F5 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		09DA10582F4C990F00DD80F5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -2506,6 +2508,7 @@
 				09033ADD2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift */,
 				3A6232E7239FA9CA00D9D24B /* CustomListsViewController.swift */,
 				3AD94BD923A0D0AB0092C294 /* ListViewController.swift */,
+				09F100012FCC100000000001 /* ListProgressViewController.swift */,
 				09D261512F76B2200536D40 /* ListReorderingViewController.swift */,
 				3AD94BDC23A0EF670092C294 /* ListFormViewController.swift */,
 				3A6B073623B4EB3E00869D01 /* To Watch */,
@@ -3188,6 +3191,7 @@
 				3A859B0C207236F000DDEE47 /* CustomTableView.swift in Sources */,
 				3AF138D925D9B02300910ED8 /* WhatsNewViewController.swift in Sources */,
 				3AD94BDB23A0D5EE0092C294 /* ListViewController.swift in Sources */,
+				09F100022FCC100000000001 /* ListProgressViewController.swift in Sources */,
 				09D261502F76B2200536D40 /* ListReorderingViewController.swift in Sources */,
 				3AC160D8201F52AF004A2A4F /* DeeplinkLoadingViewController.swift in Sources */,
 				3A7FF65229F3107700E2E08E /* EmptyTableViewCell.swift in Sources */,

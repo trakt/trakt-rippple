@@ -125,9 +125,22 @@ final class InsideCardView: UIView {
         }
     }
 
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        commonSetup()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        commonSetup()
+    }
+
     override func awakeFromNib() {
         super.awakeFromNib()
+        commonSetup()
+    }
 
+    private func commonSetup() {
         registerForTraitChanges([UITraitUserInterfaceStyle.self],
                                 action: #selector(applyMode))
 

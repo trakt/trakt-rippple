@@ -9,7 +9,17 @@
 import Receiver
 import UIKit
 
+protocol ListStatsTableViewCellDelegate: AnyObject {
+    func cell(_ cell: ListStatsTableViewCell, action: ListStatsTableViewCell.Action)
+}
+
 final class ListStatsTableViewCell: UITableViewCell {
+    enum Action {
+        case progress
+    }
+
+    @IBOutlet var statsStackView: UIStackView!
+
     @IBOutlet var items: EFCountingLabel!
     @IBOutlet var watchedMovies: EFCountingLabel!
     @IBOutlet var watchedShows: EFCountingLabel!
@@ -19,7 +29,34 @@ final class ListStatsTableViewCell: UITableViewCell {
     @IBOutlet var collected: EFCountingLabel!
     @IBOutlet var commented: EFCountingLabel!
 
+    private var progressCard: InsideCardView!
+    private var progressPercentage: EFCountingLabel!
+    private var progressTitle: UILabel!
+    private var progressView: CircularProgressView!
+
     private let disposeBag = DisposeBag()
+    private var progressDisposeBag = DisposeBag()
+
+    weak var delegate: ListStatsTableViewCellDelegate?
+
+    var listProgressContext: ListProgressContext? {
+        didSet {
+            progressDisposeBag = DisposeBag()
+
+            guard let listProgressContext = listProgressContext else {
+                progressCard?.isHiddenInStackView = true
+                return
+            }
+
+            setupProgressCardIfNeeded()
+            progressCard.isHiddenInStackView = false
+
+            listProgressContext.onStatusChangedReceiver.listen { [weak self] status in
+                guard let self = self else { return }
+                self.updateProgress(with: status)
+            }.disposed(by: progressDisposeBag)
+        }
+    }
 
     var mediaItems: [MediaModel]? {
         didSet {
@@ -80,6 +117,9 @@ final class ListStatsTableViewCell: UITableViewCell {
             self.update()
         }.disposed(by: disposeBag)
 
+        setupProgressCardIfNeeded()
+        progressCard.isHiddenInStackView = true
+
         numberFormatter.numberStyle = .decimal
 
         items.text = "0"
@@ -137,6 +177,14 @@ final class ListStatsTableViewCell: UITableViewCell {
             guard let self = self else { return "0" }
             return "\(self.numberFormatter.string(from: NSNumber(value: Int(value))) ?? "0")"
         }
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+
+        listProgressContext = nil
+        delegate = nil
+        progressCard?.isHiddenInStackView = true
     }
 
     private let numberFormatter: NumberFormatter = .init()
@@ -203,5 +251,103 @@ final class ListStatsTableViewCell: UITableViewCell {
                 self.commented.countFromCurrentValueTo(commentedCount, withDuration: 0.7)
             }
         }
+    }
+}
+
+private extension ListStatsTableViewCell {
+    func setupProgressCardIfNeeded() {
+        guard progressCard == nil else { return }
+
+        progressCard = InsideCardView()
+        progressCard.translatesAutoresizingMaskIntoConstraints = false
+        progressCard.isUserInteractionEnabled = true
+        progressCard.addGestureRecognizer(UITapGestureRecognizer(target: self,
+                                                                 action: #selector(progressCardTapped)))
+
+        let contentStack = UIStackView()
+        contentStack.translatesAutoresizingMaskIntoConstraints = false
+        contentStack.axis = .horizontal
+        contentStack.alignment = .center
+        contentStack.spacing = 12
+
+        let labelsStack = UIStackView()
+        labelsStack.axis = .vertical
+        labelsStack.alignment = .leading
+        labelsStack.spacing = 0
+
+        progressPercentage = EFCountingLabel()
+        progressPercentage.font = UIFont.preferredFont(forTextStyle: .title3).bold()
+        progressPercentage.adjustsFontForContentSizeCategory = true
+        progressPercentage.text = "0%"
+        progressPercentage.method = .easeInOut
+        progressPercentage.formatBlock = { value in
+            "\(Int(value))%"
+        }
+        progressPercentage.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        progressTitle = UILabel()
+        progressTitle.font = UIFont.preferredFont(forTextStyle: .caption2)
+        progressTitle.adjustsFontForContentSizeCategory = true
+        progressTitle.textColor = .secondaryLabel
+        progressTitle.text = "watched"
+
+        labelsStack.addArrangedSubview(progressPercentage)
+        labelsStack.addArrangedSubview(progressTitle)
+
+        progressView = CircularProgressView()
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+        progressView.trackTintColor = UIColor(asset: .globalTint).withAlphaComponent(0.2)
+        progressView.progressTintColor = UIColor(asset: .globalTint)
+        progressView.thicknessRatio = 0.2
+
+        let progressContainer = UIView()
+        progressContainer.translatesAutoresizingMaskIntoConstraints = false
+        progressContainer.addSubview(progressView)
+
+        NSLayoutConstraint.activate([
+            progressView.topAnchor.constraint(equalTo: progressContainer.topAnchor),
+            progressView.leadingAnchor.constraint(equalTo: progressContainer.leadingAnchor),
+            progressView.trailingAnchor.constraint(equalTo: progressContainer.trailingAnchor),
+            progressView.bottomAnchor.constraint(equalTo: progressContainer.bottomAnchor),
+            progressContainer.widthAnchor.constraint(equalToConstant: 30),
+            progressContainer.heightAnchor.constraint(equalToConstant: 30)
+        ])
+
+        contentStack.addArrangedSubview(labelsStack)
+        contentStack.addArrangedSubview(progressContainer)
+
+        progressCard.addSubview(contentStack)
+        NSLayoutConstraint.activate([
+            contentStack.topAnchor.constraint(equalTo: progressCard.topAnchor, constant: 6),
+            contentStack.leadingAnchor.constraint(equalTo: progressCard.leadingAnchor, constant: 12),
+            contentStack.trailingAnchor.constraint(equalTo: progressCard.trailingAnchor, constant: -12),
+            contentStack.bottomAnchor.constraint(equalTo: progressCard.bottomAnchor, constant: -6),
+            progressCard.widthAnchor.constraint(greaterThanOrEqualToConstant: 100)
+        ])
+
+        statsStackView.insertArrangedSubview(progressCard, at: 0)
+        statsStackView.setCustomSpacing(20, after: progressCard)
+    }
+
+    func updateProgress(with status: ListProgressContext.Status) {
+        switch status {
+        case .idle:
+            progressTitle.text = "watched"
+            progressPercentage.countFromCurrentValueTo(0, withDuration: 0)
+            progressView.updateProgress(0, animated: false)
+        case .loading:
+            progressTitle.text = "Loading..."
+            progressPercentage.countFromCurrentValueTo(0, withDuration: 0)
+            progressView.updateProgress(0, animated: false)
+        case .content(let result):
+            progressTitle.text = "watched"
+            progressPercentage.countFromCurrentValueTo(CGFloat(result.percentage), withDuration: 0.7)
+            progressView.updateProgress(CGFloat(result.progress), animated: true, duration: 0.7)
+        }
+    }
+
+    @objc func progressCardTapped() {
+        guard let delegate = delegate else { return }
+        delegate.cell(self, action: .progress)
     }
 }
