@@ -264,6 +264,15 @@ final class WatchedViewController: UITableViewController {
         }
     }
 
+    func cycleFilter() {
+        switch currentFilter {
+        case .movies:
+            currentFilter = .shows
+        case .shows:
+            currentFilter = .movies
+        }
+    }
+
     private enum Sort: Int {
         case lastWatched
         case title

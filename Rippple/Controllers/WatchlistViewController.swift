@@ -118,6 +118,16 @@ final class WatchlistViewController: UITableViewController {
         }
     }
 
+    func cycleFilter() {
+        let cycle: [Filter] = [.movies, .shows, .seasons, .episodes, .none]
+        guard let currentIndex = cycle.firstIndex(of: currentFilter) else {
+            currentFilter = cycle[0]
+            return
+        }
+
+        currentFilter = cycle[(currentIndex + 1) % cycle.count]
+    }
+
     private enum Sort: Int {
         case rank
         case listed

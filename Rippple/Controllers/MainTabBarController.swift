@@ -706,6 +706,34 @@ extension MainTabBarController: UITabBarControllerDelegate {
                         }
                     }
                 }
+            } else if tab.identifier == Tab.watchlist.rawValue {
+                if shouldScrollToTop(view: viewController.view) {
+                    scrollToTop(view: viewController.view)
+                } else if let navigationController = viewController as? UINavigationController,
+                          let watchlistViewController = navigationController.topViewController as? WatchlistViewController {
+                    watchlistViewController.cycleFilter()
+                }
+            } else if tab.identifier == Tab.recommended.rawValue {
+                if shouldScrollToTop(view: viewController.view) {
+                    scrollToTop(view: viewController.view)
+                } else if let navigationController = viewController as? UINavigationController,
+                          let recommendedViewController = navigationController.topViewController as? RecommendedViewController {
+                    recommendedViewController.cycleFilter()
+                }
+            } else if tab.identifier == Tab.collection.rawValue {
+                if shouldScrollToTop(view: viewController.view) {
+                    scrollToTop(view: viewController.view)
+                } else if let navigationController = viewController as? UINavigationController,
+                          let collectionViewController = navigationController.topViewController as? CollectionViewController {
+                    collectionViewController.cycleFilter()
+                }
+            } else if tab.identifier == Tab.watched.rawValue {
+                if shouldScrollToTop(view: viewController.view) {
+                    scrollToTop(view: viewController.view)
+                } else if let navigationController = viewController as? UINavigationController,
+                          let watchedViewController = navigationController.topViewController as? WatchedViewController {
+                    watchedViewController.cycleFilter()
+                }
             } else if tab.identifier == Tab.calendar.rawValue {
                 if let navigationController = viewController as? UINavigationController, let calendarViewController = navigationController.topViewController as? CalendarViewController {
                     calendarViewController.scrollToClosestToNow(animated: true)
