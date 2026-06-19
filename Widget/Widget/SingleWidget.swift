@@ -730,11 +730,13 @@ struct TraktShowProgress: Codable {
     var toRewatchCount: Int {
         guard let resetDate = resetAt else { return 0 }
         var index = 0
-        for season in seasons where season.number != 0 {
-            for episode in season.episodes {
+        for season in seasons.sorted(by: { $0.number > $1.number }) where season.number != 0 {
+            for episode in season.episodes.sorted(by: { $0.number > $1.number }) {
                 if let lastWatchedDate = episode.lastWatchedAt {
                     if lastWatchedDate < resetDate {
                         index += 1
+                    } else {
+                        return index
                     }
                 }
             }
@@ -744,16 +746,19 @@ struct TraktShowProgress: Codable {
 
     var nextToRewtach: (TraktSeasonProgress, TraktEpisodeProgress)? {
         guard let resetDate = resetAt else { return nil }
-        for season in seasons where season.number != 0 {
-            for episode in season.episodes {
+        var nextToRewtach: (TraktSeasonProgress, TraktEpisodeProgress)?
+        for season in seasons.sorted(by: { $0.number > $1.number }) where season.number != 0 {
+            for episode in season.episodes.sorted(by: { $0.number > $1.number }) {
                 if let lastWatchedDate = episode.lastWatchedAt {
                     if lastWatchedDate < resetDate {
-                        return (season, episode)
+                        nextToRewtach = (season, episode)
+                    } else {
+                        return nextToRewtach
                     }
                 }
             }
         }
-        return nil
+        return nextToRewtach
     }
 
     var nextEpisodeToRewtach: TraktEpisode? {

@@ -1371,11 +1371,13 @@ struct ShowProgress: Codable, Hashable {
     var toRewatchCount: Int {
         guard let resetDate = resetAt else { return 0 }
         var index = 0
-        for season in seasons where season.number != 0 {
-            for episode in season.episodes {
+        for season in seasons.sorted(by: { $0.number > $1.number }) where season.number != 0 {
+            for episode in season.episodes.sorted(by: { $0.number > $1.number }) {
                 if let lastWatchedDate = episode.lastWatchedAt {
                     if lastWatchedDate < resetDate {
                         index += 1
+                    } else {
+                        return index
                     }
                 }
             }
@@ -1385,16 +1387,19 @@ struct ShowProgress: Codable, Hashable {
 
     var nextToRewatch: (SeasonProgress, EpisodeProgress)? {
         guard let resetDate = resetAt else { return nil }
-        for season in seasons where season.number != 0 {
-            for episode in season.episodes {
+        var nextToRewatch: (SeasonProgress, EpisodeProgress)?
+        for season in seasons.sorted(by: { $0.number > $1.number }) where season.number != 0 {
+            for episode in season.episodes.sorted(by: { $0.number > $1.number }) {
                 if let lastWatchedDate = episode.lastWatchedAt {
                     if lastWatchedDate < resetDate {
-                        return (season, episode)
+                        nextToRewatch = (season, episode)
+                    } else {
+                        return nextToRewatch
                     }
                 }
             }
         }
-        return nil
+        return nextToRewatch
     }
 
     var behind: Int {
