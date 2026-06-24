@@ -266,16 +266,27 @@ struct SocialActivityDetail: Hashable {
     func text(using formatter: RelativeDateTimeFormatter, relativeTo date: Date = Date()) -> String {
         switch type {
         case .watched:
-            let watchedText: String
+            let playCount = plays ?? 0
 
             if let activityDate = self.date {
-                let action = (plays ?? 0) > 1 ? "Last watched" : "Watched"
-                watchedText = "\(action) \(formatter.localizedString(for: activityDate, relativeTo: date))"
-            } else {
-                watchedText = "Watched"
+                if activityDate.timeIntervalSince1970 == 0 {
+                    return "\(playCount) play\(playCount > 1 ? "s" : "")"
+                }
+
+                let relativeDate = formatter.localizedString(for: activityDate, relativeTo: date)
+
+                if playCount > 1 {
+                    return "\(playCount) plays, last watched \(relativeDate)"
+                }
+
+                return "Watched \(relativeDate)"
             }
 
-            return watchedText
+            if playCount > 1 {
+                return "\(playCount) plays"
+            }
+
+            return "Watched"
         case .watchlisted:
             guard let activityDate = self.date else { return "Watchlisted" }
             return "Watchlisted \(formatter.localizedString(for: activityDate, relativeTo: date))"

@@ -57,6 +57,7 @@ final class SocialActivityTableViewCell: UITableViewCell {
                 fatalError("Social activities are not supported for this media type")
             }
 
+            guard representedMedia != media else { return }
             representedMedia = media
             loadSocialActivities(for: media)
         }
@@ -78,17 +79,6 @@ final class SocialActivityTableViewCell: UITableViewCell {
         avatarsContainer.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         configureAvatarImageViews()
-        renderLoading()
-    }
-
-    override func prepareForReuse() {
-        super.prepareForReuse()
-
-        socialTask?.cancel()
-        socialTask = nil
-        loadIdentifier = UUID()
-        representedMedia = nil
-        avatarImageViews.forEach { $0.kf.cancelDownloadTask() }
         renderLoading()
     }
 

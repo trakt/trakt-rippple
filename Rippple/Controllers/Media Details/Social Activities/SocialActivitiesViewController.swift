@@ -51,6 +51,7 @@ final class SocialActivitiesViewController: UITableViewController {
         case .header(let summary):
             let cell = tableView.dequeueReusableCell(withIdentifier: "social activity header") as! ActivityHeaderTableViewCell
             cell.title.text = summary.titleText
+            cell.contentTrailingConstraint?.constant = 24
             if let averageRatingText = summary.averageRatingText,
                let averageRatingAttributedText = self?.averageRatingAttributedText(for: averageRatingText) {
                 cell.subtitle?.attributedText = averageRatingAttributedText

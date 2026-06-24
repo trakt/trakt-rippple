@@ -1062,6 +1062,7 @@ final class ActivityHeaderTableViewCell: UITableViewCell {
     @IBOutlet var title: UILabel!
     @IBOutlet var subtitle: UILabel?
     @IBOutlet var chevron: UIImageView?
+    @IBOutlet var contentTrailingConstraint: NSLayoutConstraint?
 
     @IBOutlet var button: UIButton?
 
@@ -1089,12 +1090,14 @@ final class ActivityHeaderTableViewCell: UITableViewCell {
 
         maximumContentSizeCategory = .extraExtraExtraLarge
         button?.maximumContentSizeCategory = .extraExtraExtraLarge
+        contentTrailingConstraint?.constant = 16
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
         button?.isHidden = true
         chevron?.isHidden = true
+        contentTrailingConstraint?.constant = 16
     }
 }
 
