@@ -21,12 +21,6 @@ final class EpisodeShowTableViewCell: UITableViewCell {
 
     private let disposeBag = DisposeBag()
 
-    private let relativeDateTimeFormatter: RelativeDateTimeFormatter = {
-        let dateFormatter = RelativeDateTimeFormatter()
-        dateFormatter.formattingContext = .beginningOfSentence
-        return dateFormatter
-    }()
-
     private let fullDateFormatter: DateFormatter = {
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .medium
@@ -133,7 +127,8 @@ final class EpisodeShowTableViewCell: UITableViewCell {
         }
 
         if let firstAired = episode.firstAired {
-            subtitle.text = "\(relativeDateTimeFormatter.localizedString(for: firstAired, relativeTo: Date())) on \(fullDateFormatter.string(from: firstAired))"
+            let relativeDate = CalendarRelativeDateFormatter.string(for: firstAired, uppercaseFirstLetter: true)
+            subtitle.text = "\(relativeDate) on \(fullDateFormatter.string(from: firstAired))"
         } else {
             subtitle.text = "Airing unknown"
         }

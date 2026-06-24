@@ -465,7 +465,7 @@ struct SingleWidgetEntryView: View {
                     if let behind = progress.behind, configuration?.info?.boolValue ?? true {
                         if behind == "Coming...", let firstAirDate = progress.endDate {
                             if firstAirDate > Date.now {
-                                Text("→ \(firstAirDate, style: .relative)")
+                                Text("→ \(CalendarRelativeDateFormatter.string(for: firstAirDate))")
                                     .font(.caption)
                                     .foregroundColor(.white)
                                     .opacity(0.9)

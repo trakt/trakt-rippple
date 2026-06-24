@@ -13,26 +13,16 @@ final class ToWatchStoryCollectionViewCell: UICollectionViewCell {
     @IBOutlet var poster: PosterImageView!
 
     private let dateFormatter = DateFormatter()
-    private let dateComponentsFormatter = DateComponentsFormatter()
     func updateLabel() {
         switch media! {
         case .movie(let movie):
             let releaseDate = dateFormatter.date(from: movie.released ?? "") ?? Date()
-
-            if releaseDate.distance(to: Date.now) < 0 {
-                days.text = "in \(dateComponentsFormatter.string(from: Date.now, to: releaseDate) ?? "X")"
-            } else {
-                days.text = "\(dateComponentsFormatter.string(from: releaseDate, to: Date.now) ?? "X") ago"
-            }
+            days.text = CalendarRelativeDateFormatter.string(for: releaseDate, unitsStyle: .short)
         case .show:
             fatalError()
         case .episode(let episode, _):
             if let firstAired = episode.firstAired {
-                if firstAired.distance(to: Date.now) < 0 {
-                    days.text = "in \(dateComponentsFormatter.string(from: Date.now, to: firstAired) ?? "X")"
-                } else {
-                    days.text = "\(dateComponentsFormatter.string(from: firstAired, to: Date.now) ?? "X") ago"
-                }
+                days.text = CalendarRelativeDateFormatter.string(for: firstAired, unitsStyle: .short)
             }
         case .season:
             fatalError()
@@ -40,11 +30,7 @@ final class ToWatchStoryCollectionViewCell: UICollectionViewCell {
             fatalError()
         case .showProgress(_, let showProgress):
             if let nextToWatch = showProgress.nextEpisodeToWatch, let firstAired = nextToWatch.firstAired {
-                if firstAired.distance(to: Date.now) < 0 {
-                    days.text = "in \(dateComponentsFormatter.string(from: Date.now, to: firstAired) ?? "X")"
-                } else {
-                    days.text = "\(dateComponentsFormatter.string(from: firstAired, to: Date.now) ?? "X") ago"
-                }
+                days.text = CalendarRelativeDateFormatter.string(for: firstAired, unitsStyle: .short)
             }
         }
     }
@@ -83,13 +69,6 @@ final class ToWatchStoryCollectionViewCell: UICollectionViewCell {
         poster.backgroundColor = UIColor.tertiarySystemFill
 
         dateFormatter.dateFormat = "yyyy-MM-dd"
-
-        dateComponentsFormatter.allowedUnits = [.second, .minute, .hour, .day]
-        dateComponentsFormatter.maximumUnitCount = 1
-        dateComponentsFormatter.unitsStyle = .short
-        var calendar = Calendar.current
-        calendar.locale = Locale(identifier: "en_US")
-        dateComponentsFormatter.calendar = calendar
 
         maximumContentSizeCategory = .large
     }

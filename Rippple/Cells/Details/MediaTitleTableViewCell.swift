@@ -74,14 +74,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
     private var mainActionButtonMinHeightConstraint: NSLayoutConstraint?
     private var secondaryActionButtonMinHeightConstraint: NSLayoutConstraint?
 
-    private let relativeDateTimeFormatter: RelativeDateTimeFormatter = {
-        let dateFormatter = RelativeDateTimeFormatter()
-        dateFormatter.unitsStyle = .full
-        dateFormatter.dateTimeStyle = .numeric
-        dateFormatter.formattingContext = .dynamic
-        return dateFormatter
-    }()
-
     @IBOutlet var cardView: UIView!
 
     private var cancellable: Cancellable? {
@@ -589,7 +581,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                             self.mainActionButton.configuration?.titleAlignment = .center
                             self.mainActionButton.configuration?.title = "Next"
                             if let firstAired = nextEpisode.firstAired, firstAired > Date() {
-                                self.mainActionButton.configuration?.subtitle = self.relativeDateTimeFormatter.localizedString(for: firstAired, relativeTo: Date())
+                                self.mainActionButton.configuration?.subtitle = CalendarRelativeDateFormatter.string(for: firstAired)
                             } else {
                                 self.mainActionButton.configuration?.subtitle = nextEpisode.localizedEpisodeNumber
                             }
@@ -619,7 +611,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                         self.mainActionButton.configuration?.titleAlignment = .center
                                         self.mainActionButton.configuration?.title = "Next"
                                         if let firstAired = nextEpisode.firstAired {
-                                            self.mainActionButton.configuration?.subtitle = self.relativeDateTimeFormatter.localizedString(for: firstAired, relativeTo: Date())
+                                            self.mainActionButton.configuration?.subtitle = CalendarRelativeDateFormatter.string(for: firstAired)
                                         } else {
                                             self.mainActionButton.configuration?.subtitle = nextEpisode.localizedEpisodeNumber
                                         }
