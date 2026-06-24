@@ -369,6 +369,7 @@ enum TraktAPIService {
     // calendars/all/shows/start_date/days
     case moviesCalendar(startDate: Date, days: Int, filters: [String: String])
     case dvdMoviesCalendar(startDate: Date, days: Int)
+    case streamingMoviesCalendar(startDate: Date, days: Int)
 
     case myShowsCalendar(startDate: Date, days: Int)
     case myMoviesCalendar(startDate: Date, days: Int)
@@ -876,6 +877,11 @@ extension TraktAPIService: AuthorizedTargetType {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let formattedDate = dateFormatter.string(from: startDate)
             return "calendars/all/dvd/\(formattedDate)/\(days)"
+        case .streamingMoviesCalendar(let startDate, let days):
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let formattedDate = dateFormatter.string(from: startDate)
+            return "calendars/all/streaming/\(formattedDate)/\(days)"
         case .removeFromHistory, .removeMultipleFromHistory, .removeShowFromHistory, .removeEpisodeFromHistory, .removeMovieFromHistory, .removeSeasonFromHistory:
             return "sync/history/remove"
         case .hidden(let section, _, _, _), .hideShow(let section, _, _), .hideMovie(let section, _), .hideSeason(let section, _), .hideUser(let section, _):
@@ -1136,7 +1142,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .addMovieToHistory, .addEpisodeToHistory, .addShowToHistory, .addSeasonToHistory, .addEpisodesToHistory:
             return .post
-        case .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .myShowsCalendar, .myMoviesCalendar, .premiereCalendar:
+        case .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .myShowsCalendar, .myMoviesCalendar, .premiereCalendar:
             return .get
         case .removeFromHistory, .removeMultipleFromHistory, .removeShowFromHistory, .removeMovieFromHistory, .removeEpisodeFromHistory, .removeSeasonFromHistory:
             return .post
@@ -1718,7 +1724,7 @@ extension TraktAPIService: AuthorizedTargetType {
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
-        case .dvdMoviesCalendar, .myShowsCalendar, .myMoviesCalendar, .premiereCalendar:
+        case .dvdMoviesCalendar, .streamingMoviesCalendar, .myShowsCalendar, .myMoviesCalendar, .premiereCalendar:
             return .requestParameters(parameters: ["extended": "full"], encoding: URLEncoding.default)
         case .removeFromHistory(let id):
             return .requestParameters(parameters: ["ids": [id]], encoding: JSONEncoding.default)
@@ -1981,7 +1987,7 @@ extension TraktAPIService: AuthorizedTargetType {
                 return true
             }
             return false
-        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary:
+        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary:
             return false
         case .stats(let type):
             switch type {

@@ -69,11 +69,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                   "CalendarSettings.hideRecentlyWatchedMovies": false,
                                                   "CalendarSettings.hideRecentlyWatchedShows": false,
                                                   "EpisodeNotificationsManager.groupEpisodes": true,
+                                                  "EpisodeNotificationsManager.reduceBasedOnProgress": true,
+                                                  "EpisodeNotificationsManager.postponeNighttimeNotifications": true,
                                                   "EpisodeNotificationsManager.watchlistShowPremiere": true,
                                                   "EpisodeNotificationsManager.watchlistSeasonPremiere": true,
+                                                  "EpisodeNotificationsManager.watchlistShowFinale": true,
+                                                  "EpisodeNotificationsManager.watchlistSeasonFinale": true,
                                                   "EpisodeNotificationsManager.watchlistEpisodeRelease": true,
                                                   "EpisodeNotificationsManager.toWatchShowPremiere": true,
                                                   "EpisodeNotificationsManager.toWatchSeasonPremiere": true,
+                                                  "EpisodeNotificationsManager.toWatchShowFinale": true,
+                                                  "EpisodeNotificationsManager.toWatchSeasonFinale": true,
                                                   "EpisodeNotificationsManager.toWatchEpisodeRelease": true,
                                                   "MovieNotificationsManager.watchlistMovieRelease": true,
                                                   "MovieNotificationsManager.toWatchMovieRelease": true,
@@ -83,6 +89,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                   "ActivityNotificationsManager.activityNewFollower": true,
                                                   "DVDMovieNotificationsManager.watchlistMovieRelease": true,
                                                   "DVDMovieNotificationsManager.toWatchMovieRelease": true,
+                                                  "StreamingMovieNotificationsManager.watchlistMovieRelease": true,
+                                                  "StreamingMovieNotificationsManager.toWatchMovieRelease": true,
                                                   "TrendingNotificationsManager.trendingShows": true,
                                                   "TrendingNotificationsManager.trendingMovies": true,
                                                   "RecommendedNotificationsManager.recommendedShows": true,
@@ -200,6 +208,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         EpisodeNotificationsManager.shared.setup()
         MovieNotificationsManager.shared.setup()
         DVDMovieNotificationsManager.shared.setup()
+        StreamingMovieNotificationsManager.shared.setup()
 
         NotificationCenterManager.shared.setup()
 

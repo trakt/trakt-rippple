@@ -6,241 +6,250 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
+import Combine
 import Receiver
+import SwiftUI
 import UIKit
 import UserNotifications
 
-final class NotificationsTroubleshootViewController: UITableViewController {
+struct NotificationsTroubleshootView: View {
+    @StateObject private var viewModel = NotificationsTroubleshootViewModel()
+
+    var body: some View {
+        Form {
+            Section("Status") {
+                TroubleshootStatusRow(title: "Rippple Settings",
+                                      status: viewModel.appSettingsStatus)
+                TroubleshootStatusRow(title: "Device Settings",
+                                      status: viewModel.deviceSettingsStatus)
+                TroubleshootStatusRow(title: "Token Registration",
+                                      status: viewModel.tokenRegistrationStatus)
+                TroubleshootStatusRow(title: "Push API",
+                                      status: viewModel.pushAPIStatus)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        viewModel.retryRemoteNotificationsPush()
+                    }
+                TroubleshootStatusRow(title: "Test Notification",
+                                      status: viewModel.testNotificationStatus,
+                                      waitingSystemImageName: "paperplane",
+                                      actionAccessibilityLabel: "Send test notification") {
+                    viewModel.sendTestNotification()
+                }
+            }
+
+            Section("Data") {
+                ForEach(viewModel.remoteNotificationsDebugItems) { item in
+                    RemoteNotificationsDebugItemCell(item: item)
+                }
+            }
+
+            Section {
+                if viewModel.scheduledNotifications.isEmpty {
+                    ScheduledNotificationEmptyCellView()
+                } else {
+                    ForEach(viewModel.scheduledNotifications) { notification in
+                        ScheduledNotificationCellView(notification: notification)
+                    }
+                }
+            } header: {
+                Text("Scheduled Notifications")
+            } footer: {
+                Text("Pending local notifications currently scheduled on this device.")
+            }
+        }
+        .navigationTitle("Troubleshooting")
+        .onAppear {
+            viewModel.viewAppeared()
+        }
+        .onDisappear {
+            viewModel.viewDisappeared()
+        }
+    }
+}
+
+final class NotificationsTroubleshootViewController: UIHostingController<NotificationsTroubleshootView> {
+    init() {
+        super.init(rootView: NotificationsTroubleshootView())
+        title = "Troubleshooting"
+    }
+
+    @objc dynamic required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder, rootView: NotificationsTroubleshootView())
+        title = "Troubleshooting"
+    }
+}
+
+private final class NotificationsTroubleshootViewModel: ObservableObject {
+    @Published private(set) var appSettingsStatus: TroubleshootStatus = .waiting
+    @Published private(set) var deviceSettingsStatus: TroubleshootStatus = .waiting
+    @Published private(set) var tokenRegistrationStatus: TroubleshootStatus = .waiting
+    @Published private(set) var pushAPIStatus: TroubleshootStatus = .waiting
+    @Published private(set) var testNotificationStatus: TroubleshootStatus = .waiting
+    @Published private(set) var remoteNotificationsDebugItems = [RemoteNotificationsDebugItem]()
+    @Published private(set) var scheduledNotifications = [ScheduledNotification]()
+
     private let disposeBag = DisposeBag()
     private let testNotificationIdentifier = "TestNotification"
     private var remoteNotificationsPushStatus: RemoteNotificationsPushStatus = .waiting
     private var remoteNotificationsPushInProgress = false
     private var remoteNotificationsPushCompleted = false
     private var shouldSendTestNotificationAfterRemotePush = false
-    private let pushAPIActivityIndicator = UIActivityIndicatorView(style: .medium)
+    private var isVisible = false
+    private var didRunInitialChecks = false
+    private var testNotificationTimer: Timer?
 
-    @IBOutlet var appSettings: UIImageView!
-    @IBOutlet var deviceSettings: UIImageView!
-    @IBOutlet var tokenRegistration: UIImageView!
-    @IBOutlet var testNotification: UIImageView!
-    @IBOutlet var pushAPI: UIImageView!
-    @IBOutlet var pushAPICell: UITableViewCell!
-    @IBOutlet var remoteNotificationsDebugLabel: UILabel!
+    private lazy var scheduledNotificationDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
 
-    private var pushAPIStatusLabel: UILabel? {
-        return pushAPICell.contentView.subviews.compactMap { $0 as? UILabel }.first
+    init() {
+        setupReceivers()
+        refreshRemoteNotificationsDebugItems()
+        refreshScheduledNotifications()
+    }
+
+    deinit {
+        testNotificationTimer?.invalidate()
+    }
+
+    func viewAppeared() {
+        isVisible = true
+        refreshAppSettingsStatus()
+        refreshNotificationSettings()
+        refreshRemoteNotificationsDebugItems()
+        refreshScheduledNotifications()
+
+        guard didRunInitialChecks == false else { return }
+        didRunInitialChecks = true
+        forcePushRemoteNotificationsDataIfNeeded()
+    }
+
+    func viewDisappeared() {
+        isVisible = false
+    }
+
+    func retryRemoteNotificationsPush() {
+        guard case .failure = remoteNotificationsPushStatus else { return }
+        remoteNotificationsPushCompleted = false
+        forcePushRemoteNotificationsData()
+    }
+
+    func sendTestNotification() {
+        testNotificationTimer?.invalidate()
+        testNotificationTimer = nil
+        shouldSendTestNotificationAfterRemotePush = false
+        testNotificationStatus = .running
+        scheduleTestNotificationAfterRemotePushFinishes()
+    }
+
+    private func setupReceivers() {
+        applicationLifecycleReceiver.listen { [weak self] applicationLifecycle in
+            DispatchQueue.main.async {
+                self?.handle(applicationLifecycle)
+            }
+        }.disposed(by: disposeBag)
+
+        pushTokenReceiveAndUpdatedReceiver.listen { [weak self] error in
+            DispatchQueue.main.async {
+                self?.pushTokenDidUpdate(with: error)
+            }
+        }.disposed(by: disposeBag)
+
+        remoteNotificationsEndpointUpdatedReceiver.hotOnly().listen { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.forcePushRemoteNotificationsDataIfNeeded()
+            }
+        }.disposed(by: disposeBag)
+
+        testPushReceiver.listen { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.testNotificationWasReceived()
+            }
+        }.disposed(by: disposeBag)
+    }
+
+    private func handle(_ applicationLifecycle: ApplicationLifecycle) {
+        switch applicationLifecycle {
+        case .didFinishLaunching:
+            break
+        case .didBecomeActive:
+            guard isVisible else { return }
+            tokenRegistrationStatus = .waiting
+            refreshNotificationSettings()
+        case .didEnterBackground:
+            break
+        }
+
+        refreshRemoteNotificationsDebugItems()
+        refreshScheduledNotifications()
+    }
+
+    private func refreshAppSettingsStatus() {
+        appSettingsStatus = notificationsAllDisabled ? .failure : .success
     }
 
     private var notificationsAllDisabled: Bool {
         return MovieNotificationsManager.shared.toWatchMovieRelease == false &&
             MovieNotificationsManager.shared.watchlistMovieRelease == false &&
+            DVDMovieNotificationsManager.shared.toWatchMovieRelease == false &&
+            DVDMovieNotificationsManager.shared.watchlistMovieRelease == false &&
+            StreamingMovieNotificationsManager.shared.toWatchMovieRelease == false &&
+            StreamingMovieNotificationsManager.shared.watchlistMovieRelease == false &&
             EpisodeNotificationsManager.shared.watchlistShowPremiere == false &&
             EpisodeNotificationsManager.shared.watchlistEpisodeRelease == false &&
             EpisodeNotificationsManager.shared.watchlistSeasonPremiere == false &&
+            EpisodeNotificationsManager.shared.watchlistShowFinale == false &&
+            EpisodeNotificationsManager.shared.watchlistSeasonFinale == false &&
             EpisodeNotificationsManager.shared.toWatchShowPremiere == false &&
             EpisodeNotificationsManager.shared.toWatchEpisodeRelease == false &&
             EpisodeNotificationsManager.shared.toWatchSeasonPremiere == false &&
+            EpisodeNotificationsManager.shared.toWatchShowFinale == false &&
+            EpisodeNotificationsManager.shared.toWatchSeasonFinale == false &&
             ActivityNotificationsManager.shared.activityNewFollower == false &&
             ActivityNotificationsManager.shared.commentNewLikes == false &&
             ActivityNotificationsManager.shared.commentNewMention == false &&
             ActivityNotificationsManager.shared.commentNewReply == false
     }
 
-    private var notificationSettings: UNNotificationSettings? {
-        didSet {
+    private func refreshNotificationSettings() {
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
             DispatchQueue.main.async {
-                guard let notificationSettings = self.notificationSettings else { return }
-                switch notificationSettings.authorizationStatus {
-                case .notDetermined:
-                    self.deviceSettings.image = UIImage(systemName: "exclamationmark.octagon.fill")
-                    self.deviceSettings.tintColor = .systemOrange
-                case .denied:
-                    self.deviceSettings.image = UIImage(systemName: "exclamationmark.octagon.fill")
-                    self.deviceSettings.tintColor = .systemRed
-                    self.tokenRegistration.image = UIImage(systemName: "exclamationmark.octagon.fill")
-                    self.tokenRegistration.tintColor = .systemGray
-                case .authorized:
-                    self.deviceSettings.image = UIImage(systemName: "checkmark.circle.fill")
-                    self.deviceSettings.tintColor = .systemGreen
-                    UIApplication.shared.registerForRemoteNotifications()
-                case .provisional:
-                    self.deviceSettings.image = UIImage(systemName: "checkmark.circle.fill")
-                    self.deviceSettings.tintColor = .systemGreen
-                    UIApplication.shared.registerForRemoteNotifications()
-                case .ephemeral:
-                    self.deviceSettings.image = UIImage(systemName: "checkmark.circle.fill")
-                    self.deviceSettings.tintColor = .systemGreen
-                    UIApplication.shared.registerForRemoteNotifications()
-                @unknown default:
-                    self.deviceSettings.image = UIImage(systemName: "exclamationmark.octagon.fill")
-                    self.deviceSettings.tintColor = .systemOrange
-                }
+                self?.apply(notificationSettings: settings)
             }
         }
     }
 
-    private var pushTokenError: Error? {
-        didSet {
-            DispatchQueue.main.async {
-                if self.pushTokenError == nil {
-                    self.tokenRegistration.image = UIImage(systemName: "checkmark.circle.fill")
-                    self.tokenRegistration.tintColor = .systemGreen
-                } else {
-                    self.tokenRegistration.image = UIImage(systemName: "exclamationmark.octagon.fill")
-                    self.tokenRegistration.tintColor = .systemRed
-                }
-            }
+    private func apply(notificationSettings: UNNotificationSettings) {
+        switch notificationSettings.authorizationStatus {
+        case .notDetermined:
+            deviceSettingsStatus = .warning
+        case .denied:
+            deviceSettingsStatus = .failure
+            tokenRegistrationStatus = .blocked
+        case .authorized, .provisional, .ephemeral:
+            deviceSettingsStatus = .success
+            UIApplication.shared.registerForRemoteNotifications()
+        @unknown default:
+            deviceSettingsStatus = .warning
         }
     }
 
-    private var testNotificationError: Error? {
-        didSet {
-            DispatchQueue.main.async {
-                if self.testNotificationError != nil {
-                    self.testNotification.image = UIImage(systemName: "exclamationmark.octagon.fill")
-                    self.testNotification.tintColor = .systemRed
-                }
-            }
+    private func pushTokenDidUpdate(with error: Error?) {
+        tokenRegistrationStatus = error == nil ? .success : .failure
+        refreshRemoteNotificationsDebugItems()
+
+        if error == nil {
+            forcePushRemoteNotificationsDataIfNeeded()
         }
     }
 
-    private var testNotificationTimer: Timer?
-
-    private var testNotificationReceived: Bool? {
-        didSet {
-            DispatchQueue.main.async {
-                guard let testNotificationReceived = self.testNotificationReceived else {
-                    self.testNotification.image = UIImage(systemName: "circle")
-                    self.testNotification.tintColor = .systemGray
-                    return
-                }
-                if testNotificationReceived == true {
-                    self.testNotification.image = UIImage(systemName: "checkmark.circle.fill")
-                    self.testNotification.tintColor = .systemGreen
-                } else {
-                    self.testNotification.image = UIImage(systemName: "exclamationmark.octagon.fill")
-                    self.testNotification.tintColor = .systemRed
-                }
-            }
-        }
-    }
-
-    override func awakeFromNib() {
-        super.awakeFromNib()
-
-        applicationLifecycleReceiver.listen { [weak self] applicationLifecycle in
-            guard let self = self else { return }
-            switch applicationLifecycle {
-            case .didFinishLaunching:
-                break
-            case .didBecomeActive:
-                self.pushTokenError = nil
-                self.tokenRegistration.image = UIImage(systemName: "circle")
-                self.tokenRegistration.tintColor = .systemGray
-
-                self.testNotificationTimer?.invalidate()
-                self.testNotificationTimer = nil
-                self.testNotificationReceived = nil
-                self.scheduleTestNotificationAfterRemotePushFinishes()
-
-                UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
-                    guard let self = self else { return }
-                    self.notificationSettings = settings
-                }
-            case .didEnterBackground:
-                break
-            }
-            self.refreshRemoteNotificationsDebugCell()
-        }.disposed(by: disposeBag)
-
-        pushTokenReceiveAndUpdatedReceiver.listen { [weak self] error in
-            guard let self = self else { return }
-            self.pushTokenError = error
-            self.refreshRemoteNotificationsDebugCell()
-            if error == nil {
-                self.forcePushRemoteNotificationsDataIfNeeded()
-            }
-        }.disposed(by: disposeBag)
-
-        remoteNotificationsEndpointUpdatedReceiver.hotOnly().listen { [weak self] _ in
-            guard let self = self else { return }
-            self.forcePushRemoteNotificationsDataIfNeeded()
-        }.disposed(by: disposeBag)
-
-        testPushReceiver.listen { [weak self] _ in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                self.testNotificationTimer?.invalidate()
-                self.testNotificationTimer = nil
-                self.testNotificationReceived = true
-                self.refreshRemoteNotificationsDebugCell()
-            }
-        }.disposed(by: disposeBag)
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        tableView.allowsSelection = false
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 96
-        remoteNotificationsDebugLabel.textColor = .secondaryLabel
-        remoteNotificationsDebugLabel.font = .preferredFont(forTextStyle: .footnote)
-        remoteNotificationsDebugLabel.adjustsFontForContentSizeCategory = true
-        remoteNotificationsDebugLabel.numberOfLines = 0
-        remoteNotificationsDebugLabel.lineBreakMode = .byCharWrapping
-        remoteNotificationsDebugLabel.setContentCompressionResistancePriority(.required, for: .vertical)
-        setupPushAPIActivityIndicator()
-        pushAPICell.addGestureRecognizer(UITapGestureRecognizer(target: self,
-                                                                action: #selector(retryRemoteNotificationsPush)))
-        refreshRemoteNotificationsDebugCell()
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-
-        if onlyOnce {
-            appSettings.tintColor = .systemGray
-            deviceSettings.tintColor = .systemGray
-            tokenRegistration.tintColor = .systemGray
-            testNotification.tintColor = .systemGray
-            updatePushAPIStatusIcon()
-        }
-    }
-
-    private var onlyOnce = true
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        if notificationsAllDisabled {
-            appSettings.image = UIImage(systemName: "exclamationmark.octagon.fill")
-            appSettings.tintColor = .systemRed
-        } else {
-            appSettings.image = UIImage(systemName: "checkmark.circle.fill")
-            appSettings.tintColor = .systemGreen
-        }
-
-        if onlyOnce {
-            onlyOnce = false
-
-            UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
-                guard let self = self else { return }
-                self.notificationSettings = settings
-            }
-
-            forcePushRemoteNotificationsDataIfNeeded(sendTestNotificationWhenFinished: true)
-        }
-    }
-
-    private func forcePushRemoteNotificationsDataIfNeeded(sendTestNotificationWhenFinished: Bool = false) {
-        DispatchQueue.main.async {
-            guard self.isViewLoaded, self.view.window != nil else { return }
-            if sendTestNotificationWhenFinished {
-                self.shouldSendTestNotificationAfterRemotePush = true
-            }
-            self.forcePushRemoteNotificationsData()
-        }
+    private func forcePushRemoteNotificationsDataIfNeeded() {
+        guard isVisible else { return }
+        forcePushRemoteNotificationsData()
     }
 
     private func forcePushRemoteNotificationsData() {
@@ -289,8 +298,6 @@ final class NotificationsTroubleshootViewController: UITableViewController {
         updateRemoteNotificationsPushStatus(.running)
 
         Task { [weak self] in
-            guard let self = self else { return }
-
             do {
                 try await RemoteNotificationsManager.shared.updateEndpoint(endpointARN: endpointARN,
                                                                            customUserData: customUserData)
@@ -306,23 +313,21 @@ final class NotificationsTroubleshootViewController: UITableViewController {
                     switch result {
                     case .skipped:
                         skippedTopicCount += 1
-                    case .subscribed:
-                        pushedTopicCount += 1
-                    case .unsubscribed:
+                    case .subscribed, .unsubscribed:
                         pushedTopicCount += 1
                     }
                 }
 
                 let skippedText = skippedTopicCount > 0 ? " \(skippedTopicCount) topic(s) were skipped because they are not configured." : ""
                 let message = "Endpoint, push information, and \(pushedTopicCount) topic subscription update(s) were pushed.\(skippedText)"
-                await MainActor.run {
-                    self.finishRemoteNotificationsPush(with: .success(message),
-                                                       completed: true)
+                await MainActor.run { [self] in
+                    self?.finishRemoteNotificationsPush(with: .success(message),
+                                                        completed: true)
                 }
             } catch {
-                await MainActor.run {
-                    self.finishRemoteNotificationsPush(with: .failure(error.localizedDescription),
-                                                       completed: false)
+                await MainActor.run { [self] in
+                    self?.finishRemoteNotificationsPush(with: .failure(error.localizedDescription),
+                                                        completed: false)
                 }
             }
         }
@@ -335,6 +340,12 @@ final class NotificationsTroubleshootViewController: UITableViewController {
         }
         updateRemoteNotificationsPushStatus(status)
         sendPendingTestNotificationAfterRemotePushIfNeeded()
+    }
+
+    private func updateRemoteNotificationsPushStatus(_ status: RemoteNotificationsPushStatus) {
+        remoteNotificationsPushStatus = status
+        pushAPIStatus = status.troubleshootStatus
+        refreshRemoteNotificationsDebugItems()
     }
 
     private func scheduleTestNotificationAfterRemotePushFinishes() {
@@ -351,78 +362,6 @@ final class NotificationsTroubleshootViewController: UITableViewController {
         scheduleTestNotification()
     }
 
-    private func updateRemoteNotificationsPushStatus(_ status: RemoteNotificationsPushStatus) {
-        remoteNotificationsPushStatus = status
-        updatePushAPIStatusIcon()
-        refreshRemoteNotificationsDebugCell()
-    }
-
-    @objc private func retryRemoteNotificationsPush() {
-        guard case .failure = remoteNotificationsPushStatus else { return }
-        remoteNotificationsPushCompleted = false
-        forcePushRemoteNotificationsData()
-    }
-
-    private func updatePushAPIStatusIcon() {
-        DispatchQueue.main.async {
-            guard self.isViewLoaded else { return }
-            switch self.remoteNotificationsPushStatus {
-            case .waiting:
-                self.pushAPIActivityIndicator.stopAnimating()
-                self.pushAPI.isHidden = false
-                self.pushAPI.image = UIImage(systemName: "circle")
-                self.pushAPI.tintColor = .systemGray
-            case .running:
-                self.pushAPIActivityIndicator.startAnimating()
-                self.pushAPI.isHidden = false
-                self.pushAPI.image = UIImage(systemName: "circle")
-                self.pushAPI.tintColor = .systemGray
-            case .success:
-                self.pushAPIActivityIndicator.stopAnimating()
-                self.pushAPI.isHidden = false
-                self.pushAPI.image = UIImage(systemName: "checkmark.circle.fill")
-                self.pushAPI.tintColor = .systemGreen
-            case .failure:
-                self.pushAPIActivityIndicator.stopAnimating()
-                self.pushAPI.isHidden = false
-                self.pushAPI.image = UIImage(systemName: "arrow.clockwise.circle.fill")
-                self.pushAPI.tintColor = .systemOrange
-            }
-        }
-    }
-
-    private func setupPushAPIActivityIndicator() {
-        pushAPIActivityIndicator.translatesAutoresizingMaskIntoConstraints = false
-        pushAPIActivityIndicator.hidesWhenStopped = true
-        pushAPIActivityIndicator.color = .systemGray
-        pushAPIActivityIndicator.isUserInteractionEnabled = false
-
-        guard let pushAPIStatusLabel = pushAPIStatusLabel else { return }
-
-        let labelToIconConstraints = pushAPICell.contentView.constraints.filter { constraint in
-            let firstView = constraint.firstItem as? UIView
-            let secondView = constraint.secondItem as? UIView
-            return (firstView === pushAPIStatusLabel && secondView === pushAPI) ||
-                (firstView === pushAPI && secondView === pushAPIStatusLabel)
-        }
-        NSLayoutConstraint.deactivate(labelToIconConstraints)
-
-        pushAPIStatusLabel.setContentHuggingPriority(.required, for: .horizontal)
-        pushAPIStatusLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
-        pushAPIActivityIndicator.setContentHuggingPriority(.required, for: .horizontal)
-        pushAPIActivityIndicator.setContentCompressionResistancePriority(.required, for: .horizontal)
-
-        pushAPICell.contentView.addSubview(pushAPIActivityIndicator)
-        NSLayoutConstraint.activate([
-            pushAPIActivityIndicator.leadingAnchor.constraint(equalTo: pushAPIStatusLabel.trailingAnchor,
-                                                              constant: 8),
-            pushAPIActivityIndicator.centerYAnchor.constraint(equalTo: pushAPIStatusLabel.centerYAnchor),
-            pushAPIActivityIndicator.trailingAnchor.constraint(lessThanOrEqualTo: pushAPI.leadingAnchor,
-                                                               constant: -8)
-        ])
-        pushAPIActivityIndicator.stopAnimating()
-    }
-
     private func scheduleTestNotification() {
         let content = UNMutableNotificationContent()
         content.title = "👍 You're good to go"
@@ -436,17 +375,17 @@ final class NotificationsTroubleshootViewController: UITableViewController {
         notificationCenter.removePendingNotificationRequests(withIdentifiers: [testNotificationIdentifier])
         notificationCenter.removeDeliveredNotifications(withIdentifiers: [testNotificationIdentifier])
         notificationCenter.add(request) { [weak self] error in
-            guard let self = self else { return }
-            if error != nil {
-                self.testNotificationError = error
-            } else {
-                DispatchQueue.main.async {
-                    guard self.testNotificationReceived != true else { return }
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                if error != nil {
+                    self.testNotificationStatus = .failure
+                } else {
+                    guard self.testNotificationStatus != .success else { return }
                     self.testNotificationTimer?.invalidate()
                     self.testNotificationTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: false) { [weak self] _ in
-                        guard let self = self else { return }
-                        self.validateTestNotificationDelivery()
+                        self?.validateTestNotificationDelivery()
                     }
+                    self.refreshScheduledNotifications()
                 }
             }
         }
@@ -460,53 +399,112 @@ final class NotificationsTroubleshootViewController: UITableViewController {
                 guard let self = self else { return }
                 self.testNotificationTimer?.invalidate()
                 self.testNotificationTimer = nil
-                self.testNotificationReceived = wasDelivered
+                self.updateTestNotificationReceived(wasDelivered)
             }
         }
     }
 
-    private func refreshRemoteNotificationsDebugCell() {
-        DispatchQueue.main.async {
-            guard self.isViewLoaded else { return }
-            self.remoteNotificationsDebugLabel.text = self.remoteNotificationsDebugText()
-            guard self.tableView.window != nil else { return }
-            self.tableView.beginUpdates()
-            self.tableView.endUpdates()
-        }
+    private func testNotificationWasReceived() {
+        testNotificationTimer?.invalidate()
+        testNotificationTimer = nil
+        updateTestNotificationReceived(true)
+        refreshRemoteNotificationsDebugItems()
+        refreshScheduledNotifications()
     }
 
-    private func remoteNotificationsDebugText() -> String {
+    private func updateTestNotificationReceived(_ testNotificationReceived: Bool?) {
+        guard let testNotificationReceived = testNotificationReceived else {
+            testNotificationStatus = .waiting
+            return
+        }
+        testNotificationStatus = testNotificationReceived ? .success : .failure
+    }
+
+    private func refreshRemoteNotificationsDebugItems() {
         let endpoint = UserDefaults.standard.string(forKey: "Rippple.endpointArnForSNS")
         let token = UserDefaults.standard.string(forKey: "Rippple.pushToken")
         let topics = remoteNotificationTopicStates().map { $0.topic }
         let cacheStatus = RemoteNotificationsManager.shared.cacheStatus(endpointARN: endpoint, topics: topics)
-        let topicCache = cacheStatus.subscriptions
+        let topicSubscriptions = cacheStatus.subscriptions
             .filter { $0.topic != .test }
-            .map { "\(topicDisplayName($0.topic)): \(subscriptionCacheDescription($0))" }
-            .joined(separator: "\n")
-
-        var debugText = [
-            "Remote API",
-            "Status: \(RemoteNotificationsManager.shared.isConfigured ? "configured" : "not configured")",
-            "Automatic push: \(remoteNotificationsPushStatus.debugDescription)",
-            "",
-            "Endpoint",
-            "ARN: \(endpoint ?? "none")",
-            "Push token: \(token ?? "none")",
-            "",
-            "Cache",
-            "Push information: \(cacheDescription(cacheStatus.pushInformationCached))"
-        ]
-
-        if topicCache.isEmpty {
-            debugText.append("Topic subscriptions: none")
+        let topicSubscriptionsDebugText: String
+        if topicSubscriptions.isEmpty {
+            topicSubscriptionsDebugText = "Topic subscriptions: none"
         } else {
-            debugText.append("")
-            debugText.append("Topic subscriptions")
-            debugText.append(topicCache)
+            topicSubscriptionsDebugText = (["Topic subscriptions"] + topicSubscriptions.map { subscription in
+                "\(topicDisplayName(subscription.topic)): \(subscriptionCacheDescription(subscription))"
+            }).joined(separator: "\n")
+        }
+        let debugText = [
+            "Push status: \(remoteNotificationsPushStatus.debugDescription)",
+            topicSubscriptionsDebugText
+        ].joined(separator: "\n\n")
+
+        remoteNotificationsDebugItems = [
+            RemoteNotificationsDebugItem(subtitle: "Endpoint ARN",
+                                         body: endpoint ?? "none",
+                                         copyValue: endpoint),
+            RemoteNotificationsDebugItem(subtitle: "Push token",
+                                         body: token ?? "none",
+                                         copyValue: token),
+            RemoteNotificationsDebugItem(subtitle: "Debug",
+                                         body: debugText,
+                                         copyValue: debugText)
+        ]
+    }
+
+    private func refreshScheduledNotifications() {
+        UNUserNotificationCenter.current().getPendingNotificationRequests { [weak self] pendingNotificationRequests in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.scheduledNotifications = pendingNotificationRequests
+                    .sorted(by: self.scheduledNotificationSort)
+                    .map { self.scheduledNotification(from: $0) }
+            }
+        }
+    }
+
+    private func scheduledNotification(from request: UNNotificationRequest) -> ScheduledNotification {
+        let content = request.content
+
+        return ScheduledNotification(identifier: request.identifier,
+                                     title: content.title.isEmpty ? "New Notification" : content.title,
+                                     subtitle: content.subtitle,
+                                     body: content.body,
+                                     date: scheduledNotificationDateDescription(for: request))
+    }
+
+    private func scheduledNotificationSort(_ lhs: UNNotificationRequest, _ rhs: UNNotificationRequest) -> Bool {
+        let lhsDate = nextTriggerDate(for: lhs) ?? .distantFuture
+        let rhsDate = nextTriggerDate(for: rhs) ?? .distantFuture
+
+        if lhsDate != rhsDate {
+            return lhsDate < rhsDate
         }
 
-        return debugText.joined(separator: "\n")
+        return lhs.identifier < rhs.identifier
+    }
+
+    private func scheduledNotificationDateDescription(for request: UNNotificationRequest) -> String {
+        guard let date = nextTriggerDate(for: request) else {
+            if request.trigger == nil {
+                return "Immediate"
+            } else {
+                return "Unknown"
+            }
+        }
+
+        return scheduledNotificationDateFormatter.string(from: date)
+    }
+
+    private func nextTriggerDate(for request: UNNotificationRequest) -> Date? {
+        if let trigger = request.trigger as? UNCalendarNotificationTrigger {
+            return trigger.nextTriggerDate()
+        } else if let trigger = request.trigger as? UNTimeIntervalNotificationTrigger {
+            return trigger.nextTriggerDate()
+        } else {
+            return nil
+        }
     }
 
     private func remoteNotificationTopicStates() -> [(topic: RemoteNotificationTopic, isSubscribed: Bool)] {
@@ -525,11 +523,6 @@ final class NotificationsTroubleshootViewController: UITableViewController {
         }
 
         return topicStates
-    }
-
-    private func cacheDescription(_ isCached: Bool?) -> String {
-        guard let isCached = isCached else { return "not available" }
-        return isCached ? "cached" : "missing"
     }
 
     private func subscriptionCacheDescription(_ cacheStatus: RemoteNotificationsSubscriptionCacheStatus) -> String {
@@ -566,6 +559,211 @@ final class NotificationsTroubleshootViewController: UITableViewController {
     }
 }
 
+private struct TroubleshootStatusRow: View {
+    let title: String
+    let status: TroubleshootStatus
+    let waitingSystemImageName: String?
+    let actionAccessibilityLabel: String?
+    let action: (() -> Void)?
+
+    init(title: String,
+         status: TroubleshootStatus,
+         waitingSystemImageName: String? = nil,
+         actionAccessibilityLabel: String? = nil,
+         action: (() -> Void)? = nil) {
+        self.title = title
+        self.status = status
+        self.waitingSystemImageName = waitingSystemImageName
+        self.actionAccessibilityLabel = actionAccessibilityLabel
+        self.action = action
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(title)
+                .foregroundStyle(.primary)
+
+            Spacer(minLength: 8)
+
+            if status.isRunning {
+                ProgressView()
+                    .controlSize(.regular)
+            }
+
+            if let action = action, status.isRunning == false {
+                Button(action: action) {
+                    statusImage
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(actionAccessibilityLabel ?? title)
+            } else {
+                statusImage
+            }
+        }
+    }
+
+    private var statusImage: some View {
+        Image(systemName: status.systemImageName(waitingSystemImageName: waitingSystemImageName))
+            .font(.title3)
+            .foregroundStyle(status.tint)
+            .imageScale(.medium)
+    }
+}
+
+private struct RemoteNotificationsDebugItem: Hashable, Identifiable {
+    let subtitle: String
+    let body: String
+    let copyValue: String?
+
+    var id: String {
+        return subtitle
+    }
+
+    init(subtitle: String, body: String, copyValue: String? = nil) {
+        self.subtitle = subtitle
+        self.body = body
+        self.copyValue = copyValue
+    }
+}
+
+private struct RemoteNotificationsDebugItemCell: View {
+    let item: RemoteNotificationsDebugItem
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.subtitle)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(nil)
+
+                Text(item.body)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let copyValue = item.copyValue {
+                Button {
+                    UIPasteboard.general.string = copyValue
+                } label: {
+                    Image(systemName: "doc.on.doc")
+                        .imageScale(.medium)
+                }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.secondary)
+                .accessibilityLabel("Copy \(item.subtitle)")
+            }
+        }
+    }
+}
+
+private enum TroubleshootStatus: Equatable {
+    case waiting
+    case running
+    case success
+    case warning
+    case failure
+    case blocked
+    case retry
+
+    func systemImageName(waitingSystemImageName: String? = nil) -> String {
+        switch self {
+        case .waiting:
+            return waitingSystemImageName ?? "circle"
+        case .running:
+            return "circle"
+        case .success:
+            return "checkmark.circle.fill"
+        case .warning:
+            return "exclamationmark.octagon.fill"
+        case .failure:
+            return "exclamationmark.octagon.fill"
+        case .blocked:
+            return "exclamationmark.octagon.fill"
+        case .retry:
+            return "arrow.clockwise.circle.fill"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .waiting, .running, .blocked:
+            return .gray
+        case .success:
+            return .green
+        case .warning, .retry:
+            return .orange
+        case .failure:
+            return .red
+        }
+    }
+
+    var isRunning: Bool {
+        return self == .running
+    }
+}
+
+private struct ScheduledNotification: Hashable, Identifiable {
+    let identifier: String
+    let title: String
+    let subtitle: String
+    let body: String
+    let date: String
+
+    var id: String {
+        identifier
+    }
+}
+
+private struct ScheduledNotificationCellView: View {
+    let notification: ScheduledNotification
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(notification.title)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(.primary)
+                .lineLimit(nil)
+
+            if notification.subtitle.isEmpty == false {
+                Text(notification.subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(nil)
+            }
+
+            if notification.body.isEmpty == false {
+                Text(notification.body)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                    .lineLimit(nil)
+            }
+
+            Text(notification.date)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .lineLimit(nil)
+        }
+    }
+}
+
+private struct ScheduledNotificationEmptyCellView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("No Scheduled Notifications")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(.primary)
+            Text("There are currently no pending local notifications scheduled on this device.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
 private enum RemoteNotificationsPushStatus {
     case waiting
     case running
@@ -584,4 +782,25 @@ private enum RemoteNotificationsPushStatus {
             return "failed - \(message)"
         }
     }
+
+    var troubleshootStatus: TroubleshootStatus {
+        switch self {
+        case .waiting:
+            return .waiting
+        case .running:
+            return .running
+        case .success:
+            return .success
+        case .failure:
+            return .retry
+        }
+    }
 }
+
+#if DEBUG
+#Preview("Notifications Troubleshooting") {
+    NavigationStack {
+        NotificationsTroubleshootView()
+    }
+}
+#endif

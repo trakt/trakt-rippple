@@ -25,6 +25,20 @@ final class EpisodeNotificationsManager {
         }
     }
 
+    var reduceBasedOnProgress: Bool {
+        didSet {
+            UserDefaults.standard.set(reduceBasedOnProgress, forKey: "EpisodeNotificationsManager.reduceBasedOnProgress")
+            UserDefaults.standard.synchronize()
+        }
+    }
+
+    var postponeNighttimeNotifications: Bool {
+        didSet {
+            UserDefaults.standard.set(postponeNighttimeNotifications, forKey: "EpisodeNotificationsManager.postponeNighttimeNotifications")
+            UserDefaults.standard.synchronize()
+        }
+    }
+
     var watchlistShowPremiere: Bool {
         didSet {
             UserDefaults.standard.set(watchlistShowPremiere, forKey: "EpisodeNotificationsManager.watchlistShowPremiere")
@@ -35,6 +49,20 @@ final class EpisodeNotificationsManager {
     var watchlistSeasonPremiere: Bool {
         didSet {
             UserDefaults.standard.set(watchlistSeasonPremiere, forKey: "EpisodeNotificationsManager.watchlistSeasonPremiere")
+            UserDefaults.standard.synchronize()
+        }
+    }
+
+    var watchlistShowFinale: Bool {
+        didSet {
+            UserDefaults.standard.set(watchlistShowFinale, forKey: "EpisodeNotificationsManager.watchlistShowFinale")
+            UserDefaults.standard.synchronize()
+        }
+    }
+
+    var watchlistSeasonFinale: Bool {
+        didSet {
+            UserDefaults.standard.set(watchlistSeasonFinale, forKey: "EpisodeNotificationsManager.watchlistSeasonFinale")
             UserDefaults.standard.synchronize()
         }
     }
@@ -60,6 +88,20 @@ final class EpisodeNotificationsManager {
         }
     }
 
+    var toWatchShowFinale: Bool {
+        didSet {
+            UserDefaults.standard.set(toWatchShowFinale, forKey: "EpisodeNotificationsManager.toWatchShowFinale")
+            UserDefaults.standard.synchronize()
+        }
+    }
+
+    var toWatchSeasonFinale: Bool {
+        didSet {
+            UserDefaults.standard.set(toWatchSeasonFinale, forKey: "EpisodeNotificationsManager.toWatchSeasonFinale")
+            UserDefaults.standard.synchronize()
+        }
+    }
+
     var toWatchEpisodeRelease: Bool {
         didSet {
             UserDefaults.standard.set(toWatchEpisodeRelease, forKey: "EpisodeNotificationsManager.toWatchEpisodeRelease")
@@ -78,53 +120,23 @@ final class EpisodeNotificationsManager {
 
     private init() {
         groupEpisodes = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.groupEpisodes")
+        reduceBasedOnProgress = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.reduceBasedOnProgress")
+        postponeNighttimeNotifications = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.postponeNighttimeNotifications")
         watchlistShowPremiere = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.watchlistShowPremiere")
         watchlistSeasonPremiere = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.watchlistSeasonPremiere")
+        watchlistShowFinale = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.watchlistShowFinale")
+        watchlistSeasonFinale = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.watchlistSeasonFinale")
         watchlistEpisodeRelease = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.watchlistEpisodeRelease")
         toWatchShowPremiere = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.toWatchShowPremiere")
         toWatchSeasonPremiere = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.toWatchSeasonPremiere")
+        toWatchShowFinale = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.toWatchShowFinale")
+        toWatchSeasonFinale = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.toWatchSeasonFinale")
         toWatchEpisodeRelease = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.toWatchEpisodeRelease")
     }
 
     fileprivate let uuidPrefix = "episodeRelease"
 
-    private var toWatchShows: [Show]? {
-        didSet {
-            guard let toWatchShows = toWatchShows else { return }
-            guard let watchlistedShows = watchlistedShows else { return }
-            var list = [Int64]()
-            list.append(contentsOf: toWatchShows.compactMap { $0.identifiers.trakt })
-            list.append(contentsOf: watchlistedShows)
-            list.removeDuplicates()
-            list.sort()
-            showList = list
-        }
-    }
-
-    private var watchlistedShows: [Int64]? {
-        didSet {
-            guard let toWatchShows = toWatchShows else { return }
-            guard let watchlistedShows = watchlistedShows else { return }
-            var list = [Int64]()
-            list.append(contentsOf: toWatchShows.compactMap { $0.identifiers.trakt })
-            list.append(contentsOf: watchlistedShows)
-            list.removeDuplicates()
-            list.sort()
-            showList = list
-        }
-    }
-
-    private var showList = [Int64]() {
-        didSet {
-            if showList == oldValue { return }
-            debouncedRebuildNotifications.call()
-        }
-    }
-
     private func rebuildNotifications() {
-        // the ToWatch or Watchlist can be empty, this call  is debounced enough to not wait more than this!
-        if toWatchShows == nil, watchlistedShows == nil { return }
-
         rebuildNotificationsTask?.cancel()
         scheduleNotifications()
     }
@@ -149,15 +161,15 @@ final class EpisodeNotificationsManager {
                                                name: .NSCalendarDayChanged,
                                                object: nil)
 
-        onShowsToWatchChangedReceiver.listen { [weak self] shows in
+        onShowsToWatchChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.toWatchShows = shows
+            self.debouncedRebuildNotifications.call()
         }.disposed(by: disposeBag)
 
-        onShowsWatchlistedChangedReceiver.listen { [weak self] identifiers in
+        onShowsWatchlistedChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.watchlistedShows = identifiers
-        }
+            self.debouncedRebuildNotifications.call()
+        }.disposed(by: disposeBag)
 
         debouncedRebuildNotifications.call()
     }
@@ -195,8 +207,6 @@ final class EpisodeNotificationsManager {
     }
 
     private func scheduleNotifications() {
-        guard let toWatchShows = toWatchShows else { return }
-
         rebuildNotificationsTask = Task { [weak self] in
             guard let self = self else { return }
 
@@ -206,58 +216,41 @@ final class EpisodeNotificationsManager {
             }
 
             do {
-                let showEpisodeCalendarItems = try await fetchCalendar().filter { $0.firstAired > .now }
+                let showEpisodeCalendarItems = try await fetchCalendar()
                 try Task.checkCancellation()
 
                 var requests = [UNNotificationRequest]()
+                var showBehindStatus = [Int64: Bool]()
+                let reduceBasedOnProgress = self.reduceBasedOnProgress
+                let groupEpisodes = self.groupEpisodes
+                let postponeNighttimeNotifications = self.postponeNighttimeNotifications
 
                 for showEpisodeCalendarItem in showEpisodeCalendarItems where showEpisodeCalendarItem.episode.season != 0 {
                     try Task.checkCancellation()
                     // Never schedule local episode notifications for dropped or hidden shows.
-                    if showEpisodeCalendarItem.show.isDropped || showEpisodeCalendarItem.show.isHiddenFromProgress || showEpisodeCalendarItem.show.isHiddenFromCalendar {
+                    if shouldExcludeFromEpisodeNotifications(showEpisodeCalendarItem.show) {
                         continue
                     }
-                    // is in to watch
-                    if toWatchShows.contains(showEpisodeCalendarItem.show) {
-                        // check if show premiere
-                        if toWatchShowPremiere && showEpisodeCalendarItem.episode.number == 1 && showEpisodeCalendarItem.episode.season == 1 {
-                            let request = self.scheduleNotification(for: showEpisodeCalendarItem, with: "Series Premiere", subtitle: "")
-                            requests.append(request)
-                            continue
-                        }
-                        // check if season premiere
-                        if toWatchSeasonPremiere && showEpisodeCalendarItem.episode.number == 1 && showEpisodeCalendarItem.episode.season > 1 {
-                            let request = self.scheduleNotification(for: showEpisodeCalendarItem, with: "Season Premiere", subtitle: "")
-                            requests.append(request)
-                            continue
-                        }
-                        // check if user wants each episode
-                        if toWatchEpisodeRelease {
-                            let request = self.scheduleNotification(for: showEpisodeCalendarItem, with: "New Episode", subtitle: "")
-                            requests.append(request)
+
+                    let event = EpisodeNotificationEvent(episode: showEpisodeCalendarItem.episode)
+                    guard let source = notificationSource(for: showEpisodeCalendarItem.show) else { continue }
+                    guard shouldScheduleNotification(for: event, source: source) else { continue }
+
+                    if reduceBasedOnProgress && event.isStandardEpisode {
+                        let isBehind = await self.isBehind(show: showEpisodeCalendarItem.show, showBehindStatus: &showBehindStatus)
+                        try Task.checkCancellation()
+                        if isBehind && shouldKeepStandardEpisodeInGroupedBulk(for: showEpisodeCalendarItem,
+                                                                              in: showEpisodeCalendarItems,
+                                                                              source: source,
+                                                                              groupEpisodes: groupEpisodes) == false {
                             continue
                         }
                     }
-                    // is in watchlist
-                    if showEpisodeCalendarItem.show.isWatchlisted {
-                        // check if show premiere
-                        if watchlistShowPremiere && showEpisodeCalendarItem.episode.number == 1 && showEpisodeCalendarItem.episode.season == 1 {
-                            let request = self.scheduleNotification(for: showEpisodeCalendarItem, with: "Series Premiere", subtitle: "Watchlist")
-                            requests.append(request)
-                            continue
-                        }
-                        // check if season premiere
-                        if watchlistSeasonPremiere && showEpisodeCalendarItem.episode.number == 1 && showEpisodeCalendarItem.episode.season > 1 {
-                            let request = self.scheduleNotification(for: showEpisodeCalendarItem, with: "Season Premiere", subtitle: "Watchlist")
-                            requests.append(request)
-                            continue
-                        }
-                        // check if user wants each episode
-                        if watchlistEpisodeRelease {
-                            let request = self.scheduleNotification(for: showEpisodeCalendarItem, with: "New Episode", subtitle: "Watchlist")
-                            requests.append(request)
-                            continue
-                        }
+
+                    if let request = self.scheduleNotification(for: showEpisodeCalendarItem,
+                                                               event: event,
+                                                               postponeNighttimeNotifications: postponeNighttimeNotifications) {
+                        requests.append(request)
                     }
                 }
 
@@ -273,8 +266,12 @@ final class EpisodeNotificationsManager {
 
                         if filteredAndSortedRequests.count > 1 && request == filteredAndSortedRequests.first! {
                             for showEpisodeCalendarItem in showEpisodeCalendarItems where request.identifier == identifier(for: showEpisodeCalendarItem) {
-                                let request = self.scheduleGroupNotification(for: showEpisodeCalendarItem, with: "New Episodes", subtitle: request.content.subtitle, and: filteredAndSortedRequests.count)
-                                groupedRequests.append(request)
+                                if let request = self.scheduleGroupNotification(for: showEpisodeCalendarItem,
+                                                                                with: "New Episodes",
+                                                                                and: filteredAndSortedRequests.count,
+                                                                                postponeNighttimeNotifications: postponeNighttimeNotifications) {
+                                    groupedRequests.append(request)
+                                }
                                 break
                             }
                         } else if filteredAndSortedRequests.count == 1 {
@@ -316,6 +313,80 @@ final class EpisodeNotificationsManager {
         }
     }
 
+    private func notificationSource(for show: Show) -> EpisodeNotificationSource? {
+        if show.isInToWatch {
+            return .toWatch
+        } else if show.isWatchlisted {
+            return .watchlist
+        } else {
+            return nil
+        }
+    }
+
+    private func shouldScheduleNotification(for event: EpisodeNotificationEvent, source: EpisodeNotificationSource) -> Bool {
+        switch source {
+        case .toWatch:
+            return (toWatchShowPremiere && event.isSeriesPremiere) ||
+                (toWatchSeasonPremiere && event.isSeasonPremiere) ||
+                (toWatchShowFinale && event.isSeriesFinale) ||
+                (toWatchSeasonFinale && event.isSeasonFinale) ||
+                toWatchEpisodeRelease
+        case .watchlist:
+            return (watchlistShowPremiere && event.isSeriesPremiere) ||
+                (watchlistSeasonPremiere && event.isSeasonPremiere) ||
+                (watchlistShowFinale && event.isSeriesFinale) ||
+                (watchlistSeasonFinale && event.isSeasonFinale) ||
+                watchlistEpisodeRelease
+        }
+    }
+
+    private func shouldKeepStandardEpisodeInGroupedBulk(for showEpisodeItem: ShowEpisodeCalendarItem,
+                                                        in showEpisodeItems: [ShowEpisodeCalendarItem],
+                                                        source: EpisodeNotificationSource,
+                                                        groupEpisodes: Bool) -> Bool {
+        guard groupEpisodes else { return false }
+        guard let showId = showEpisodeItem.show.identifiers.trakt else { return false }
+
+        let releaseDate = showEpisodeItem.firstAired
+        var eligibleEpisodeCount = 0
+        var containsPremiereOrFinale = false
+
+        for otherShowEpisodeItem in showEpisodeItems where otherShowEpisodeItem.episode.season != 0 {
+            guard otherShowEpisodeItem.show.identifiers.trakt == showId else { continue }
+            guard shouldExcludeFromEpisodeNotifications(otherShowEpisodeItem.show) == false else { continue }
+            guard otherShowEpisodeItem.firstAired == releaseDate else { continue }
+
+            let event = EpisodeNotificationEvent(episode: otherShowEpisodeItem.episode)
+            guard shouldScheduleNotification(for: event, source: source) else { continue }
+
+            eligibleEpisodeCount += 1
+            if event.isPremiereOrFinale {
+                containsPremiereOrFinale = true
+            }
+        }
+
+        return eligibleEpisodeCount > 1 && containsPremiereOrFinale
+    }
+
+    private func shouldExcludeFromEpisodeNotifications(_ show: Show) -> Bool {
+        return show.isDropped || show.isHiddenFromProgress || show.isHiddenFromCalendar
+    }
+
+    private func isBehind(show: Show, showBehindStatus: inout [Int64: Bool]) async -> Bool {
+        guard let showId = show.identifiers.trakt else { return false }
+
+        if let isBehind = showBehindStatus[showId] { return isBehind }
+
+        guard let progress = await show.mediaModel.progress() else {
+            showBehindStatus[showId] = false
+            return false
+        }
+
+        let isBehind = progress.behind > 0
+        showBehindStatus[showId] = isBehind
+        return isBehind
+    }
+
     private func beginNotificationRebuildBackgroundTask() -> UIBackgroundTaskIdentifier? {
         return UIApplication.shared.beginBackgroundTask(withName: "EpisodeNotificationRebuild") { [weak self] in
             guard let self = self else { return }
@@ -331,15 +402,23 @@ final class EpisodeNotificationsManager {
         }
     }
 
-    private func scheduleNotification(for showEpisodeItem: ShowEpisodeCalendarItem, with title: String, subtitle: String) -> UNNotificationRequest {
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.subtitle = subtitle
-        content.body = "A new episode of \(showEpisodeItem.show.title) \(showEpisodeItem.episode.localizedEpisodeNumber) is airing now" + (showEpisodeItem.show.network == nil ? "." : " on \(showEpisodeItem.show.network!)")
-        content.threadIdentifier = "\(showEpisodeItem.show.identifiers.trakt!)"
-        content.userInfo = ["link": "ripl://shows/\(showEpisodeItem.show.identifiers.trakt!)/seasons/\(showEpisodeItem.episode.season)/episodes/\(showEpisodeItem.episode.number)"]
+    private func scheduleNotification(for showEpisodeItem: ShowEpisodeCalendarItem,
+                                      event: EpisodeNotificationEvent,
+                                      postponeNighttimeNotifications: Bool) -> UNNotificationRequest? {
+        let delivery = EpisodeNotificationDelivery(firstAired: showEpisodeItem.firstAired,
+                                                   postponeNighttimeNotifications: postponeNighttimeNotifications)
+        let triggerDate = notificationTriggerDate(for: showEpisodeItem, delivery: delivery)
+        if triggerDate <= .now { return nil }
 
-        let triggerDate = showEpisodeItem.firstAired
+        let content = UNMutableNotificationContent()
+        content.title = event.title
+        content.body = "\(showEpisodeItem.show.title) \(showEpisodeItem.episode.localizedEpisodeNumber) \(delivery.bodyText)" + networkSuffix(for: showEpisodeItem.show)
+        content.threadIdentifier = "\(showEpisodeItem.show.identifiers.trakt!)"
+        content.userInfo = ["link": "ripl://shows/\(showEpisodeItem.show.identifiers.trakt!)/seasons/\(showEpisodeItem.episode.season)/episodes/\(showEpisodeItem.episode.number)",
+                            "reduce_based_on_progress": reduceBasedOnProgress,
+                            "postpone_nighttime_notifications": postponeNighttimeNotifications,
+                            "notification_delivery": delivery.rawValue,
+                            "episode_event": event.rawValue]
 
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second],
                                                          from: triggerDate)
@@ -351,15 +430,25 @@ final class EpisodeNotificationsManager {
                                      trigger: trigger)
     }
 
-    private func scheduleGroupNotification(for showEpisodeItem: ShowEpisodeCalendarItem, with title: String, subtitle: String, and groupCount: Int) -> UNNotificationRequest {
+    private func scheduleGroupNotification(for showEpisodeItem: ShowEpisodeCalendarItem,
+                                           with title: String,
+                                           and groupCount: Int,
+                                           postponeNighttimeNotifications: Bool) -> UNNotificationRequest? {
+        let delivery = EpisodeNotificationDelivery(firstAired: showEpisodeItem.firstAired,
+                                                   postponeNighttimeNotifications: postponeNighttimeNotifications)
+        let triggerDate = notificationTriggerDate(for: showEpisodeItem, delivery: delivery)
+        if triggerDate <= .now { return nil }
+
         let content = UNMutableNotificationContent()
         content.title = title
-        content.subtitle = subtitle
-        content.body = "\(groupCount) new episodes of \(showEpisodeItem.show.title) \(showEpisodeItem.episode.localizedSeasonNumber) are now available" + (showEpisodeItem.show.network == nil ? "." : " on \(showEpisodeItem.show.network!)")
+        content.body = "\(groupCount) new episodes of \(showEpisodeItem.show.title) \(showEpisodeItem.episode.localizedSeasonNumber) \(delivery.groupedBodyText)" + networkSuffix(for: showEpisodeItem.show)
         content.threadIdentifier = "\(showEpisodeItem.show.identifiers.trakt!)"
-        content.userInfo = ["link": "ripl://shows/\(showEpisodeItem.show.identifiers.trakt!)/seasons/\(showEpisodeItem.episode.season)/episodes/\(showEpisodeItem.episode.number)"]
+        content.userInfo = ["link": "ripl://shows/\(showEpisodeItem.show.identifiers.trakt!)/seasons/\(showEpisodeItem.episode.season)/episodes/\(showEpisodeItem.episode.number)",
+                            "reduce_based_on_progress": reduceBasedOnProgress,
+                            "postpone_nighttime_notifications": postponeNighttimeNotifications,
+                            "notification_delivery": delivery.rawValue,
+                            "episode_event": EpisodeNotificationEvent(episode: showEpisodeItem.episode).rawValue]
 
-        let triggerDate = showEpisodeItem.firstAired
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second],
                                                          from: triggerDate)
 
@@ -368,10 +457,144 @@ final class EpisodeNotificationsManager {
         return UNNotificationRequest(identifier: uuidString,
                                      content: content,
                                      trigger: trigger)
+    }
+
+    private func networkSuffix(for show: Show) -> String {
+        guard let network = show.network else { return "." }
+        return " on \(network)."
+    }
+
+    private func notificationTriggerDate(for showEpisodeItem: ShowEpisodeCalendarItem, delivery: EpisodeNotificationDelivery) -> Date {
+        return delivery.triggerDate(for: showEpisodeItem.firstAired)
     }
 
     private func identifier(for showEpisodeItem: ShowEpisodeCalendarItem) -> String {
         return uuidPrefix + "\(showEpisodeItem.episode.identifiers.trakt!)"
+    }
+}
+
+private enum EpisodeNotificationSource {
+    case toWatch
+    case watchlist
+}
+
+private enum EpisodeNotificationEvent: String {
+    case newEpisode = "new_episode"
+    case seriesPremiere = "series_premiere"
+    case seasonPremiere = "season_premiere"
+    case midSeasonPremiere = "mid_season_premiere"
+    case midSeasonFinale = "mid_season_finale"
+    case seasonFinale = "season_finale"
+    case seriesFinale = "series_finale"
+
+    init(episode: Episode) {
+        switch episode.episodeType {
+        case .seriesPremiere?:
+            self = .seriesPremiere
+        case .seasonPremiere?:
+            self = .seasonPremiere
+        case .midSeasonPremiere?:
+            self = .midSeasonPremiere
+        case .midSeasonFinale?:
+            self = .midSeasonFinale
+        case .seasonFinale?:
+            self = .seasonFinale
+        case .seriesFinale?:
+            self = .seriesFinale
+        case .standard?, .unknown?, nil:
+            if episode.season == 1, episode.number == 1 {
+                self = .seriesPremiere
+            } else if episode.season > 1, episode.number == 1 {
+                self = .seasonPremiere
+            } else {
+                self = .newEpisode
+            }
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .newEpisode:
+            return "New Episode"
+        case .seriesPremiere:
+            return "Series Premiere"
+        case .seasonPremiere:
+            return "Season Premiere"
+        case .midSeasonPremiere:
+            return "Mid Season Premiere"
+        case .midSeasonFinale:
+            return "Mid Season Finale"
+        case .seasonFinale:
+            return "Season Finale"
+        case .seriesFinale:
+            return "Series Finale"
+        }
+    }
+
+    var isSeriesPremiere: Bool {
+        return self == .seriesPremiere
+    }
+
+    var isSeasonPremiere: Bool {
+        return self == .seasonPremiere
+    }
+
+    var isSeriesFinale: Bool {
+        return self == .seriesFinale
+    }
+
+    var isSeasonFinale: Bool {
+        return self == .seasonFinale || self == .midSeasonFinale
+    }
+
+    var isStandardEpisode: Bool {
+        return self == .newEpisode
+    }
+
+    var isPremiereOrFinale: Bool {
+        return isStandardEpisode == false
+    }
+}
+
+private enum EpisodeNotificationDelivery: String {
+    case realtime
+    case postponed
+
+    init(firstAired: Date, postponeNighttimeNotifications: Bool) {
+        guard postponeNighttimeNotifications else {
+            self = .realtime
+            return
+        }
+
+        let hour = Calendar.current.component(.hour, from: firstAired)
+        self = (0..<6).contains(hour) ? .postponed : .realtime
+    }
+
+    var bodyText: String {
+        switch self {
+        case .realtime:
+            return "is airing now"
+        case .postponed:
+            return "was released overnight"
+        }
+    }
+
+    var groupedBodyText: String {
+        switch self {
+        case .realtime:
+            return "are now available"
+        case .postponed:
+            return "were released overnight"
+        }
+    }
+
+    func triggerDate(for firstAired: Date) -> Date {
+        switch self {
+        case .realtime:
+            return firstAired
+        case .postponed:
+            return Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: firstAired) ?? firstAired
+        }
     }
 }
 

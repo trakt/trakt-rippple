@@ -288,6 +288,7 @@
 		3A8273281FC1C6F800CD25EC /* MediaTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A8273271FC1C6F800CD25EC /* MediaTableViewCell.xib */; };
 		3A859B0C207236F000DDEE47 /* CustomTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A859B0B207236F000DDEE47 /* CustomTableView.swift */; };
 		3A87597524B9EBDA00CF0937 /* DVDMovieNotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A87597424B9EBDA00CF0937 /* DVDMovieNotificationsManager.swift */; };
+		09A1B2C42E7C000100000001 /* StreamingMovieNotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A1B2C22E7C000100000001 /* StreamingMovieNotificationsManager.swift */; };
 		3A8B29032D9D45EA0022574D /* SentimentsPeekCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8B29022D9D45EA0022574D /* SentimentsPeekCollectionViewCell.swift */; };
 		3A8B29052D9D45F80022574D /* SentimentsPeekCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A8B29042D9D45F80022574D /* SentimentsPeekCollectionViewCell.xib */; };
 		3A8B29082D9D6F6B0022574D /* SentimentsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8B29072D9D6F6B0022574D /* SentimentsTableViewCell.swift */; };
@@ -848,6 +849,7 @@
 		3A8273271FC1C6F800CD25EC /* MediaTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaTableViewCell.xib; sourceTree = "<group>"; };
 		3A859B0B207236F000DDEE47 /* CustomTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTableView.swift; sourceTree = "<group>"; };
 		3A87597424B9EBDA00CF0937 /* DVDMovieNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DVDMovieNotificationsManager.swift; sourceTree = "<group>"; };
+		09A1B2C22E7C000100000001 /* StreamingMovieNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingMovieNotificationsManager.swift; sourceTree = "<group>"; };
 		3A8B29022D9D45EA0022574D /* SentimentsPeekCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SentimentsPeekCollectionViewCell.swift; sourceTree = "<group>"; };
 		3A8B29042D9D45F80022574D /* SentimentsPeekCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SentimentsPeekCollectionViewCell.xib; sourceTree = "<group>"; };
 		3A8B29072D9D6F6B0022574D /* SentimentsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SentimentsTableViewCell.swift; sourceTree = "<group>"; };
@@ -2363,6 +2365,7 @@
 				3A8E05A324780AFC006B5B13 /* EpisodeNotificationsManager.swift */,
 				3A8E05A524793BCD006B5B13 /* MovieNotificationsManager.swift */,
 				3A87597424B9EBDA00CF0937 /* DVDMovieNotificationsManager.swift */,
+				09A1B2C22E7C000100000001 /* StreamingMovieNotificationsManager.swift */,
 				3AACDE8D29ED43E700DDBF99 /* AnticipatedNotificationsManager.swift */,
 			);
 			path = Local;
@@ -3344,6 +3347,7 @@
 				3AAE0F981FECFECC001D6AAC /* StyledNavigationController.swift in Sources */,
 				3ADFA0B423365FD600D8DD79 /* CastTableViewCell.swift in Sources */,
 				3A87597524B9EBDA00CF0937 /* DVDMovieNotificationsManager.swift in Sources */,
+				09A1B2C42E7C000100000001 /* StreamingMovieNotificationsManager.swift in Sources */,
 				3A1449F028CB8EA500404F52 /* PurchaseModalViewController.swift in Sources */,
 				3A9D23252581485B004C49E8 /* ToWatchImageView.swift in Sources */,
 				3AEAA8FE2BDA78DE0054653A /* WhereToWatchSettingsView.swift in Sources */,

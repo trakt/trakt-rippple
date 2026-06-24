@@ -1,19 +1,19 @@
 //
-//  DVDMovieNotificationsManager.swift
+//  StreamingMovieNotificationsManager.swift
 //  Rippple
 //
-//  Created by Kevin Cador on 11/07/2020.
-//  Copyright © 2020 Trakt. All rights reserved.
+//  Created by Kevin Cador on 21/06/2026.
+//  Copyright © 2026 Trakt. All rights reserved.
 //
 
 import Foundation
 import Receiver
 import UserNotifications
 
-let (onDVDMoviesNotificationsChangedTransmitter, onDVDMoviesNotificationsChangedReceiver) = Receiver<[UNNotificationRequest]>.make(with: .warm(upTo: 1))
+let (onStreamingMoviesNotificationsChangedTransmitter, onStreamingMoviesNotificationsChangedReceiver) = Receiver<[UNNotificationRequest]>.make(with: .warm(upTo: 1))
 
-final class DVDMovieNotificationsManager {
-    static let shared = DVDMovieNotificationsManager()
+final class StreamingMovieNotificationsManager {
+    static let shared = StreamingMovieNotificationsManager()
 
     private let disposeBag = DisposeBag()
 
@@ -21,14 +21,14 @@ final class DVDMovieNotificationsManager {
 
     var watchlistMovieRelease: Bool {
         didSet {
-            UserDefaults.standard.set(watchlistMovieRelease, forKey: "DVDMovieNotificationsManager.watchlistMovieRelease")
+            UserDefaults.standard.set(watchlistMovieRelease, forKey: "StreamingMovieNotificationsManager.watchlistMovieRelease")
             UserDefaults.standard.synchronize()
         }
     }
 
     var toWatchMovieRelease: Bool {
         didSet {
-            UserDefaults.standard.set(toWatchMovieRelease, forKey: "DVDMovieNotificationsManager.toWatchMovieRelease")
+            UserDefaults.standard.set(toWatchMovieRelease, forKey: "StreamingMovieNotificationsManager.toWatchMovieRelease")
             UserDefaults.standard.synchronize()
         }
     }
@@ -36,15 +36,15 @@ final class DVDMovieNotificationsManager {
     // ----
 
     private init() {
-        watchlistMovieRelease = UserDefaults.standard.bool(forKey: "DVDMovieNotificationsManager.watchlistMovieRelease")
-        toWatchMovieRelease = UserDefaults.standard.bool(forKey: "DVDMovieNotificationsManager.toWatchMovieRelease")
+        watchlistMovieRelease = UserDefaults.standard.bool(forKey: "StreamingMovieNotificationsManager.watchlistMovieRelease")
+        toWatchMovieRelease = UserDefaults.standard.bool(forKey: "StreamingMovieNotificationsManager.toWatchMovieRelease")
         debouncedRebuildNotifications = Debouncer(delay: 2.0) { [weak self] in
             guard let self = self else { return }
             self.rebuildNotifications()
         }
     }
 
-    fileprivate let uuidPrefix = "DVDMovieRelease"
+    fileprivate let uuidPrefix = "streamingMovieRelease"
 
     private var debouncedRebuildNotifications: Debouncer!
 
@@ -68,15 +68,15 @@ final class DVDMovieNotificationsManager {
             var requests = [UNNotificationRequest]()
             for movieCalendarItem in movieCalendarItems {
                 if movieCalendarItem.movie.isInToWatch {
-                    if DVDMovieNotificationsManager.shared.toWatchMovieRelease {
-                        if let request = self.scheduleNotification(for: movieCalendarItem, with: "DVD & Blu-ray Release", subtitle: "") {
+                    if StreamingMovieNotificationsManager.shared.toWatchMovieRelease {
+                        if let request = self.scheduleNotification(for: movieCalendarItem, with: "Streaming Release", subtitle: "") {
                             requests.append(request)
                         }
                         continue
                     }
                 } else if movieCalendarItem.movie.isWatchlisted {
-                    if DVDMovieNotificationsManager.shared.watchlistMovieRelease {
-                        if let request = self.scheduleNotification(for: movieCalendarItem, with: "DVD & Blu-ray Release", subtitle: "") {
+                    if StreamingMovieNotificationsManager.shared.watchlistMovieRelease {
+                        if let request = self.scheduleNotification(for: movieCalendarItem, with: "Streaming Release", subtitle: "") {
                             requests.append(request)
                         }
                         continue
@@ -93,7 +93,7 @@ final class DVDMovieNotificationsManager {
                     }
                 }
             }
-            onDVDMoviesNotificationsChangedTransmitter.broadcast(requests)
+            onStreamingMoviesNotificationsChangedTransmitter.broadcast(requests)
         }
     }
 
@@ -117,7 +117,7 @@ final class DVDMovieNotificationsManager {
     }
 
     private func fetchCalendar() {
-        TraktAPIProvider.provider.request(.dvdMoviesCalendar(startDate: Calendar.current.date(byAdding: .day, value: -2, to: Date())!, days: 15), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
+        TraktAPIProvider.provider.request(.streamingMoviesCalendar(startDate: Calendar.current.date(byAdding: .day, value: -2, to: Date())!, days: 15), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
@@ -128,10 +128,10 @@ final class DVDMovieNotificationsManager {
                     self.movieCalendarItems = try response.map([MovieCalendarItem].self, using: TraktAPIProvider.decoder)
 
                 } catch {
-                    print("dvdMoviesCalendar request JSON mapping failed! \(error)")
+                    print("streamingMoviesCalendar request JSON mapping failed! \(error)")
                 }
             case .failure(let error):
-                print("dvdMoviesCalendar request failure \(error)")
+                print("streamingMoviesCalendar request failure \(error)")
             }
         }
     }
@@ -142,9 +142,9 @@ final class DVDMovieNotificationsManager {
         content.subtitle = subtitle
         if let country = movieCalendarItem.movie.country {
             let localizedCountry = Locale(identifier: "en_US").localizedCountry(for: country)
-            content.body = "\(movieCalendarItem.movie.title) is released today in \(localizedCountry)"
+            content.body = "\(movieCalendarItem.movie.title) is available to stream today in \(localizedCountry)"
         } else {
-            content.body = "\(movieCalendarItem.movie.title) is released today."
+            content.body = "\(movieCalendarItem.movie.title) is available to stream today."
         }
         content.threadIdentifier = "\(movieCalendarItem.movie.identifiers.trakt!)"
 
@@ -166,7 +166,7 @@ final class DVDMovieNotificationsManager {
 }
 
 extension UNNotificationRequest {
-    var isDVDMovieNotification: Bool {
-        return identifier.hasPrefix(DVDMovieNotificationsManager.shared.uuidPrefix)
+    var isStreamingMovieNotification: Bool {
+        return identifier.hasPrefix(StreamingMovieNotificationsManager.shared.uuidPrefix)
     }
 }

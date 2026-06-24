@@ -38,38 +38,28 @@ final class MovieNotificationsManager {
     private init() {
         watchlistMovieRelease = UserDefaults.standard.bool(forKey: "MovieNotificationsManager.watchlistMovieRelease")
         toWatchMovieRelease = UserDefaults.standard.bool(forKey: "MovieNotificationsManager.toWatchMovieRelease")
+        debouncedRebuildNotifications = Debouncer(delay: 2.0) { [weak self] in
+            guard let self = self else { return }
+            self.rebuildNotifications()
+        }
     }
 
     fileprivate let uuidPrefix = "movieRelease"
 
-    private var toWatchMovies: [Movie]? {
-        didSet {
-            if toWatchMovies == oldValue { return }
-            rebuildNotifications()
-        }
-    }
-
-    private var watchlistedMovies: [Int64]? {
-        didSet {
-            if watchlistedMovies == oldValue { return }
-            rebuildNotifications()
-        }
-    }
+    private var debouncedRebuildNotifications: Debouncer!
 
     private var movieCalendarItems: [MovieCalendarItem]? {
         didSet {
-            rebuildNotifications()
+            debouncedRebuildNotifications.call()
         }
     }
 
     private func rebuildNotifications() {
         guard let movieCalendarItems = movieCalendarItems else { return }
-        guard watchlistedMovies != nil else { return }
-        guard let toWatchMovies = toWatchMovies else { return }
 
         var requests = [UNNotificationRequest]()
         for movieCalendarItem in movieCalendarItems {
-            if toWatchMovies.contains(movieCalendarItem.movie) {
+            if movieCalendarItem.movie.isInToWatch {
                 if MovieNotificationsManager.shared.toWatchMovieRelease {
                     if let request = scheduleNotification(for: movieCalendarItem, with: "Movie Release", subtitle: "") {
                         requests.append(request)
@@ -110,18 +100,17 @@ final class MovieNotificationsManager {
     func setup() {
         onNotificationsSettingsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.rebuildNotifications()
+            self.debouncedRebuildNotifications.fireNow()
         }.disposed(by: disposeBag)
 
-        onAllMoviesToWatchChangedReceiver.listen { [weak self] movies in
+        onAllMoviesToWatchChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.toWatchMovies = movies
+            self.debouncedRebuildNotifications.call()
         }.disposed(by: disposeBag)
 
-        onMoviesWatchlistedChangedReceiver.listen { [weak self] identifiers in
+        onMoviesWatchlistedChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-
-            self.watchlistedMovies = identifiers
+            self.debouncedRebuildNotifications.call()
         }
 
         NotificationCenter.default.addObserver(self,
