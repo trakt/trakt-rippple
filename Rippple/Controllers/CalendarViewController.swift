@@ -131,7 +131,7 @@ final class CalendarViewController: UITableViewController {
         case loading
         case nothing
         case header(Date)
-        case media(MediaModel, String?, String?)
+        case media(MediaModel, note: String?, meta: String?)
     }
 
     private var now = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: Date.now)!
@@ -186,7 +186,7 @@ final class CalendarViewController: UITableViewController {
                 cell.subtitle?.textColor = .secondaryLabel
             }
             return cell
-        case .media(let media, let subtitle, let meta):
+        case .media(let media, let note, let meta):
             let cell = tableView.dequeueReusableCell(withIdentifier: "media") as! MediaTableViewCell
             cell.calendarMode = true
             cell.media = media
@@ -213,8 +213,10 @@ final class CalendarViewController: UITableViewController {
             default:
                 break
             }
-            if let subtitle = subtitle { cell.submeta?.text = subtitle }
-            if let meta = meta { cell.meta?.text = meta }
+            cell.note = note
+            cell.notesButton?.isUserInteractionEnabled = false
+            cell.meta?.media = nil
+            cell.meta?.text = meta
             return cell
         case .empty(let emoji, let title, let subtitle, let body):
             let cell = tableView.dequeueReusableCell(withIdentifier: "empty") as! EmptyTableViewCell
@@ -354,27 +356,25 @@ final class CalendarViewController: UITableViewController {
         }
         snapshot.appendSections(dates.removingDuplicates().map { .day($0) })
 
-        for media in data.movies.map({ $0.mediaModel }) {
-            guard let released = media.movie!.released else { continue }
-            let df = DateFormatter()
-            df.dateFormat = "yyyy-MM-dd"
-            let date = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: df.date(from: released)!)!
+        for movieRelease in data.movies {
+            let media = movieRelease.mediaModel
+            let date = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: movieRelease.released)!
             if let index = snapshot.indexOfSection(.day(date)) {
                 let section = snapshot.sectionIdentifiers[index]
                 if !snapshot.itemIdentifiers(inSection: section).contains(.header(date)) {
                     snapshot.appendItems([.header(date)], toSection: section)
                 }
-                var subtitle = ""
-                if let movie = media.movie, data.trendingMovies.contains(movie) {
-                    subtitle = "🔥 Trending"
-                } else if let movie = media.movie, data.anticipatedMovies.contains(movie) {
-                    subtitle = "👀 Anticipated"
+                var notes = [movieRelease.tag]
+                if data.trendingMovies.contains(movieRelease.movie) {
+                    notes.append("🔥 Trending")
+                } else if data.anticipatedMovies.contains(movieRelease.movie) {
+                    notes.append("👀 Anticipated")
                 }
                 var localizedCountry = "In unknown"
-                if let movieCountry = media.movie!.country {
-                    localizedCountry = "In \(Locale(identifier: "en_US").localizedCountry(for: movieCountry))"
+                if let releaseCountryCode = movieRelease.releaseCountryCode {
+                    localizedCountry = "In \(Locale(identifier: "en_US").localizedCountry(for: releaseCountryCode))"
                 }
-                snapshot.appendItems([.media(media, subtitle, localizedCountry)], toSection: section)
+                snapshot.appendItems([.media(media, note: notes.joined(separator: " · "), meta: localizedCountry)], toSection: section)
             }
         }
 
@@ -396,13 +396,13 @@ final class CalendarViewController: UITableViewController {
                 if let network = media.show!.network {
                     meta += " on \(network)"
                 }
-                var subtitle = ""
+                var note: String?
                 if let show = media.show, data.trendingShows.contains(show) {
-                    subtitle = "🔥 Trending"
+                    note = "🔥 Trending"
                 } else if let show = media.show, data.anticipatedShows.contains(show) {
-                    subtitle = "👀 Anticipated"
+                    note = "👀 Anticipated"
                 }
-                snapshot.appendItems([.media(media, subtitle, meta)], toSection: section)
+                snapshot.appendItems([.media(media, note: note, meta: meta)], toSection: section)
             }
         }
 

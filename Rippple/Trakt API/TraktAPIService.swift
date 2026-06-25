@@ -373,6 +373,8 @@ enum TraktAPIService {
 
     case myShowsCalendar(startDate: Date, days: Int)
     case myMoviesCalendar(startDate: Date, days: Int)
+    case myDvdMoviesCalendar(startDate: Date, days: Int)
+    case myStreamingMoviesCalendar(startDate: Date, days: Int)
 
     case hidden(section: HiddenSection, type: HiddenType?, extended: Extended?, pageInfo: PageInfo)
 
@@ -872,6 +874,16 @@ extension TraktAPIService: AuthorizedTargetType {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let formattedDate = dateFormatter.string(from: startDate)
             return "calendars/my/movies/\(formattedDate)/\(days)"
+        case .myDvdMoviesCalendar(let startDate, let days):
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let formattedDate = dateFormatter.string(from: startDate)
+            return "calendars/my/dvd/\(formattedDate)/\(days)"
+        case .myStreamingMoviesCalendar(let startDate, let days):
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let formattedDate = dateFormatter.string(from: startDate)
+            return "calendars/my/streaming/\(formattedDate)/\(days)"
         case .dvdMoviesCalendar(let startDate, let days):
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -1142,7 +1154,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .addMovieToHistory, .addEpisodeToHistory, .addShowToHistory, .addSeasonToHistory, .addEpisodesToHistory:
             return .post
-        case .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .myShowsCalendar, .myMoviesCalendar, .premiereCalendar:
+        case .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .myShowsCalendar, .myMoviesCalendar, .myDvdMoviesCalendar, .myStreamingMoviesCalendar, .premiereCalendar:
             return .get
         case .removeFromHistory, .removeMultipleFromHistory, .removeShowFromHistory, .removeMovieFromHistory, .removeEpisodeFromHistory, .removeSeasonFromHistory:
             return .post
@@ -1724,7 +1736,7 @@ extension TraktAPIService: AuthorizedTargetType {
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
-        case .dvdMoviesCalendar, .streamingMoviesCalendar, .myShowsCalendar, .myMoviesCalendar, .premiereCalendar:
+        case .dvdMoviesCalendar, .streamingMoviesCalendar, .myShowsCalendar, .myMoviesCalendar, .myDvdMoviesCalendar, .myStreamingMoviesCalendar, .premiereCalendar:
             return .requestParameters(parameters: ["extended": "full"], encoding: URLEncoding.default)
         case .removeFromHistory(let id):
             return .requestParameters(parameters: ["ids": [id]], encoding: JSONEncoding.default)
