@@ -18,7 +18,7 @@ final class SocialActivityTableViewCell: UITableViewCell {
     @IBOutlet var avatarsContainerWidthConstraint: NSLayoutConstraint!
 
     private let maxAvatars = 5
-    private let loadingAvatarCount = 1
+    private let loadingAvatarCount = 0
     private let avatarSize: CGFloat = 34.0
     private let avatarBorderWidth: CGFloat = 1.0
     private let avatarFanOutTranslation: CGFloat = 8.0
@@ -78,8 +78,14 @@ final class SocialActivityTableViewCell: UITableViewCell {
         avatarsContainer.setContentHuggingPriority(.required, for: .horizontal)
         avatarsContainer.setContentCompressionResistancePriority(.required, for: .horizontal)
 
+        configureContentStackHeight()
         configureAvatarImageViews()
         renderLoading()
+    }
+
+    private func configureContentStackHeight() {
+        guard let contentStackView = avatarsContainer.superview else { return }
+        contentStackView.heightAnchor.constraint(greaterThanOrEqualToConstant: avatarSize).isActive = true
     }
 
     private func configureAvatarImageViews() {
@@ -218,7 +224,7 @@ final class SocialActivityTableViewCell: UITableViewCell {
     }
 
     private func renderLoadingAvatars() {
-        avatarsContainer.isHiddenInStackView = false
+        avatarsContainer.isHiddenInStackView = loadingAvatarCount == 0
         avatarsContainerWidthConstraint.constant = avatarContainerWidth(for: loadingAvatarCount)
 
         for (index, imageView) in avatarImageViews.enumerated() {
