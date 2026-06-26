@@ -14,6 +14,7 @@ let (episodeToWatchSettingsUpdatedTransmitter, episodeToWatchSettingsUpdatedRece
 
 let (episodeUpcomingEnabledTransmitter, episodeUpcomingEnabledReceiver) = Receiver<Bool>.make(with: .hot)
 let (episodeToWatchGroupModeTransmitter, episodeToWatchGroupModeReceiver) = Receiver<EpisodeToWatchGroupMode>.make(with: .hot)
+let (episodeToWatchBingeableOnlyTransmitter, episodeToWatchBingeableOnlyReceiver) = Receiver<Bool>.make(with: .hot)
 
 private let episodeToWatchGroupModeStorageKey = "EpisodeToWatchSettings.groupMode"
 
@@ -160,6 +161,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     @Published var sort: EpisodeToWatchSettings.Sort
     @Published var reverse: Bool
+    @Published var bingeableOnly: Bool
     @Published var upcomingEnabled: Bool
     @Published var groupMode: EpisodeToWatchGroupMode
 
@@ -175,6 +177,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
         collected = settings.collected
         sort = settings.sort
         reverse = settings.reverse
+        bingeableOnly = settings.bingeableOnly
         upcomingEnabled = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.upcoming")
         groupMode = EpisodeToWatchGroupMode.currentValue()
 
@@ -273,6 +276,16 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     func setReverse(_ newValue: Bool) {
         updateSetting(\.reverse, settingsKeyPath: \.reverse, to: newValue)
+    }
+
+    func setBingeableOnly(_ newValue: Bool) {
+        guard PurchaseManager.shared.purchased else {
+            UIApplication.shared.switchToPurchase()
+            return
+        }
+        bingeableOnly = newValue
+        settings.bingeableOnly = newValue
+        episodeToWatchBingeableOnlyTransmitter.broadcast(newValue)
     }
 
     func setUpcomingEnabled(_ newValue: Bool) {
@@ -487,6 +500,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
         collected = settings.collected
         sort = settings.sort
         reverse = settings.reverse
+        bingeableOnly = settings.bingeableOnly
         upcomingEnabled = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.upcoming")
         groupMode = EpisodeToWatchGroupMode.currentValue()
         rebuildOtherListItems()
@@ -534,6 +548,7 @@ struct EpisodeToWatchSettingsView: View {
             Section {
                 sortingRow
                 reverseRow
+                bingeableOnlyRow
             } header: {
                 Text("Then:")
             }
@@ -650,6 +665,18 @@ struct EpisodeToWatchSettingsView: View {
             Spacer()
             Toggle("", isOn: Binding(get: { viewModel.reverse },
                                      set: { viewModel.setReverse($0) }))
+                .labelsHidden()
+                .tint(Color(UIColor(asset: .globalTint)))
+        }
+    }
+
+    private var bingeableOnlyRow: some View {
+        HStack {
+            Text("Hide Incomplete Seasons")
+                .foregroundStyle(.primary)
+            Spacer()
+            Toggle("", isOn: Binding(get: { viewModel.bingeableOnly },
+                                     set: { viewModel.setBingeableOnly($0) }))
                 .labelsHidden()
                 .tint(Color(UIColor(asset: .globalTint)))
         }
@@ -922,6 +949,7 @@ final class EpisodeToWatchSettings {
 
         sort = Sort(rawValue: UserDefaults.standard.integer(forKey: "EpisodeToWatchSettings.sort")) ?? Sort.automatic
         reverse = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.reverse")
+        bingeableOnly = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.bingeableOnly")
 
         // Load otherLists from new format
         if let encodedOtherLists = UserDefaults.standard.object(forKey: "EpisodeToWatchSettings.otherLists") as? Data,
@@ -1053,6 +1081,13 @@ final class EpisodeToWatchSettings {
     var reverse = false {
         didSet {
             UserDefaults.standard.set(reverse, forKey: "EpisodeToWatchSettings.reverse")
+            UserDefaults.standard.synchronize()
+        }
+    }
+
+    var bingeableOnly = false {
+        didSet {
+            UserDefaults.standard.set(bingeableOnly, forKey: "EpisodeToWatchSettings.bingeableOnly")
             UserDefaults.standard.synchronize()
         }
     }

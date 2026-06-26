@@ -83,6 +83,10 @@ final class ProgressManager {
                                  showId: Int64,
                                  progress: ShowProgress,
                                  completion: @escaping (ShowProgress) -> Void) {
+        let progressDispatchGroup = DispatchGroup()
+        let progressLock = NSLock()
+        var updatedProgress = progress
+
         let cacheAndComplete: (ShowProgress) -> Void = { [weak self] finalProgress in
             guard let self = self else { return }
             let showShowProgress = ShowShowProgress(show: show,
@@ -92,30 +96,55 @@ final class ProgressManager {
             completion(finalProgress)
         }
 
-        guard let nextToRewatch = progress.nextToRewatch else {
-            cacheAndComplete(progress)
-            return
-        }
-
-        TraktAPIProvider.provider.request(.episode(id: String(showId),
-                                                   season: nextToRewatch.0.number,
-                                                   episode: nextToRewatch.1.number),
+        progressDispatchGroup.enter()
+        TraktAPIProvider.provider.request(.lastEpisode(id: showId),
                                           callbackQueue: .global(qos: .utility)) { result in
+            defer { progressDispatchGroup.leave() }
             switch result {
             case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
-                    let updatedProgress = progress.with(nextEpisode: episode)
-                    cacheAndComplete(updatedProgress)
+                    progressLock.lock()
+                    updatedProgress = updatedProgress.with(lastAiredEpisode: episode)
+                    progressLock.unlock()
                 } catch {
-                    print("Error fetching episode for next to rewatch \(error)")
-                    cacheAndComplete(progress)
+                    print("Error fetching last aired episode for progress \(error)")
                 }
             case .failure(let error):
-                print("Failed fetching episode for next to rewatch \(error)")
-                cacheAndComplete(progress)
+                print("Failed fetching last aired episode for progress \(error)")
             }
+        }
+
+        if let nextToRewatch = progress.nextToRewatch {
+            progressDispatchGroup.enter()
+            TraktAPIProvider.provider.request(.episode(id: String(showId),
+                                                       season: nextToRewatch.0.number,
+                                                       episode: nextToRewatch.1.number),
+                                              callbackQueue: .global(qos: .utility)) { result in
+                defer { progressDispatchGroup.leave() }
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                        let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
+                        progressLock.lock()
+                        updatedProgress = updatedProgress.with(nextEpisode: episode)
+                        progressLock.unlock()
+                    } catch {
+                        print("Error fetching episode for next to rewatch \(error)")
+                    }
+                case .failure(let error):
+                    print("Failed fetching episode for next to rewatch \(error)")
+                }
+            }
+        }
+
+        progressDispatchGroup.notify(queue: .global(qos: .utility)) {
+            progressLock.lock()
+            let finalProgress = updatedProgress
+            progressLock.unlock()
+            cacheAndComplete(finalProgress)
         }
     }
 }
@@ -284,6 +313,18 @@ extension ShowProgress {
                      nextEpisodeToWatch: nextEpisode,
                      resetAt: resetAt,
                      seasons: seasons,
-                     lastEpisode: lastEpisode)
+                     lastWatchedEpisode: lastWatchedEpisode,
+                     lastAiredEpisode: lastAiredEpisode)
+    }
+
+    func with(lastAiredEpisode: Episode?) -> ShowProgress {
+        ShowProgress(aired: aired,
+                     completed: completed,
+                     lastWatchedAt: lastWatchedAt,
+                     nextEpisodeToWatch: nextEpisodeToWatch,
+                     resetAt: resetAt,
+                     seasons: seasons,
+                     lastWatchedEpisode: lastWatchedEpisode,
+                     lastAiredEpisode: lastAiredEpisode)
     }
 }

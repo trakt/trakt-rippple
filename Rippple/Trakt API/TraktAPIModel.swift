@@ -1356,7 +1356,8 @@ struct ShowProgress: Codable, Hashable {
     let nextEpisodeToWatch: Episode?
     let resetAt: Date?
     let seasons: [SeasonProgress]
-    let lastEpisode: Episode?
+    let lastWatchedEpisode: Episode?
+    let lastAiredEpisode: Episode?
 
     enum CodingKeys: String, CodingKey {
         case lastWatchedAt = "last_watched_at"
@@ -1365,7 +1366,8 @@ struct ShowProgress: Codable, Hashable {
         case aired
         case seasons
         case completed
-        case lastEpisode = "last_episode"
+        case lastWatchedEpisode = "last_episode"
+        case lastAiredEpisode = "last_aired_episode"
     }
 
     var toRewatchCount: Int {

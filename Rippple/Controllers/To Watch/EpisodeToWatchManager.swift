@@ -134,79 +134,33 @@ final class EpisodeToWatchManager {
     }
 
     var filteredMediaModels: [MediaModel] {
-        return mediaModels.filter { media -> Bool in
-            if case .showProgress(let show, let showProgress) = media {
-                if show.isHiddenFromProgress == true { return false }
-                if show.isCompleted == true { return false }
-                if show.isDropped == true { return false }
-                if showProgress.toRewatchCount > 0 { return true }
-                guard let nextEpisodeToWatch = showProgress.nextEpisodeToWatch else { return false }
-                guard let firstAired = nextEpisodeToWatch.firstAired else { return false }
-                if firstAired.distance(to: Date()) > 0 { return true }
-                return false
-            } else {
-                return false
-            }
-        }
+        visibleEpisodeToWatchMediaModels()
     }
 
     private func transmit() {
         print("EpisodeToWatchManager.mediaModels transmit MediaModels and Future MediaModels")
 
-        let filteredMediaModels = mediaModels.filter { media -> Bool in
-            if case .showProgress(let show, let showProgress) = media {
-                if show.isHiddenFromProgress == true { return false }
-                if show.isCompleted == true { return false }
-                if show.isDropped == true { return false }
-                if showProgress.toRewatchCount > 0 { return true }
-                guard let nextEpisodeToWatch = showProgress.nextEpisodeToWatch else { return false }
-                guard let firstAired = nextEpisodeToWatch.firstAired else { return false }
-                if firstAired.distance(to: Date()) > 0 { return true }
-                return false
-            } else {
-                return false
-            }
-        }
-
-        onEpisodeToWatchChangedTransmitter.broadcast(filteredMediaModels)
+        onEpisodeToWatchChangedTransmitter.broadcast(visibleEpisodeToWatchMediaModels())
         status = .content
         updateAppIcon()
+    }
+
+    private func visibleEpisodeToWatchMediaModels() -> [MediaModel] {
+        mediaModels.filter { $0.hasVisibleEpisodeToWatch() }
+    }
+
+    private func visiblePinnedEpisodeToWatchMediaModels() -> [MediaModel] {
+        mediaModels.filter { $0.hasVisiblePinnedEpisodeToWatch() }
     }
 
     private func updateAppIcon() {
         DispatchQueue.main.async {
             if UserDefaults.standard.integer(forKey: "Badge.mode") == 2 {
-                let filteredMediaModels = self.mediaModels.filter { media -> Bool in
-                    if case .showProgress(let show, let showProgress) = media {
-                        if show.isHiddenFromProgress == true { return false }
-                        if show.isCompleted == true { return false }
-                        if show.isDropped == true { return false }
-                        if showProgress.toRewatchCount > 0 { return true }
-                        guard let nextEpisodeToWatch = showProgress.nextEpisodeToWatch else { return false }
-                        guard let firstAired = nextEpisodeToWatch.firstAired else { return false }
-                        if firstAired.distance(to: Date()) > 0 { return true }
-                        return false
-                    } else {
-                        return false
-                    }
-                }
+                let filteredMediaModels = self.visibleEpisodeToWatchMediaModels()
                 UNUserNotificationCenter.current().setBadgeCount(filteredMediaModels.count)
             }
             if UserDefaults.standard.integer(forKey: "Badge.mode") == 3 {
-                let filteredMediaModels = self.mediaModels.filter { media -> Bool in
-                    if case .showProgress(let show, let showProgress) = media {
-                        if show.isHiddenFromProgress == true { return false }
-                        if show.isCompleted == true { return false }
-                        if show.isDropped == true { return false }
-                        if showProgress.toRewatchCount > 0 { return true }
-                        guard let nextEpisodeToWatch = showProgress.nextEpisodeToWatch else { return false }
-                        guard let firstAired = nextEpisodeToWatch.firstAired else { return false }
-                        if firstAired.distance(to: Date()) > 0 { return true }
-                        return false
-                    } else {
-                        return false
-                    }
-                }
+                let filteredMediaModels = self.visibleEpisodeToWatchMediaModels()
                 var episodeCount = 0
                 for model in filteredMediaModels {
                     switch model {
@@ -224,39 +178,11 @@ final class EpisodeToWatchManager {
             }
 
             if UserDefaults.standard.integer(forKey: "Badge.mode") == 5 {
-                let filteredMediaModels = self.mediaModels.filter { media -> Bool in
-                    if case .showProgress(let show, let showProgress) = media {
-                        if show.isPinned == false { return false }
-                        if show.isHiddenFromProgress == true { return false }
-                        if show.isCompleted == true { return false }
-                        if show.isDropped == true { return false }
-                        if showProgress.toRewatchCount > 0 { return true }
-                        guard let nextEpisodeToWatch = showProgress.nextEpisodeToWatch else { return false }
-                        guard let firstAired = nextEpisodeToWatch.firstAired else { return false }
-                        if firstAired.distance(to: Date()) > 0 { return true }
-                        return false
-                    } else {
-                        return false
-                    }
-                }
+                let filteredMediaModels = self.visiblePinnedEpisodeToWatchMediaModels()
                 UNUserNotificationCenter.current().setBadgeCount(filteredMediaModels.count)
             }
             if UserDefaults.standard.integer(forKey: "Badge.mode") == 6 {
-                let filteredMediaModels = self.mediaModels.filter { media -> Bool in
-                    if case .showProgress(let show, let showProgress) = media {
-                        if show.isPinned == false { return false }
-                        if show.isHiddenFromProgress == true { return false }
-                        if show.isCompleted == true { return false }
-                        if show.isDropped == true { return false }
-                        if showProgress.toRewatchCount > 0 { return true }
-                        guard let nextEpisodeToWatch = showProgress.nextEpisodeToWatch else { return false }
-                        guard let firstAired = nextEpisodeToWatch.firstAired else { return false }
-                        if firstAired.distance(to: Date()) > 0 { return true }
-                        return false
-                    } else {
-                        return false
-                    }
-                }
+                let filteredMediaModels = self.visiblePinnedEpisodeToWatchMediaModels()
                 var episodeCount = 0
                 for model in filteredMediaModels {
                     switch model {
@@ -422,6 +348,11 @@ final class EpisodeToWatchManager {
             self.debouncedTransmit.call()
         }.disposed(by: disposeBag)
 
+        episodeToWatchBingeableOnlyReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.debouncedTransmit.call()
+        }.disposed(by: disposeBag)
+
         onProgressCacheChangedReceiver.listen { [weak self] showShowProgress in
             guard let self = self else { return }
             if self.status == .loading { return }
@@ -433,7 +364,8 @@ final class EpisodeToWatchManager {
                         progress.nextEpisodeToWatch == showShowProgress.showProgress.nextEpisodeToWatch &&
                         progress.resetAt == showShowProgress.showProgress.resetAt &&
                         progress.seasons == showShowProgress.showProgress.seasons &&
-                        progress.lastEpisode == showShowProgress.showProgress.lastEpisode) {
+                        progress.lastWatchedEpisode == showShowProgress.showProgress.lastWatchedEpisode &&
+                        progress.lastAiredEpisode == showShowProgress.showProgress.lastAiredEpisode) {
                         print("EpisodeToWatchManager.refreshProgress because the progress cache changed and checked found diff")
                         self.refreshProgress(shows: [showShowProgress.show])
                         return
@@ -539,6 +471,61 @@ final class EpisodeToWatchManager {
             DispatchQueue.main.asyncAfter(deadline: .now() + retry!) { // this delay is there to let Trakt work the /progress magic and for us to pull the correct data (watched)
                 self.refreshProgress(shows: showsToRetry, retry: retry! * 2.0)
             }
+        }
+    }
+}
+
+private extension MediaModel {
+    func hasVisibleEpisodeToWatch() -> Bool {
+        guard case .showProgress(let show, let showProgress) = self else { return false }
+        if show.isHiddenFromProgress == true { return false }
+        if show.isCompleted == true { return false }
+        if show.isDropped == true { return false }
+
+        let hasVisibleEpisode: Bool
+        if showProgress.toRewatchCount > 0 {
+            hasVisibleEpisode = true
+        } else if let nextEpisodeToWatch = showProgress.nextEpisodeToWatch,
+                  let firstAired = nextEpisodeToWatch.firstAired {
+            hasVisibleEpisode = firstAired.distance(to: Date()) > 0
+        } else {
+            hasVisibleEpisode = false
+        }
+
+        guard hasVisibleEpisode else { return false }
+        if EpisodeToWatchSettings.shared.bingeableOnly {
+            if showProgress.lastAiredEpisode?.isBingeableFinale == true {
+                return true
+            }
+            if let lastAiredEpisode = showProgress.lastAiredEpisode,
+               let nextEpisodeToWatch = showProgress.nextEpisodeToWatch {
+                return lastAiredEpisode.season != nextEpisodeToWatch.season
+            }
+            return false
+        }
+        return true
+    }
+
+    func hasVisiblePinnedEpisodeToWatch() -> Bool {
+        guard case .showProgress(let show, _) = self else { return false }
+        guard show.isPinned else { return false }
+        return hasVisibleEpisodeToWatch()
+    }
+}
+
+private extension Episode {
+    var isBingeableFinale: Bool {
+        episodeType?.isBingeableFinale == true
+    }
+}
+
+private extension EpisodeType {
+    var isBingeableFinale: Bool {
+        switch self {
+        case .midSeasonFinale, .seasonFinale, .seriesFinale:
+            return true
+        case .standard, .seriesPremiere, .seasonPremiere, .midSeasonPremiere, .unknown:
+            return false
         }
     }
 }
@@ -937,7 +924,7 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
                 guard let self = self else { return }
                 defer { self.progressDispatchGroup.leave() }
 
-                // real copy of the show progress to be able to wrok on it
+                // real copy of the show progress to be able to work on it
                 var showProgressMapCopy = [Show: ShowProgress]().merging(self.showProgressMap) { $1 }
 
                 switch result {
@@ -954,12 +941,12 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
                                 // if the date of the next episode to watch is in the past, take the one from the calendar
                                 // Otherwise, take the closest airing from now
                                 if nextEpisodeFirstAired < Date.now.advanced(by: -60 * 60 * 8) {
-                                    showProgressMapCopy[showEpisodeCalendarItem.show] = ShowProgress(aired: progress.aired, completed: progress.completed, lastWatchedAt: progress.lastWatchedAt, nextEpisodeToWatch: showEpisodeCalendarItem.episode, resetAt: progress.resetAt, seasons: progress.seasons, lastEpisode: progress.lastEpisode)
+                                    showProgressMapCopy[showEpisodeCalendarItem.show] = progress.with(nextEpisode: showEpisodeCalendarItem.episode)
                                 } else if let episodeFirstAired = showEpisodeCalendarItem.episode.firstAired, nextEpisodeFirstAired > episodeFirstAired {
-                                    showProgressMapCopy[showEpisodeCalendarItem.show] = ShowProgress(aired: progress.aired, completed: progress.completed, lastWatchedAt: progress.lastWatchedAt, nextEpisodeToWatch: showEpisodeCalendarItem.episode, resetAt: progress.resetAt, seasons: progress.seasons, lastEpisode: progress.lastEpisode)
+                                    showProgressMapCopy[showEpisodeCalendarItem.show] = progress.with(nextEpisode: showEpisodeCalendarItem.episode)
                                 }
                             } else {
-                                showProgressMapCopy[showEpisodeCalendarItem.show] = ShowProgress(aired: progress.aired, completed: progress.completed, lastWatchedAt: progress.lastWatchedAt, nextEpisodeToWatch: showEpisodeCalendarItem.episode, resetAt: progress.resetAt, seasons: progress.seasons, lastEpisode: progress.lastEpisode)
+                                showProgressMapCopy[showEpisodeCalendarItem.show] = progress.with(nextEpisode: showEpisodeCalendarItem.episode)
                             }
                         }
 
