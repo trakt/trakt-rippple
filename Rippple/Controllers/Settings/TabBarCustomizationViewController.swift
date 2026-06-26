@@ -137,6 +137,9 @@ final class TabBarCustomizationViewController: UITableViewController {
         case .watched:
             content.text = "Watched"
             content.image = UIImage(systemName: "checkmark")
+        case .ratings:
+            content.text = "Ratings"
+            content.image = UIImage(systemName: "heart")
         case .profile:
             content.text = "Profile"
             content.image = UIImage(systemName: "person.crop.circle")

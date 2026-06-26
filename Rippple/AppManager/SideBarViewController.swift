@@ -181,6 +181,8 @@ class SidebarViewController: UIViewController {
     private func updatePurchasedState() {
         let shelfViewController = UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(identifier: "standalone browse") as! BrowseViewController
         shelfViewController.followsShelfConfig = true
+        let ratingsViewController: UIViewController = UIStoryboard(name: "Main", bundle: nil)
+            .instantiateViewController(identifier: "RatingsViewController")
 
         secondaryViewControllers = [
             UIStoryboard(name: "Browse", bundle: nil).instantiateInitialViewController()!,
@@ -191,7 +193,8 @@ class SidebarViewController: UIViewController {
             StyledNavigationController(rootViewController: CommentsTabViewController()),
             UIStoryboard(name: "Calendar", bundle: nil).instantiateInitialViewController()!,
             StyledNavigationController(rootViewController: shelfViewController),
-            UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(withIdentifier: "wall")
+            UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(withIdentifier: "wall"),
+            StyledNavigationController(rootViewController: ratingsViewController)
         ]
     }
 
@@ -559,6 +562,14 @@ extension SidebarViewController: UICollectionViewDelegate {
             } else {
                 navigationController.popToRootViewController(animated: true)
             }
+        case 9:
+            if shouldScrollToTop(view: navigationController.view) {
+                scrollToTop(view: navigationController.view)
+            } else if let ratingsViewController = navigationController.topViewController as? RatingsViewController {
+                ratingsViewController.cycleFilter()
+            } else {
+                navigationController.popToRootViewController(animated: true)
+            }
         default:
             navigationController.popToRootViewController(animated: true)
         }
@@ -620,7 +631,8 @@ let tabsItems = [Item(title: "Browse", subtitle: nil, image: UIImage(systemName:
 let moreTabsItems = [Item(title: "Comments", subtitle: nil, image: UIImage(systemName: "text.bubble")),
                      Item(title: "Calendar", subtitle: nil, image: UIImage(systemName: "calendar.day.timeline.left")),
                      Item(title: "Shelf", subtitle: nil, image: UIImage(systemName: "square.grid.3x1.below.line.grid.1x2")),
-                     Item(title: "Wall", subtitle: nil, image: UIImage(systemName: "rectangle.grid.3x2"))]
+                     Item(title: "Wall", subtitle: nil, image: UIImage(systemName: "rectangle.grid.3x2")),
+                     Item(title: "Ratings", subtitle: nil, image: UIImage(systemName: "heart"))]
 
 let listItems = [Item(title: "Watchlist", subtitle: nil, image: UIImage(systemName: "bookmark")),
                  Item(title: "Favorites", subtitle: nil, image: UIImage(systemName: "star")),

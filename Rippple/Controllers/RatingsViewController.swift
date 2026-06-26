@@ -80,6 +80,16 @@ final class RatingsViewController: UITableViewController {
         }
     }
 
+    func cycleFilter() {
+        let cycle: [Filter] = [.movies, .shows, .seasons, .episodes, .all]
+        guard let currentIndex = cycle.firstIndex(of: currentFilter) else {
+            currentFilter = cycle[0]
+            return
+        }
+
+        currentFilter = cycle[(currentIndex + 1) % cycle.count]
+    }
+
     deinit {
         if let cancellable = cancellable {
             cancellable.cancel()
@@ -185,6 +195,20 @@ final class RatingsViewController: UITableViewController {
         navigationItem.style = .browser
 
         currentFilter = Filter.all
+        if user.isCurrentUser,
+           tabBarController != nil,
+           navigationController?.viewControllers.first == self {
+            let profileButton = ProfileButton()
+            let profileAction = UIAction(handler: { [weak self] _ in
+                guard let self = self else { return }
+                let profileViewController = UIStoryboard(name: "Profile", bundle: nil).instantiateInitialViewController()!
+                self.present(profileViewController, animated: true)
+                UISelectionFeedbackGenerator().selectionChanged()
+            })
+            profileButton.addAction(profileAction, for: .touchUpInside)
+            profileButton.setImage(UIImage(imageLiteralResourceName: "bg_placeholder_avatar_small"), for: .normal)
+            navigationItem.leftBarButtonItem = UIBarButtonItem(customView: profileButton)
+        }
 
         tableView.allowsFocus = false
         tableView.register(UINib(nibName: "MediaTableViewCell", bundle: nil), forCellReuseIdentifier: "media")

@@ -27,6 +27,7 @@ final class MainTabBarController: UITabBarController {
         case recommended
         case collection
         case watched
+        case ratings
 
         case profile
 
@@ -115,6 +116,12 @@ final class MainTabBarController: UITabBarController {
                                 identifier: Tab.watched.rawValue,
                                 viewControllerProvider: { _ in
                                     StyledNavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "WatchedViewController"))
+                                })
+        store[.ratings] = UITab(title: "Ratings",
+                                image: UIImage(systemName: "heart"),
+                                identifier: Tab.ratings.rawValue,
+                                viewControllerProvider: { _ in
+                                    StyledNavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "RatingsViewController"))
                                 })
         store[.profile] = UITab(title: "Profile",
                                 image: UIImage(systemName: "person.crop.circle"),
@@ -292,6 +299,16 @@ final class MainTabBarController: UITabBarController {
                                           self.save(tabs: tabPositions)
                                       })
                 manageActions.append(remove)
+            case .ratings:
+                let remove = UIAction(title: "Remove Ratings",
+                                      image: UIImage(systemName: "xmark.circle"),
+                                      attributes: .destructive,
+                                      handler: { [weak self] _ in
+                                          guard let self = self else { return }
+                                          tabPositions.remove(at: currentIndex)
+                                          self.save(tabs: tabPositions)
+                                      })
+                manageActions.append(remove)
             case .calendar:
                 let remove = UIAction(title: "Remove Calendar",
                                       image: UIImage(systemName: "xmark.circle"),
@@ -448,6 +465,15 @@ final class MainTabBarController: UITabBarController {
                                                   self.save(tabs: tabPositions)
                                               })
                     swapActions.append(swapAction)
+                case .ratings:
+                    let swapAction = UIAction(title: "Swap with Ratings",
+                                              image: UIImage(systemName: "heart"),
+                                              handler: { [weak self] _ in
+                                                  guard let self = self else { return }
+                                                  tabPositions.swapAt(currentIndex, position)
+                                                  self.save(tabs: tabPositions)
+                                              })
+                    swapActions.append(swapAction)
                 case .calendar:
                     let swapAction = UIAction(title: "Swap with Calendar",
                                               image: UIImage(systemName: "calendar.day.timeline.left"),
@@ -586,6 +612,17 @@ final class MainTabBarController: UITabBarController {
                 case .watched:
                     let replaceAction = UIAction(title: "Replace with Watched",
                                                  image: UIImage(systemName: "checkmark"),
+                                                 handler: { [weak self] _ in
+                                                     guard let self = self else { return }
+                                                     tabPositions.remove(at: currentIndex)
+                                                     tabPositions.insert(tab, at: currentIndex)
+                                                     self.save(tabs: tabPositions)
+                                                     self.selectedIndex = currentIndex
+                                                 })
+                    replaceActions.append(replaceAction)
+                case .ratings:
+                    let replaceAction = UIAction(title: "Replace with Ratings",
+                                                 image: UIImage(systemName: "heart"),
                                                  handler: { [weak self] _ in
                                                      guard let self = self else { return }
                                                      tabPositions.remove(at: currentIndex)
@@ -733,6 +770,13 @@ extension MainTabBarController: UITabBarControllerDelegate {
                 } else if let navigationController = viewController as? UINavigationController,
                           let watchedViewController = navigationController.topViewController as? WatchedViewController {
                     watchedViewController.cycleFilter()
+                }
+            } else if tab.identifier == Tab.ratings.rawValue {
+                if shouldScrollToTop(view: viewController.view) {
+                    scrollToTop(view: viewController.view)
+                } else if let navigationController = viewController as? UINavigationController,
+                          let ratingsViewController = navigationController.topViewController as? RatingsViewController {
+                    ratingsViewController.cycleFilter()
                 }
             } else if tab.identifier == Tab.calendar.rawValue {
                 if let navigationController = viewController as? UINavigationController, let calendarViewController = navigationController.topViewController as? CalendarViewController {

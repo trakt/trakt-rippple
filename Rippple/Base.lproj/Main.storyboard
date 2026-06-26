@@ -3884,7 +3884,7 @@ Keeping things private for private users...</string>
         <!--Ratings-->
         <scene sceneID="zAR-Fr-0hx">
             <objects>
-                <tableViewController id="1DS-a7-xmq" customClass="RatingsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="RatingsViewController" id="1DS-a7-xmq" customClass="RatingsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="122" estimatedRowHeight="122" sectionHeaderHeight="28" sectionFooterHeight="28" id="uaA-zy-NPS" customClass="CustomTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
