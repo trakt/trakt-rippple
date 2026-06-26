@@ -57,7 +57,6 @@ final class CastTableViewCell: UITableViewCell {
     private var error: Error? {
         didSet {
             if error == nil {
-                updateTitle()
                 moreAction.setTitle("See all", for: .normal)
                 moreAction.isHidden = true
                 if media.movie != nil {
@@ -262,20 +261,7 @@ final class CastTableViewCell: UITableViewCell {
             case .showProgress:
                 fatalError()
             }
-            updateTitle()
             applySnapshot()
-        }
-    }
-
-    private func updateTitle() {
-        titleLabel.text = "Cast & Crew"
-        switch media! {
-        case .season:
-            titleLabel.text = "Season Regulars"
-        case .show:
-            titleLabel.text = "Series Regulars"
-        default:
-            break
         }
     }
 

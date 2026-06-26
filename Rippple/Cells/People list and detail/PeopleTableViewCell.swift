@@ -17,6 +17,14 @@ final class PeopleTableViewCell: UITableViewCell {
     @IBOutlet var asLabel: UILabel!
     @IBOutlet var additionalInfoLabel: UILabel!
 
+    var showsEpisodeCount = true {
+        didSet {
+            if let cast = cast {
+                updateAdditionalInfo(for: cast)
+            }
+        }
+    }
+
     override func awakeFromNib() {
         super.awakeFromNib()
 
@@ -40,7 +48,6 @@ final class PeopleTableViewCell: UITableViewCell {
             if let person = person {
                 crew = nil
                 cast = nil
-                guest = nil
                 personNameLabel.text = person.name
                 avatarInitialLabel.text = person.name.initials
                 if let knownForDepartment = person.knownForDepartment, knownForDepartment.isEmpty == false {
@@ -57,45 +64,21 @@ final class PeopleTableViewCell: UITableViewCell {
 
     var cast: Cast? {
         didSet {
-            if cast?.person?.ids == oldValue?.person?.ids { return }
+            if cast?.person?.ids == oldValue?.person?.ids {
+                if let cast = cast {
+                    updateAdditionalInfo(for: cast)
+                }
+                return
+            }
             if let cast = cast {
                 crew = nil
                 person = nil
-                guest = nil
                 personNameLabel.text = cast.person!.name
                 avatarInitialLabel.text = cast.person!.name.initials
                 asLabel.text = "as \(cast.characters.joined(separator: ", "))"
                 asLabel.isHidden = cast.characters.isEmpty
                 avatarImageView.person = cast.person
-                if let episodeCount = cast.episodeCount {
-                    additionalInfoLabel.isHidden = false
-                    additionalInfoLabel.text = episodeCount <= 1 ? "\(episodeCount) episode" : "\(episodeCount) episodes"
-                } else {
-                    additionalInfoLabel.isHidden = true
-                }
-            }
-        }
-    }
-
-    var guest: Cast? {
-        didSet {
-            if guest?.person?.ids == oldValue?.person?.ids { return }
-            if let guest = guest {
-                crew = nil
-                person = nil
-                cast = nil
-                personNameLabel.text = guest.person!.name
-                avatarInitialLabel.text = guest.person!.name.initials
-                asLabel.text = "as \(guest.characters.joined(separator: ", "))"
-                asLabel.isHidden = guest.characters.isEmpty
-                avatarImageView.person = guest.person
-                if let episodeCount = guest.episodeCount {
-                    additionalInfoLabel.isHidden = false
-                    additionalInfoLabel.text = episodeCount <= 1 ? "Guest Star in \(episodeCount) episode" : "\(episodeCount) episodes"
-                } else {
-                    additionalInfoLabel.isHidden = false
-                    additionalInfoLabel.text = "Guest Star"
-                }
+                updateAdditionalInfo(for: cast)
             }
         }
     }
@@ -106,7 +89,6 @@ final class PeopleTableViewCell: UITableViewCell {
             if let crew = crew {
                 cast = nil
                 person = nil
-                guest = nil
                 personNameLabel.text = crew.person!.name
                 avatarInitialLabel.text = crew.person!.name.initials
                 asLabel.text = "as \(crew.jobs.joined(separator: ", "))"
@@ -115,5 +97,16 @@ final class PeopleTableViewCell: UITableViewCell {
                 additionalInfoLabel.isHidden = true
             }
         }
+    }
+
+    private func updateAdditionalInfo(for cast: Cast) {
+        guard showsEpisodeCount, let episodeCount = cast.episodeCount else {
+            additionalInfoLabel.text = nil
+            additionalInfoLabel.isHidden = true
+            return
+        }
+
+        additionalInfoLabel.isHidden = false
+        additionalInfoLabel.text = episodeCount <= 1 ? "\(episodeCount) episode" : "\(episodeCount) episodes"
     }
 }

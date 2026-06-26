@@ -156,7 +156,6 @@ enum Extended: String {
     case full
     case noseasons
     case fullnoseasons = "full,noseasons"
-    case guestStars = "guest_stars"
     case min
 }
 

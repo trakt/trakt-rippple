@@ -12,26 +12,6 @@ import Receiver
 import UIKit
 
 final class PeoplesTableViewController: UITableViewController {
-    private enum PeopleFilter: String, CaseIterable {
-        case all = "Cast & Crew"
-        case cast = "Cast"
-        case guest = "Guest Stars"
-        case crew = "Crew"
-    }
-
-    private var currentFilter: PeopleFilter = .all {
-        didSet {
-            updateDatasource()
-            updateTitle()
-        }
-    }
-
-    private lazy var filterButtonItem: UIBarButtonItem = {
-        let item = UIBarButtonItem(image: UIImage(systemName: "line.3.horizontal.decrease"))
-        item.menu = makeFilterMenu()
-        return item
-    }()
-
     private let disposeBag = DisposeBag()
 
     var media: MediaModel!
@@ -73,22 +53,6 @@ final class PeoplesTableViewController: UITableViewController {
         }
     }
 
-    private var filteredGuestStars: [Cast] {
-        if let people = people, let guestStars = people.guestStars, !guestStars.isEmpty {
-            return guestStars.filter { cast in
-                if searchQuery.isEmpty { return true }
-                if searchQuery == "" { return true }
-                if let person = cast.person, person.name.localizedCaseInsensitiveContains(searchQuery) { return true }
-                for character in cast.characters where character.localizedCaseInsensitiveContains(searchQuery) {
-                    return true
-                }
-                return false
-            }
-        } else {
-            return [Cast]()
-        }
-    }
-
     private func updateDatasource() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.content])
@@ -101,14 +65,6 @@ final class PeoplesTableViewController: UITableViewController {
             }
         }
 
-        func appendGuest() {
-            guard !filteredGuestStars.isEmpty else { return }
-            snapshot.appendItems([.header("Guest Stars", "\(filteredGuestStars.count) member\(filteredGuestStars.count > 1 ? "s" : "")")])
-            for guest in filteredGuestStars {
-                snapshot.appendItems([.guest(guest)])
-            }
-        }
-
         func appendCrew() {
             guard !filteredCrew.isEmpty else { return }
             snapshot.appendItems([.header("Crew", "\(filteredCrew.count) member\(filteredCrew.count > 1 ? "s" : "")")])
@@ -117,24 +73,8 @@ final class PeoplesTableViewController: UITableViewController {
             }
         }
 
-        if searchQuery.isEmpty || searchQuery == "" {
-            switch currentFilter {
-            case .all:
-                appendCast()
-                appendCrew()
-                appendGuest()
-            case .cast:
-                appendCast()
-            case .guest:
-                appendGuest()
-            case .crew:
-                appendCrew()
-            }
-        } else {
-            appendCast()
-            appendCrew()
-            appendGuest()
-        }
+        appendCast()
+        appendCrew()
 
         DispatchQueue.main.async {
             self.dataSource.apply(snapshot, animatingDifferences: false)
@@ -191,7 +131,6 @@ final class PeoplesTableViewController: UITableViewController {
 
     private enum Wrapper: Hashable {
         case cast(Cast)
-        case guest(Cast)
         case crew(Job)
         case header(String, String)
     }
@@ -202,11 +141,8 @@ final class PeoplesTableViewController: UITableViewController {
         switch item {
         case .cast(let cast):
             let cell = tableView.dequeueReusableCell(withIdentifier: "people") as! PeopleTableViewCell
+            cell.showsEpisodeCount = self.media.episode == nil
             cell.cast = cast
-            return cell
-        case .guest(let guest):
-            let cell = tableView.dequeueReusableCell(withIdentifier: "people") as! PeopleTableViewCell
-            cell.guest = guest
             return cell
         case .crew(let crew):
             let cell = tableView.dequeueReusableCell(withIdentifier: "people") as! PeopleTableViewCell
@@ -226,7 +162,15 @@ final class PeoplesTableViewController: UITableViewController {
         navigationItem.style = .browser
         navigationItem.title = media.mediaTitle
         navigationItem.subtitle = "Loading..."
-        navigationItem.rightBarButtonItems = [filterButtonItem]
+        let down = UIBarButtonItem(image: UIImage(systemName: "chevron.down"),
+                                   primaryAction: UIAction { [weak self] _ in
+                                       self?.scrollToNextSectionHeader()
+                                   })
+        let up = UIBarButtonItem(image: UIImage(systemName: "chevron.up"),
+                                 primaryAction: UIAction { [weak self] _ in
+                                     self?.scrollToPreviousSectionHeader()
+                                 })
+        navigationItem.rightBarButtonItems = [down, up]
 
         tableView.allowsFocus = false
         tableView.register(UINib(nibName: "PeopleTableViewCell", bundle: nil), forCellReuseIdentifier: "people")
@@ -324,7 +268,7 @@ final class PeoplesTableViewController: UITableViewController {
                 }
             }
         case .show(let show):
-            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleShow(id: show.identifiers.trakt!, extended: .guestStars),
+            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleShow(id: show.identifiers.trakt!, extended: nil),
                                                             callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
 
@@ -365,7 +309,7 @@ final class PeoplesTableViewController: UITableViewController {
                 }
             }
         case .episode(let episode, let show):
-            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleEpisode(id: show.identifiers.trakt!, season: episode.season, episode: episode.number, extended: .guestStars),
+            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleEpisode(id: show.identifiers.trakt!, season: episode.season, episode: episode.number, extended: nil),
                                                             callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
 
@@ -406,7 +350,7 @@ final class PeoplesTableViewController: UITableViewController {
                 }
             }
         case .season(let season, let show):
-            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleSeason(id: show.identifiers.trakt!, season: season.number, extended: .guestStars),
+            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleSeason(id: show.identifiers.trakt!, season: season.number, extended: nil),
                                                             callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
 
@@ -468,8 +412,6 @@ extension PeoplesTableViewController {
         switch item {
         case .cast(let cast):
             performSegue(withIdentifier: "people", sender: cast)
-        case .guest(let guest):
-            performSegue(withIdentifier: "people", sender: guest)
         case .crew(let crew):
             performSegue(withIdentifier: "people", sender: crew)
         case .header:
@@ -491,8 +433,6 @@ extension PeoplesTableViewController {
                                                   switch item {
                                                   case .cast(let cast):
                                                       mediaPreviewViewController.person = cast.person
-                                                  case .guest(let guest):
-                                                      mediaPreviewViewController.person = guest.person
                                                   case .crew(let crew):
                                                       mediaPreviewViewController.person = crew.person
                                                   case .header:
@@ -533,8 +473,6 @@ extension PeoplesTableViewController {
         switch item {
         case .cast(let cast):
             performSegue(withIdentifier: "people", sender: cast)
-        case .guest(let guest):
-            performSegue(withIdentifier: "people", sender: guest)
         case .crew(let crew):
             performSegue(withIdentifier: "people", sender: crew)
         case .header:
@@ -553,32 +491,60 @@ extension PeoplesTableViewController: UISearchResultsUpdating {
 extension PeoplesTableViewController: UISearchBarDelegate {}
 
 private extension PeoplesTableViewController {
-    func makeFilterMenu() -> UIMenu {
-        let actions: [UIAction] = PeopleFilter.allCases.map { filter in
-            UIAction(title: filter.rawValue, state: filter == currentFilter ? .on : .off) { [weak self] _ in
-                guard let self = self else { return }
-                self.currentFilter = filter
-                // Rebuild menu to reflect the new checkmark state
-                self.filterButtonItem.menu = self.makeFilterMenu()
-            }
-        }
-        return UIMenu(children: actions)
-    }
-
     func updateTitle() {
         if showLoading {
             navigationItem.subtitle = "Loading..."
         } else {
-            switch currentFilter {
-            case .all:
-                navigationItem.subtitle = "Cast & Crew"
-            case .cast:
-                navigationItem.subtitle = "Cast"
-            case .crew:
-                navigationItem.subtitle = "Crew"
-            case .guest:
-                navigationItem.subtitle = "Guest Stars"
-            }
+            navigationItem.subtitle = "Cast & Crew"
         }
+    }
+
+    func scrollToNextSectionHeader() {
+        guard let currentIndexPath = topVisibleIndexPath() else { return }
+        guard let targetIndexPath = sectionHeaderIndexPaths.first(where: { indexPath in
+            indexPath.section > currentIndexPath.section || (indexPath.section == currentIndexPath.section && indexPath.row > currentIndexPath.row)
+        }) else { return }
+
+        tableView.scrollToRow(at: targetIndexPath,
+                              at: .top,
+                              animated: true)
+    }
+
+    func scrollToPreviousSectionHeader() {
+        guard let currentIndexPath = topVisibleIndexPath() else { return }
+        guard let targetIndexPath = sectionHeaderIndexPaths.last(where: { indexPath in
+            indexPath.section < currentIndexPath.section || (indexPath.section == currentIndexPath.section && indexPath.row < currentIndexPath.row)
+        }) else { return }
+
+        tableView.scrollToRow(at: targetIndexPath,
+                              at: .top,
+                              animated: true)
+    }
+
+    var sectionHeaderIndexPaths: [IndexPath] {
+        return dataSource.snapshot().itemIdentifiers.compactMap { item -> IndexPath? in
+            guard case .header = item else { return nil }
+            return dataSource.indexPath(for: item)
+        }.sorted { lhs, rhs in
+            if lhs.section == rhs.section {
+                return lhs.row < rhs.row
+            }
+            return lhs.section < rhs.section
+        }
+    }
+
+    func topVisibleIndexPath() -> IndexPath? {
+        let topPoint = CGPoint(x: 0.0,
+                               y: tableView.adjustedContentInset.top + tableView.contentOffset.y + 1.0)
+        if let indexPath = tableView.indexPathForRow(at: topPoint) {
+            return indexPath
+        }
+
+        return tableView.indexPathsForVisibleRows?.sorted { lhs, rhs in
+            if lhs.section == rhs.section {
+                return lhs.row < rhs.row
+            }
+            return lhs.section < rhs.section
+        }.first
     }
 }

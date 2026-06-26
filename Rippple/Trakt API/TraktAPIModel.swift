@@ -1551,13 +1551,6 @@ struct WatchlistedItemWithNotes: Codable {
 struct People: Codable {
     let cast: [Cast]
     let crew: Crew?
-    let guestStars: [Cast]?
-
-    enum CodingKeys: String, CodingKey {
-        case cast
-        case crew
-        case guestStars = "guest_stars"
-    }
 
     var allMovies: [Movie] {
         var result: [Movie] = []
@@ -1565,13 +1558,6 @@ struct People: Codable {
         // From cast credits
         for c in cast {
             if let m = c.movie, !result.contains(m) { result.append(m) }
-        }
-
-        // From guest star appearances
-        if let guest = guestStars {
-            for g in guest {
-                if let m = g.movie, !result.contains(m) { result.append(m) }
-            }
         }
 
         // From crew jobs
@@ -1590,13 +1576,6 @@ struct People: Codable {
         // From cast credits
         for c in cast {
             if let s = c.show, !result.contains(s) { result.append(s) }
-        }
-
-        // From guest star appearances
-        if let guest = guestStars {
-            for g in guest {
-                if let s = g.show, !result.contains(s) { result.append(s) }
-            }
         }
 
         // From crew jobs
