@@ -33,6 +33,25 @@ final class RatingsViewController: UITableViewController {
         case episodes
     }
 
+    private enum GroupingMode: Int {
+        case date
+        case rating
+
+        var menuTitle: String {
+            switch self {
+            case .date:
+                return "Group by Dates"
+            case .rating:
+                return "Group by Ratings"
+            }
+        }
+    }
+
+    private struct Header: Hashable {
+        let title: String
+        let count: Int
+    }
+
     private let disposeBag = DisposeBag()
 
     @IBOutlet var emptyView: UIView!
@@ -57,6 +76,19 @@ final class RatingsViewController: UITableViewController {
     private let contextMenu = ContextMenuHelper()
 
     @IBOutlet var filterButtonItem: UIBarButtonItem!
+
+    private var groupingMode = GroupingMode.date {
+        didSet {
+            if user.isCurrentUser == true {
+                UserDefaults.standard.set(groupingMode.rawValue, forKey: "RatingsViewController.groupingMode")
+                UserDefaults.standard.synchronize()
+            }
+            updateFilterMenu()
+        }
+    }
+
+    private var ratedItems: [RatedItem]?
+
     private var currentFilter = Filter.all {
         didSet {
             navigationItem.title = user.isCurrentUser ? "Ratings" : "\(user.username)'s Ratings"
@@ -77,6 +109,8 @@ final class RatingsViewController: UITableViewController {
                 service = .rated(slug: user.slug, type: .episodes, extended: .full)
                 navigationItem.subtitle = "Episodes"
             }
+
+            updateFilterMenu()
         }
     }
 
@@ -109,8 +143,9 @@ final class RatingsViewController: UITableViewController {
 
     private enum Wrapper: Hashable {
         case stats(TraktRatings)
-        case header(String)
+        case header(Header)
         case item(RatedItem)
+        case loading
     }
 
     private class RatingsDiffibleDataSource: UITableViewDiffableDataSource<String, Wrapper> {
@@ -122,6 +157,8 @@ final class RatingsViewController: UITableViewController {
             case .item:
                 return true
             case .stats:
+                return false
+            case .loading:
                 return false
             }
         }
@@ -172,9 +209,10 @@ final class RatingsViewController: UITableViewController {
             updateNotes(for: ratedItem, for: cell)
 
             return cell
-        case .header(let headerTitle):
+        case .header(let header):
             let cell = tableView.dequeueReusableCell(withIdentifier: "header") as! RatingsHeaderTableViewCell
-            cell.title.text = headerTitle
+            cell.title.text = header.title
+            cell.count.text = "\(header.count) \(header.count == 1 ? "item" : "items")"
             return cell
         case .stats(let ratings):
             let cell = tableView.dequeueReusableCell(withIdentifier: "stats") as! RatingsStatTableViewCell
@@ -182,6 +220,8 @@ final class RatingsViewController: UITableViewController {
             cell.ratings = ratings
             cell.delegate = self
             return cell
+        case .loading:
+            return tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
         }
     }
 
@@ -194,7 +234,6 @@ final class RatingsViewController: UITableViewController {
 
         navigationItem.style = .browser
 
-        currentFilter = Filter.all
         if user.isCurrentUser,
            tabBarController != nil,
            navigationController?.viewControllers.first == self {
@@ -214,18 +253,24 @@ final class RatingsViewController: UITableViewController {
         tableView.register(UINib(nibName: "MediaTableViewCell", bundle: nil), forCellReuseIdentifier: "media")
         tableView.register(UINib(nibName: "RatingsHeaderTableViewCell", bundle: nil), forCellReuseIdentifier: "header")
         tableView.register(UINib(nibName: "RatingsStatTableViewCell", bundle: nil), forCellReuseIdentifier: "stats")
+        tableView.register(UINib(nibName: "LoadingIndicatorTableViewCell", bundle: nil), forCellReuseIdentifier: "loading")
         tableView.dataSource = dataSource
         tableView.delegate = self
         dataSource.defaultRowAnimation = .none
 
-        var snapshot = NSDiffableDataSourceSnapshot<String, Wrapper>()
-        snapshot.appendSections(["loading"])
-        dataSource.apply(snapshot, animatingDifferences: false)
+        dataSource.apply(loadingSnapshot(), animatingDifferences: false)
 
         refreshControl?.isEnabled = false
 
+        if user.isCurrentUser,
+           let groupingMode = GroupingMode(rawValue: UserDefaults.standard.integer(forKey: "RatingsViewController.groupingMode")) {
+            self.groupingMode = groupingMode
+        }
+
         filterButtonItem.primaryAction = nil
-        filterButtonItem.menu = filterMenu()
+        updateFilterMenu()
+
+        currentFilter = Filter.all
 
         #if !targetEnvironment(macCatalyst)
         refreshControl = UIRefreshControl()
@@ -259,6 +304,16 @@ final class RatingsViewController: UITableViewController {
         fetchRatings()
     }
 
+    private func setGroupingMode(_ groupingMode: GroupingMode) {
+        guard self.groupingMode != groupingMode else { return }
+
+        self.groupingMode = groupingMode
+        UISelectionFeedbackGenerator().selectionChanged()
+
+        guard let ratedItems = ratedItems else { return }
+        applyRatingsSnapshot(for: ratedItems, animatingDifferences: true)
+    }
+
     @IBAction func retry(_ sender: Any) {
         error = nil
         fetchRatings()
@@ -270,79 +325,258 @@ final class RatingsViewController: UITableViewController {
         if let cancellable = cancellable {
             cancellable.cancel()
         }
+        ratedItems = nil
 
-        var snapshot = NSDiffableDataSourceSnapshot<String, Wrapper>()
-        snapshot.appendSections(["loading"])
-        dataSource.apply(snapshot, animatingDifferences: false)
+        dataSource.apply(loadingSnapshot(), animatingDifferences: false)
 
         retry(self)
     }
 
-    private func filterMenu() -> UIMenu {
-        let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
-            let all = UIAction(title: "Everything", image: nil, state: self.currentFilter == .all ? .on : .off) { [weak self] _ in
-                guard let self = self else { return }
-                self.currentFilter = .all
-            }
+    private func loadingSnapshot() -> NSDiffableDataSourceSnapshot<String, Wrapper> {
+        var snapshot = NSDiffableDataSourceSnapshot<String, Wrapper>()
+        snapshot.appendSections(["loading"])
+        snapshot.appendItems([.loading], toSection: "loading")
+        return snapshot
+    }
 
-            let movies = UIAction(title: "Movies", image: nil, state: self.currentFilter == .movies ? .on : .off) { [weak self] _ in
-                guard let self = self else { return }
-                self.currentFilter = .movies
-            }
+    private func updateFilterMenu() {
+        guard isViewLoaded, filterButtonItem != nil else { return }
+        filterButtonItem.menu = filterMenu()
+    }
 
-            let shows = UIAction(title: "Shows", image: nil, state: self.currentFilter == .shows ? .on : .off) { [weak self] _ in
-                guard let self = self else { return }
-                self.currentFilter = .shows
-            }
-
-            let seasons = UIAction(title: "Seasons", image: nil, state: self.currentFilter == .seasons ? .on : .off) { [weak self] _ in
-                guard let self = self else { return }
-                self.currentFilter = .seasons
-            }
-
-            let episodes = UIAction(title: "Episodes", image: nil, state: self.currentFilter == .episodes ? .on : .off) { [weak self] _ in
-                guard let self = self else { return }
-                self.currentFilter = .episodes
-            }
-
-            let everyRating = UIAction(title: "All") { [weak self] _ in
-                guard let self = self else { return }
-                self.filteredRatings = Array(1...10)
-            }
-
-            var children = [UIAction]()
-
-            for i in 1...9 {
-                children.append(UIAction(title: "\(i)") { [weak self] _ in
-                    guard let self = self else { return }
-                    self.filteredRatings = Array((i + 1)...10)
-                })
-            }
-            let above = UIMenu(title: "Above...", children: children)
-
-            children.removeAll()
-            for i in 2...10 {
-                children.append(UIAction(title: "\(i)") { [weak self] _ in
-                    guard let self = self else { return }
-                    self.filteredRatings = Array(1...(i - 1))
-                })
-            }
-            let below = UIMenu(title: "Below...", children: children)
-
-            children.removeAll()
-            for i in 1...10 {
-                children.append(UIAction(title: "\(i)") { [weak self] _ in
-                    guard let self = self else { return }
-                    self.filteredRatings = [i]
-                })
-            }
-            let exactly = UIMenu(title: "Exactly...", children: children)
-
-            let ratings = UIMenu(title: "Ratings...", children: [everyRating, above, below, exactly])
-
-            completion([UIMenu(title: "What do you want to see?", options: .displayInline, children: [all, movies, shows, seasons, episodes, ratings])])
+    private func ratingTitle(for rating: Int) -> String {
+        switch rating {
+        case 1:
+            return "1/10 · I fell asleep"
+        case 2:
+            return "2/10 · Terrible"
+        case 3:
+            return "3/10 · Bad"
+        case 4:
+            return "4/10 · Poor"
+        case 5:
+            return "5/10 · Meh"
+        case 6:
+            return "6/10 · Fair"
+        case 7:
+            return "7/10 · Good"
+        case 8:
+            return "8/10 · Great"
+        case 9:
+            return "9/10 · Superb"
+        case 10:
+            return "10/10 · Masterpiece"
+        default:
+            return "\(rating)/10"
         }
-        return UIMenu(children: [deferredMenuElement])
+    }
+
+    private func filterMenu() -> UIMenu {
+        let dateGrouping = UIAction(title: GroupingMode.date.menuTitle,
+                                    state: groupingMode == .date ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.setGroupingMode(.date)
+        }
+
+        let ratingsGrouping = UIAction(title: GroupingMode.rating.menuTitle,
+                                       state: groupingMode == .rating ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.setGroupingMode(.rating)
+        }
+
+        let all = UIAction(title: "Everything", image: nil, state: currentFilter == .all ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentFilter = .all
+        }
+
+        let movies = UIAction(title: "Movies", image: nil, state: currentFilter == .movies ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentFilter = .movies
+        }
+
+        let shows = UIAction(title: "Shows", image: nil, state: currentFilter == .shows ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentFilter = .shows
+        }
+
+        let seasons = UIAction(title: "Seasons", image: nil, state: currentFilter == .seasons ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentFilter = .seasons
+        }
+
+        let episodes = UIAction(title: "Episodes", image: nil, state: currentFilter == .episodes ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentFilter = .episodes
+        }
+
+        let everyRating = UIAction(title: "All") { [weak self] _ in
+            guard let self = self else { return }
+            self.filteredRatings = Array(1...10)
+        }
+
+        var children = [UIAction]()
+
+        for i in 1...9 {
+            children.append(UIAction(title: "\(i)") { [weak self] _ in
+                guard let self = self else { return }
+                self.filteredRatings = Array((i + 1)...10)
+            })
+        }
+        let above = UIMenu(title: "Above...", children: children)
+
+        children.removeAll()
+        for i in 2...10 {
+            children.append(UIAction(title: "\(i)") { [weak self] _ in
+                guard let self = self else { return }
+                self.filteredRatings = Array(1...(i - 1))
+            })
+        }
+        let below = UIMenu(title: "Below...", children: children)
+
+        children.removeAll()
+        for i in 1...10 {
+            children.append(UIAction(title: "\(i)") { [weak self] _ in
+                guard let self = self else { return }
+                self.filteredRatings = [i]
+            })
+        }
+        let exactly = UIMenu(title: "Exactly...", children: children)
+
+        let ratings = UIMenu(title: "Ratings...", children: [everyRating, above, below, exactly])
+        let grouping = UIMenu(title: "What do you want to see?", options: .displayInline, children: [dateGrouping, ratingsGrouping])
+        let mediaFilters = UIMenu(options: .displayInline, children: [all, movies, shows, seasons, episodes])
+
+        return UIMenu(children: [grouping, mediaFilters, ratings])
+    }
+
+    private struct RatingsSnapshot {
+        let snapshot: NSDiffableDataSourceSnapshot<String, Wrapper>
+        let timeMap: [String: Int]
+    }
+
+    private func makeRatingsSnapshot(for rated: [RatedItem]) -> RatingsSnapshot {
+        var snapshot = NSDiffableDataSourceSnapshot<String, Wrapper>()
+        var newTimeMap = [String: Int]()
+
+        if rated.isEmpty {
+            snapshot.appendSections(["empty"])
+            return RatingsSnapshot(snapshot: snapshot, timeMap: newTimeMap)
+        }
+
+        snapshot.appendSections(["stats"])
+        snapshot.appendItems([Wrapper.stats(ratingsStats(for: rated))], toSection: "stats")
+
+        let visibleRatedItems = rated.filter { filteredRatings.contains($0.rating) }
+
+        switch groupingMode {
+        case .date:
+            let formatter = DateFormatter()
+            formatter.setLocalizedDateFormatFromTemplate("EEEE, MMM d, yyyy")
+
+            var itemsByDate = [String: [RatedItem]]()
+            var dateTitles = [String]()
+
+            for ratedItem in visibleRatedItems {
+                let dateTitle = formatter.string(from: ratedItem.rateDate)
+                if itemsByDate[dateTitle] == nil {
+                    dateTitles.append(dateTitle)
+                    itemsByDate[dateTitle] = []
+                }
+                itemsByDate[dateTitle]?.append(ratedItem)
+            }
+
+            for dateTitle in dateTitles {
+                guard let items = itemsByDate[dateTitle] else { continue }
+
+                if let index = snapshot.indexOfSection(dateTitle) {
+                    snapshot.appendItems(items.map(Wrapper.item), toSection: snapshot.sectionIdentifiers[index])
+                } else {
+                    snapshot.appendSections([dateTitle])
+                    snapshot.appendItems([Wrapper.header(Header(title: dateTitle, count: items.count))], toSection: dateTitle)
+                    snapshot.appendItems(items.map(Wrapper.item), toSection: dateTitle)
+                }
+                newTimeMap[dateTitle] = 0
+            }
+        case .rating:
+            for rating in (1...10).reversed() {
+                let items = visibleRatedItems
+                    .filter { $0.rating == rating }
+                    .sorted { $0.rateDate > $1.rateDate }
+
+                guard items.isEmpty == false else { continue }
+
+                let sectionIdentifier = "rating-\(rating)"
+                let headerTitle = ratingTitle(for: rating)
+                snapshot.appendSections([sectionIdentifier])
+                snapshot.appendItems([Wrapper.header(Header(title: headerTitle, count: items.count))], toSection: sectionIdentifier)
+                snapshot.appendItems(items.map(Wrapper.item), toSection: sectionIdentifier)
+                newTimeMap[headerTitle] = 0
+            }
+        }
+
+        return RatingsSnapshot(snapshot: snapshot, timeMap: newTimeMap)
+    }
+
+    private func ratingsStats(for rated: [RatedItem]) -> TraktRatings {
+        var votes = 0
+        var one = 0
+        var two = 0
+        var three = 0
+        var four = 0
+        var five = 0
+        var six = 0
+        var seven = 0
+        var eight = 0
+        var nine = 0
+        var ten = 0
+
+        for ratedItem in rated {
+            switch ratedItem.rating {
+            case 1:
+                one += 1
+            case 2:
+                two += 1
+            case 3:
+                three += 1
+            case 4:
+                four += 1
+            case 5:
+                five += 1
+            case 6:
+                six += 1
+            case 7:
+                seven += 1
+            case 8:
+                eight += 1
+            case 9:
+                nine += 1
+            case 10:
+                ten += 1
+            default:
+                break
+            }
+            votes += 1
+        }
+
+        let avgRating = Float((one * 1) + (two * 2) + (three * 3) + (four * 4) + (five * 5) + (six * 6) + (seven * 7) + (eight * 8) + (nine * 9) + (ten * 10)) / Float(votes)
+        return TraktRatings(rating: avgRating,
+                            votes: votes,
+                            distribution: RatingDistribution(one: one,
+                                                             two: two,
+                                                             three: three,
+                                                             four: four,
+                                                             five: five,
+                                                             six: six,
+                                                             seven: seven,
+                                                             eight: eight,
+                                                             nine: nine,
+                                                             ten: ten))
+    }
+
+    private func applyRatingsSnapshot(for rated: [RatedItem], animatingDifferences: Bool) {
+        let ratingsSnapshot = makeRatingsSnapshot(for: rated)
+        timeMap = ratingsSnapshot.timeMap
+        dataSource.apply(ratingsSnapshot.snapshot, animatingDifferences: animatingDifferences)
     }
 
     func fetchRatings() {
@@ -362,90 +596,9 @@ final class RatingsViewController: UITableViewController {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let rated = try response.map([RatedItem].self, using: TraktAPIProvider.decoder)
-
-                    if rated.isEmpty {
-                        var snapshot = NSDiffableDataSourceSnapshot<String, Wrapper>()
-                        snapshot.appendSections(["empty"])
-                        DispatchQueue.main.async {
-                            self.dataSource.apply(snapshot, animatingDifferences: false)
-                        }
-                    } else {
-                        var snapshot = NSDiffableDataSourceSnapshot<String, Wrapper>()
-                        let formatter = DateFormatter()
-                        var newTimeMap = [String: Int]()
-                        formatter.setLocalizedDateFormatFromTemplate("EEEE, MMM d, yyyy")
-
-                        // stats
-                        snapshot.appendSections(["stats"])
-                        var votes = 0
-                        var one = 0
-                        var two = 0
-                        var three = 0
-                        var four = 0
-                        var five = 0
-                        var six = 0
-                        var seven = 0
-                        var eight = 0
-                        var nine = 0
-                        var ten = 0
-
-                        for ratedItem in rated {
-                            if self.filteredRatings.contains(ratedItem.rating) {
-                                let relativeDate = formatter.string(from: ratedItem.rateDate)
-                                if let index = snapshot.indexOfSection(relativeDate) {
-                                    snapshot.appendItems([Wrapper.item(ratedItem)], toSection: snapshot.sectionIdentifiers[index])
-                                    newTimeMap[relativeDate] = 0
-                                } else {
-                                    snapshot.appendSections([relativeDate])
-                                    snapshot.appendItems([Wrapper.header(relativeDate)])
-                                    snapshot.appendItems([Wrapper.item(ratedItem)])
-                                    newTimeMap[relativeDate] = 0
-                                }
-                            }
-                            switch ratedItem.rating {
-                            case 1:
-                                one += 1
-                            case 2:
-                                two += 1
-                            case 3:
-                                three += 1
-                            case 4:
-                                four += 1
-                            case 5:
-                                five += 1
-                            case 6:
-                                six += 1
-                            case 7:
-                                seven += 1
-                            case 8:
-                                eight += 1
-                            case 9:
-                                nine += 1
-                            case 10:
-                                ten += 1
-                            default:
-                                break
-                            }
-                            votes += 1
-                        }
-                        let avgRating = Float((one * 1) + (two * 2) + (three * 3) + (four * 4) + (five * 5) + (six * 6) + (seven * 7) + (eight * 8) + (nine * 9) + (ten * 10)) / Float(votes)
-                        let ratings = TraktRatings(rating: avgRating,
-                                                   votes: votes,
-                                                   distribution: RatingDistribution(one: one,
-                                                                                    two: two,
-                                                                                    three: three,
-                                                                                    four: four,
-                                                                                    five: five,
-                                                                                    six: six,
-                                                                                    seven: seven,
-                                                                                    eight: eight,
-                                                                                    nine: nine,
-                                                                                    ten: ten))
-                        snapshot.appendItems([Wrapper.stats(ratings)], toSection: "stats")
-                        DispatchQueue.main.async {
-                            self.timeMap = newTimeMap
-                            self.dataSource.apply(snapshot, animatingDifferences: false)
-                        }
+                    DispatchQueue.main.async {
+                        self.ratedItems = rated
+                        self.applyRatingsSnapshot(for: rated, animatingDifferences: false)
                     }
                 } catch {
                     print("Comments request JSON mapping failed! \(error)")
@@ -453,6 +606,7 @@ final class RatingsViewController: UITableViewController {
                     var snapshot = NSDiffableDataSourceSnapshot<String, Wrapper>()
                     snapshot.appendSections(["error"])
                     DispatchQueue.main.async {
+                        self.ratedItems = nil
                         self.error = error
                         self.dataSource.apply(snapshot, animatingDifferences: false)
                     }
@@ -463,6 +617,7 @@ final class RatingsViewController: UITableViewController {
                 var snapshot = NSDiffableDataSourceSnapshot<String, Wrapper>()
                 snapshot.appendSections(["error"])
                 DispatchQueue.main.async {
+                    self.ratedItems = nil
                     self.error = error
                     self.dataSource.apply(snapshot, animatingDifferences: false)
                 }
@@ -533,6 +688,8 @@ extension RatingsViewController {
             return UITableView.automaticDimension
         case .stats:
             return 120
+        case .loading:
+            return 116
         }
     }
 
@@ -611,4 +768,13 @@ extension RatingsViewController: RatingsStatTableViewCellDelegate {
 
 final class RatingsHeaderTableViewCell: UITableViewCell {
     @IBOutlet var title: UILabel!
+    @IBOutlet var count: UILabel!
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+
+        selectionStyle = .none
+        title.textColor = .label
+        count.textColor = .secondaryLabel
+    }
 }

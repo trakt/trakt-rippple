@@ -13,12 +13,17 @@
             <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
-                <stackView opaque="NO" contentMode="scaleToFill" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="lxJ-ob-WH9">
+                <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="lxJ-ob-WH9">
                     <rect key="frame" x="16" y="54" width="382" height="803"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="Sunday, 12 January 2021" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qK4-7C-DSt">
-                            <rect key="frame" x="0.0" y="0.0" width="382" height="803"/>
+                            <rect key="frame" x="0.0" y="0.0" width="356" height="803"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="751" text="12" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nPu-EX-kGA">
+                            <rect key="frame" x="364" y="0.0" width="18" height="803"/>
+                            <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                             <nil key="highlightedColor"/>
                         </label>
                     </subviews>
@@ -33,6 +38,7 @@
                 <constraint firstItem="lxJ-ob-WH9" firstAttribute="leading" secondItem="FoY-Vc-7QT" secondAttribute="leading" constant="16" id="uZI-G4-7Ke"/>
             </constraints>
             <connections>
+                <outlet property="count" destination="nPu-EX-kGA" id="nSp-O7-wK5"/>
                 <outlet property="title" destination="qK4-7C-DSt" id="1Rn-Nn-dNT"/>
             </connections>
             <point key="canvasLocation" x="-372" y="-342"/>
