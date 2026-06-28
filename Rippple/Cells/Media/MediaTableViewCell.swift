@@ -371,6 +371,31 @@ final class MediaTableViewCell: UITableViewCell {
         }
     }
 
+    private func episodeEventLabel(for episode: Episode) -> String? {
+        switch episode.episodeType {
+        case .seriesPremiere?:
+            return "Series Premiere"
+        case .seasonPremiere?:
+            return "Season Premiere"
+        case .midSeasonFinale?:
+            return "Mid Season Finale"
+        case .midSeasonPremiere?:
+            return "Mid Season Premiere"
+        case .seasonFinale?:
+            return "Season Finale"
+        case .seriesFinale?:
+            return "Series Finale"
+        case .standard?, .unknown?, nil:
+            if episode.season == 1, episode.number == 1 {
+                return "Series Premiere"
+            } else if episode.number == 1 {
+                return "Season Premiere"
+            } else {
+                return nil
+            }
+        }
+    }
+
     override func prepareForReuse() {
         super.prepareForReuse()
 
@@ -481,14 +506,10 @@ final class MediaTableViewCell: UITableViewCell {
 
             if episode.isWatched, let title = episode.title {
                 subtitle.text = episode.localizedEpisodeNumber + " · \(title)"
+            } else if let eventLabel = episodeEventLabel(for: episode) {
+                subtitle.text = episode.localizedEpisodeNumber + " · \(eventLabel)"
             } else {
-                if let episode = media.episode, episode.season == 1, episode.number == 1 {
-                    subtitle.text = episode.localizedEpisodeNumber + " · Series Premiere"
-                } else if let episode = media.episode, episode.number == 1 {
-                    subtitle.text = episode.localizedEpisodeNumber + " · Season Premiere"
-                } else {
-                    subtitle.text = episode.localizedEpisodeNumber
-                }
+                subtitle.text = episode.localizedEpisodeNumber
             }
 
             submeta?.isHiddenInStackView = false
