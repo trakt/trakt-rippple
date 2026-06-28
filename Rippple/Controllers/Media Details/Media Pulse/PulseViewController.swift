@@ -12,6 +12,7 @@ import UIKit
 final class PulseViewController: UITableViewController {
     var media: MediaModel!
     private let disposeBag = DisposeBag()
+    private var calendarData: CalendarData?
 
     private let relativeDateTimeFormatter: RelativeDateTimeFormatter = {
         let dateFormatter = RelativeDateTimeFormatter()
@@ -189,6 +190,45 @@ final class PulseViewController: UITableViewController {
         }
 
         return [openAction(for: media)].compactMap { $0 }
+    }
+
+    private func buildCalendarReleaseActivityItems(for movie: Movie) -> [ActivityItem] {
+        guard let calendarData else { return [] }
+
+        let dateFormatter: DateFormatter = {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .medium
+            dateFormatter.timeStyle = .none
+            return dateFormatter
+        }()
+
+        return calendarData.movies
+            .filter { release in
+                release.movie == movie &&
+                    (release.releaseType == .physical || release.releaseType == .streaming)
+            }
+            .map { release in
+                var meta = [String]()
+                if let releaseCountryCode = release.releaseCountryCode {
+                    meta.append(Locale(identifier: "en_US").localizedCountry(for: releaseCountryCode))
+                }
+
+                return ActivityItem(activity: release.tag,
+                                    title: dateFormatter.string(from: release.released),
+                                    notes: "",
+                                    meta: meta.joined(separator: " · "),
+                                    date: release.released,
+                                    systemImageName: "calendar")
+            }
+    }
+
+    private func containsReleaseActivity(_ activityItems: [ActivityItem], matching calendarReleaseActivity: ActivityItem) -> Bool {
+        activityItems.contains { activityItem in
+            activityItem.activity == calendarReleaseActivity.activity &&
+                Calendar.current.isDate(activityItem.date, inSameDayAs: calendarReleaseActivity.date) &&
+                (activityItem.meta == calendarReleaseActivity.meta ||
+                    activityItem.meta.hasPrefix("\(calendarReleaseActivity.meta) · "))
+        }
     }
 
     private func buildRatedActivityActions(for ratedItem: RatedItem) -> [ActivityAction] {
@@ -607,6 +647,14 @@ final class PulseViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
+        calendarDataUpdatedReceiver.listen { [weak self] data in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.calendarData = data
+                self.refresh()
+            }
+        }.disposed(by: disposeBag)
+
         refresh()
 
         configureOptionButton()
@@ -907,6 +955,13 @@ final class PulseViewController: UITableViewController {
                                             date: activity.releaseDate,
                                             systemImageName: "calendar")
                     activityItems.append(item)
+                }
+            }
+
+            if let movie = media.movie {
+                for activity in buildCalendarReleaseActivityItems(for: movie)
+                    where !containsReleaseActivity(activityItems, matching: activity) {
+                    activityItems.append(activity)
                 }
             }
 
