@@ -22,6 +22,31 @@ struct MovieToWatchGroup: Codable {
     let shows: Set<Movie>
 }
 
+private struct MovieToWatchRelease: Codable {
+    let releaseType: String
+    let releaseDate: Date
+    let note: String?
+    let countryCode: String
+
+    func displayText(relativeTo referenceDate: Date = .now) -> String {
+        let releaseText = "\(releaseType.localizedCapitalized), \(CalendarRelativeDateFormatter.string(for: releaseDate, relativeTo: referenceDate))"
+
+        if let note = note?.trimmingCharacters(in: .whitespacesAndNewlines), note.isEmpty == false {
+            return "\(releaseText) · \(note)"
+        } else if let displayCountry = displayCountry {
+            return "\(releaseText) · \(displayCountry)"
+        } else {
+            return "\(releaseText)"
+        }
+    }
+
+    private var displayCountry: String? {
+        let localCountry = Locale.current.language.region?.identifier.lowercased() ?? "us"
+        guard countryCode.lowercased() != localCountry else { return nil }
+        return Locale.current.localizedString(forRegionCode: countryCode.uppercased()) ?? countryCode
+    }
+}
+
 final class MovieToWatchManager {
     private var debouncedForceRefresh: Debouncer!
     private var debouncedTransmit: Debouncer!
@@ -101,6 +126,19 @@ final class MovieToWatchManager {
         return mediaModels
     }
 
+    private var releaseInfoCache = [Int64: MovieToWatchRelease]() {
+        didSet {
+            TinyStorage.cache.store(releaseInfoCache, forKey: "MovieToWatchManager.releaseInfoCache")
+        }
+    }
+
+    func releaseLabel(for movie: Movie) -> String? {
+        guard let traktId = movie.identifiers.trakt,
+              let releaseInfo = releaseInfoCache[traktId] else { return nil }
+
+        return releaseInfo.displayText()
+    }
+
     private var timer: Timer?
     private var dateFormatter: DateFormatter {
         let dateFormatter = DateFormatter()
@@ -156,6 +194,9 @@ final class MovieToWatchManager {
         }
         if let movies = TinyStorage.cache.retrieve(type: Set<Movie>.self, forKey: "MovieToWatchManager.movies") {
             self.movies = movies
+        }
+        if let releaseInfoCache = TinyStorage.cache.retrieve(type: [Int64: MovieToWatchRelease].self, forKey: "MovieToWatchManager.releaseInfoCache") {
+            self.releaseInfoCache = releaseInfoCache
         }
         if let mediaModels = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "MovieToWatchManager.mediaModels") {
             self.mediaModels = mediaModels
@@ -279,6 +320,12 @@ final class MovieToWatchManager {
             self.debouncedTransmit.call()
         }.disposed(by: disposeBag)
 
+        calendarDataUpdatedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self, self.movies != nil else { return }
+            print("MovieToWatchManager.debouncedRefreshProgress because calendar data updated")
+            self.debouncedRefreshProgress.call()
+        }.disposed(by: disposeBag)
+
         onSyncWatchedMoviesChangedReceiver.skipRepeats().listen { [weak self] _ in
             guard let self = self else { return }
             print("MovieToWatchManager.debouncedRefreshProgress because onSyncWatchedMoviesChangedReceiver")
@@ -339,6 +386,7 @@ final class MovieToWatchManager {
                 if updateMoviesWatchedOperation.isCancelled { return }
                 self.movies = movies
                 self.moviesInList = updateMoviesOperation.moviesInList
+                self.releaseInfoCache = updateMoviesWatchedOperation.releaseInfoByMovieId
                 self.mediaModels = updateMoviesWatchedOperation.mediaModels
                 self.futureMediaModels = updateMoviesWatchedOperation.futureMediaModels
                 print("MovieToWatchManager.forceRefresh STOP")
@@ -359,6 +407,7 @@ final class MovieToWatchManager {
         let updateMoviesWatchedOperation = UpdateMoviesWatchedOperation(movies: movies)
         updateMoviesWatchedOperation.completionBlock = {
             if updateMoviesWatchedOperation.isCancelled { return }
+            self.releaseInfoCache = updateMoviesWatchedOperation.releaseInfoByMovieId
             self.mediaModels = updateMoviesWatchedOperation.mediaModels
             self.futureMediaModels = updateMoviesWatchedOperation.futureMediaModels
             print("MovieToWatchManager.refreshProgress STOP")
@@ -656,6 +705,7 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
 
 private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
     private let watchedDispatchGroup = DispatchGroup()
+    private let releaseCallbackQueue = DispatchQueue(label: "Movie to-watch release info callback queue")
 
     private var cancellables = [Cancellable?]()
 
@@ -670,6 +720,8 @@ private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
 
     fileprivate var mediaModels = [MediaModel]()
     fileprivate var futureMediaModels = [MediaModel]()
+
+    fileprivate var releaseInfoByMovieId = [Int64: MovieToWatchRelease]()
 
     init(movies: Set<Movie>) {
         self.movies = movies
@@ -752,6 +804,8 @@ private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
 
         unwatchedMovies = movies.filter { $0.isWatched == false }
 
+        fetchReleaseInfo()
+
         watchedDispatchGroup.notify(queue: .global(qos: .utility)) { [weak self] in
             guard let self = self else { return }
             if self.isCancelled { return }
@@ -784,6 +838,83 @@ private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
             }
 
             self.state = .isFinished
+        }
+    }
+
+    private func fetchReleaseInfo() {
+        if isCancelled { return }
+
+        let movies = Set(unwatchedMovies)
+        for movie in CalendarManager.shared.movieWithReleases(in: movies) {
+            guard let traktId = movie.identifiers.trakt else { continue }
+
+            watchedDispatchGroup.enter()
+            let cancellable = TraktAPIProvider.provider.request(.movieReleases(id: traktId),
+                                                                callbackQueue: releaseCallbackQueue) { [weak self] result in
+                guard let self = self else { return }
+                defer { self.watchedDispatchGroup.leave() }
+                if self.isCancelled { return }
+
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                        let activities = try response.map([MovieReleaseActivity].self, using: TraktAPIProvider.decoder)
+                        if let releaseInfo = self.closestReleaseEvent(for: movie, activities: activities) {
+                            self.releaseInfoByMovieId[traktId] = releaseInfo
+                        }
+                    } catch {
+                        print("MovieToWatchManager fetchMovieReleases request JSON mapping failed! \(error)")
+                    }
+                case .failure(let error):
+                    print("MovieToWatchManager fetchMovieReleases request failure \(error)")
+                }
+            }
+            cancellables.append(cancellable)
+        }
+    }
+
+    private func closestReleaseEvent(for movie: Movie, activities: [MovieReleaseActivity]) -> MovieToWatchRelease? {
+        let candidates = releaseInfoCandidates(for: movie, from: activities)
+        guard candidates.isEmpty == false else { return nil }
+
+        let now = Date()
+        return candidates.min { lhs, rhs in
+            let lhsPriority = releasePriority(lhs)
+            let rhsPriority = releasePriority(rhs)
+            if lhsPriority != rhsPriority { return lhsPriority < rhsPriority }
+
+            let lhsDistance = abs(lhs.releaseDate.timeIntervalSince(now))
+            let rhsDistance = abs(rhs.releaseDate.timeIntervalSince(now))
+            if lhsDistance != rhsDistance { return lhsDistance < rhsDistance }
+
+            return lhs.releaseDate < rhs.releaseDate
+        }
+    }
+
+    private func releasePriority(_ release: MovieToWatchRelease) -> Int {
+        switch release.releaseType.lowercased() {
+        case "digital", "streaming":
+            return 0
+        case "physical":
+            return 1
+        case "theatrical":
+            return 2
+        default:
+            return 3
+        }
+    }
+
+    private func releaseInfoCandidates(for movie: Movie, from activities: [MovieReleaseActivity]) -> [MovieToWatchRelease] {
+        return activities.filter {
+            let countryCode = $0.country.lowercased()
+            let localCountry = Locale.current.language.region?.identifier.lowercased() ?? "us"
+            return countryCode == movie.country?.lowercased() || countryCode == localCountry
+        }.map {
+            MovieToWatchRelease(releaseType: $0.releaseType,
+                                releaseDate: $0.releaseDate,
+                                note: $0.note,
+                                countryCode: $0.country)
         }
     }
 

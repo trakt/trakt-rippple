@@ -60,6 +60,9 @@ final class MoviesToWatchViewController: UITableViewController {
             cell.dimmedIfWatched = false
             cell.toWatchMode = true // set this before setting the media!!
             cell.media = media
+            cell.note = media.movie.flatMap { MovieToWatchManager.shared.releaseLabel(for: $0) }
+            cell.notesButton?.isUserInteractionEnabled = false
+            cell.notesButton?.toolTip = nil
             cell.delegate = self
             return cell
         case .header:

@@ -204,6 +204,27 @@ final class CalendarManager {
         storage.store(data, forKey: storageKey)
     }
 
+    private func loadCacheFromDiskIfNeeded() -> CalendarData? {
+        if cachedData == nil {
+            loadCacheFromDisk()
+        }
+
+        return cachedData
+    }
+
+    func movieWithReleases(in movies: Set<Movie>) -> [Movie] {
+        guard let cachedData = loadCacheFromDiskIfNeeded() else { return [] }
+        let now = Date()
+
+        return cachedData.movies
+            .filter { movies.contains($0.movie) }
+            .sorted { lhs, rhs in
+                abs(lhs.released.timeIntervalSince(now)) < abs(rhs.released.timeIntervalSince(now))
+            }
+            .map { $0.movie }
+            .removingDuplicates()
+    }
+
     @discardableResult
     private func reload(referenceDate: Date = .now, force: Bool = false) async throws -> CalendarData {
         if force == false, let cachedData = cachedData {
