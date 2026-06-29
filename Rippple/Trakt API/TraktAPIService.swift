@@ -498,9 +498,10 @@ extension TraktAPIService: AuthorizedTargetType {
 
     var baseURL: URL {
         switch self {
-        case .verifyIAP, .verifySandboxIAP:
-            // Some things can go through the website, not the API
+        case .token, .refresh, .revoke:
             return URL(string: TraktAPIConfiguration.authBaseURL)!
+        case .verifyIAP, .verifySandboxIAP:
+            return URL(string: "https://trakt.tv")!
         default:
             return URL(string: TraktAPIConfiguration.baseURL)!
         }
