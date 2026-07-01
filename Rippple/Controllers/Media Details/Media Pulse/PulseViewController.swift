@@ -22,6 +22,12 @@ final class PulseViewController: UITableViewController {
         return dateFormatter
     }()
 
+    private enum ActivityOrigin {
+        case standard
+        case movieRelease
+        case calendarMovieRelease
+    }
+
     private struct ActivityItem: Hashable {
         let identifier = UUID()
         let activity: String
@@ -33,6 +39,7 @@ final class PulseViewController: UITableViewController {
         let historyItem: HistoryItem?
         let ratedItem: RatedItem?
         let actions: [ActivityAction]
+        let origin: ActivityOrigin
 
         init(activity: String,
              title: String,
@@ -42,7 +49,8 @@ final class PulseViewController: UITableViewController {
              systemImageName: String,
              historyItem: HistoryItem? = nil,
              ratedItem: RatedItem? = nil,
-             actions: [ActivityAction] = []) {
+             actions: [ActivityAction] = [],
+             origin: ActivityOrigin = .standard) {
             self.activity = activity
             self.title = title
             self.notes = notes
@@ -52,6 +60,7 @@ final class PulseViewController: UITableViewController {
             self.historyItem = historyItem
             self.ratedItem = ratedItem
             self.actions = actions
+            self.origin = origin
         }
 
         static func == (lhs: ActivityItem, rhs: ActivityItem) -> Bool {
@@ -218,16 +227,16 @@ final class PulseViewController: UITableViewController {
                                     notes: "",
                                     meta: meta.joined(separator: " · "),
                                     date: release.released,
-                                    systemImageName: "calendar")
+                                    systemImageName: "calendar",
+                                    origin: .calendarMovieRelease)
             }
     }
 
     private func containsReleaseActivity(_ activityItems: [ActivityItem], matching calendarReleaseActivity: ActivityItem) -> Bool {
         activityItems.contains { activityItem in
-            activityItem.activity == calendarReleaseActivity.activity &&
-                Calendar.current.isDate(activityItem.date, inSameDayAs: calendarReleaseActivity.date) &&
-                (activityItem.meta == calendarReleaseActivity.meta ||
-                    activityItem.meta.hasPrefix("\(calendarReleaseActivity.meta) · "))
+            activityItem.origin == .movieRelease &&
+                calendarReleaseActivity.origin == .calendarMovieRelease &&
+                Calendar.current.isDate(activityItem.date, inSameDayAs: calendarReleaseActivity.date)
         }
     }
 
@@ -953,7 +962,8 @@ final class PulseViewController: UITableViewController {
                                             notes: activity.note ?? "",
                                             meta: meta.joined(separator: " · "),
                                             date: activity.releaseDate,
-                                            systemImageName: "calendar")
+                                            systemImageName: "calendar",
+                                            origin: .movieRelease)
                     activityItems.append(item)
                 }
             }
