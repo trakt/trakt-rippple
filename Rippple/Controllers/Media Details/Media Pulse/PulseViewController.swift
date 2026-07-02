@@ -29,7 +29,7 @@ final class PulseViewController: UITableViewController {
     }
 
     private struct ActivityItem: Hashable {
-        let identifier = UUID()
+        let identifier: String
         let activity: String
         let title: String
         let notes: String
@@ -50,7 +50,9 @@ final class PulseViewController: UITableViewController {
              historyItem: HistoryItem? = nil,
              ratedItem: RatedItem? = nil,
              actions: [ActivityAction] = [],
-             origin: ActivityOrigin = .standard) {
+             origin: ActivityOrigin = .standard,
+             identifier: String) {
+            self.identifier = identifier
             self.activity = activity
             self.title = title
             self.notes = notes
@@ -228,7 +230,8 @@ final class PulseViewController: UITableViewController {
                                     meta: meta.joined(separator: " · "),
                                     date: release.released,
                                     systemImageName: "calendar",
-                                    origin: .calendarMovieRelease)
+                                    origin: .calendarMovieRelease,
+                                    identifier: "calendar-release-\(movie.identifiers.traktIdOrSlug)-\(release.releaseType)-\(release.releaseCountryCode ?? "unknown")-\(release.released.timeIntervalSinceReferenceDate)")
             }
     }
 
@@ -614,12 +617,14 @@ final class PulseViewController: UITableViewController {
         }
     }
 
+    private var isRefreshing = false
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         navigationItem.style = .browser
         navigationItem.title = "Pulse"
-        navigationItem.subtitle = media.mediaTitle
+        navigationItem.subtitle = "Loading..."
 
         tableView.register(UINib(nibName: "PulseTableViewCell", bundle: nil), forCellReuseIdentifier: "activity")
         tableView.register(UINib(nibName: "LoadingIndicatorTableViewCell", bundle: nil), forCellReuseIdentifier: "loading")
@@ -664,7 +669,7 @@ final class PulseViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
-        refresh()
+        refresh(forced: true)
 
         configureOptionButton()
     }
@@ -800,11 +805,18 @@ final class PulseViewController: UITableViewController {
         navigationItem.rightBarButtonItems = [UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu)]
     }
 
-    private func refresh() {
-        var loading = NSDiffableDataSourceSnapshot<Section, Wrapper>()
-        loading.appendSections([.loading])
-        loading.appendItems([.loading])
-        dataSource.apply(loading, animatingDifferences: false)
+    private func refresh(forced: Bool = false) {
+        if isRefreshing { return }
+        isRefreshing = true
+
+        navigationItem.subtitle = "Loading..."
+
+        if forced {
+            var loading = NSDiffableDataSourceSnapshot<Section, Wrapper>()
+            loading.appendSections([.loading])
+            loading.appendItems([.loading])
+            dataSource.apply(loading, animatingDifferences: false)
+        }
 
         Task {
             var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
@@ -835,7 +847,8 @@ final class PulseViewController: UITableViewController {
                                             meta: meta.joined(separator: " · "),
                                             date: firstAired,
                                             systemImageName: "calendar",
-                                            actions: buildActivityActions(for: media))
+                                            actions: buildActivityActions(for: media),
+                                            identifier: "episode-first-aired-\(episode.identifiers.traktIdOrSlug)-\(firstAired.timeIntervalSinceReferenceDate)")
                     activityItems.append(item)
                 }
             }
@@ -862,7 +875,8 @@ final class PulseViewController: UITableViewController {
                                             notes: "",
                                             meta: meta.joined(separator: " · "),
                                             date: firstAired,
-                                            systemImageName: "calendar")
+                                            systemImageName: "calendar",
+                                            identifier: "season-first-aired-\(season.identifiers.traktIdOrSlug)-\(firstAired.timeIntervalSinceReferenceDate)")
                     activityItems.append(item)
                 }
             }
@@ -894,7 +908,8 @@ final class PulseViewController: UITableViewController {
                                             notes: "",
                                             meta: meta.joined(separator: " · "),
                                             date: firstAired.addingTimeInterval(-5), // make sure this is displayed before anythin else,
-                                            systemImageName: "calendar")
+                                            systemImageName: "calendar",
+                                            identifier: "show-first-aired-\(fullShow.identifiers.traktIdOrSlug)-\(firstAired.timeIntervalSinceReferenceDate)")
                     activityItems.append(item)
                 }
 
@@ -913,7 +928,8 @@ final class PulseViewController: UITableViewController {
                                             meta: "\(lastEpisode.localizedEpisodeNumber)",
                                             date: firstAired,
                                             systemImageName: "calendar",
-                                            actions: buildActivityActions(for: lastEpisode.mediaModel(given: show)))
+                                            actions: buildActivityActions(for: lastEpisode.mediaModel(given: show)),
+                                            identifier: "last-aired-episode-\(lastEpisode.identifiers.traktIdOrSlug)-\(firstAired.timeIntervalSinceReferenceDate)")
                     activityItems.append(item)
                 }
 
@@ -932,7 +948,8 @@ final class PulseViewController: UITableViewController {
                                             meta: "\(nextEpisode.localizedEpisodeNumber)",
                                             date: firstAired,
                                             systemImageName: "calendar",
-                                            actions: buildActivityActions(for: nextEpisode.mediaModel(given: show)))
+                                            actions: buildActivityActions(for: nextEpisode.mediaModel(given: show)),
+                                            identifier: "next-airing-episode-\(nextEpisode.identifiers.traktIdOrSlug)-\(firstAired.timeIntervalSinceReferenceDate)")
                     activityItems.append(item)
                 }
             }
@@ -963,7 +980,8 @@ final class PulseViewController: UITableViewController {
                                             meta: meta.joined(separator: " · "),
                                             date: activity.releaseDate,
                                             systemImageName: "calendar",
-                                            origin: .movieRelease)
+                                            origin: .movieRelease,
+                                            identifier: "movie-release-\(movie.identifiers.traktIdOrSlug)-\(activity.releaseType)-\(activity.country)-\(activity.releaseDate.timeIntervalSinceReferenceDate)")
                     activityItems.append(item)
                 }
             }
@@ -991,7 +1009,8 @@ final class PulseViewController: UITableViewController {
                                                         meta: "Added to \(list.name)",
                                                         date: item.listedAt,
                                                         systemImageName: "plus",
-                                                        actions: buildListActivityActions(for: list, item: item))
+                                                        actions: buildListActivityActions(for: list, item: item),
+                                                        identifier: "listed-\(list.identifiers.traktIdOrSlug)-item-\(item.id)")
                         activityItems.append(activityItem)
                     }
                 }
@@ -1011,7 +1030,8 @@ final class PulseViewController: UITableViewController {
                                         notes: watchlistMediaItem.notes ?? "",
                                         meta: "",
                                         date: watchlistedAt,
-                                        systemImageName: "bookmark.fill")
+                                        systemImageName: "bookmark.fill",
+                                        identifier: "watchlist-\(media.traktId)-\(watchlistedAt.timeIntervalSinceReferenceDate)")
                 activityItems.append(item)
             }
 
@@ -1030,7 +1050,8 @@ final class PulseViewController: UITableViewController {
                                         meta: "",
                                         date: recommendedAt,
                                         systemImageName: "star.fill",
-                                        actions: buildFavoriteActivityActions(for: recommendedMediaItem))
+                                        actions: buildFavoriteActivityActions(for: recommendedMediaItem),
+                                        identifier: "favorited-\(recommendedMediaItem.id)")
                 activityItems.append(item)
             }
 
@@ -1048,7 +1069,8 @@ final class PulseViewController: UITableViewController {
                                         notes: collectedMediaItem.notes ?? "",
                                         meta: "",
                                         date: collectedAt,
-                                        systemImageName: "book.circle")
+                                        systemImageName: "book.circle",
+                                        identifier: "collected-\(media.traktId)-\(collectedAt.timeIntervalSinceReferenceDate)")
                 activityItems.append(item)
             }
 
@@ -1066,7 +1088,8 @@ final class PulseViewController: UITableViewController {
                                         notes: collectedMediaItem.notes ?? "",
                                         meta: "",
                                         date: collectedAt,
-                                        systemImageName: "book.circle")
+                                        systemImageName: "book.circle",
+                                        identifier: "collected-\(media.traktId)-\(collectedAt.timeIntervalSinceReferenceDate)")
                 activityItems.append(item)
             }
 
@@ -1080,6 +1103,7 @@ final class PulseViewController: UITableViewController {
 
                 for ratedMediaItem in ratedMediaItems {
                     let media = MediaModel(item: ratedMediaItem)
+                    let identifier = "rating-\(ratedMediaItem.type.rawValue)-\(media.traktId)-\(ratedMediaItem.rateDate.timeIntervalSinceReferenceDate)-\(ratedMediaItem.rating)"
 
                     switch media {
                     case .movie:
@@ -1090,7 +1114,8 @@ final class PulseViewController: UITableViewController {
                                                 date: ratedMediaItem.rateDate,
                                                 systemImageName: "heart.fill",
                                                 ratedItem: ratedMediaItem,
-                                                actions: buildRatedActivityActions(for: ratedMediaItem))
+                                                actions: buildRatedActivityActions(for: ratedMediaItem),
+                                                identifier: identifier)
                         activityItems.append(item)
                     case .show:
                         let item = ActivityItem(activity: "Rated Show",
@@ -1100,7 +1125,8 @@ final class PulseViewController: UITableViewController {
                                                 date: ratedMediaItem.rateDate,
                                                 systemImageName: "heart.fill",
                                                 ratedItem: ratedMediaItem,
-                                                actions: buildRatedActivityActions(for: ratedMediaItem))
+                                                actions: buildRatedActivityActions(for: ratedMediaItem),
+                                                identifier: identifier)
                         activityItems.append(item)
                     case .season(let season, _):
                         let item = ActivityItem(activity: "Rated \(season.localizedSeasonNumber)",
@@ -1110,7 +1136,8 @@ final class PulseViewController: UITableViewController {
                                                 date: ratedMediaItem.rateDate,
                                                 systemImageName: "heart.fill",
                                                 ratedItem: ratedMediaItem,
-                                                actions: buildRatedActivityActions(for: ratedMediaItem))
+                                                actions: buildRatedActivityActions(for: ratedMediaItem),
+                                                identifier: identifier)
                         activityItems.append(item)
                     case .episode(let episode, _):
                         let item = ActivityItem(activity: "Rated \(episode.localizedEpisodeNumber)",
@@ -1120,7 +1147,8 @@ final class PulseViewController: UITableViewController {
                                                 date: ratedMediaItem.rateDate,
                                                 systemImageName: "heart.fill",
                                                 ratedItem: ratedMediaItem,
-                                                actions: buildRatedActivityActions(for: ratedMediaItem))
+                                                actions: buildRatedActivityActions(for: ratedMediaItem),
+                                                identifier: identifier)
                         activityItems.append(item)
                     case .list:
                         fatalError()
@@ -1172,7 +1200,8 @@ final class PulseViewController: UITableViewController {
                                             meta: meta.joined(separator: " · "),
                                             date: noteItem.note.createdAt,
                                             systemImageName: "note.text",
-                                            actions: buildNoteActivityActions(for: noteItem))
+                                            actions: buildNoteActivityActions(for: noteItem),
+                                            identifier: "note-\(noteItem.note.identifier)")
 
                     activityItems.append(item)
                 }
@@ -1192,7 +1221,8 @@ final class PulseViewController: UITableViewController {
                                         meta: "\(CommentModel(commentItem: commentItem, spoilerStrategy: .showAllSpoilers).media.mediaTitle)",
                                         date: commentItem.comment.createDate,
                                         systemImageName: "pencil.circle.fill",
-                                        actions: buildCommentActivityActions(for: commentItem))
+                                        actions: buildCommentActivityActions(for: commentItem),
+                                        identifier: "comment-\(commentItem.comment.identifier)")
 
                 activityItems.append(item)
             }
@@ -1232,7 +1262,8 @@ final class PulseViewController: UITableViewController {
                                                 date: activity.watchDate,
                                                 systemImageName: systemImage,
                                                 historyItem: activity,
-                                                actions: buildHistoryActivityActions(for: activity))
+                                                actions: buildHistoryActivityActions(for: activity),
+                                                identifier: "history-\(activity.identifier)")
                         activityItems.append(item)
                     } else {
                         let meta =
@@ -1244,7 +1275,8 @@ final class PulseViewController: UITableViewController {
                                                 date: activity.watchDate,
                                                 systemImageName: systemImage,
                                                 historyItem: activity,
-                                                actions: buildHistoryActivityActions(for: activity))
+                                                actions: buildHistoryActivityActions(for: activity),
+                                                identifier: "history-\(activity.identifier)")
                         activityItems.append(item)
                     }
                     ordinalCount += 1
@@ -1262,11 +1294,12 @@ final class PulseViewController: UITableViewController {
                                      notes: "",
                                      meta: "",
                                      date: .now,
-                                     systemImageName: "calendar.badge.clock")
+                                     systemImageName: "calendar.badge.clock",
+                                     identifier: "today")
             activityItems.append(today)
 
-            activityItems.sort { $0.date > $1.date }
-            snapshot.appendItems(activityItems.map { .activity($0) })
+            let sortedActivityItems = activityItems.sorted { $0.date > $1.date }.removingDuplicates()
+            snapshot.appendItems(sortedActivityItems.map { .activity($0) })
 
             if snapshot.itemIdentifiers(inSection: .content).count == 0 {
                 snapshot.appendItems([.empty("😵",
@@ -1275,8 +1308,13 @@ final class PulseViewController: UITableViewController {
                                              "Come back later to see something new... or don't.")])
             }
 
+            dataSource.defaultRowAnimation = .fade
+            snapshot.reconfigureItems(snapshot.itemIdentifiers)
+
             DispatchQueue.main.async {
-                self.dataSource.apply(snapshot, animatingDifferences: false)
+                self.dataSource.apply(snapshot, animatingDifferences: true)
+                self.navigationItem.subtitle = self.media.mediaTitle
+                self.isRefreshing = false
             }
         }
     }
@@ -1291,6 +1329,31 @@ final class PulseViewController: UITableViewController {
         case activity(ActivityItem)
         case empty(String, String, String, String)
         case loading
+
+        static func == (lhs: Wrapper, rhs: Wrapper) -> Bool {
+            switch (lhs, rhs) {
+            case (.activity(let lhs), .activity(let rhs)):
+                return lhs.identifier == rhs.identifier
+            case (.empty, .empty):
+                return true
+            case (.loading, .loading):
+                return true
+            default:
+                return false
+            }
+        }
+
+        func hash(into hasher: inout Hasher) {
+            switch self {
+            case .activity(let activityItem):
+                hasher.combine(0)
+                hasher.combine(activityItem.identifier)
+            case .empty:
+                hasher.combine(1)
+            case .loading:
+                hasher.combine(2)
+            }
+        }
     }
 
     private class MediaActivitesDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> {
