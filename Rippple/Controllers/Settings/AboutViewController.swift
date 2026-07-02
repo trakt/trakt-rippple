@@ -224,7 +224,7 @@ final class AboutViewController: UITableViewController {
                         completion: nil)
                 tableView.deselectRow(at: indexPath, animated: true)
             } else {
-                if let url = URL(string: "https://trakt.tv/settings/advanced"), UIApplication.shared.canOpenURL(url) {
+                if let url = URL(string: "https://app.trakt.tv/settings/advanced"), UIApplication.shared.canOpenURL(url) {
                     UIApplication.shared.open(url)
                 }
                 tableView.deselectRow(at: indexPath, animated: true)
@@ -328,7 +328,7 @@ final class AboutViewController: UITableViewController {
             }
         case .data:
             if indexPath.row == 0 {
-                present(SFSafariViewController(url: URL(string: "https://trakt.tv")!),
+                present(SFSafariViewController(url: URL(string: "https://app.trakt.tv")!),
                         animated: true,
                         completion: nil)
                 tableView.deselectRow(at: indexPath, animated: true)
@@ -424,7 +424,7 @@ final class AboutViewController: UITableViewController {
                             }.bold()
                         } else {
                             Button("Manage Trakt VIP →") {
-                                if let url = URL(string: "https://trakt.tv/vip"), UIApplication.shared.canOpenURL(url) {
+                                if let url = URL(string: "https://app.trakt.tv/vip"), UIApplication.shared.canOpenURL(url) {
                                     UIApplication.shared.open(url)
                                 }
                             }.bold()

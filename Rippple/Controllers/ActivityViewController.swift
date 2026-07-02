@@ -775,7 +775,7 @@ extension ActivityViewController {
             }
         case .watchOnlyOnceWarning:
             tableView.deselectRow(at: indexPath, animated: true)
-            if let url = URL(string: "https://trakt.tv/settings#global"),
+            if let url = URL(string: "https://app.trakt.tv/settings"),
                UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }

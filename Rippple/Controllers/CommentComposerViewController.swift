@@ -116,7 +116,7 @@ final class CommentComposerViewController: UIViewController {
             let cancel = UIAlertAction(title: "Try to Comment Anyway", style: .default)
             alertController.addAction(UIAlertAction(title: "Contact Trakt Support", style: .default, handler: { _ in
                 self.dismiss(animated: true, completion: {
-                    UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://support.trakt.tv")!))
+                    UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://forums.trakt.tv")!))
                 })
             }))
             alertController.addAction(UIAlertAction(title: "Try Commenting Later", style: .cancel, handler: { _ in

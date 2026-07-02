@@ -2,7 +2,7 @@
 
 Enter the Trakt community — **discover**, **track** and **share** movies and TV shows.
 
-Rippple is a native client for [Trakt](https://trakt.tv) that runs on iPhone, iPad and Mac. You need to sign in with a Trakt account to use Rippple.
+Rippple is a native client for [Trakt](https://app.trakt.tv) that runs on iPhone, iPad and Mac. You need to sign in with a Trakt account to use Rippple.
  
 - **Learn more:** [Rippple 101](/docs/RIPPPLE_101.md) — what Rippple is and how it works. 
 - **Questions?** [Get help](/docs/GET_HELP.md) — FAQ and contact.
@@ -36,7 +36,7 @@ With **Trakt VIP** you get:
 
 - iOS/iPadOS/macOS 26+
 - Xcode 26+
-- a [Trakt](https://trakt.tv) account
+- a [Trakt](https://app.trakt.tv) account
 
 ## Building
 
@@ -102,4 +102,4 @@ This project is licensed under the GNU General Public License v3.0 — see the [
 
 ## Disclaimer
 
-Rippple is affiliated with [Trakt](https://trakt.tv). Rippple uses the TMDb APIs for "Where to watch" information and images but is not endorsed or certified by TMDb. The source of "Where to watch" information is provided by JustWatch via the TMDb API. Rippple cannot be used to stream or play movies or TV shows. Some features may be limited by the APIs. [Terms of Use](TERMS.md) · [Privacy Policy](PRIVACY.md)
+Rippple is affiliated with [Trakt](https://app.trakt.tv). Rippple uses the TMDb APIs for "Where to watch" information and images but is not endorsed or certified by TMDb. The source of "Where to watch" information is provided by JustWatch via the TMDb API. Rippple cannot be used to stream or play movies or TV shows. Some features may be limited by the APIs. [Terms of Use](TERMS.md) · [Privacy Policy](PRIVACY.md)

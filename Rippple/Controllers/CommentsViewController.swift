@@ -1158,7 +1158,7 @@ extension CommentsViewController: MediaTableViewCellDelegate {
 
 extension CommentsViewController: CommentTableViewCellDelegate {
     private func share(comment: Comment, from button: UIButton) {
-        guard let sharedURL = URL(string: "https://trakt.tv/comments/\(comment.identifier)") else { return }
+        guard let sharedURL = URL(string: "https://app.trakt.tv/comments/\(comment.identifier)") else { return }
         let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
         activityViewController.popoverPresentationController?.sourceView = button
         activityViewController.popoverPresentationController?.sourceRect = button.bounds

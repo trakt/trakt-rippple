@@ -6,7 +6,7 @@ import Foundation
 
 /// Rippple uses the Trakt API to fetch a lot of its metadata and user information.
 enum TraktAPIConfiguration {
-    static let authBaseURL = "https://trakt.tv"
+    static let authBaseURL = "https://auth.trakt.tv"
     static let baseURL = "https://api.trakt.tv"
     static let clientId = "<#TRAKT_CLIENT_ID#>"
     static let secretId = "<#TRAKT_CLIENT_SECRET#>"

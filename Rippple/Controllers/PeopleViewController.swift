@@ -240,7 +240,7 @@ final class PeopleViewController: UITableViewController {
         let share = UIAction(title: "Share",
                              image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
             guard let self = self else { return }
-            guard let sharedURL = URL(string: "https://trakt.tv/people/\(person!.ids.slugOrTraktId)") else { return }
+            guard let sharedURL = URL(string: "https://app.trakt.tv/people/\(person!.ids.slugOrTraktId)") else { return }
             let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
             UIApplication.shared.present(activityViewController)
         }
@@ -937,7 +937,7 @@ extension PeopleViewController: LinkTableViewCellDelegate {
 extension Person {
     var traktURL: URL? {
         guard let info = ids.trakt else { return nil }
-        return URL(string: "https://trakt.tv/people/\(info)")
+        return URL(string: "https://app.trakt.tv/people/\(info)")
     }
 
     var tmdbURL: URL? {

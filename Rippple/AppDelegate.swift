@@ -125,7 +125,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://whatsnew")!)
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://comments/160618")!)
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://people/quentin-krog")!)
-        // DeeplinkManager.shared.registerDeeplink(url: URL(string: "https://trakt.tv/people/quentin-krog")!)
+        // DeeplinkManager.shared.registerDeeplink(url: URL(string: "https://app.trakt.tv/people/quentin-krog")!)
 
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://tmdb/shows/97546")!)
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://tmdb/shows/97546/seasons/3")!)

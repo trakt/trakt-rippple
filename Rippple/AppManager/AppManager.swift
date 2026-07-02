@@ -417,11 +417,11 @@ public extension UIApplication {
         AppManager.shared.mainWindow?.setRootViewController(login, options: transitionOptions)
 
         let alertController = UIAlertController(title: "Locked User Account",
-                                                message: "Please contact Trakt support (support.trakt.tv) so they can unlock your account.",
+                                                message: "Please contact Trakt support (forums.trakt.tv) so they can unlock your account.",
                                                 preferredStyle: .alert)
         alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
         alertController.addAction(UIAlertAction(title: "Trakt Support", style: .default, handler: { _ in
-            UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://support.trakt.tv")!))
+            UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://forums.trakt.tv")!))
         }))
 
         login.present(alertController, animated: true)

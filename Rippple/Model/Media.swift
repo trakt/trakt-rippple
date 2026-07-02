@@ -394,20 +394,20 @@ enum MediaModel: Equatable, Hashable, Codable {
     var traktWebsiteMediaLink: URL? {
         switch self {
         case .movie(let movie):
-            return URL(string: "https://trakt.tv/movies/\(movie.identifiers.slugOrTraktId)")
+            return URL(string: "https://app.trakt.tv/movies/\(movie.identifiers.slugOrTraktId)")
         case .show(let show):
-            return URL(string: "https://trakt.tv/shows/\(show.identifiers.slugOrTraktId)")
+            return URL(string: "https://app.trakt.tv/shows/\(show.identifiers.slugOrTraktId)")
         case .episode(let episode, let show):
-            return URL(string: "https://trakt.tv/shows/\(show.identifiers.slugOrTraktId)/seasons/\(episode.season)/episodes/\(episode.number)")
+            return URL(string: "https://app.trakt.tv/shows/\(show.identifiers.slugOrTraktId)/seasons/\(episode.season)/episodes/\(episode.number)")
         case .season(let season, let show):
-            return URL(string: "https://trakt.tv/shows/\(show.identifiers.slugOrTraktId)/seasons/\(season.number)")
+            return URL(string: "https://app.trakt.tv/shows/\(show.identifiers.slugOrTraktId)/seasons/\(season.number)")
         case .list:
             fatalError()
         case .showProgress(let show, let progress):
             if let episode = progress.nextEpisodeToWatch {
-                return URL(string: "https://trakt.tv/shows/\(show.identifiers.slugOrTraktId)/seasons/\(episode.season)/episodes/\(episode.number)")
+                return URL(string: "https://app.trakt.tv/shows/\(show.identifiers.slugOrTraktId)/seasons/\(episode.season)/episodes/\(episode.number)")
             } else {
-                return URL(string: "https://trakt.tv/shows/\(show.identifiers.slugOrTraktId)")
+                return URL(string: "https://app.trakt.tv/shows/\(show.identifiers.slugOrTraktId)")
             }
         }
     }

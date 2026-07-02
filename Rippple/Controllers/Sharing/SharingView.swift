@@ -61,7 +61,7 @@ struct SharingView: View {
                         Text("URL")
                     } footer: {
                         if enableURL {
-                            Text(verbatim: "https://trakt.tv/movies/deadpool-wolverine-2024")
+                            Text(verbatim: "https://app.trakt.tv/movies/deadpool-wolverine-2024")
                         }
                     }
 
