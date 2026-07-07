@@ -6,16 +6,14 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import UIKit
 
 let (episodeDetailTitlesTransmitter, episodeDetailTitlesReceiver) = Receiver<Bool>.make(with: .hot)
 let (episodeListTitlesTransmitter, episodeListTitlesReceiver) = Receiver<Bool>.make(with: .hot)
 let (toWatchTitlesTransmitter, toWatchTitlesReceiver) = Receiver<Bool>.make(with: .hot)
 
 final class SpoilersViewController: UITableViewController {
-
     private let disposeBag = DisposeBag()
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {

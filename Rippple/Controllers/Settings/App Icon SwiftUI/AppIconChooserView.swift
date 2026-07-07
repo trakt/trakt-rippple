@@ -7,17 +7,17 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct AppIconChooserView: View {
-
     private let glass = [AppIcon(name: "Liquid", identifier: .original)]
     private let original = [AppIcon(name: "Original", identifier: .classic),
-                                                 AppIcon(name: "Original", identifier: .dark),
-                                                 AppIcon(name: "Original", identifier: .color),
-                                                 AppIcon(name: "Original", identifier: .pride),
-                                                 AppIcon(name: "Original", identifier: .lightMonochrome),
-                                                 AppIcon(name: "Original", identifier: .darkMonochrome),
-                                                 AppIcon(name: "Original", identifier: .desktop)]
+                            AppIcon(name: "Original", identifier: .dark),
+                            AppIcon(name: "Original", identifier: .color),
+                            AppIcon(name: "Original", identifier: .pride),
+                            AppIcon(name: "Original", identifier: .lightMonochrome),
+                            AppIcon(name: "Original", identifier: .darkMonochrome),
+                            AppIcon(name: "Original", identifier: .desktop)]
     private let palette = [AppIcon(name: "Edition", identifier: .border_dark_ai_edition),
                            AppIcon(name: "Edition", identifier: .border_light_ai_edition),
                            AppIcon(name: "Edition", identifier: .seven_dark_ai_edition),
@@ -89,78 +89,78 @@ struct AppIconChooserView: View {
                           AppIcon(name: "Light", identifier: .seven_light_brown)]
 
     private let dark1 = [AppIcon(name: "Dark", identifier: .dark_purple),
-                                    AppIcon(name: "Dark", identifier: .dark_red),
-                                    AppIcon(name: "Dark", identifier: .dark_orange),
-                                    AppIcon(name: "Dark", identifier: .dark_yellow),
-                                    AppIcon(name: "Dark", identifier: .dark_green),
-                                    AppIcon(name: "Dark", identifier: .dark_mint),
-                                    AppIcon(name: "Dark", identifier: .dark_teal),
-                                    AppIcon(name: "Dark", identifier: .dark_cyan),
-                                    AppIcon(name: "Dark", identifier: .dark_blue),
-                                    AppIcon(name: "Dark", identifier: .dark_indigo),
-                                    AppIcon(name: "Dark", identifier: .dark_pink),
-                                    AppIcon(name: "Dark", identifier: .dark_brown)]
+                         AppIcon(name: "Dark", identifier: .dark_red),
+                         AppIcon(name: "Dark", identifier: .dark_orange),
+                         AppIcon(name: "Dark", identifier: .dark_yellow),
+                         AppIcon(name: "Dark", identifier: .dark_green),
+                         AppIcon(name: "Dark", identifier: .dark_mint),
+                         AppIcon(name: "Dark", identifier: .dark_teal),
+                         AppIcon(name: "Dark", identifier: .dark_cyan),
+                         AppIcon(name: "Dark", identifier: .dark_blue),
+                         AppIcon(name: "Dark", identifier: .dark_indigo),
+                         AppIcon(name: "Dark", identifier: .dark_pink),
+                         AppIcon(name: "Dark", identifier: .dark_brown)]
     private let dark2 = [AppIcon(name: "Dark", identifier: .dark_purple_border),
-                                    AppIcon(name: "Dark", identifier: .dark_red_border),
-                                    AppIcon(name: "Dark", identifier: .dark_orange_border),
-                                    AppIcon(name: "Dark", identifier: .dark_yellow_border),
-                                    AppIcon(name: "Dark", identifier: .dark_green_border),
-                                    AppIcon(name: "Dark", identifier: .dark_mint_border),
-                                    AppIcon(name: "Dark", identifier: .dark_teal_border),
-                                    AppIcon(name: "Dark", identifier: .dark_cyan_border),
-                                    AppIcon(name: "Dark", identifier: .dark_blue_border),
-                                    AppIcon(name: "Dark", identifier: .dark_indigo_border),
-                                    AppIcon(name: "Dark", identifier: .dark_pink_border),
-                                    AppIcon(name: "Dark", identifier: .dark_brown_border)]
+                         AppIcon(name: "Dark", identifier: .dark_red_border),
+                         AppIcon(name: "Dark", identifier: .dark_orange_border),
+                         AppIcon(name: "Dark", identifier: .dark_yellow_border),
+                         AppIcon(name: "Dark", identifier: .dark_green_border),
+                         AppIcon(name: "Dark", identifier: .dark_mint_border),
+                         AppIcon(name: "Dark", identifier: .dark_teal_border),
+                         AppIcon(name: "Dark", identifier: .dark_cyan_border),
+                         AppIcon(name: "Dark", identifier: .dark_blue_border),
+                         AppIcon(name: "Dark", identifier: .dark_indigo_border),
+                         AppIcon(name: "Dark", identifier: .dark_pink_border),
+                         AppIcon(name: "Dark", identifier: .dark_brown_border)]
     private let dark3 = [AppIcon(name: "Dark", identifier: .seven_dark_purple),
-                                    AppIcon(name: "Dark", identifier: .seven_dark_red),
-                                    AppIcon(name: "Dark", identifier: .seven_dark_orange),
-                                    AppIcon(name: "Dark", identifier: .seven_dark_yellow),
-                                    AppIcon(name: "Dark", identifier: .seven_dark_green),
-                                    AppIcon(name: "Dark", identifier: .seven_dark_mint),
-                                    AppIcon(name: "Dark", identifier: .seven_dark_teal),
-                                    AppIcon(name: "Dark", identifier: .seven_dark_cyan),
-                                    AppIcon(name: "Dark", identifier: .seven_dark_blue),
-                                    AppIcon(name: "Dark", identifier: .seven_dark_indigo),
-                                    AppIcon(name: "Dark", identifier: .seven_dark_pink),
-                                    AppIcon(name: "Dark", identifier: .seven_dark_brown)]
+                         AppIcon(name: "Dark", identifier: .seven_dark_red),
+                         AppIcon(name: "Dark", identifier: .seven_dark_orange),
+                         AppIcon(name: "Dark", identifier: .seven_dark_yellow),
+                         AppIcon(name: "Dark", identifier: .seven_dark_green),
+                         AppIcon(name: "Dark", identifier: .seven_dark_mint),
+                         AppIcon(name: "Dark", identifier: .seven_dark_teal),
+                         AppIcon(name: "Dark", identifier: .seven_dark_cyan),
+                         AppIcon(name: "Dark", identifier: .seven_dark_blue),
+                         AppIcon(name: "Dark", identifier: .seven_dark_indigo),
+                         AppIcon(name: "Dark", identifier: .seven_dark_pink),
+                         AppIcon(name: "Dark", identifier: .seven_dark_brown)]
 
     private let color1 = [AppIcon(name: "Color", identifier: .color_purple),
-                                    AppIcon(name: "Color", identifier: .color_red),
-                                    AppIcon(name: "Color", identifier: .color_orange),
-                                    AppIcon(name: "Color", identifier: .color_yellow),
-                                    AppIcon(name: "Color", identifier: .color_green),
-                                    AppIcon(name: "Color", identifier: .color_mint),
-                                    AppIcon(name: "Color", identifier: .color_teal),
-                                    AppIcon(name: "Color", identifier: .color_cyan),
-                                    AppIcon(name: "Color", identifier: .color_blue),
-                                    AppIcon(name: "Color", identifier: .color_indigo),
-                                    AppIcon(name: "Color", identifier: .color_pink),
-                                    AppIcon(name: "Color", identifier: .color_brown)]
+                          AppIcon(name: "Color", identifier: .color_red),
+                          AppIcon(name: "Color", identifier: .color_orange),
+                          AppIcon(name: "Color", identifier: .color_yellow),
+                          AppIcon(name: "Color", identifier: .color_green),
+                          AppIcon(name: "Color", identifier: .color_mint),
+                          AppIcon(name: "Color", identifier: .color_teal),
+                          AppIcon(name: "Color", identifier: .color_cyan),
+                          AppIcon(name: "Color", identifier: .color_blue),
+                          AppIcon(name: "Color", identifier: .color_indigo),
+                          AppIcon(name: "Color", identifier: .color_pink),
+                          AppIcon(name: "Color", identifier: .color_brown)]
     private let color2 = [AppIcon(name: "Color", identifier: .color_purple_border),
-                                    AppIcon(name: "Color", identifier: .color_red_border),
-                                    AppIcon(name: "Color", identifier: .color_orange_border),
-                                    AppIcon(name: "Color", identifier: .color_yellow_border),
-                                    AppIcon(name: "Color", identifier: .color_green_border),
-                                    AppIcon(name: "Color", identifier: .color_mint_border),
-                                    AppIcon(name: "Color", identifier: .color_teal_border),
-                                    AppIcon(name: "Color", identifier: .color_cyan_border),
-                                    AppIcon(name: "Color", identifier: .color_blue_border),
-                                    AppIcon(name: "Color", identifier: .color_indigo_border),
-                                    AppIcon(name: "Color", identifier: .color_pink_border),
-                                    AppIcon(name: "Color", identifier: .color_brown_border)]
+                          AppIcon(name: "Color", identifier: .color_red_border),
+                          AppIcon(name: "Color", identifier: .color_orange_border),
+                          AppIcon(name: "Color", identifier: .color_yellow_border),
+                          AppIcon(name: "Color", identifier: .color_green_border),
+                          AppIcon(name: "Color", identifier: .color_mint_border),
+                          AppIcon(name: "Color", identifier: .color_teal_border),
+                          AppIcon(name: "Color", identifier: .color_cyan_border),
+                          AppIcon(name: "Color", identifier: .color_blue_border),
+                          AppIcon(name: "Color", identifier: .color_indigo_border),
+                          AppIcon(name: "Color", identifier: .color_pink_border),
+                          AppIcon(name: "Color", identifier: .color_brown_border)]
     private let color3 = [AppIcon(name: "Color", identifier: .seven_color_purple),
-                                    AppIcon(name: "Color", identifier: .seven_color_red),
-                                    AppIcon(name: "Color", identifier: .seven_color_orange),
-                                    AppIcon(name: "Color", identifier: .seven_color_yellow),
-                                    AppIcon(name: "Color", identifier: .seven_color_green),
-                                    AppIcon(name: "Color", identifier: .seven_color_mint),
-                                    AppIcon(name: "Color", identifier: .seven_color_teal),
-                                    AppIcon(name: "Color", identifier: .seven_color_cyan),
-                                    AppIcon(name: "Color", identifier: .seven_color_blue),
-                                    AppIcon(name: "Color", identifier: .seven_color_indigo),
-                                    AppIcon(name: "Color", identifier: .seven_color_pink),
-                                    AppIcon(name: "Color", identifier: .seven_color_brown)]
+                          AppIcon(name: "Color", identifier: .seven_color_red),
+                          AppIcon(name: "Color", identifier: .seven_color_orange),
+                          AppIcon(name: "Color", identifier: .seven_color_yellow),
+                          AppIcon(name: "Color", identifier: .seven_color_green),
+                          AppIcon(name: "Color", identifier: .seven_color_mint),
+                          AppIcon(name: "Color", identifier: .seven_color_teal),
+                          AppIcon(name: "Color", identifier: .seven_color_cyan),
+                          AppIcon(name: "Color", identifier: .seven_color_blue),
+                          AppIcon(name: "Color", identifier: .seven_color_indigo),
+                          AppIcon(name: "Color", identifier: .seven_color_pink),
+                          AppIcon(name: "Color", identifier: .seven_color_brown)]
     #if !targetEnvironment(macCatalyst)
     @State private var alternateIconName = UIApplication.shared.alternateIconName
     #else
@@ -171,6 +171,7 @@ struct AppIconChooserView: View {
         var id: String {
             return name
         }
+
         let name: String
         let rows: [AppIconRow]
     }
@@ -179,6 +180,7 @@ struct AppIconChooserView: View {
         var id: String {
             return row.first!.identifier.rawValue
         }
+
         let row: [AppIcon]
     }
 
@@ -246,13 +248,13 @@ struct AppIconChooserView: View {
             if #available(iOS 18.0, *) {
                 AppIconChooserPreview(appIcon: AppIcon(name: "Preview",
                                                        identifier: AppIconIdentifier(rawValue: alternateIconName ?? "original") ?? .original))
-                .background(.regularMaterial)
-                .clipShape(.rect(cornerRadius: 35, style: .continuous))
-                .id(alternateIconName)
-                .onAppear {
-                    margin = 170
-                }
-                .padding(.bottom)
+                    .background(.regularMaterial)
+                    .clipShape(.rect(cornerRadius: 35, style: .continuous))
+                    .id(alternateIconName)
+                    .onAppear {
+                        margin = 170
+                    }
+                    .padding(.bottom)
             }
             #endif
         }
@@ -349,7 +351,6 @@ struct AppIconChooserView: View {
 }
 
 struct AppIconChooserPreview: View {
-
     @State var appIcon: AppIcon
     @State private var startAnimation: Bool = false
 

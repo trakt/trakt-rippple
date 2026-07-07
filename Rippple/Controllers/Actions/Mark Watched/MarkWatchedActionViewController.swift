@@ -6,11 +6,9 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
-import UIKit
-
-import Receiver
-
 import Moya
+import Receiver
+import UIKit
 
 final class MarkWatchedActionViewController: UITableViewController {
     private var media: MediaModel
@@ -59,6 +57,7 @@ final class MarkWatchedActionViewController: UITableViewController {
         super.init(coder: coder)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -69,7 +68,6 @@ final class MarkWatchedActionViewController: UITableViewController {
         markWatchedButton.configuration = .prominentGlass()
 
         if let presentationController = presentationController as? UISheetPresentationController {
-
             presentationController.detents = [
                 .medium(),
                 .large()
@@ -102,7 +100,8 @@ final class MarkWatchedActionViewController: UITableViewController {
                 markWatchedButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
                 markWatchedButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
                 markWatchedButton.widthAnchor.constraint(equalToConstant: 250),
-                markWatchedButton.heightAnchor.constraint(equalToConstant: 44)])
+                markWatchedButton.heightAnchor.constraint(equalToConstant: 44)
+            ])
 
             let interaction = UIScrollEdgeElementContainerInteraction()
             interaction.scrollView = tableView
@@ -120,7 +119,7 @@ final class MarkWatchedActionViewController: UITableViewController {
     @objc func markWatched() {
         UISelectionFeedbackGenerator().selectionChanged()
         if let episodes = episodes {
-            self.performSegue(withIdentifier: "mark watched", sender: episodes)
+            performSegue(withIdentifier: "mark watched", sender: episodes)
         } else {
             if let showProgress = showProgress, let episode = media.episodeEpisode {
                 var allUnwatched = [(SeasonProgress, EpisodeProgress)]()
@@ -130,7 +129,7 @@ final class MarkWatchedActionViewController: UITableViewController {
                 for seasonProgress in showProgress.seasons {
                     unwatchedInSeason.removeAll()
                     for episodeProgress in seasonProgress.episodes {
-                        if episode.season == seasonProgress.number && episode.number == episodeProgress.number {
+                        if episode.season == seasonProgress.number, episode.number == episodeProgress.number {
                             stop = true
                             break
                         }
@@ -172,7 +171,7 @@ final class MarkWatchedActionViewController: UITableViewController {
                     guard let self = self else { return }
                     self.performSegue(withIdentifier: "mark watched", sender: unwatchedSinceLastWatched)
                 }
-                if unwatchedSinceLastWatched.count >= 1 && unwatchedSinceLastWatched.count != unwatchedInSeason.count {
+                if unwatchedSinceLastWatched.count >= 1, unwatchedSinceLastWatched.count != unwatchedInSeason.count {
                     alertController.addAction(last)
                 }
 
@@ -180,7 +179,7 @@ final class MarkWatchedActionViewController: UITableViewController {
                     guard let self = self else { return }
                     self.performSegue(withIdentifier: "mark watched", sender: allUnwatched)
                 }
-                if allUnwatched.count >= 1 && unwatchedSinceLastWatched.count != allUnwatched.count {
+                if allUnwatched.count >= 1, unwatchedSinceLastWatched.count != allUnwatched.count {
                     alertController.addAction(all)
                 }
 
@@ -204,18 +203,18 @@ final class MarkWatchedActionViewController: UITableViewController {
     func makeMarkWatchedProgressActionViewController(coder: NSCoder, sender: Any?) -> MarkWatchedProgressActionViewController? {
         if let unwatched = sender as? [(SeasonProgress, EpisodeProgress)] {
             return MarkWatchedProgressActionViewController(coder: coder,
-                                                   media: media,
-                                                   watchedAt: date,
-                                                   unwatched: unwatched)
+                                                           media: media,
+                                                           watchedAt: date,
+                                                           unwatched: unwatched)
         } else if let episodes = episodes {
             return MarkWatchedProgressActionViewController(coder: coder,
-                                                   media: media,
-                                                   watchedAt: date,
-                                                   episodes: episodes)
+                                                           media: media,
+                                                           watchedAt: date,
+                                                           episodes: episodes)
         } else {
             return MarkWatchedProgressActionViewController(coder: coder,
-                                                   media: media,
-                                                   watchedAt: date)
+                                                           media: media,
+                                                           watchedAt: date)
         }
     }
 }
@@ -341,7 +340,7 @@ extension MarkWatchedActionViewController {
             case .episode(let episode, _):
                 datePicker?.date = episode.firstAired ?? Date()
             case .movie(let movie):
-                let dateFormatter = DateFormatter.init()
+                let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd"
                 datePicker?.date = dateFormatter.date(from: movie.released ?? "") ?? Date()
             case .show(let show):
@@ -381,20 +380,19 @@ extension MarkWatchedActionViewController: MediaTableViewCellDelegate {
 }
 
 extension MarkWatchedActionViewController {
-
     private func update(with media: MediaModel?) {
         switch media! {
         case .movie:
             markWatchedButton.setTitle("Mark Movie Watched", for: .normal)
-        case let .episode(episode, show):
+        case .episode(let episode, let show):
             markWatchedButton.setTitle("Loading...", for: .normal)
             markWatchedButton.isEnabled = false
             cancellable = fetchShowProgress(for: show, given: episode)
-        case let .season(season, show):
+        case .season(let season, let show):
             markWatchedButton.setTitle("Loading...", for: .normal)
             markWatchedButton.isEnabled = false
             cancellable = fetchSeasonProgress(for: show, season: season)
-        case let .show(show):
+        case .show(let show):
             if let episodes = episodes {
                 markWatchedButton.setTitle("Mark \(episodes.count) \(episodes.count > 1 ? "Episodes" : "Episode") Watched", for: .normal)
             } else {
@@ -413,7 +411,7 @@ extension MarkWatchedActionViewController {
         return TraktAPIProvider.provider.request(.showProgress(id: show.identifiers.trakt!, includesSpecials: episode.season == 0), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -450,7 +448,7 @@ extension MarkWatchedActionViewController {
                         self.markWatchedButton.isEnabled = true
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("MultipleWatchTableViewCell (/progress) request failure \(error)")
                     self.markWatchedButton.setTitle("Mark Episode Watched", for: .normal)
@@ -464,7 +462,7 @@ extension MarkWatchedActionViewController {
         return TraktAPIProvider.provider.request(.showProgress(id: show.identifiers.trakt!, includesSpecials: false), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -482,7 +480,7 @@ extension MarkWatchedActionViewController {
                         self.markWatchedButton.isEnabled = true
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("MultipleWatchTableViewCell (/progress) request failure \(error)")
                     self.markWatchedButton.setTitle("Mark Show Watched", for: .normal)
@@ -496,7 +494,7 @@ extension MarkWatchedActionViewController {
         return TraktAPIProvider.provider.request(.showProgress(id: show.identifiers.trakt!, includesSpecials: season.number == 0), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -517,7 +515,7 @@ extension MarkWatchedActionViewController {
                         self.markWatchedButton.isEnabled = true
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("MultipleWatchTableViewCell (/progress) request failure \(error)")
                     self.markWatchedButton.setTitle("Mark Season Watched", for: .normal)

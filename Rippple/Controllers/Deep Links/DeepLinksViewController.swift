@@ -6,8 +6,8 @@
 //  Copyright © 2024 Trakt. All rights reserved.
 //
 
-import UIKit
 import SwiftUI
+import UIKit
 
 final class DeepLinksViewController: UIHostingController<DeepLinksView> {
     required init?(coder aDecoder: NSCoder) {

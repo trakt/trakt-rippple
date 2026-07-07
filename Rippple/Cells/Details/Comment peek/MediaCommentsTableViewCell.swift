@@ -6,16 +6,14 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import UIKit
 
 protocol MediaCommentsTableViewCellDelegate: AnyObject {
     func cell(_ cell: MediaCommentsTableViewCell, action: MediaCommentsTableViewCell.Action)
 }
 
 final class MediaCommentsTableViewCell: UITableViewCell {
-
     private let disposeBag = DisposeBag()
 
     enum Action {
@@ -43,6 +41,7 @@ final class MediaCommentsTableViewCell: UITableViewCell {
             }
         }
     }
+
     private var error: Error? {
         didSet {
             if error != nil {
@@ -161,16 +160,16 @@ final class MediaCommentsTableViewCell: UITableViewCell {
     }
 
     @IBOutlet var titleLabel: UILabel!
-    @IBOutlet weak var moreAction: UIButton!
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet var moreAction: UIButton!
+    @IBOutlet var collectionView: UICollectionView!
 
-    @IBOutlet weak var heightLayoutContraint: NSLayoutConstraint!
-    @IBOutlet weak var titleTopLayoutContraint: NSLayoutConstraint!
-    @IBOutlet weak var titleBottomLayoutContraint: NSLayoutConstraint!
+    @IBOutlet var heightLayoutContraint: NSLayoutConstraint!
+    @IBOutlet var titleTopLayoutContraint: NSLayoutConstraint!
+    @IBOutlet var titleBottomLayoutContraint: NSLayoutConstraint!
 
-    @IBOutlet weak var emptyView: UIView!
-    @IBOutlet weak var errorView: UIView!
-    @IBOutlet weak var errorLabel: UILabel!
+    @IBOutlet var emptyView: UIView!
+    @IBOutlet var errorView: UIView!
+    @IBOutlet var errorLabel: UILabel!
 
     private var comments: [Comment]? {
         didSet {
@@ -189,7 +188,7 @@ final class MediaCommentsTableViewCell: UITableViewCell {
 
     private func reloadData() {
         if isLoading == false {
-            if comments?.isEmpty ?? false && media.ownCommentItem == nil && sentiments == nil {
+            if comments?.isEmpty ?? false, media.ownCommentItem == nil, sentiments == nil {
                 showEmptyView()
             } else {
                 showCommentsView()
@@ -241,138 +240,138 @@ final class MediaCommentsTableViewCell: UITableViewCell {
         case .movie(let movie):
             TraktAPIProvider.provider.request(TraktAPIService.comments(type: .movie(movieId: movie.identifiers.trakt!), pageInfo: PageInfo.firstPage(with: 15), sortBy: .likes, replies: nil),
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                                guard let self = self else { return }
-                                                switch result {
-                                                case let .success(moyaResponse):
-                                                    do {
-                                                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                guard let self = self else { return }
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                        if let response = response.response {
-                                                            let allHTTPHeaders = response.allHeaderFields
-                                                            if let itemCount = allHTTPHeaders["x-pagination-item-count"] as? String {
-                                                                DispatchQueue.main.async {
-                                                                    self.commentCount = Int(itemCount)
-                                                                }
-                                                            }
-                                                        }
+                        if let response = response.response {
+                            let allHTTPHeaders = response.allHeaderFields
+                            if let itemCount = allHTTPHeaders["x-pagination-item-count"] as? String {
+                                DispatchQueue.main.async {
+                                    self.commentCount = Int(itemCount)
+                                }
+                            }
+                        }
 
-                                                        let comments = try response.map([Comment].self, using: TraktAPIProvider.decoder).sorted { $0.reactions?.distribution.score ?? $0.likes > $1.reactions?.distribution.score ?? $1.likes }
+                        let comments = try response.map([Comment].self, using: TraktAPIProvider.decoder).sorted { $0.reactions?.distribution.score ?? $0.likes > $1.reactions?.distribution.score ?? $1.likes }
 
-                                                        DispatchQueue.main.async {
-                                                            self.comments = comments
-                                                        }
-                                                    } catch {
-                                                        DispatchQueue.main.async {
-                                                            self.error = error
-                                                        }
-                                                    }
-                                                case let .failure(error):
-                                                    DispatchQueue.main.async {
-                                                        self.error = error
-                                                    }
-                                                }
+                        DispatchQueue.main.async {
+                            self.comments = comments
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            self.error = error
+                        }
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        self.error = error
+                    }
+                }
             }
         case .show(let show):
             TraktAPIProvider.provider.request(TraktAPIService.comments(type: .show(showId: show.identifiers.trakt!), pageInfo: PageInfo.firstPage(with: 15), sortBy: .likes, replies: nil),
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                                guard let self = self else { return }
-                                                switch result {
-                                                case let .success(moyaResponse):
-                                                    do {
-                                                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                guard let self = self else { return }
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                        if let response = response.response {
-                                                            let allHTTPHeaders = response.allHeaderFields
-                                                            if let itemCount = allHTTPHeaders["x-pagination-item-count"] as? String {
-                                                                DispatchQueue.main.async {
-                                                                    self.commentCount = Int(itemCount)
-                                                                }
-                                                            }
-                                                        }
+                        if let response = response.response {
+                            let allHTTPHeaders = response.allHeaderFields
+                            if let itemCount = allHTTPHeaders["x-pagination-item-count"] as? String {
+                                DispatchQueue.main.async {
+                                    self.commentCount = Int(itemCount)
+                                }
+                            }
+                        }
 
-                                                        let comments = try response.map([Comment].self, using: TraktAPIProvider.decoder).sorted { $0.reactions?.distribution.score ?? $0.likes > $1.reactions?.distribution.score ?? $1.likes }
+                        let comments = try response.map([Comment].self, using: TraktAPIProvider.decoder).sorted { $0.reactions?.distribution.score ?? $0.likes > $1.reactions?.distribution.score ?? $1.likes }
 
-                                                        DispatchQueue.main.async {
-                                                            self.comments = comments
-                                                        }
-                                                    } catch {
-                                                        DispatchQueue.main.async {
-                                                            self.error = error
-                                                        }
-                                                    }
-                                                case let .failure(error):
-                                                    DispatchQueue.main.async {
-                                                        self.error = error
-                                                    }
-                                                }
+                        DispatchQueue.main.async {
+                            self.comments = comments
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            self.error = error
+                        }
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        self.error = error
+                    }
+                }
             }
         case .episode(let episode, let show):
             TraktAPIProvider.provider.request(TraktAPIService.comments(type: .episode(showId: show.identifiers.trakt!, season: episode.season, episode: episode.number), pageInfo: PageInfo.firstPage(with: 15), sortBy: .likes, replies: nil),
-                                            callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                              guard let self = self else { return }
-                                              switch result {
-                                              case let .success(moyaResponse):
-                                                  do {
-                                                      let response = try moyaResponse.filterSuccessfulStatusCodes()
+                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    if let response = response.response {
-                                                        let allHTTPHeaders = response.allHeaderFields
-                                                        if let itemCount = allHTTPHeaders["x-pagination-item-count"] as? String {
-                                                            DispatchQueue.main.async {
-                                                                self.commentCount = Int(itemCount)
-                                                            }
-                                                        }
-                                                    }
+                        if let response = response.response {
+                            let allHTTPHeaders = response.allHeaderFields
+                            if let itemCount = allHTTPHeaders["x-pagination-item-count"] as? String {
+                                DispatchQueue.main.async {
+                                    self.commentCount = Int(itemCount)
+                                }
+                            }
+                        }
 
-                                                      let comments = try response.map([Comment].self, using: TraktAPIProvider.decoder).sorted { $0.reactions?.distribution.score ?? $0.likes > $1.reactions?.distribution.score ?? $1.likes }
+                        let comments = try response.map([Comment].self, using: TraktAPIProvider.decoder).sorted { $0.reactions?.distribution.score ?? $0.likes > $1.reactions?.distribution.score ?? $1.likes }
 
-                                                      DispatchQueue.main.async {
-                                                          self.comments = comments
-                                                      }
-                                                  } catch {
-                                                      DispatchQueue.main.async {
-                                                          self.error = error
-                                                      }
-                                                  }
-                                              case let .failure(error):
-                                                  DispatchQueue.main.async {
-                                                      self.error = error
-                                                  }
-                                              }
+                        DispatchQueue.main.async {
+                            self.comments = comments
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            self.error = error
+                        }
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        self.error = error
+                    }
+                }
             }
         case .season(let season, let show):
             TraktAPIProvider.provider.request(TraktAPIService.comments(type: .season(showId: show.identifiers.trakt!, season: season.number), pageInfo: PageInfo.firstPage(with: 15), sortBy: .likes, replies: nil),
-                                            callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                              guard let self = self else { return }
-                                              switch result {
-                                              case let .success(moyaResponse):
-                                                  do {
-                                                      let response = try moyaResponse.filterSuccessfulStatusCodes()
+                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    if let response = response.response {
-                                                        let allHTTPHeaders = response.allHeaderFields
-                                                        if let itemCount = allHTTPHeaders["x-pagination-item-count"] as? String {
-                                                            DispatchQueue.main.async {
-                                                                self.commentCount = Int(itemCount)
-                                                            }
-                                                        }
-                                                    }
+                        if let response = response.response {
+                            let allHTTPHeaders = response.allHeaderFields
+                            if let itemCount = allHTTPHeaders["x-pagination-item-count"] as? String {
+                                DispatchQueue.main.async {
+                                    self.commentCount = Int(itemCount)
+                                }
+                            }
+                        }
 
-                                                      let comments = try response.map([Comment].self, using: TraktAPIProvider.decoder).sorted { $0.reactions?.distribution.score ?? $0.likes > $1.reactions?.distribution.score ?? $1.likes }
+                        let comments = try response.map([Comment].self, using: TraktAPIProvider.decoder).sorted { $0.reactions?.distribution.score ?? $0.likes > $1.reactions?.distribution.score ?? $1.likes }
 
-                                                      DispatchQueue.main.async {
-                                                          self.comments = comments
-                                                      }
-                                                  } catch {
-                                                      DispatchQueue.main.async {
-                                                          self.error = error
-                                                      }
-                                                  }
-                                              case let .failure(error):
-                                                  DispatchQueue.main.async {
-                                                      self.error = error
-                                                  }
-                                              }
+                        DispatchQueue.main.async {
+                            self.comments = comments
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            self.error = error
+                        }
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        self.error = error
+                    }
+                }
             }
         case .list:
             fatalError()
@@ -489,14 +488,14 @@ extension MediaCommentsTableViewCell: UICollectionViewDelegate {
         if let cell = collectionView.cellForItem(at: indexPath) as? SentimentsPeekCollectionViewCell {
             return UIContextMenuConfiguration(identifier: indexPath as NSCopying,
                                               previewProvider: {
-                let sentimentsPreviewViewController = UIStoryboard(name: "SentimentsPreview", bundle: nil).instantiateInitialViewController() as! SentimentsPreviewViewController
+                                                  let sentimentsPreviewViewController = UIStoryboard(name: "SentimentsPreview", bundle: nil).instantiateInitialViewController() as! SentimentsPreviewViewController
 
-                sentimentsPreviewViewController.sentiments = cell.sentiments
+                                                  sentimentsPreviewViewController.sentiments = cell.sentiments
 
-                return sentimentsPreviewViewController
+                                                  return sentimentsPreviewViewController
                                               }, actionProvider: { _ -> UIMenu? in
                                                   cell.sentiments.menu
-            })
+                                              })
         }
 
         return nil
@@ -532,9 +531,9 @@ extension MediaCommentsTableViewCell: UICollectionViewDelegate {
 }
 
 final class SentimentsPreviewViewController: UIViewController {
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var bodyLabel: UILabel!
-    @IBOutlet weak var metaLabel: UILabel!
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var bodyLabel: UILabel!
+    @IBOutlet var metaLabel: UILabel!
 
     private static let dateFormatter = RelativeDateTimeFormatter()
 
@@ -574,7 +573,6 @@ extension CommentsSentiments {
                                   identifier: nil) { _ in
             UIPasteboard.general.string = formattedSentiment
         }
-        let menu = UIMenu(children: [copyAction])
-        return menu
+        return UIMenu(children: [copyAction])
     }
 }

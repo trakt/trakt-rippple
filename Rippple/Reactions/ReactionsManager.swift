@@ -7,24 +7,22 @@
 //
 
 import Foundation
-
 import Receiver
 
 final class ReactionsManager {
-
     static let shared = ReactionsManager()
 
-    func startManaging() { }
+    func startManaging() {}
 
     private let disposeBag = DisposeBag()
 
-    public var possibleReactions = [ReactionType(type: "like", emoji: "👍"),
-                                    ReactionType(type: "dislike", emoji: "👎"),
-                                    ReactionType(type: "love", emoji: "❤️"),
-                                    ReactionType(type: "laugh", emoji: "😂"),
-                                    ReactionType(type: "shocked", emoji: "😱"),
-                                    ReactionType(type: "bravo", emoji: "👏"),
-                                    ReactionType(type: "spoiler", emoji: "🫣")]
+    var possibleReactions = [ReactionType(type: "like", emoji: "👍"),
+                             ReactionType(type: "dislike", emoji: "👎"),
+                             ReactionType(type: "love", emoji: "❤️"),
+                             ReactionType(type: "laugh", emoji: "😂"),
+                             ReactionType(type: "shocked", emoji: "😱"),
+                             ReactionType(type: "bravo", emoji: "👏"),
+                             ReactionType(type: "spoiler", emoji: "🫣")]
     fileprivate var userReactions = [UserReaction]()
 
     private init() {
@@ -54,7 +52,7 @@ final class ReactionsManager {
         TraktAPIProvider.provider.request(.reactions,
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     let reactions = try response.map([ReactionType].self,
@@ -64,7 +62,7 @@ final class ReactionsManager {
                 } catch {
                     print("Get /reactions request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Get /reactions request failure \(error)")
             }
         }
@@ -74,9 +72,9 @@ final class ReactionsManager {
         if SessionManager.shared.isLoggedOut { return }
 
         TraktAPIProvider.noChacheProvider.request(.userCommentsReactions,
-                                          callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+                                                  callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -87,7 +85,7 @@ final class ReactionsManager {
                 } catch {
                     print("Get /users/me/comments/reactions request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Get /users/me/comments/reactions request failure \(error)")
             }
         }
@@ -106,7 +104,7 @@ extension Comment {
     func addReaction(reaction: ReactionType) {
         TraktAPIProvider.provider.request(.addCommentReaction(id: identifier, reaction: reaction.type)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     _ = try moyaResponse.filterSuccessfulStatusCodes()
                     SwiftMessages.show(message: "👍 Reaction added")
@@ -119,7 +117,7 @@ extension Comment {
                 } catch {
                     SwiftMessages.show(message: "😓 Reaction failed", style: .error(error))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 SwiftMessages.show(message: "😓 Reaction failed", style: .error(error))
             }
         }
@@ -128,7 +126,7 @@ extension Comment {
     func removeReaction(reaction: ReactionType) {
         TraktAPIProvider.provider.request(.removeCommentReaction(id: identifier, reaction: reaction.type)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     _ = try moyaResponse.filterSuccessfulStatusCodes()
                     SwiftMessages.show(message: "👍 Reaction removed")
@@ -138,7 +136,7 @@ extension Comment {
                 } catch {
                     SwiftMessages.show(message: "😓 Reaction failed", style: .error(error))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 SwiftMessages.show(message: "😓 Reaction failed", style: .error(error))
             }
         }

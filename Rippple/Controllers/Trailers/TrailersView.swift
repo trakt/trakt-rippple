@@ -1,16 +1,15 @@
 //
-//  MediaDetailsView.swift
+//  TrailersView.swift
 //  Trailers
 //
 //  Created by Kevin Cador on 30/05/2024.
 //
 
 import SwiftUI
-
+import UIKit
 import YouTubePlayerKit
 
 struct TrailersView: View {
-
     @Environment(\.colorScheme) private var colorScheme
 
     var mediaModel: MediaModel
@@ -96,7 +95,7 @@ struct TrailersView: View {
                                         EmptyView()
                                     }
                                 }.frame(maxWidth: .infinity)
-                                    .aspectRatio(16/9, contentMode: .fill)
+                                    .aspectRatio(16 / 9, contentMode: .fill)
                                     .cornerRadius(ViewRadius.large.rawValue)
                                     .padding([.top, .trailing, .leading], 6)
                                 VStack(alignment: .leading) {
@@ -136,19 +135,19 @@ struct TrailersView: View {
             switch mediaModel {
             case .movie(let movie):
                 let type = TraktObjectType.movie(movieId: movie.identifiers.trakt!)
-                videos = try await fetchVideos(for: .videos(type: type)).filter { $0.site == "youtube"}
+                videos = try await fetchVideos(for: .videos(type: type)).filter { $0.site == "youtube" }
             case .show(let show):
                 let type = TraktObjectType.show(showId: show.identifiers.trakt!)
-                videos = try await fetchVideos(for: .videos(type: type)).filter { $0.site == "youtube"}
+                videos = try await fetchVideos(for: .videos(type: type)).filter { $0.site == "youtube" }
             case .season(let season, let show):
                 let type = TraktObjectType.season(showId: show.identifiers.trakt!,
                                                   season: season.number)
-                videos = try await fetchVideos(for: .videos(type: type)).filter { $0.site == "youtube"}
+                videos = try await fetchVideos(for: .videos(type: type)).filter { $0.site == "youtube" }
             case .episode(let episode, let show):
                 let type = TraktObjectType.episode(showId: show.identifiers.trakt!,
                                                    season: episode.season,
                                                    episode: episode.number)
-                videos = try await fetchVideos(for: .videos(type: type)).filter { $0.site == "youtube"}
+                videos = try await fetchVideos(for: .videos(type: type)).filter { $0.site == "youtube" }
             default:
                 fatalError("Media type not supported")
             }
@@ -161,10 +160,10 @@ struct TrailersView: View {
     }
 
     private func fetchVideos(for service: TraktAPIService) async throws -> [Video] {
-        let result: [Video] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(service, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let videos = try response.map([Video].self, using: TraktAPIProvider.decoder)
@@ -173,13 +172,12 @@ struct TrailersView: View {
                         continuation.resume(throwing: error)
                         print("Videos call error: \(error)")
                     }
-                case let .failure(error):
+                case .failure(let error):
                     continuation.resume(throwing: error)
                     print("Videos call error: \(error)")
                 }
             }
         }
-        return result
     }
 }
 

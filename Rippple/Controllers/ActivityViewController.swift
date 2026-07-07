@@ -6,16 +6,12 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Moya
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import NVActivityIndicatorView
-
-import Moya
-
-import Receiver
-
 final class ActivityViewController: UITableViewController {
-
     var user: User?
 
     private var slug: String {
@@ -26,7 +22,7 @@ final class ActivityViewController: UITableViewController {
     }
 
     required init?(coder aDecoder: NSCoder) {
-        self.user = UserManager.shared.currentUser
+        user = UserManager.shared.currentUser
         super.init(coder: aDecoder)
     }
 
@@ -62,7 +58,7 @@ final class ActivityViewController: UITableViewController {
 
     @IBOutlet var emptyView: UIView!
 
-    // Error Management
+    /// Error Management
     private var error: Error? {
         didSet {
             DispatchQueue.main.async {
@@ -76,8 +72,9 @@ final class ActivityViewController: UITableViewController {
             updateDataSource()
         }
     }
+
     @IBOutlet var errorView: UIView!
-    @IBOutlet weak var errorLabel: UILabel!
+    @IBOutlet var errorLabel: UILabel!
 
     private var cancellable: Cancellable?
 
@@ -113,7 +110,7 @@ final class ActivityViewController: UITableViewController {
                 snapshot.appendSections([.error])
             } else {
                 if let currentPage = currentPage,
-                    currentPage.page < currentPage.pageCount {
+                   currentPage.page < currentPage.pageCount {
                     snapshot.appendSections([.loading(currentPage.nextPage)])
                     snapshot.appendItems([.loading(currentPage.nextPage)])
                 } else {
@@ -160,7 +157,7 @@ final class ActivityViewController: UITableViewController {
                 snapshot.appendSections([.error])
             } else {
                 if let currentPage = currentPage,
-                    currentPage.page < currentPage.pageCount {
+                   currentPage.page < currentPage.pageCount {
                     snapshot.appendSections([.loading(currentPage.nextPage)])
                     snapshot.appendItems([.loading(currentPage.nextPage)])
                 }
@@ -192,7 +189,7 @@ final class ActivityViewController: UITableViewController {
         return latestActivities
     }
 
-    @IBOutlet weak var filterButtonItem: UIBarButtonItem!
+    @IBOutlet var filterButtonItem: UIBarButtonItem!
     private var currentFilter = Filter.none {
         didSet {
             if navigationController?.viewControllers.first == self {
@@ -355,8 +352,7 @@ final class ActivityViewController: UITableViewController {
             cell.topLayoutConstraint.constant = 4.0
             return cell
         case .loading:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
-            return cell
+            return tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
         }
     }
 
@@ -414,7 +410,6 @@ final class ActivityViewController: UITableViewController {
     }
 
     fileprivate func buildMoreMenu() -> UIMenu {
-
         var children = [UIAction]()
 
         let today = UIAction(title: "Reset to Now") { _ in
@@ -427,7 +422,7 @@ final class ActivityViewController: UITableViewController {
             let formatter = DateFormatter()
             formatter.dateFormat = "MMMM"
             let pastMonth = UIAction(title: "Jump to \(formatter.string(from: date))") { _ in
-                self.endAtDate = date.advanced(by: -60*60*24)
+                self.endAtDate = date.advanced(by: -60 * 60 * 24)
                 self.fetchFirstActivities()
             }
             children.append(pastMonth)
@@ -446,14 +441,14 @@ final class ActivityViewController: UITableViewController {
                            usingSpringWithDamping: 0.5,
                            initialSpringVelocity: 2,
                            animations: {
-                self.backgroundButton.alpha = 1.0
-                self.calendarViewConstraint.constant = -40.0
-                self.calendarView.layer.maskedCorners = [.layerMaxXMinYCorner,
-                                                    .layerMinXMinYCorner,
-                                                    .layerMaxXMaxYCorner,
-                                                    .layerMinXMaxYCorner]
-                self.view.layoutIfNeeded()
-            })
+                               self.backgroundButton.alpha = 1.0
+                               self.calendarViewConstraint.constant = -40.0
+                               self.calendarView.layer.maskedCorners = [.layerMaxXMinYCorner,
+                                                                        .layerMinXMinYCorner,
+                                                                        .layerMaxXMaxYCorner,
+                                                                        .layerMinXMaxYCorner]
+                               self.view.layoutIfNeeded()
+                           })
         }
         children.append(date)
 
@@ -484,14 +479,14 @@ final class ActivityViewController: UITableViewController {
         UIView.animate(withDuration: 0.4,
                        delay: 0.0,
                        animations: {
-            self.backgroundButton.alpha = 0.0
-            self.calendarViewConstraint.constant = 640
-            self.view.layoutIfNeeded()
-        }, completion: { _ in
-            if refresh {
-                self.fetchFirstActivities()
-            }
-        })
+                           self.backgroundButton.alpha = 0.0
+                           self.calendarViewConstraint.constant = 640
+                           self.view.layoutIfNeeded()
+                       }, completion: { _ in
+                           if refresh {
+                               self.fetchFirstActivities()
+                           }
+                       })
     }
 
     private var debouncedRefresh: Debouncer!
@@ -605,9 +600,9 @@ final class ActivityViewController: UITableViewController {
         filterButtonItem.menu = filterMenu()
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         commandReceiver.listen { [weak self] keyCommand in
             guard let self = self else { return }
@@ -628,25 +623,23 @@ final class ActivityViewController: UITableViewController {
         fetchLatestActivities()
     }
 
-    @IBAction func unwindFromCommentComposer(segue: UIStoryboardSegue) {
-
-    }
+    @IBAction func unwindFromCommentComposer(segue: UIStoryboardSegue) {}
 
     private func filterMenu() -> UIMenu {
         let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
-            let all = UIAction(title: "Everything", image: nil, state: (self.currentFilter == .none ? .on : .off)) { [weak self] _ in
+            let all = UIAction(title: "Everything", image: nil, state: self.currentFilter == .none ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .none
             }
-            let movies = UIAction(title: "Movies", image: nil, state: (self.currentFilter == .movies ? .on : .off)) { [weak self] _ in
+            let movies = UIAction(title: "Movies", image: nil, state: self.currentFilter == .movies ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .movies
             }
-            let episodes = UIAction(title: "Episodes", image: nil, state: (self.currentFilter == .episodes ? .on : .off)) { [weak self] _ in
+            let episodes = UIAction(title: "Episodes", image: nil, state: self.currentFilter == .episodes ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .episodes
             }
-            let shows = UIAction(title: "Shows", image: nil, state: (self.currentFilter == .shows ? .on : .off)) { [weak self] _ in
+            let shows = UIAction(title: "Shows", image: nil, state: self.currentFilter == .shows ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .shows
             }
@@ -682,7 +675,7 @@ final class ActivityViewController: UITableViewController {
         var snapshot = dataSource.snapshot()
         snapshot.deleteSections([.error])
         if let currentPage = currentPage,
-            currentPage.page < currentPage.pageCount {
+           currentPage.page < currentPage.pageCount {
             snapshot.appendSections([.loading(currentPage.nextPage)])
             snapshot.appendItems([.loading(currentPage.nextPage)])
         }
@@ -699,6 +692,7 @@ final class ActivityViewController: UITableViewController {
             updateSubtitle()
         }
     }
+
     private func fetchActivity(for page: PageInfo) {
         if isLoading {
             return
@@ -709,7 +703,7 @@ final class ActivityViewController: UITableViewController {
                                                                  type: currentFilter.apiMediaType,
                                                                  id: nil,
                                                                  pageInfo: page,
-                                                                 endDate: endAtDate?.timeIntervalSince1970 == 0 ? endAtDate : endAtDate?.advanced(by: 60*60*24)),
+                                                                 endDate: endAtDate?.timeIntervalSince1970 == 0 ? endAtDate : endAtDate?.advanced(by: 60 * 60 * 24)),
                                                         callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
 
@@ -721,14 +715,14 @@ final class ActivityViewController: UITableViewController {
             }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let activities = try response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
 
                     if let response = response.response,
-                        let pageInfo = PageInfo(headers: response.allHeaderFields) {
+                       let pageInfo = PageInfo(headers: response.allHeaderFields) {
                         self.currentPage = pageInfo
                     }
 
@@ -738,7 +732,7 @@ final class ActivityViewController: UITableViewController {
 
                     self.error = error
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Activity/History request failure \(error)")
                 self.error = error
             }
@@ -747,7 +741,7 @@ final class ActivityViewController: UITableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let commentsViewController = segue.destination as? CommentsViewController,
-            let activity = sender as? HistoryItem {
+           let activity = sender as? HistoryItem {
             switch activity.type {
             case .movie:
                 commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.media(.movie(activity.movie!)))
@@ -757,17 +751,16 @@ final class ActivityViewController: UITableViewController {
                 fatalError("Unknown activity type")
             }
         } else if let commentsViewController = segue.destination as? CommentsViewController,
-            let show = sender as? Show {
+                  let show = sender as? Show {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.media(.show(show)))
         } else if let mediaViewController = segue.destination as? MediaViewController,
-            let media = sender as? MediaModel {
+                  let media = sender as? MediaModel {
             mediaViewController.media = media
         }
     }
 }
 
 extension ActivityViewController {
-
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
 
@@ -782,7 +775,7 @@ extension ActivityViewController {
             }
         case .watchOnlyOnceWarning:
             tableView.deselectRow(at: indexPath, animated: true)
-            if let url = URL(string: "https://trakt.tv/settings#global"),
+            if let url = URL(string: "https://app.trakt.tv/settings"),
                UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }
@@ -840,7 +833,6 @@ extension ActivityViewController {
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
         guard let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell else {
             return nil
         }
@@ -848,9 +840,9 @@ extension ActivityViewController {
         contextMenu.controller = self
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-            return self.contextMenu.previewViewController
+            self.contextMenu.previewViewController
         }, actionProvider: { _ in
-            return self.contextMenu.menu
+            self.contextMenu.menu
         })
     }
 
@@ -870,14 +862,13 @@ extension ActivityViewController {
     }
 
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-
-        guard let item = self.dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.item(historyItem, _) = item else { return nil }
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
+        guard case Wrapper.item(let historyItem, _) = item else { return nil }
 
         let displayMedia = mediaModel(for: historyItem)
 
         let next = UIContextualAction(style: .normal,
-                                         title: "Next") { _, _, boolValue in
+                                      title: "Next") { _, _, boolValue in
             let nextEpisodeToWatchNavigationController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "next episode") as! UINavigationController
 
             if let nextEpisodeViewController = nextEpisodeToWatchNavigationController.topViewController as? MediaShowNextLoadingViewController {
@@ -893,7 +884,7 @@ extension ActivityViewController {
         next.backgroundColor = UIColor(resource: .ripppleGray)
 
         let share = UIContextualAction(style: .normal,
-                                      title: "Share") { _, _, boolValue in
+                                       title: "Share") { _, _, boolValue in
             guard let sharedURL = displayMedia?.traktWebsiteMediaLink else { return }
             let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
             UIApplication.shared.present(activityViewController)
@@ -914,32 +905,32 @@ extension ActivityViewController {
         comment.image = UIImage(systemName: "pencil.circle.fill")
 
         let recommend = UIContextualAction(style: .normal,
-                                         title: "Favorite") { _, _, boolValue in
+                                           title: "Favorite") { _, _, boolValue in
             SwiftMessages.show(message: "Adding to Favorites...", style: .loading)
             TraktAPIProvider.provider.request(TraktAPIService.addToRecommendations(item: WatchlistedItem(movie: historyItem.movie!)),
-                                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /*[weak self]*/ result in
-        //                                                    guard let self = self else { return }
-                                                            switch result {
-                                                            case let .success(moyaResponse):
-                                                                do {
-                                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /* [weak self] */ result in
+                //                                                    guard let self = self else { return }
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                                    DispatchQueue.main.async {
-                                                                        RecommendedManager.shared.refresh()
-                                                                        SwiftMessages.show(message: "⭐️ Added to Favorites")
-                                                                        print("Recommendation successful \(response)")
-                                                                    }
+                        DispatchQueue.main.async {
+                            RecommendedManager.shared.refresh()
+                            SwiftMessages.show(message: "⭐️ Added to Favorites")
+                            print("Recommendation successful \(response)")
+                        }
 
-                                                                } catch {
-                                                                    DispatchQueue.main.async {
-                                                                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                                    }
-                                                                }
-                                                            case let .failure(error):
-                                                                DispatchQueue.main.async {
-                                                                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                                }
-                                                            }
+                    } catch {
+                        DispatchQueue.main.async {
+                            SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                        }
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
             }
             boolValue(false)
         }
@@ -959,7 +950,6 @@ extension ActivityViewController {
                 return configuration
             }
         } else {
-
             next.backgroundColor = UIColor(resource: .ripppleGray).lighter()
             share.backgroundColor = UIColor(resource: .ripppleGray)
             comment.backgroundColor = UIColor(resource: .ripppleGray).darker()
@@ -974,12 +964,12 @@ extension ActivityViewController {
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         if !user!.isCurrentUser { return nil }
 
-        guard let item = self.dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.item(historyItem, _) = item else { return nil }
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
+        guard case Wrapper.item(let historyItem, _) = item else { return nil }
 
         if currentFilter == .shows, let show = mediaModel(for: historyItem) {
             let notes = UIContextualAction(style: .normal,
-                                             title: "Notes") { _, _, boolValue in
+                                           title: "Notes") { _, _, boolValue in
                 NotesManager.shared.showNotes(for: show)
                 boolValue(true)
             }
@@ -993,14 +983,14 @@ extension ActivityViewController {
         }
 
         let remove = UIContextualAction(style: .normal,
-                                         title: "Remove") { [weak self] _, _, boolValue in
+                                        title: "Remove") { [weak self] _, _, boolValue in
             guard let self = self else { return }
             guard let item = self.dataSource.itemIdentifier(for: indexPath) else { return }
-            if case let Wrapper.item(historyItem, _) = item {
+            if case Wrapper.item(let historyItem, _) = item {
                 SwiftMessages.show(message: "Removing from History...", style: .loading)
                 TraktAPIProvider.provider.request(.removeFromHistory(id: historyItem.identifier), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                     switch result {
-                    case let .success(moyaResponse):
+                    case .success(let moyaResponse):
                         do {
                             let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1016,7 +1006,7 @@ extension ActivityViewController {
                                 SwiftMessages.show(message: "😓 Error removing", style: .error(error))
                             }
                         }
-                    case let .failure(error):
+                    case .failure(let error):
                         DispatchQueue.main.async {
                             SwiftMessages.show(message: "😓 Error removing", style: .error(error))
                         }
@@ -1029,7 +1019,7 @@ extension ActivityViewController {
         remove.image = UIImage(systemName: "trash.circle.fill")
 
         let notes = UIContextualAction(style: .normal,
-                                         title: "Notes") { _, _, boolValue in
+                                       title: "Notes") { _, _, boolValue in
             NotesManager.shared.showNotes(for: historyItem)
             boolValue(true)
         }
@@ -1044,13 +1034,12 @@ extension ActivityViewController {
 }
 
 extension ActivityViewController: MediaTableViewCellDelegate {
-
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
 
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
 
-        guard case let Wrapper.item(historyItem, _) = item else { return }
+        guard case Wrapper.item(let historyItem, _) = item else { return }
 
         if action == .details {
             switch historyItem.type {
@@ -1070,11 +1059,12 @@ protocol ActivityHeaderTableViewCellDelegate: AnyObject {
 }
 
 final class ActivityHeaderTableViewCell: UITableViewCell {
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var subtitle: UILabel?
-    @IBOutlet weak var chevron: UIImageView?
+    @IBOutlet var title: UILabel!
+    @IBOutlet var subtitle: UILabel?
+    @IBOutlet var chevron: UIImageView?
+    @IBOutlet var contentTrailingConstraint: NSLayoutConstraint?
 
-    @IBOutlet weak var button: UIButton?
+    @IBOutlet var button: UIButton?
 
     weak var delegate: ActivityHeaderTableViewCellDelegate? {
         didSet {
@@ -1100,12 +1090,14 @@ final class ActivityHeaderTableViewCell: UITableViewCell {
 
         maximumContentSizeCategory = .extraExtraExtraLarge
         button?.maximumContentSizeCategory = .extraExtraExtraLarge
+        contentTrailingConstraint?.constant = 16
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
         button?.isHidden = true
         chevron?.isHidden = true
+        contentTrailingConstraint?.constant = 16
     }
 }
 

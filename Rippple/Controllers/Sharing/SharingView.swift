@@ -7,9 +7,9 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct SharingView: View {
-
     @State private var enableText: Bool = true
     @State private var enableURL: Bool = true
     @State private var enableImage: Bool = true
@@ -61,7 +61,7 @@ struct SharingView: View {
                         Text("URL")
                     } footer: {
                         if enableURL {
-                            Text(verbatim: "https://trakt.tv/movies/deadpool-wolverine-2024")
+                            Text(verbatim: "https://app.trakt.tv/movies/deadpool-wolverine-2024")
                         }
                     }
 

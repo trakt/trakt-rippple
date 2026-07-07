@@ -7,12 +7,11 @@
 //
 
 import Foundation
-import UIKit
 import Receiver
+import UIKit
 
 final class ToWatchStoriesTableViewCell: UITableViewCell {
-
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet var collectionView: UICollectionView!
 
     private enum Section: Hashable {
         case inToWatch
@@ -54,14 +53,14 @@ final class ToWatchStoriesTableViewCell: UITableViewCell {
         } else {
             timer?.invalidate()
             timer = Timer.scheduledTimer(withTimeInterval: 1,
-                          repeats: true,
-                          block: { [weak self] _ in
-                guard let self = self else { return }
-                for cell in self.collectionView.visibleCells {
-                    guard let cell = cell as? ToWatchStoryCollectionViewCell else { continue }
-                    cell.updateLabel()
-                }
-            })
+                                         repeats: true,
+                                         block: { [weak self] _ in
+                                             guard let self = self else { return }
+                                             for cell in self.collectionView.visibleCells {
+                                                 guard let cell = cell as? ToWatchStoryCollectionViewCell else { continue }
+                                                 cell.updateLabel()
+                                             }
+                                         })
         }
     }
 
@@ -78,7 +77,7 @@ final class ToWatchStoriesTableViewCell: UITableViewCell {
                 case .showProgress(let show, _):
                     if show.isInToWatch { acc.inToWatch.append(item) } else { acc.others.append(item) }
                 case .movie(let movie):
-                    if movie.isInToWatch { acc.inToWatch.append(item) } else { acc.others.append(item)}
+                    if movie.isInToWatch { acc.inToWatch.append(item) } else { acc.others.append(item) }
                 case .list:
                     break
                 }
@@ -134,9 +133,9 @@ extension ToWatchStoriesTableViewCell: UICollectionViewDelegate {
         contextMenu.controller = presentingController
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-            return self.contextMenu.previewViewController
+            self.contextMenu.previewViewController
         }, actionProvider: { _ in
-            return self.contextMenu.menu
+            self.contextMenu.menu
         })
     }
 

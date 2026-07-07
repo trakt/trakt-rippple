@@ -6,13 +6,12 @@
 //  Copyright © 2025 Trakt. All rights reserved.
 //
 
-import SwiftUI
-import StoreKit
-
 import Receiver
+import StoreKit
+import SwiftUI
+import UIKit
 
 struct PurchaseConfirmationView: View {
-
     @Environment(\.openURL) var openURL
 
     enum PurchaseConfirmationOptions: Int {
@@ -55,14 +54,14 @@ struct PurchaseConfirmationView: View {
                         PurchaseOptionView(chosen: chosenOption == .monthly,
                                            title: "Pay Monthly",
                                            subtitle: """
-                                       + Expanded Limits
-                                       + Advanced Stats
-                                       + Your To Watch
-                                       + Your Shelf
-                                       + Smarter Searches
-                                       + Smarter Rewatching
-                                       + Support Trakt & Rippple
-                                       """,
+                                           + Expanded Limits
+                                           + Advanced Stats
+                                           + Your To Watch
+                                           + Your Shelf
+                                           + Smarter Searches
+                                           + Smarter Rewatching
+                                           + Support Trakt & Rippple
+                                           """,
                                            price: monthlySubscription.displayPrice).onTapGesture {
                             chosenOption = .monthly
                         }
@@ -155,11 +154,11 @@ struct PurchaseConfirmationView: View {
                 showVIPAlert.toggle()
             }
         }.alert(isPresented: $showVIPAlert) {
-            return Alert(title: Text("Trakt VIP yet?"),
+            Alert(title: Text("Trakt VIP yet?"),
                   message: Text("It looks like you’ve opened Trakt to activate your VIP subscription, but we’re not sure if it’s been updated yet. VIP activation may take some time. You might need to come back later to see your VIP benefits in Rippple."),
                   dismissButton: .default(Text("Got it!"), action: {
-                dismiss()
-            }))
+                      dismiss()
+                  }))
         }.alert("Restore Failed", isPresented: $showRestoreError, actions: {
             Button("Okay", role: .cancel) {}
         }, message: {
@@ -169,7 +168,6 @@ struct PurchaseConfirmationView: View {
 }
 
 struct PurchaseOptionView: View {
-
     @Environment(\.colorScheme) var colorScheme
 
     var chosen: Bool

@@ -41,27 +41,27 @@ enum DeeplinkType: Equatable {
 
     static func == (lhs: DeeplinkType, rhs: DeeplinkType) -> Bool {
         switch (lhs, rhs) {
-        case let (.user(left), .user(right)): return left == right
-        case let (.show(left), .show(right)): return left == right
-        case let (.season(left1, left2), .season(right1, right2)): return left1 == right1 && left2 == right2
-        case let (.episode(left1, left2, left3), .episode(right1, right2, right3)): return left1 == right1 && left2 == right2 && left3 == right3
-        case let (.comment(left), .comment(right)): return left == right
-        case let (.people(left), .people(right)): return left == right
+        case (.user(let left), .user(let right)): return left == right
+        case (.show(let left), .show(let right)): return left == right
+        case (.season(let left1, let left2), .season(let right1, let right2)): return left1 == right1 && left2 == right2
+        case (.episode(let left1, let left2, let left3), .episode(let right1, let right2, let right3)): return left1 == right1 && left2 == right2 && left3 == right3
+        case (.comment(let left), .comment(let right)): return left == right
+        case (.people(let left), .people(let right)): return left == right
         case (.notificationsSettings, .notificationsSettings): return true
         case (.whatsNew, .whatsNew): return true
         case (.whereToWatchSettings, .whereToWatchSettings): return true
-        case let (.tmdbShow(left), .tmdbShow(right)): return left == right
-        case let (.tmdbPeople(left), .tmdbPeople(right)): return left == right
-        case let (.tmdbMovie(left), .tmdbMovie(right)): return left == right
-        case let (.tmdbEpisode(left1, left2, left3), .tmdbEpisode(right1, right2, right3)): return left1 == right1 && left2 == right2 && left3 == right3
-        case let (.tmdbSeason(left1, left2), .tmdbSeason(right1, right2)): return left1 == right1 && left2 == right2
+        case (.tmdbShow(let left), .tmdbShow(let right)): return left == right
+        case (.tmdbPeople(let left), .tmdbPeople(let right)): return left == right
+        case (.tmdbMovie(let left), .tmdbMovie(let right)): return left == right
+        case (.tmdbEpisode(let left1, let left2, let left3), .tmdbEpisode(let right1, let right2, let right3)): return left1 == right1 && left2 == right2 && left3 == right3
+        case (.tmdbSeason(let left1, let left2), .tmdbSeason(let right1, let right2)): return left1 == right1 && left2 == right2
         case (.browseThisWeek, .browseThisWeek): return true
         case (.appIconSettings, .appIconSettings): return true
         case (.toWatchMovies, .toWatchMovies): return true
         case (.toWatchEpisodes, .toWatchEpisodes): return true
         case (.history, .history): return true
         case (.calendar, .calendar): return true
-        case let (.list(left1, left2), .list(right1, right2)): return left1 == right1 && left2 == right2
+        case (.list(let left1, let left2), .list(let right1, let right2)): return left1 == right1 && left2 == right2
         case (.migrate, .migrate): return true
         default: return false
         }
@@ -70,13 +70,13 @@ enum DeeplinkType: Equatable {
 
 final class DeeplinkParser {
     static let shared = DeeplinkParser()
-    private init() { }
+    private init() {}
 
     func parseDeepLink(_ url: URL) -> DeeplinkType? {
         let url = cleanDeeplink(url)
 
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
-            let host = components.host else {
+              let host = components.host else {
             return nil
         }
         var pathComponents = components.path.components(separatedBy: "/")
@@ -90,7 +90,7 @@ final class DeeplinkParser {
                 if pathComponents.count == 6 {
                     let showId = pathComponents[1]
                     if let season = Int(pathComponents[3]),
-                        let episode = Int(pathComponents[5]) {
+                       let episode = Int(pathComponents[5]) {
                         return DeeplinkType.tmdbEpisode(showId: showId, season: season, episode: episode)
                     }
                 }
@@ -130,8 +130,8 @@ final class DeeplinkParser {
             // shows/[0]/seasons/[2]/episode/[4]
             if pathComponents.count == 5 {
                 if let showId = pathComponents.first,
-                    let season = Int(pathComponents[2]),
-                    let episode = Int(pathComponents[4]) {
+                   let season = Int(pathComponents[2]),
+                   let episode = Int(pathComponents[4]) {
                     return DeeplinkType.episode(showId: showId, season: season, episode: episode)
                 }
             }
@@ -139,7 +139,7 @@ final class DeeplinkParser {
             // shows/[0]/seasons/[2]
             if pathComponents.count == 3 {
                 if let showId = pathComponents.first,
-                    let season = Int(pathComponents[2]) {
+                   let season = Int(pathComponents[2]) {
                     return DeeplinkType.season(showId: showId, season: season)
                 }
             }
@@ -154,7 +154,7 @@ final class DeeplinkParser {
             }
         case "comments":
             if let component = pathComponents.first,
-                let commentId = Int64(component) {
+               let commentId = Int64(component) {
                 return DeeplinkType.comment(id: commentId)
             }
         case "users":
@@ -211,34 +211,43 @@ final class DeeplinkParser {
     }
 
     private func cleanDeeplink(_ url: URL) -> URL {
-
-        // https://trakt.tv/comments/158545 -> ripl://comments/158545
-        // ripl://trakt.tv/comments/158545 -> ripl://comments/158545
+        // https://app.trakt.tv/comments/158545 -> ripl://comments/158545
+        // ripl://app.trakt.tv/comments/158545 -> ripl://comments/158545
 
         let absoluteString = url.absoluteString
 
         if absoluteString.hasPrefix("https://rippple.app/"),
-            let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "https://rippple.app/", with: "ripl://")) {
+           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "https://rippple.app/", with: "ripl://")) {
             return cleanUrl
         }
 
         if absoluteString.hasPrefix("ripl://rippple.app/"),
-            let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "ripl://rippple.app/", with: "ripl://")) {
+           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "ripl://rippple.app/", with: "ripl://")) {
+            return cleanUrl
+        }
+
+        if absoluteString.hasPrefix("https://app.trakt.tv/"),
+           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "https://app.trakt.tv/", with: "ripl://")) {
             return cleanUrl
         }
 
         if absoluteString.hasPrefix("https://trakt.tv/"),
-            let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "https://trakt.tv/", with: "ripl://")) {
+           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "https://trakt.tv/", with: "ripl://")) {
+            return cleanUrl
+        }
+
+        if absoluteString.hasPrefix("ripl://app.trakt.tv/"),
+           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "ripl://app.trakt.tv/", with: "ripl://")) {
             return cleanUrl
         }
 
         if absoluteString.hasPrefix("ripl://trakt.tv/"),
-            let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "ripl://trakt.tv/", with: "ripl://")) {
+           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "ripl://trakt.tv/", with: "ripl://")) {
             return cleanUrl
         }
 
         if absoluteString.hasPrefix("ripl://trakt/"),
-            let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "ripl://trakt/", with: "ripl://")) {
+           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "ripl://trakt/", with: "ripl://")) {
             return cleanUrl
         }
 

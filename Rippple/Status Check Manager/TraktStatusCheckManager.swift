@@ -7,7 +7,6 @@
 //
 
 import Foundation
-
 import Receiver
 
 let (onLastWatchedEpisodeActivitiesChangedTransmitter, onLastWatchedEpisodeActivitiesChangedReceiver) = Receiver<LastEpisodesActivities>.make(with: .hot)
@@ -17,7 +16,6 @@ let (onLastDroppedShowActivitiesChangedTransmitter, onLastDroppedShowActivitiesC
 let (onLastHiddenUsersFromCommentsActivitiesChangedTransmitter, onLastHiddenUsersFromCommentsActivitiesChangedReceiver) = Receiver<LastCommentsActivities>.make(with: .hot)
 
 final class TraktStatusCheckManager {
-
     private let disposeBag = DisposeBag()
 
     private init() {
@@ -58,7 +56,7 @@ final class TraktStatusCheckManager {
         }
     }
 
-    public func refresh() {
+    func refresh() {
         refreshTimer?.invalidate()
         if SessionManager.shared.isLoggedOut {
             refreshTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
@@ -69,7 +67,7 @@ final class TraktStatusCheckManager {
         TraktAPIProvider.provider.request(.lastActivities,
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -89,7 +87,7 @@ final class TraktStatusCheckManager {
                         }
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("LastActivities request failure \(error)")
                 DispatchQueue.main.async {
                     self.refreshTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in

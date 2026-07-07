@@ -7,33 +7,35 @@
 //
 
 import Foundation
-
-import AWSSNS
-
 import Receiver
 
 final class ManualRemoteNotificationsManager {
     static let shared = ManualRemoteNotificationsManager()
 
     private let disposeBag = DisposeBag()
+    private lazy var debouncedSyncRemoteNotificationTopics = Debouncer(delay: 1.0) { [weak self] in
+        guard let self = self else { return }
+        self.syncRemoteNotificationTopics()
+    }
 
     private var endpointARN: String? {
         return UserDefaults.standard.string(forKey: "Rippple.endpointArnForSNS")
     }
 
-    // Settings
+    /// Settings
     var appUpdate: Bool {
         didSet {
             UserDefaults.standard.set(appUpdate, forKey: "ManualRemoteNotificationsManager.appUpdate")
             UserDefaults.standard.synchronize()
-            pushInfoToAWS()
+            syncRemoteNotificationTopics()
         }
     }
+
     var blogPost: Bool {
         didSet {
             UserDefaults.standard.set(blogPost, forKey: "ManualRemoteNotificationsManager.blogPost")
             UserDefaults.standard.synchronize()
-            pushInfoToAWS()
+            syncRemoteNotificationTopics()
         }
     }
 
@@ -45,148 +47,48 @@ final class ManualRemoteNotificationsManager {
     }
 
     func setup() {
-        pushInfoToAWS()
+        debouncedSyncRemoteNotificationTopics.call()
 
         onSettingsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
-            guard let ARN = self.endpointARN else { return }
-            if SessionManager.shared.isLoggedOut {
-                if let topic = AWSConfiguration.manualBlogPostTopicARN {
-                    self.unsubscribe(arn: ARN, to: topic)
-                }
-                if let topic = AWSConfiguration.manualUpdateTopicARN {
-                    self.unsubscribe(arn: ARN, to: topic)
-                }
-            } else {
-                self.pushInfoToAWS()
-            }
+            self.debouncedSyncRemoteNotificationTopics.call()
         }.disposed(by: disposeBag)
 
-        arnUpdatedReceiver.listen { [weak self] _ in
+        remoteNotificationsEndpointUpdatedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
-            self.pushInfoToAWS()
+            self.debouncedSyncRemoteNotificationTopics.call()
         }.disposed(by: disposeBag)
     }
 
-    private func pushInfoToAWS() {
-        guard let ARN = endpointARN else { return }
-        if let topic = AWSConfiguration.manualBlogPostTopicARN {
-            if blogPost {
-                subscribe(arn: ARN, to: topic)
-            } else {
-                unsubscribe(arn: ARN, to: topic)
-            }
-        }
-        if let topic = AWSConfiguration.manualUpdateTopicARN {
-            if appUpdate {
-                subscribe(arn: ARN, to: topic)
-            } else {
-                unsubscribe(arn: ARN, to: topic)
-            }
-        }
+    private func syncRemoteNotificationTopics() {
+        guard let endpointARN = endpointARN else { return }
+        let canSubscribe = !SessionManager.shared.isLoggedOut
 
-        if UserManager.shared.currentUser?.slug == "kcador" {
-            if let topic = AWSConfiguration.testTopicARN {
-                subscribe(arn: ARN, to: topic)
-            }
+        syncSubscription(endpointARN: endpointARN, to: .manualBlogPost, isSubscribed: canSubscribe && blogPost)
+        syncSubscription(endpointARN: endpointARN, to: .manualUpdate, isSubscribed: canSubscribe && appUpdate)
+
+        if canSubscribe, UserManager.shared.currentUser?.slug == "kcador" {
+            syncSubscription(endpointARN: endpointARN, to: .test, isSubscribed: true)
         }
     }
 
-    private func subscribe(arn: String, to topic: String) {
-        let sns = AWSSNS.default()
+    private func syncSubscription(endpointARN: String, to topic: RemoteNotificationTopic, isSubscribed: Bool) {
+        guard topic.topicARN != nil else { return }
 
-        guard let subscriptionRequest = AWSSNSSubscribeInput() else { return }
-
-        subscriptionRequest.protocols = "application"
-        subscriptionRequest.topicArn = topic
-        subscriptionRequest.endpoint = arn
-
-        sns.subscribe(subscriptionRequest).continueWith(executor: AWSExecutor.mainThread(), block: { task in
-            if task.error != nil {
-                print("💀 AWS SNS subscribe Error: \(String(describing: task.error))")
-            } else {
-                print("🎉 subscribed to topic \(topic)")
-            }
-            return nil
-        })
-    }
-
-    private func unsubscribe(arn: String, to topic: String) {
-        let sns = AWSSNS.default()
-
-        guard let subscriptionRequest = AWSSNSSubscribeInput() else { return }
-
-        subscriptionRequest.protocols = "application"
-        subscriptionRequest.topicArn = topic
-        subscriptionRequest.endpoint = arn
-
-        sns.subscribe(subscriptionRequest).continueWith(executor: AWSExecutor.mainThread(), block: { [weak self] task in
-            guard let self = self else { return nil }
-            if task.error != nil {
-                print("💀 AWS SNS subscribe Error: \(String(describing: task.error))")
-                guard let listSubscriptionsByTopic = AWSSNSListSubscriptionsByTopicInput() else { return nil }
-                listSubscriptionsByTopic.topicArn = topic
-
-                self.listSubscriptions(topic: listSubscriptionsByTopic, subscriptions: [AWSSNSSubscription](), arn: arn, unsubscibeTopic: topic)
-            } else if let subscriptionArn = task.result?.subscriptionArn {
-                print("🎉 subscribed to topic \(topic)")
-                guard let subscriptionRequest = AWSSNSUnsubscribeInput() else { return nil }
-
-                subscriptionRequest.subscriptionArn = subscriptionArn
-
-                sns.unsubscribe(subscriptionRequest).continueWith(executor: AWSExecutor.mainThread(), block: { task in
-                    if task.error != nil {
-                        print("💀 AWS SNS unsubscribe Error: \(String(describing: task.error))")
-                    } else {
-                        print("🎉 unsubscribed from topic \(topic)")
-                    }
-                    return nil
-                })
-            } else {
-                guard let listSubscriptionsByTopic = AWSSNSListSubscriptionsByTopicInput() else { return nil }
-                listSubscriptionsByTopic.topicArn = topic
-
-                self.listSubscriptions(topic: listSubscriptionsByTopic, subscriptions: [AWSSNSSubscription](), arn: arn, unsubscibeTopic: topic)
-            }
-            return nil
-        })
-    }
-
-    private func listSubscriptions(topic: AWSSNSListSubscriptionsByTopicInput, subscriptions: [AWSSNSSubscription], arn: String, unsubscibeTopic: String) {
-        let sns = AWSSNS.default()
-        sns.listSubscriptions(byTopic: topic) { [weak self] (response, error) in
-            guard let self = self else { return }
-            if let error = error {
-                print("💀 AWS listSubscriptions: \(String(describing: error))")
-                self.unsubscribe(arn: arn, to: unsubscibeTopic, subscriptions: subscriptions)
-            } else if let response = response, let newSubscriptions = response.subscriptions {
-                if let nextToken = response.nextToken {
-                    guard let listSubscriptionsByTopic = AWSSNSListSubscriptionsByTopicInput() else { return }
-                    listSubscriptionsByTopic.topicArn = topic.topicArn
-                    listSubscriptionsByTopic.nextToken = nextToken
-                    self.listSubscriptions(topic: listSubscriptionsByTopic, subscriptions: subscriptions+newSubscriptions, arn: arn, unsubscibeTopic: unsubscibeTopic)
-                } else {
-                    self.unsubscribe(arn: arn, to: unsubscibeTopic, subscriptions: subscriptions+newSubscriptions)
-                }
-            }
-        }
-    }
-
-    private func unsubscribe(arn: String, to topic: String, subscriptions: [AWSSNSSubscription]) {
-        let sns = AWSSNS.default()
-        for subscription in subscriptions where subscription.endpoint == arn {
-            guard let subscriptionRequest = AWSSNSUnsubscribeInput() else { return }
-
-            subscriptionRequest.subscriptionArn = subscription.subscriptionArn
-
-            sns.unsubscribe(subscriptionRequest).continueWith(executor: AWSExecutor.mainThread(), block: { task in
-                if task.error != nil {
-                    print("💀 AWS SNS unsubscribe Error: \(String(describing: task.error))")
-                } else {
+        Task {
+            do {
+                let result = try await RemoteNotificationsManager.shared.syncSubscription(endpointARN: endpointARN, to: topic, isSubscribed: isSubscribed)
+                switch result {
+                case .skipped:
+                    break
+                case .subscribed:
+                    print("🎉 subscribed to topic \(topic)")
+                case .unsubscribed:
                     print("🎉 unsubscribed from topic \(topic)")
                 }
-                return nil
-            })
+            } catch {
+                print("💀 Remote notifications topic sync Error: \(error)")
+            }
         }
     }
 }

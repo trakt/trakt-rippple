@@ -6,16 +6,12 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import Moya
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import Receiver
-
-import NVActivityIndicatorView
-
-import Moya
-
 private final class LoadingSupplementaryView: UICollectionReusableView {
-
     static let reuseIdentifier = "LoadingSupplementaryView"
 
     let activityIndicator = NVActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 80, height: 80),
@@ -28,6 +24,7 @@ private final class LoadingSupplementaryView: UICollectionReusableView {
         configure()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError()
     }
@@ -40,7 +37,8 @@ private final class LoadingSupplementaryView: UICollectionReusableView {
             activityIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
             activityIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
             activityIndicator.heightAnchor.constraint(equalToConstant: 50),
-            activityIndicator.widthAnchor.constraint(equalToConstant: 50)])
+            activityIndicator.widthAnchor.constraint(equalToConstant: 50)
+        ])
         activityIndicator.startAnimating()
     }
 }
@@ -99,8 +97,8 @@ final class GridViewController: UICollectionViewController {
 
         dataSource.supplementaryViewProvider = { (collectionView: UICollectionView, kind: String, indexPath: IndexPath) -> UICollectionReusableView? in
             let header: LoadingSupplementaryView = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
-                                                                                                       withReuseIdentifier: LoadingSupplementaryView.reuseIdentifier,
-                                                                                                       for: indexPath) as! LoadingSupplementaryView
+                                                                                                   withReuseIdentifier: LoadingSupplementaryView.reuseIdentifier,
+                                                                                                   for: indexPath) as! LoadingSupplementaryView
             return header
         }
 
@@ -181,7 +179,7 @@ final class GridViewController: UICollectionViewController {
             }
         }.disposed(by: disposeBag)
 
-        onWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
+        onSyncWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if self.savedFilter.path != "/users/me/watched/movies" { return }
             DispatchQueue.main.async {
@@ -189,7 +187,7 @@ final class GridViewController: UICollectionViewController {
             }
         }.disposed(by: disposeBag)
 
-        onWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
+        onSyncWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if self.savedFilter.path != "/users/me/watched/shows" { return }
             DispatchQueue.main.async {
@@ -204,7 +202,7 @@ final class GridViewController: UICollectionViewController {
         navigationItem.subtitle = "Loading..."
         nextPage = nil
 
-        _Concurrency.Task.init {
+        _Concurrency.Task {
             do {
                 let mediaCollection = try await self.fetch(filter: savedFilter, pageInfo: PageInfo.firstPage(with: 100)).compactMap { MediaModel(item: $0) }
                 self.rebuildDatasource(with: mediaCollection, appending: false)
@@ -251,7 +249,7 @@ final class GridViewController: UICollectionViewController {
         let displayOptions = UIBarButtonItem(title: "Display Options",
                                              image: UIImage(systemName: "line.3.horizontal.decrease"),
                                              menu: UIMenu(children: [UIMenu(options: .displayInline,
-                                                                              children: actions), action]))
+                                                                            children: actions), action]))
 
         actions = [UIAction]()
         let shelved = savedFilter.isShelved
@@ -284,9 +282,9 @@ final class GridViewController: UICollectionViewController {
         }
 
         let more = UIBarButtonItem(title: "More",
-                                             image: UIImage(systemName: "ellipsis"),
-                                             menu: UIMenu(options: .displayInline,
-                                                                            children: actions))
+                                   image: UIImage(systemName: "ellipsis"),
+                                   menu: UIMenu(options: .displayInline,
+                                                children: actions))
 
         if let wallViewController = navigationController as? WallViewController {
             let wallFilter = UIBarButtonItem(title: "Filter",
@@ -331,8 +329,9 @@ final class GridViewController: UICollectionViewController {
             UserDefaults.standard.synchronize()
         }
     }
+
     private func compositionalLayout() -> UICollectionViewCompositionalLayout {
-        let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
+        return UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
             guard let self = self else { return nil }
             guard let section = self.dataSource.sectionIdentifier(for: sectionIndex) else {
                 // Fallback to content layout
@@ -348,16 +347,14 @@ final class GridViewController: UICollectionViewController {
                 let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                        heightDimension: .estimated(100))
                 let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-                let section = NSCollectionLayoutSection(group: group)
-                return section
+                return NSCollectionLayoutSection(group: group)
             }
         }
-        return layout
     }
 
     private func makeContentSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
         let itemsPerRow: Int = if itemsPerRow == 0 {
-            Int(round(environment.container.effectiveContentSize.width/110.0))
+            Int(round(environment.container.effectiveContentSize.width / 110.0))
         } else {
             itemsPerRow
         }
@@ -366,9 +363,9 @@ final class GridViewController: UICollectionViewController {
         let sectionInset = edgeToEdgeLayout ? 0.0 : 6.0
 
         let dimention: NSCollectionLayoutDimension = if edgeToEdgeLayout {
-            .absolute(environment.container.effectiveContentSize.width/CGFloat(itemsPerRow))
+            .absolute(environment.container.effectiveContentSize.width / CGFloat(itemsPerRow))
         } else {
-            .fractionalWidth(1/CGFloat(itemsPerRow))
+            .fractionalWidth(1 / CGFloat(itemsPerRow))
         }
         let itemSize = NSCollectionLayoutSize(widthDimension: dimention,
                                               heightDimension: .estimated(100))
@@ -407,7 +404,7 @@ final class GridViewController: UICollectionViewController {
         case empty(String, String, String?, String)
     }
 
-    private class GridViewDiffibleDataSource: UICollectionViewDiffableDataSource<Section, Wrapper> { }
+    private class GridViewDiffibleDataSource: UICollectionViewDiffableDataSource<Section, Wrapper> {}
 
     private lazy var dataSource = GridViewDiffibleDataSource(collectionView: collectionView) { collectionView, indexPath, wrapper in
         switch wrapper {
@@ -427,14 +424,14 @@ final class GridViewController: UICollectionViewController {
         collectionView.deselectItem(at: indexPath, animated: true)
 
         let wrapper = dataSource.itemIdentifier(for: indexPath)
-        guard case let .content(media) = wrapper else { return }
+        guard case .content(let media) = wrapper else { return }
 
         if media.season != nil {
             performSegue(withIdentifier: "comments", sender: media)
         } else {
             if UIDevice.current.userInterfaceIdiom == .phone {
                 performSegue(withIdentifier: "details-zoom", sender: MediaSegueObject(media: media,
-                                                                                 zoomSourceView: collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell))
+                                                                                      zoomSourceView: collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell))
             } else {
                 performSegue(withIdentifier: "details", sender: media)
             }
@@ -443,7 +440,7 @@ final class GridViewController: UICollectionViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let commentsViewController = segue.destination as? CommentsViewController,
-                  let media = sender as? MediaModel {
+           let media = sender as? MediaModel {
             commentsViewController.coordinator = CommentsCoordinator(type: .media(media))
         } else if let mediaViewController = segue.destination as? MediaViewController,
                   let media = sender as? MediaModel {
@@ -465,9 +462,9 @@ final class GridViewController: UICollectionViewController {
         contextMenu.controller = presentingViewController
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-            return self.contextMenu.previewViewController
+            self.contextMenu.previewViewController
         }, actionProvider: { _ in
-            return self.contextMenu.menu
+            self.contextMenu.menu
         })
     }
 
@@ -496,14 +493,14 @@ final class GridViewController: UICollectionViewController {
     private var nextPage: PageInfo?
     private func fetch(filter: SavedFilter, pageInfo: PageInfo) async throws -> [MediaItem] {
         let filter = filter.normalized
-        let result: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             cancellable = TraktAPIProvider.provider.request(.savedFilter(section: filter.section,
                                                                          path: filter.path,
                                                                          query: filter.query,
                                                                          pageInfo: pageInfo),
                                                             callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -530,20 +527,19 @@ final class GridViewController: UICollectionViewController {
                             let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0.movie, show: $0.show, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                             continuation.resume(returning: items)
                         } else {
-                            let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in
+                            let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter { media in
                                 media.movie != nil || media.season != nil || media.episode != nil || media.show != nil
-                            })
+                            }
                             continuation.resume(returning: items)
                         }
                     } catch {
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     override func collectionView(_ collectionView: UICollectionView, willDisplaySupplementaryView view: UICollectionReusableView, forElementKind elementKind: String, at indexPath: IndexPath) {
@@ -559,7 +555,7 @@ final class GridViewController: UICollectionViewController {
         }
         loadingSupplementaryView.activityIndicator.isHidden = false
 
-        _Concurrency.Task.init {
+        _Concurrency.Task {
             do {
                 let mediaCollection = try await self.fetch(filter: savedFilter, pageInfo: theNextPageToLoad).compactMap { MediaModel(item: $0) }
                 self.rebuildDatasource(with: mediaCollection)

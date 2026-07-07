@@ -6,9 +6,9 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
-import WidgetKit
-import SwiftUI
 import Intents
+import SwiftUI
+import WidgetKit
 
 #if !targetEnvironment(macCatalyst)
 
@@ -84,7 +84,6 @@ struct RipppleLockEntryView: View {
 
 struct LockWidget_Previews: PreviewProvider {
     static var previews: some View {
-
         RipppleLockEntryView(entry: SimpleEntry(date: Date.now)).previewContext(WidgetPreviewContext(family: .accessoryCircular))
     }
 }

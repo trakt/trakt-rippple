@@ -162,12 +162,13 @@
                     <constraint firstItem="40y-Lh-N6E" firstAttribute="trailing" secondItem="VP3-CB-Jrb" secondAttribute="trailing" constant="-12" id="D0u-g2-gQD"/>
                     <constraint firstItem="40y-Lh-N6E" firstAttribute="top" secondItem="ZLk-Bn-7mR" secondAttribute="top" constant="15" id="VKq-t1-K3g"/>
                     <constraint firstItem="VP3-CB-Jrb" firstAttribute="leading" secondItem="40y-Lh-N6E" secondAttribute="leading" constant="-12" id="bIc-jF-jVA"/>
-                    <constraint firstAttribute="bottom" secondItem="VP3-CB-Jrb" secondAttribute="bottom" constant="4" id="dEF-Ks-nMh"/>
+                    <constraint firstAttribute="bottom" secondItem="VP3-CB-Jrb" secondAttribute="bottom" id="dEF-Ks-nMh"/>
                     <constraint firstItem="40y-Lh-N6E" firstAttribute="leading" secondItem="ZLk-Bn-7mR" secondAttribute="leading" constant="25" id="iHQ-uW-wFg"/>
                     <constraint firstAttribute="bottom" secondItem="40y-Lh-N6E" secondAttribute="bottom" constant="15" id="yCV-yw-fH8"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
+                <outlet property="card" destination="VP3-CB-Jrb" id="mLz-08-g9U"/>
                 <outlet property="collectedStatus" destination="u9J-E3-tfa" id="j2d-jB-MXC"/>
                 <outlet property="commentedStatus" destination="rSB-bv-iI5" id="kjT-Pk-bM7"/>
                 <outlet property="droppedStatus" destination="Yfu-k5-R4H" id="rhs-sK-X9m"/>

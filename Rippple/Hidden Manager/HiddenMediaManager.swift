@@ -7,22 +7,21 @@
 //
 
 import Foundation
-
 import Receiver
-
 import TinyStorage
+import UIKit
 
 let (onShowsHiddenFromProgressMediaChangedTransmitter, onShowsHiddenFromProgressMediaChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
 let (onShowsHiddenFromCalendarMediaChangedTransmitter, onShowsHiddenFromCalendarMediaChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
 let (onMoviesHiddenFromCalendarMediaChangedTransmitter, onMoviesHiddenFromCalendarMediaChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
 let (onUsersHiddenFromCommentsChangedTransmitter, onUsersHiddenFromCommentsChangedReceiver) = Receiver<[User]>.make(with: .warm(upTo: 1))
 let (onShowsDroppedMediaChangedTransmitter, onShowsDroppedMediaChangedReceiver) = Receiver<[HiddenShow]>.make(with: .warm(upTo: 1))
+let (onRewatchingShowsChangedTransmitter, onRewatchingShowsChangedReceiver) = Receiver<[Show]>.make(with: .warm(upTo: 1))
 
 final class HiddenMediaManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     private var lastShowsCheck: Date = .now
 
@@ -47,6 +46,10 @@ final class HiddenMediaManager {
             showsDroppedList = array
         }
 
+        if let array = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "HiddenMediaManager.rewatchingShowsMediaList") {
+            rewatchingShowsMediaList = array
+        }
+
         onLastDroppedShowActivitiesChangedReceiver.listen { _ in
             self.refreshDroppedShows()
         }.disposed(by: disposeBag)
@@ -55,7 +58,12 @@ final class HiddenMediaManager {
             if self.lastShowsCheck < lastShowsActivities.hiddenAt {
                 self.lastShowsCheck = .now
                 self.refreshHiddenShowsFromProgress()
+                self.refreshRewatchingShows()
             }
+        }.disposed(by: disposeBag)
+
+        onRewatchingChangedReceiver.listen { _ in
+            self.refreshRewatchingShows()
         }.disposed(by: disposeBag)
 
         onLastHiddenUsersFromCommentsActivitiesChangedReceiver.listen { _ in
@@ -68,6 +76,7 @@ final class HiddenMediaManager {
                 break
             case .didBecomeActive(let time):
                 if time > 3600 {
+                    self.refreshRewatchingShows()
                     self.refreshHiddenShowsFromCalendar()
                     self.refreshHiddenMoviesFromCalendar()
                 }
@@ -88,6 +97,7 @@ final class HiddenMediaManager {
     func refresh() {
         lastShowsCheck = .now
         refreshHiddenShowsFromProgress()
+        refreshRewatchingShows()
         refreshHiddenShowsFromCalendar()
         refreshHiddenMoviesFromCalendar()
         refreshHiddenUsersFromComments()
@@ -102,7 +112,7 @@ final class HiddenMediaManager {
             if showsHiddenFromProgressMediaList == oldValue { return }
 
             if let array = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "HiddenMediaManager.hiddenMediaList"),
-                array != showsHiddenFromProgressMediaList {
+               array != showsHiddenFromProgressMediaList {
                 for season in Set(showsHiddenFromProgressMediaList).symmetricDifference(Set(oldValue ?? [MediaModel]())).filter({ $0.season != nil }) {
                     ProgressManager.shared.refreshProgress(for: season.show!)
                 }
@@ -115,8 +125,35 @@ final class HiddenMediaManager {
             TinyStorage.cache.store(showsHiddenFromProgressMediaList, forKey: "HiddenMediaManager.hiddenMediaList")
         }
     }
+
     var showsHiddenFromProgressCount: Int {
         return showsHiddenFromProgressSet.count
+    }
+
+    fileprivate var rewatchingShowsSet = Set<Int64>()
+    private var rewatchingShowsMediaList: [MediaModel]? {
+        didSet {
+            guard let rewatchingShowsMediaList = rewatchingShowsMediaList else { return }
+            if rewatchingShowsMediaList == oldValue { return }
+
+            let rewatchingShows = rewatchingShowsMediaList.compactMap { $0.showShow }
+            rewatchingShowsSet = Set(rewatchingShows.compactMap { $0.identifiers.trakt })
+            onRewatchingShowsChangedTransmitter.broadcast(rewatchingShows)
+            TinyStorage.cache.store(rewatchingShowsMediaList, forKey: "HiddenMediaManager.rewatchingShowsMediaList")
+        }
+    }
+
+    func missingRewatchingShows(excluding watchedShows: Set<Int64>) -> [Show] {
+        let missingRewatchingShows = rewatchingShowsSet.subtracting(watchedShows)
+        guard missingRewatchingShows.isEmpty == false else { return [Show]() }
+
+        return rewatchingShowsMediaList?.compactMap { mediaModel in
+            guard let show = mediaModel.showShow,
+                  let traktId = show.identifiers.trakt,
+                  missingRewatchingShows.contains(traktId) else { return nil }
+
+            return show
+        } ?? [Show]()
     }
 
     var showsHiddenFromCalendarMediaList: [MediaModel]? {
@@ -157,7 +194,6 @@ final class HiddenMediaManager {
 }
 
 private extension HiddenMediaManager {
-
     private func refreshHiddenShowsFromProgress(pageInfo: PageInfo = PageInfo.firstPage(with: 50), hiddenMedia: [MediaItem] = [MediaItem]()) {
         if SessionManager.shared.isLoggedOut {
             return
@@ -168,14 +204,14 @@ private extension HiddenMediaManager {
                                                   pageInfo: pageInfo),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
 
                     if let response = response.response,
-                    let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
+                       let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
                         DispatchQueue.main.async {
                             if pageInfo.page <= pageInfo.pageCount {
                                 self.refreshHiddenShowsFromProgress(pageInfo: pageInfo, hiddenMedia: hiddenMedia + items)
@@ -189,8 +225,45 @@ private extension HiddenMediaManager {
                 } catch {
                     print("refreshHiddenShowsFromProgress request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("refreshHiddenShowsFromProgress request failure \(error)")
+            }
+        }
+    }
+
+    private func refreshRewatchingShows(pageInfo: PageInfo = PageInfo.firstPage(with: 50), rewatchingMedia: [MediaItem] = [MediaItem]()) {
+        if SessionManager.shared.isLoggedOut {
+            return
+        }
+        TraktAPIProvider.provider.request(.hidden(section: .progressWatchedReset,
+                                                  type: .show,
+                                                  extended: .full,
+                                                  pageInfo: pageInfo),
+                                          callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+
+                    let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
+
+                    if let response = response.response,
+                       let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
+                        DispatchQueue.main.async {
+                            if pageInfo.page <= pageInfo.pageCount {
+                                self.refreshRewatchingShows(pageInfo: pageInfo, rewatchingMedia: rewatchingMedia + items)
+                            } else {
+                                self.rewatchingShowsMediaList = (rewatchingMedia + items)
+                                    .sorted { ($0.hiddenAt ?? .distantPast) > ($1.hiddenAt ?? .distantPast) }
+                                    .map { MediaModel(item: $0) }
+                            }
+                        }
+                    }
+                } catch {
+                    print("refreshRewatchingShows request JSON mapping failed! \(error)")
+                }
+            case .failure(let error):
+                print("refreshRewatchingShows request failure \(error)")
             }
         }
     }
@@ -205,14 +278,14 @@ private extension HiddenMediaManager {
                                                   pageInfo: pageInfo),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let items = try response.map([HiddenShow].self, using: TraktAPIProvider.decoder)
 
                     if let response = response.response,
-                    let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
+                       let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
                         DispatchQueue.main.async {
                             if pageInfo.page <= pageInfo.pageCount {
                                 self.refreshDroppedShows(pageInfo: pageInfo, droppedMedia: droppedMedia + items)
@@ -224,7 +297,7 @@ private extension HiddenMediaManager {
                 } catch {
                     print("refreshDroppedShows request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("refreshDroppedShows request failure \(error)")
             }
         }
@@ -240,14 +313,14 @@ private extension HiddenMediaManager {
                                                   pageInfo: pageInfo),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).map { MediaModel(item: $0) }
 
                     if let response = response.response,
-                    let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
+                       let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
                         DispatchQueue.main.async {
                             if pageInfo.page <= pageInfo.pageCount {
                                 self.refreshHiddenShowsFromCalendar(pageInfo: pageInfo, hiddenMedia: hiddenMedia + items)
@@ -259,7 +332,7 @@ private extension HiddenMediaManager {
                 } catch {
                     print("refreshHiddenShowsFromCalendar request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("refreshHiddenShowsFromCalendar request failure \(error)")
             }
         }
@@ -275,14 +348,14 @@ private extension HiddenMediaManager {
                                                   pageInfo: pageInfo),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let items = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).map { MediaModel(item: $0) }
 
                     if let response = response.response,
-                    let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
+                       let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
                         DispatchQueue.main.async {
                             if pageInfo.page <= pageInfo.pageCount {
                                 self.refreshHiddenMoviesFromCalendar(pageInfo: pageInfo, hiddenMedia: hiddenMedia + items)
@@ -294,7 +367,7 @@ private extension HiddenMediaManager {
                 } catch {
                     print("refreshHiddenMoviesFromCalendar request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("refreshHiddenMoviesFromCalendar request failure \(error)")
             }
         }
@@ -310,14 +383,14 @@ private extension HiddenMediaManager {
                                                   pageInfo: pageInfo),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let items = try response.map([BlockedUser].self, using: TraktAPIProvider.decoder).map { $0.user }
 
                     if let response = response.response,
-                    let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
+                       let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
                         DispatchQueue.main.async {
                             if pageInfo.page <= pageInfo.pageCount {
                                 self.refreshHiddenUsersFromComments(pageInfo: pageInfo, hiddenMedia: hiddenMedia + items)
@@ -329,7 +402,7 @@ private extension HiddenMediaManager {
                 } catch {
                     print("refreshHiddenUsersFromComments request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("refreshHiddenUsersFromComments request failure \(error)")
             }
         }
@@ -343,13 +416,18 @@ extension Show {
     }
 
     var isHiddenFromCalendar: Bool {
-        return HiddenMediaManager.shared.showsHiddenFromCalendarMediaList?.contains(self.mediaModel) == true
+        return HiddenMediaManager.shared.showsHiddenFromCalendarMediaList?.contains(mediaModel) == true
+    }
+
+    var isRewatching: Bool {
+        guard let traktId = identifiers.trakt else { return false }
+        return HiddenMediaManager.shared.rewatchingShowsSet.contains(traktId)
     }
 }
 
 extension Movie {
     var isHiddenFromCalendar: Bool {
-        return HiddenMediaManager.shared.moviesHiddenFromCalendarMediaList?.contains(self.mediaModel) == true
+        return HiddenMediaManager.shared.moviesHiddenFromCalendarMediaList?.contains(mediaModel) == true
     }
 }
 
@@ -376,12 +454,10 @@ extension MediaModel {
         case .showProgress:
             return false
         }
-
     }
 }
 
 final class HiddenImageView: UIImageView {
-
     private let disposeBag = DisposeBag()
 
     var media: MediaModel? {

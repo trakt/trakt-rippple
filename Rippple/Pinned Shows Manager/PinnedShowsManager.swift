@@ -7,17 +7,15 @@
 //
 
 import Foundation
-
-import Receiver
-
 import Moya
+import Receiver
+import UIKit
 
 let (onPinnedShowsToWatchChangedTransmitter, onPinnedShowsToWatchChangedReceiver) = Receiver<[Show]>.make(with: .warm(upTo: 1))
 let (onPinnedShowToWatchAddedTransmitter, onPinnedShowToWatchAddedReceiver) = Receiver<Show>.make(with: .hot)
 let (onPinnedShowToWatchRemovedTransmitter, onPinnedShowToWatchRemovedReceiver) = Receiver<Show>.make(with: .hot)
 
 final class PinnedShowsManager {
-
     static let shared = PinnedShowsManager()
 
     private let disposeBag = DisposeBag()
@@ -32,15 +30,15 @@ final class PinnedShowsManager {
                 return
             }
         }
-        self.pinnedShows = Set<Show>()
-        onPinnedShowsToWatchChangedTransmitter.broadcast([Show](self.pinnedShows.filter { !$0.isHiddenFromProgress }))
+        pinnedShows = Set<Show>()
+        onPinnedShowsToWatchChangedTransmitter.broadcast([Show](pinnedShows.filter { !$0.isHiddenFromProgress }))
     }
 
     var pinnedShows = Set<Show>() {
         didSet {
             if pinnedShows.isEmpty == false, refreshed == false {
                 // refresh all pinned show only when the app is started to avoid doing it too much
-                _Concurrency.Task.init {
+                _Concurrency.Task {
                     var fullPinnedShow = Set<Show>()
                     for show in pinnedShows {
                         let fullShow = await fetchShow(show: show)
@@ -61,7 +59,7 @@ final class PinnedShowsManager {
                 }
             } else if pinnedShows != oldValue {
                 // if it's not the first launch and the pinned shows changed -> update the shows that need an update
-                _Concurrency.Task.init {
+                _Concurrency.Task {
                     var fullPinnedShow = Set<Show>()
                     for show in pinnedShows {
                         if show.rating == nil {
@@ -108,15 +106,15 @@ final class PinnedShowsManager {
                 return
             }
         }
-        self.pinnedShows = Set<Show>()
+        pinnedShows = Set<Show>()
     }
 
-    // Fetch the full show async + return the old Show if there's an error to not loose it
+    /// Fetch the full show async + return the old Show if there's an error to not loose it
     private func fetchShow(show: Show) async -> Show {
-        let result: Show = await withCheckedContinuation { continuation in
+        return await withCheckedContinuation { continuation in
             TraktAPIProvider.provider.request(.show(id: show.identifiers.traktIdOrSlug, extended: .full), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let fullShow = try response.map(Show.self, using: TraktAPIProvider.decoder)
@@ -129,7 +127,6 @@ final class PinnedShowsManager {
                 }
             }
         }
-        return result
     }
 }
 

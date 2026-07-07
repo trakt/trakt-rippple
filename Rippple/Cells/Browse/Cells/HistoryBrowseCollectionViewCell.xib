@@ -33,7 +33,7 @@
                                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" priority="750" constant="70" id="CGp-Pi-eED"/>
                                                 </constraints>
                                             </imageView>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rbo-yj-SQN" customClass="RPCircularProgress" customModule="RPCircularProgress">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rbo-yj-SQN" customClass="CircularProgressView" customModule="Rippple" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="0.0" width="80" height="80"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </view>

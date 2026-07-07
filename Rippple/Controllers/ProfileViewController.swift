@@ -6,12 +6,10 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class ProfileViewController: UIViewController {
-
     private let disposeBag = DisposeBag()
 
     private var commentsViewController: CommentsViewController?
@@ -121,7 +119,7 @@ final class ProfileViewController: UIViewController {
 
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         if identifier == "profileComments",
-            UserManager.shared.currentUser == nil {
+           UserManager.shared.currentUser == nil {
             return false
         }
 

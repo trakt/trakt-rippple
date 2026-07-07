@@ -7,17 +7,15 @@
 //
 
 import Foundation
-import UIKit
-
 import Receiver
+import UIKit
 
 let (onRecommendedChangedTransmitter, onRecommendedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 
 final class RecommendedManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     func setup() {
         applicationLifecycleReceiver.listen { applicationLifecycle in
@@ -48,7 +46,7 @@ final class RecommendedManager {
 
     fileprivate var recommended = [Int64]() {
         didSet {
-            if self.recommended != oldValue {
+            if recommended != oldValue {
                 onRecommendedChangedTransmitter.broadcast(recommended)
             }
         }
@@ -58,7 +56,6 @@ final class RecommendedManager {
 }
 
 private extension RecommendedManager {
-
     private func refreshRecommended() {
         if SessionManager.shared.isLoggedOut {
             return
@@ -68,14 +65,14 @@ private extension RecommendedManager {
                                                   extended: .full,
                                                   sort: .added) { result in
             switch result {
-            case let .success(favorites):
+            case .success(let favorites):
                 let ids = favorites.compactMap(\.traktId)
 
                 DispatchQueue.main.async {
                     self.recommendedItems = favorites
                     self.recommended = ids
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("refreshRecommended request failure \(error)")
             }
         }
@@ -129,7 +126,6 @@ extension MediaModel {
 }
 
 final class RecommendedImageView: UIImageView {
-
     private let disposeBag = DisposeBag()
 
     var media: MediaModel? {

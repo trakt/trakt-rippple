@@ -7,10 +7,9 @@
 //
 
 import Foundation
-
 import Receiver
-
 import TinyStorage
+import UIKit
 
 let (onDroppedShowsChangedTransmitter, onDroppedShowsChangedReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
 
@@ -20,16 +19,15 @@ private struct DroppedShow: Codable, Hashable {
 }
 
 final class DroppedShowsManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     static let shared = DroppedShowsManager()
 
     private var debouncedTransmit: Debouncer!
 
-    fileprivate var droppedShows = [DroppedShow]() {
+    private var droppedShows = [DroppedShow]() {
         didSet {
             if Set(oldValue) != Set(droppedShows) {
                 TinyStorage.cache.store(droppedShows, forKey: "DroppedShowsManager.droppedShows")
@@ -117,13 +115,13 @@ final class DroppedShowsManager {
             if progress.showProgress.nextToRewatch != nil {
                 droppedShows.removeAll(where: { $0.show == show })
             } else if let nextEpisode = progress.showProgress.nextEpisodeToWatch,
-                        nextEpisode.number > 1, // Next episode is not a premiere
-                        nextEpisode.episodeType != .midSeasonPremiere, // Next episode is not a mid-season
-                        let firstAired = nextEpisode.firstAired, // Next episode first aired at least 6 month ago
-                        firstAired < .now.addingTimeInterval(-15780000) {
+                      nextEpisode.number > 1, // Next episode is not a premiere
+                      nextEpisode.episodeType != .midSeasonPremiere, // Next episode is not a mid-season
+                      let firstAired = nextEpisode.firstAired, // Next episode first aired at least 6 month ago
+                      firstAired < .now.addingTimeInterval(-15780000) {
                 if droppedShows.contains(where: { $0.show == show }) == false {
                     droppedShows.append(DroppedShow(show: show,
-                                                         droppedDate: lastWatchedAt))
+                                                    droppedDate: lastWatchedAt))
                 }
             } else {
                 droppedShows.removeAll(where: { $0.show == show })
@@ -190,33 +188,32 @@ extension Show {
         TraktAPIProvider.provider.request(.hideShow(section: .dropped,
                                                     id: traktId),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    print("Drop Show successful \(response)")
+                    print("Drop Show successful \(response)")
 
-                                                    DispatchQueue.main.async {
-                                                        HiddenMediaManager.shared.refresh()
-                                                        SwiftMessages.show(message: "⏹️ Dropped")
-                                                    }
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                }
-                                            }
+                    DispatchQueue.main.async {
+                        HiddenMediaManager.shared.refresh()
+                        SwiftMessages.show(message: "⏹️ Dropped")
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 }
 
 final class DroppedImageView: UIImageView {
-
     private let disposeBag = DisposeBag()
 
     var media: MediaModel? {

@@ -7,9 +7,8 @@
 //
 
 import Foundation
-import UIKit
-
 import Receiver
+import UIKit
 
 let (onWatchlistChangedTransmitter, onWatchlistChangedReceiver) = Receiver<Bool>.make(with: .hot)
 let (onMoviesWatchlistedChangedTransmitter, onMoviesWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
@@ -18,10 +17,9 @@ let (onEpisodesWatchlistedChangedTransmitter, onEpisodesWatchlistedChangedReceiv
 let (onSeasonsWatchlistedChangedTransmitter, onSeasonsWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 
 final class WatchlistManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     func setup() {
         applicationLifecycleReceiver.listen { applicationLifecycle in
@@ -65,7 +63,7 @@ final class WatchlistManager {
                 }
                 // don't return, the watchlist has to be refreshed in this case
             }
-            if let show = watchingItem?.show, show.isWatchlisted && UserDefaults.standard.bool(forKey: "GeneralSettings.watchlistaddback") {
+            if let show = watchingItem?.show, show.isWatchlisted, UserDefaults.standard.bool(forKey: "GeneralSettings.watchlistaddback") {
                 MediaModel.addShowsToWatchlistUndercover(medias: [show.mediaModel])
                 return
             }
@@ -98,7 +96,7 @@ final class WatchlistManager {
 
             switch media {
             case .episode(_, let show), .show(let show), .season(_, let show):
-                if show.isWatchlisted && UserDefaults.standard.bool(forKey: "GeneralSettings.watchlistaddback") {
+                if show.isWatchlisted, UserDefaults.standard.bool(forKey: "GeneralSettings.watchlistaddback") {
                     MediaModel.addShowsToWatchlistUndercover(medias: [show.mediaModel])
                     return
                 }
@@ -131,6 +129,7 @@ final class WatchlistManager {
             }
         }
     }
+
     fileprivate var watchlistedShows = Set<Int64>() {
         didSet {
             if self.watchlistedShows != oldValue {
@@ -138,6 +137,7 @@ final class WatchlistManager {
             }
         }
     }
+
     fileprivate var watchlistedSeasons = Set<Int64>() {
         didSet {
             if self.watchlistedSeasons != oldValue {
@@ -145,6 +145,7 @@ final class WatchlistManager {
             }
         }
     }
+
     fileprivate var watchlistedEpisodes = Set<Int64>() {
         didSet {
             if self.watchlistedEpisodes != oldValue {
@@ -155,7 +156,6 @@ final class WatchlistManager {
 }
 
 private extension WatchlistManager {
-
     private func refreshWatchlist() {
         if SessionManager.shared.isLoggedOut {
             return
@@ -165,7 +165,7 @@ private extension WatchlistManager {
                                                 extended: .full,
                                                 sort: .added) { result in
             switch result {
-            case let .success(watchlistItems):
+            case .success(let watchlistItems):
                 let watchlistedItems = watchlistItems.map {
                     MediaItem(movie: $0.movie,
                               show: $0.show,
@@ -207,7 +207,7 @@ private extension WatchlistManager {
                     self.watchlist = watchlistedItems
                     onWatchlistChangedTransmitter.broadcast(true)
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Watchlist request failure \(error)")
             }
         }
@@ -290,7 +290,6 @@ extension UIView {
 }
 
 final class WatchlistImageView: UIImageView {
-
     private let disposeBag = DisposeBag()
 
     var media: MediaModel? {

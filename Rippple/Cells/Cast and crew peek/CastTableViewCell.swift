@@ -13,6 +13,10 @@ protocol CastTableViewCellDelegate: AnyObject {
 }
 
 final class CastTableViewCell: UITableViewCell {
+    private enum Layout {
+        static let compactCollectionHeight: CGFloat = 135
+        static let regularCollectionHeight: CGFloat = 148
+    }
 
     enum Action {
         case showAll
@@ -34,6 +38,13 @@ final class CastTableViewCell: UITableViewCell {
 
     weak var delegate: CastTableViewCellDelegate?
 
+    var showsCastEpisodeCount = true {
+        didSet {
+            updateCollectionViewHeight()
+            applySnapshot()
+        }
+    }
+
     private var isLoading = true {
         didSet {
             if isLoading == false {
@@ -42,10 +53,10 @@ final class CastTableViewCell: UITableViewCell {
             applySnapshot()
         }
     }
+
     private var error: Error? {
         didSet {
             if error == nil {
-                updateTitle()
                 moreAction.setTitle("See all", for: .normal)
                 moreAction.isHidden = true
                 if media.movie != nil {
@@ -63,10 +74,11 @@ final class CastTableViewCell: UITableViewCell {
         }
     }
 
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var moreAction: UIButton!
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var moreAction: UIButton!
 
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet var collectionView: UICollectionView!
+    @IBOutlet var collectionViewHeightConstraint: NSLayoutConstraint!
 
     private var people: People? {
         didSet {
@@ -106,6 +118,7 @@ final class CastTableViewCell: UITableViewCell {
 
         maximumContentSizeCategory = .large
         moreAction.maximumContentSizeCategory = .extraExtraLarge
+        updateCollectionViewHeight()
 
         dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) { [weak self] collectionView, indexPath, item in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cast", for: indexPath) as! CastCollectionViewCell
@@ -113,14 +126,18 @@ final class CastTableViewCell: UITableViewCell {
 
             switch item {
             case .placeholder:
+                cell.showsEpisodeCount = false
                 cell.avatarImageView.image = nil
                 cell.avatarInitialLabel.text = ""
-                cell.additionalInfoLabel.text = " "
+                cell.additionalInfoLabel.text = nil
+                cell.additionalInfoLabel.isHidden = true
                 cell.asLabel.text = self.isLoading ? "Loading..." : "as Unknown"
                 cell.personNameLabel.text = self.isLoading ? "" : "Unknown"
             case .cast(let cast):
+                cell.showsEpisodeCount = self.showsCastEpisodeCount
                 cell.cast = cast
             case .crew(let job):
+                cell.showsEpisodeCount = true
                 cell.crew = job
             }
             return cell
@@ -129,128 +146,122 @@ final class CastTableViewCell: UITableViewCell {
         collectionView.delegate = self
     }
 
+    private func updateCollectionViewHeight() {
+        guard let collectionViewHeightConstraint = collectionViewHeightConstraint else { return }
+        collectionViewHeightConstraint.constant = showsCastEpisodeCount ? Layout.regularCollectionHeight : Layout.compactCollectionHeight
+        collectionView?.collectionViewLayout.invalidateLayout()
+        invalidateIntrinsicContentSize()
+    }
+
     var media: MediaModel! {
         didSet {
             switch media! {
             case .movie(let movie):
                 TraktAPIProvider.provider.request(TraktAPIService.peopleMovie(id: movie.identifiers.trakt!),
                                                   callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                                    guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+                    guard let self = self else { return }
+                    switch result {
+                    case .success(let moyaResponse):
+                        do {
+                            let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            let people = try response.map(People.self, using: TraktAPIProvider.decoder)
+                            let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
-                                                            DispatchQueue.main.async {
-                                                                self.people = people
-                                                            }
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                self.error = error
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            self.error = error
-                                                        }
-                                                    }
+                            DispatchQueue.main.async {
+                                self.people = people
+                            }
+                        } catch {
+                            DispatchQueue.main.async {
+                                self.error = error
+                            }
+                        }
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            self.error = error
+                        }
+                    }
                 }
             case .show(let show):
                 TraktAPIProvider.provider.request(TraktAPIService.peopleShow(id: show.identifiers.trakt!, extended: nil),
                                                   callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                                    guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+                    guard let self = self else { return }
+                    switch result {
+                    case .success(let moyaResponse):
+                        do {
+                            let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            let people = try response.map(People.self, using: TraktAPIProvider.decoder)
+                            let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
-                                                            DispatchQueue.main.async {
-                                                                self.people = people
-                                                            }
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                self.error = error
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            self.error = error
-                                                        }
-                                                    }
+                            DispatchQueue.main.async {
+                                self.people = people
+                            }
+                        } catch {
+                            DispatchQueue.main.async {
+                                self.error = error
+                            }
+                        }
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            self.error = error
+                        }
+                    }
                 }
             case .episode(let episode, let show):
                 TraktAPIProvider.provider.request(TraktAPIService.peopleEpisode(id: show.identifiers.trakt!, season: episode.season, episode: episode.number, extended: nil),
-                                                callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                                  guard let self = self else { return }
-                                                  switch result {
-                                                  case let .success(moyaResponse):
-                                                      do {
-                                                          let response = try moyaResponse.filterSuccessfulStatusCodes()
+                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                    guard let self = self else { return }
+                    switch result {
+                    case .success(let moyaResponse):
+                        do {
+                            let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                          let people = try response.map(People.self, using: TraktAPIProvider.decoder)
+                            let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
-                                                          DispatchQueue.main.async {
-                                                              self.people = people
-                                                          }
-                                                      } catch {
-                                                          DispatchQueue.main.async {
-                                                              self.error = error
-                                                          }
-                                                      }
-                                                  case let .failure(error):
-                                                      DispatchQueue.main.async {
-                                                          self.error = error
-                                                      }
-                                                  }
+                            DispatchQueue.main.async {
+                                self.people = people
+                            }
+                        } catch {
+                            DispatchQueue.main.async {
+                                self.error = error
+                            }
+                        }
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            self.error = error
+                        }
+                    }
                 }
             case .season(let season, let show):
                 TraktAPIProvider.provider.request(TraktAPIService.peopleSeason(id: show.identifiers.trakt!, season: season.number, extended: nil),
-                                                callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                                  guard let self = self else { return }
-                                                  switch result {
-                                                  case let .success(moyaResponse):
-                                                      do {
-                                                          let response = try moyaResponse.filterSuccessfulStatusCodes()
+                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                    guard let self = self else { return }
+                    switch result {
+                    case .success(let moyaResponse):
+                        do {
+                            let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                          let people = try response.map(People.self, using: TraktAPIProvider.decoder)
+                            let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
-                                                          DispatchQueue.main.async {
-                                                              self.people = people
-                                                          }
-                                                      } catch {
-                                                          DispatchQueue.main.async {
-                                                              self.error = error
-                                                          }
-                                                      }
-                                                  case let .failure(error):
-                                                      DispatchQueue.main.async {
-                                                          self.error = error
-                                                      }
-                                                  }
+                            DispatchQueue.main.async {
+                                self.people = people
+                            }
+                        } catch {
+                            DispatchQueue.main.async {
+                                self.error = error
+                            }
+                        }
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            self.error = error
+                        }
+                    }
                 }
             case .list:
                 fatalError()
             case .showProgress:
                 fatalError()
             }
-            updateTitle()
             applySnapshot()
-        }
-    }
-
-    private func updateTitle() {
-        titleLabel.text = "Cast & Crew"
-        switch media! {
-        case .episode, .season:
-            titleLabel.text = "Season Regulars"
-        case .show:
-            titleLabel.text = "Series Regulars"
-        default:
-            break
         }
     }
 
@@ -279,7 +290,7 @@ final class CastTableViewCell: UITableViewCell {
         if let people = people, !people.cast.isEmpty { hasCast = true }
         if let crew = crew, !crew.isEmpty { hasCrew = true }
 
-        if !hasCast && !hasCrew {
+        if !hasCast, !hasCrew {
             snapshot.appendSections([.placeholder])
             snapshot.appendItems([.placeholder(0), .placeholder(1), .placeholder(2), .placeholder(3)], toSection: .placeholder)
             dataSource.apply(snapshot, animatingDifferences: true)
@@ -329,16 +340,15 @@ extension CastTableViewCell: UICollectionViewDelegate {
 
             return UIContextMenuConfiguration(identifier: indexPath as NSCopying,
                                               previewProvider: {
-                let mediaPreviewViewController = UIStoryboard(name: "PersonPreview", bundle: nil).instantiateInitialViewController() as! PeoplePreviewViewController
+                                                  let mediaPreviewViewController = UIStoryboard(name: "PersonPreview", bundle: nil).instantiateInitialViewController() as! PeoplePreviewViewController
 
-                mediaPreviewViewController.person = person
-                mediaPreviewViewController.preferredContentSize = CGSize(width: 500,
-                                                                         height: 500 * 1.5)
-                return mediaPreviewViewController
-            }, actionProvider: { _ -> UIMenu? in
-                let menu = UIMenu(children: [])
-                return menu
-            })
+                                                  mediaPreviewViewController.person = person
+                                                  mediaPreviewViewController.preferredContentSize = CGSize(width: 500,
+                                                                                                           height: 500 * 1.5)
+                                                  return mediaPreviewViewController
+                                              }, actionProvider: { _ -> UIMenu? in
+                                                  return UIMenu(children: [])
+                                              })
         }
 
         return nil

@@ -6,8 +6,8 @@
 //  Copyright © 2021 Trakt. All rights reserved.
 //
 
-import UIKit
 import SwiftUI
+import UIKit
 
 final class CountryWhereToWatchTableViewController: UIHostingController<WhereToWatchSettingsView> {
     required init?(coder aDecoder: NSCoder) {

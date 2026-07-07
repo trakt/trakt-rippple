@@ -6,19 +6,16 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import NVActivityIndicatorView
-
-import Receiver
-
 final class CertificationsViewController: UITableViewController {
-
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
 
-    public var media: MediaModel?
+    var media: MediaModel?
 
     private let disposeBag = DisposeBag()
 
@@ -60,8 +57,7 @@ final class CertificationsViewController: UITableViewController {
             cell.action.isHidden = true
             return cell
         case .loading:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
-            return cell
+            return tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
         }
     }
 
@@ -98,7 +94,7 @@ final class CertificationsViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -128,7 +124,7 @@ final class CertificationsViewController: UITableViewController {
                         self.refreshControl?.endRefreshing()
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Error Fetching Certification \(error)")
                 DispatchQueue.main.async {
                     var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()

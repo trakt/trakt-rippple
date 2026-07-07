@@ -9,7 +9,6 @@
 import UIKit
 
 final class CommentsTabViewController: UIViewController {
-
     private enum FeedType: Int {
         case all
         case trending
@@ -188,19 +187,19 @@ final class CommentsTabViewController: UIViewController {
 
     private func orderMenu() -> UIMenu {
         let latest = UIAction(title: "Latest",
-                              state: (feedType == .all ? .on : .off)) { [weak self] _ in
+                              state: feedType == .all ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             self.feedType = .all
         }
 
         let trending = UIAction(title: "Trending",
-                                state: (feedType == .trending ? .on : .off)) { [weak self] _ in
+                                state: feedType == .trending ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             self.feedType = .trending
         }
 
         let forYou = UIAction(title: "For You",
-                              state: (feedType == .forYou ? .on : .off)) { [weak self] _ in
+                              state: feedType == .forYou ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             self.feedType = .forYou
         }
@@ -210,19 +209,19 @@ final class CommentsTabViewController: UIViewController {
 
     private func forYouFilterMenu() -> UIMenu {
         let all = UIAction(title: "For You",
-                           state: (currentFilter == .all ? .on : .off)) { [weak self] _ in
+                           state: currentFilter == .all ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             self.applyForYouFilter(.all)
         }
 
         let watched = UIAction(title: "Because You Watched",
-                               state: (currentFilter == .becauseYouWatchedOnly ? .on : .off)) { [weak self] _ in
+                               state: currentFilter == .becauseYouWatchedOnly ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             self.applyForYouFilter(.becauseYouWatchedOnly)
         }
 
         let follow = UIAction(title: "Because You Follow",
-                              state: (currentFilter == .becauseYouFollowOnly ? .on : .off)) { [weak self] _ in
+                              state: currentFilter == .becauseYouFollowOnly ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             self.applyForYouFilter(.becauseYouFollowOnly)
         }

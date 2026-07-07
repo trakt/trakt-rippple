@@ -7,32 +7,29 @@
 //
 
 import Foundation
-
-import UIKit
-
 import Receiver
+import UIKit
 
 protocol SeasonShowTableViewCellDelegate: AnyObject {
     func cell(_ cell: SeasonShowTableViewCell, action: SeasonShowTableViewCell.Action)
 }
 
 final class SeasonShowTableViewCell: UITableViewCell {
-
     enum Action {
         case actions
     }
 
     weak var delegate: SeasonShowTableViewCellDelegate?
 
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var subtitle: UILabel!
-    @IBOutlet weak var meta: CommentCountLabel?
-    @IBOutlet weak var whereToWatchImageView: WhereToWatchImageView?
-    @IBOutlet weak var poster: PosterButton!
+    @IBOutlet var title: UILabel!
+    @IBOutlet var subtitle: UILabel!
+    @IBOutlet var meta: CommentCountLabel?
+    @IBOutlet var whereToWatchImageView: WhereToWatchImageView?
+    @IBOutlet var poster: PosterButton!
 
-    @IBOutlet weak var card: CardView!
+    @IBOutlet var card: CardView!
 
-    @IBOutlet weak var menuButtonContainter: UIView?
+    @IBOutlet var menuButtonContainter: UIView?
     private let menuButtonContextMenu = MediaContextMenuInteractionDelegate()
 
     private let disposeBag = DisposeBag()
@@ -129,7 +126,7 @@ final class SeasonShowTableViewCell: UITableViewCell {
                 menuButton.menu = self.menuButtonContextMenu.menu
                 UISelectionFeedbackGenerator().selectionChanged()
                 menuButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-             }, for: .menuActionTriggered)
+            }, for: .menuActionTriggered)
         }
 
         meta?.media = media

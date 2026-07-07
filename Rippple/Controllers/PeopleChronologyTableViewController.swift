@@ -9,7 +9,6 @@
 import UIKit
 
 final class PeopleChronologyTableViewController: UITableViewController {
-
     var filteredMedia: [MediaModel]? {
         didSet {
             updateDataSource()
@@ -21,16 +20,19 @@ final class PeopleChronologyTableViewController: UITableViewController {
             updateDataSource()
         }
     }
+
     var inShows: People? {
         didSet {
             updateDataSource()
         }
     }
+
     var searchQuery = "" {
         didSet {
             updateDataSource()
         }
     }
+
     weak var displayingViewController: UIViewController?
 
     private enum Section: Int {
@@ -58,7 +60,7 @@ final class PeopleChronologyTableViewController: UITableViewController {
 
             cell.media = entry.media
 
-            let meta = entry.meta.compactMap({$0}).joined(separator: ", ")
+            let meta = entry.meta.compactMap { $0 }.joined(separator: ", ")
             cell.submeta?.isHidden = false
             if meta.isEmpty == false {
                 cell.submeta?.text = meta
@@ -104,17 +106,18 @@ final class PeopleChronologyTableViewController: UITableViewController {
         func matches(searchQuery: String) -> Bool {
             if searchQuery.isEmpty { return true }
             if let year = year {
-                if String(year).localizedStandardContains(searchQuery) { return true}
+                if String(year).localizedStandardContains(searchQuery) { return true }
             }
             if let movie = media.movie {
-                if movie.title.localizedStandardContains(searchQuery) { return true}
-                if movie.originalTitle?.localizedStandardContains(searchQuery) == true { return true}
+                if movie.title.localizedStandardContains(searchQuery) { return true }
+                if movie.originalTitle?.localizedStandardContains(searchQuery) == true { return true }
             }
             if let show = media.show {
-                if show.title.localizedStandardContains(searchQuery) { return true}
-                if show.originalTitle?.localizedStandardContains(searchQuery) == true { return true}
+                if show.title.localizedStandardContains(searchQuery) { return true }
+                if show.originalTitle?.localizedStandardContains(searchQuery) == true { return true }
             }
-            for searchable in meta.compactMap({$0}) where searchable.localizedStandardContains(searchQuery) { return true
+            for searchable in meta.compactMap({ $0 }) where searchable.localizedStandardContains(searchQuery) {
+                return true
             }
             return false
         }
@@ -202,7 +205,7 @@ final class PeopleChronologyTableViewController: UITableViewController {
             if let displayingViewController = displayingViewController {
                 displayingViewController.performSegue(withIdentifier: "media", sender: entry.media)
             } else {
-                self.performSegue(withIdentifier: "media", sender: entry.media)
+                performSegue(withIdentifier: "media", sender: entry.media)
             }
         case .header:
             return
@@ -218,9 +221,9 @@ final class PeopleChronologyTableViewController: UITableViewController {
             contextMenu.controller = self
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return self.contextMenu.previewViewController
+                self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
         return nil
@@ -242,20 +245,20 @@ final class PeopleChronologyTableViewController: UITableViewController {
         if let displayingViewController = displayingViewController {
             displayingViewController.show(controller, sender: nil)
         } else {
-            self.show(controller, sender: nil)
+            show(controller, sender: nil)
         }
     }
 
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.media(entry) = item else { return nil }
+        guard case Wrapper.media(let entry) = item else { return nil }
         let media = entry.media
         return media.trailingSwipeActions(for: self)
     }
 
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.media(entry) = item else { return nil }
+        guard case Wrapper.media(let entry) = item else { return nil }
         let media = entry.media
         return media.leadingSwipeActions(for: self)
     }
@@ -267,12 +270,12 @@ extension PeopleChronologyTableViewController: MediaTableViewCellDelegate {
 
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
 
-        guard case let Wrapper.media(entry) = item else { return }
+        guard case Wrapper.media(let entry) = item else { return }
 
         if let displayingViewController = displayingViewController {
             displayingViewController.performSegue(withIdentifier: "media", sender: entry.media)
         } else {
-            self.performSegue(withIdentifier: "media", sender: entry.media)
+            performSegue(withIdentifier: "media", sender: entry.media)
         }
     }
 }

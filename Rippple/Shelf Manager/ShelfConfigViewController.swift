@@ -6,8 +6,8 @@
 //  Copyright © 2024 Trakt. All rights reserved.
 //
 
-import UIKit
 import SwiftUI
+import UIKit
 
 final class ShelfConfigViewController: UIHostingController<ShelfConfigView> {
     required init?(coder aDecoder: NSCoder) {

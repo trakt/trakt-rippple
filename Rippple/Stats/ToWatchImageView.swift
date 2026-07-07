@@ -6,12 +6,10 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class ToWatchImageView: UIImageView {
-
     private let disposeBag = DisposeBag()
 
     var media: MediaModel? {

@@ -6,19 +6,16 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
-import Receiver
-
 import NVActivityIndicatorView
-
+import Receiver
 import SafariServices
+import UIKit
 
 extension String {
     var sortableString: String {
-        if self.hasPrefix("The ") { return String(self.dropFirst("The ".count)) }
-        if self.hasPrefix("A ") { return String(self.dropFirst("A ".count)) }
-        if self.hasPrefix("An ") { return String(self.dropFirst("An ".count)) }
+        if hasPrefix("The ") { return String(dropFirst("The ".count)) }
+        if hasPrefix("A ") { return String(dropFirst("A ".count)) }
+        if hasPrefix("An ") { return String(dropFirst("An ".count)) }
         return self
     }
 }
@@ -72,7 +69,7 @@ extension WatchlistItem {
     var releaseDate: Date {
         switch type {
         case .movie:
-            let dateFormatter = DateFormatter.init()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             return dateFormatter.date(from: movie!.released ?? "1900-01-01") ?? Date.distantPast
         case .show:
@@ -129,25 +126,25 @@ extension WatchlistItem {
             let C = 6.5
             let v = Double(movie!.votes ?? 0)
             let R = movie!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .show:
             let m = 3000.0
             let C = 6.5
             let v = Double(show!.votes ?? 0)
             let R = show!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .season:
             let m = 3000.0
             let C = 6.5
             let v = Double(season!.votes ?? 0)
             let R = season!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .episode:
             let m = 3000.0
             let C = 6.5
             let v = Double(episode!.votes ?? 0)
             let R = episode!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .list, .officiallist:
             return 0
         case .unknown:
@@ -174,7 +171,6 @@ extension WatchlistItem {
 }
 
 final class ListViewController: UITableViewController {
-
     // Private
     private var user: User?
     private var list: List!
@@ -207,9 +203,15 @@ final class ListViewController: UITableViewController {
     }
 
     private var fetchTask: Task<Void, Never>?
+    private let progressContext = ListProgressContext()
 
     private var watchlistItems: [WatchlistItem]? {
         didSet {
+            if let watchlistItems = watchlistItems {
+                progressContext.update(items: watchlistItems)
+            } else {
+                progressContext.reset()
+            }
             updateDatasource()
         }
     }
@@ -217,7 +219,7 @@ final class ListViewController: UITableViewController {
     private let contextMenu = ContextMenuHelper()
 
     // Empty
-    @IBOutlet weak var emptyLabel: UILabel!
+    @IBOutlet var emptyLabel: UILabel!
     @IBOutlet private var emptyView: UIView!
 
     // Paging Management
@@ -235,13 +237,14 @@ final class ListViewController: UITableViewController {
             }
         }
     }
-    @IBOutlet weak var errorLabel: UILabel!
+
+    @IBOutlet var errorLabel: UILabel!
 
     private let searchController = UISearchController(searchResultsController: nil)
     private var searchQuery = ""
 
     // Filters
-    @IBOutlet weak var filterButtonItem: UIBarButtonItem!
+    @IBOutlet var filterButtonItem: UIBarButtonItem!
     private var currentFilter = Filter.none {
         didSet {
             UserDefaults.standard.set(currentFilter.rawValue, forKey: "ListViewController.\(list.identifiers.trakt!).currentFilter")
@@ -269,7 +272,7 @@ final class ListViewController: UITableViewController {
         }
     }
 
-    // Sort
+    /// Sort
     private var currentSorting = Sort.rank {
         didSet {
             UserDefaults.standard.set(currentSorting.rawValue, forKey: "ListViewController.\(list.identifiers.trakt!).currentSorting")
@@ -288,6 +291,7 @@ final class ListViewController: UITableViewController {
         super.init(coder: coder)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -304,12 +308,29 @@ final class ListViewController: UITableViewController {
         case item(WatchlistItem)
         case stats([MediaModel])
 
+        static func == (lhs: Wrapper, rhs: Wrapper) -> Bool {
+            switch (lhs, rhs) {
+            case (.header, .header):
+                return true
+            case (.item(let lhs), .item(let rhs)):
+                return lhs.id == rhs.id
+            case (.stats(let lhs), .stats(let rhs)):
+                return lhs == rhs
+            default:
+                return false
+            }
+        }
+
         func hash(into hasher: inout Hasher) {
             switch self {
+            case .header:
+                hasher.combine(0)
             case .item(let watchlist):
-                hasher.combine(watchlist)
-            default:
-                break
+                hasher.combine(1)
+                hasher.combine(watchlist.id)
+            case .stats(let mediaModels):
+                hasher.combine(2)
+                hasher.combine(mediaModels)
             }
         }
     }
@@ -383,8 +404,8 @@ final class ListViewController: UITableViewController {
 
     private class WatchlistDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> {
         override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-            guard let item = self.itemIdentifier(for: indexPath) else { return false }
-            guard case let Wrapper.item(watchlistItem) = item else { return false }
+            guard let item = itemIdentifier(for: indexPath) else { return false }
+            guard case Wrapper.item(let watchlistItem) = item else { return false }
             let media = MediaModel(item: watchlistItem)
             switch media {
             case .movie:
@@ -437,7 +458,7 @@ final class ListViewController: UITableViewController {
                     self.displayNotes(for: watchlistItem)
                     UISelectionFeedbackGenerator().selectionChanged()
                 },
-                                            for: .touchUpInside)
+                for: .touchUpInside)
             }
 
             cell.delegate = self
@@ -449,6 +470,8 @@ final class ListViewController: UITableViewController {
             }
 
             cell.mediaItems = mediaModels
+            cell.listProgressContext = progressContext
+            cell.delegate = self
 
             return cell
         }
@@ -508,9 +531,9 @@ final class ListViewController: UITableViewController {
         filterButtonItem.menu = filterMenu()
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
@@ -588,7 +611,7 @@ final class ListViewController: UITableViewController {
                             ListsManager.shared.refresh()
                             SwiftMessages.show(message: "👍 Your list has been deleted")
                         }
-                    case let .failure(error):
+                    case .failure(let error):
                         DispatchQueue.main.async {
                             print("customLists request failure \(error)")
                             ListsManager.shared.refresh()
@@ -678,8 +701,8 @@ final class ListViewController: UITableViewController {
 
         if list.user.isCurrentUser {
             if let shareLink = list.shareLink,
-                list.privacy != .me,
-                list.privacy != .unknown {
+               list.privacy != .me,
+               list.privacy != .unknown {
                 var title = "Share"
                 switch list.privacy {
                 case .all:
@@ -719,9 +742,9 @@ final class ListViewController: UITableViewController {
                     let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
                     UIApplication.shared.present(activityViewController)
                 }
-                return UIMenu(children: reorderMenu + [(list.liked ? unlike : like), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
+                return UIMenu(children: reorderMenu + [list.liked ? unlike : like, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
             } else {
-                return UIMenu(children: reorderMenu + [(list.liked ? unlike : like), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
+                return UIMenu(children: reorderMenu + [list.liked ? unlike : like, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
             }
         }
     }
@@ -769,9 +792,9 @@ final class ListViewController: UITableViewController {
                                            type: nil) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(results):
-                self.watchlistItems = results
-            case let .failure(error):
+            case .success(let results):
+                self.watchlistItems = results.removingDuplicates()
+            case .failure(let error):
                 print("Comments request JSON mapping failed! \(error)")
 
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
@@ -785,22 +808,21 @@ final class ListViewController: UITableViewController {
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-
         if let listFormViewController = (segue.destination as? UINavigationController)?.viewControllers.first as? ListFormViewController,
-            let list = sender as? List {
+           let list = sender as? List {
             listFormViewController.list = list
             return
         }
 
         if let gridViewController = segue.destination as? GridViewController,
-            let list = sender as? List {
+           let list = sender as? List {
             gridViewController.savedFilter = list.savedFilter
             return
         }
 
         if let commentsViewController = segue.destination as? CommentsViewController,
-            let cell = sender as? MediaTableViewCell,
-            let index = tableView.indexPath(for: cell) {
+           let cell = sender as? MediaTableViewCell,
+           let index = tableView.indexPath(for: cell) {
             let mediaItem = dataSource.itemIdentifier(for: index)
             switch mediaItem {
             case .item(let item):
@@ -820,18 +842,18 @@ final class ListViewController: UITableViewController {
                 fatalError("Unhandled media type fed to search results view controller")
             }
         } else if let mediaViewController = segue.destination as? MediaViewController,
-            let media = sender as? MediaModel {
+                  let media = sender as? MediaModel {
             mediaViewController.media = media
         } else if segue.identifier == "user",
-            let list = sender as? List,
-            let commentsViewController = segue.destination as? CommentsViewController {
+                  let list = sender as? List,
+                  let commentsViewController = segue.destination as? CommentsViewController {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.user(list.user))
         }
     }
 
     private func filterMenu() -> UIMenu {
         let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
-            let all = UIAction(title: "Everything", image: nil, state: (self.currentFilter == .none ? .on : .off)) { [weak self] _ in
+            let all = UIAction(title: "Everything", image: nil, state: self.currentFilter == .none ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .none
             }
@@ -866,47 +888,47 @@ final class ListViewController: UITableViewController {
 
             let filters = UIMenu(title: "What do you want to see?", options: .displayInline, children: [all, movies, shows, seasons, episodes])
 
-            let rank = UIAction(title: "Rank", image: nil, state: (self.currentSorting == .rank ? .on : .off)) { [weak self] _ in
+            let rank = UIAction(title: "Rank", image: nil, state: self.currentSorting == .rank ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .rank
             }
 
-            let added = UIAction(title: "Recently Added", image: nil, state: (self.currentSorting == .listed ? .on : .off)) { [weak self] _ in
+            let added = UIAction(title: "Recently Added", image: nil, state: self.currentSorting == .listed ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .listed
             }
 
-            let title = UIAction(title: "Title", image: nil, state: (self.currentSorting == .title ? .on : .off)) { [weak self] _ in
+            let title = UIAction(title: "Title", image: nil, state: self.currentSorting == .title ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .title
             }
 
-            let release = UIAction(title: "Release Date", image: nil, state: (self.currentSorting == .releaseDate ? .on : .off)) { [weak self] _ in
+            let release = UIAction(title: "Release Date", image: nil, state: self.currentSorting == .releaseDate ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .releaseDate
             }
 
-            let runtime = UIAction(title: "Runtime", image: nil, state: (self.currentSorting == .runtime ? .on : .off)) { [weak self] _ in
+            let runtime = UIAction(title: "Runtime", image: nil, state: self.currentSorting == .runtime ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .runtime
             }
 
-            let weightedRating = UIAction(title: "Weighted Ratings", image: nil, state: (self.currentSorting == .weightedRating ? .on : .off)) { [weak self] _ in
+            let weightedRating = UIAction(title: "Weighted Ratings", image: nil, state: self.currentSorting == .weightedRating ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .weightedRating
             }
 
-            let rating = UIAction(title: "Ratings", image: nil, state: (self.currentSorting == .rating ? .on : .off)) { [weak self] _ in
+            let rating = UIAction(title: "Ratings", image: nil, state: self.currentSorting == .rating ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .rating
             }
 
-            let votes = UIAction(title: "Votes", image: nil, state: (self.currentSorting == .votes ? .on : .off)) { [weak self] _ in
+            let votes = UIAction(title: "Votes", image: nil, state: self.currentSorting == .votes ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .votes
             }
 
-            let random = UIAction(title: "Random", image: nil, state: (self.currentSorting == .random ? .on : .off)) { [weak self] _ in
+            let random = UIAction(title: "Random", image: nil, state: self.currentSorting == .random ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .random
             }
@@ -923,6 +945,22 @@ final class ListViewController: UITableViewController {
         list.user.isCurrentUser || CollaborationsManager.shared.collaborations.contains(list)
     }
 
+    private func showProgress() {
+        let progressViewController = ListProgressViewController(list: list,
+                                                                user: user,
+                                                                progressContext: progressContext,
+                                                                sorting: currentSorting.rawValue)
+        navigationController?.pushViewController(progressViewController, animated: true)
+    }
+}
+
+extension ListViewController: ListStatsTableViewCellDelegate {
+    func cell(_ cell: ListStatsTableViewCell, action: ListStatsTableViewCell.Action) {
+        switch action {
+        case .progress:
+            showProgress()
+        }
+    }
 }
 
 extension ListViewController {
@@ -948,7 +986,7 @@ extension ListViewController {
 
         if section == dataSource.snapshot().indexOfSection(Section.content) {
             if watchlistItems != nil, dataSource.snapshot().numberOfItems(inSection: Section.content) == 0 {
-                if list.itemCount == 0 && list.user.isCurrentUser {
+                if list.itemCount == 0, list.user.isCurrentUser {
                     emptyLabel.text = "Your list seems to be empty.\nTry adding something in it: a movie,\na tv show, an episode or a season.\nOr don't. Do as you wish."
                 } else if list.itemCount == 0 {
                     emptyLabel.text = "This list seems to be empty.\nI wouldn't like it but it's your call."
@@ -998,9 +1036,9 @@ extension ListViewController {
             contextMenu.controller = self
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return self.contextMenu.previewViewController
+                self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
         return nil
@@ -1023,19 +1061,19 @@ extension ListViewController {
 
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.item(watchlistItem) = item else { return nil }
+        guard case Wrapper.item(let watchlistItem) = item else { return nil }
         let media = MediaModel(item: watchlistItem)
         return media.trailingSwipeActions(for: self)
     }
 
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        if !list.user.isCurrentUser && CollaborationsManager.shared.collaborations.contains(list) == false { return nil }
+        if !list.user.isCurrentUser, CollaborationsManager.shared.collaborations.contains(list) == false { return nil }
 
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.item(watchlistItem) = item else { return nil }
+        guard case Wrapper.item(let watchlistItem) = item else { return nil }
 
         let remove = UIContextualAction(style: .normal,
-                                         title: "Remove") { _, _, boolValue in
+                                        title: "Remove") { _, _, boolValue in
             self.remove(item: watchlistItem, from: self.list)
             boolValue(true)
         }
@@ -1050,7 +1088,7 @@ extension ListViewController {
 
         if UserManager.shared.isCurrentVIP {
             let note = UIContextualAction(style: .normal,
-                                             title: "Notes") { [weak self] _, _, boolValue in
+                                          title: "Notes") { [weak self] _, _, boolValue in
                 guard let self = self else { return }
                 self.promptForNote(on: watchlistItem)
                 boolValue(true)
@@ -1106,9 +1144,9 @@ extension ListViewController {
 
         TraktAPIProvider.provider.request(.removeFromList(slug: list.user.slug,
                                                           id: list.identifiers.trakt!,
-                                                     item: watchlistedItem), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                                                          item: watchlistedItem), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1126,7 +1164,7 @@ extension ListViewController {
                         AppManager.shared.isUserInteractionEnabled = true
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("List items request failure \(error)")
                     SwiftMessages.show(message: "😓 Removing failed", style: .error(error))
@@ -1141,12 +1179,12 @@ extension ListViewController: MediaTableViewCellDelegate {
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.item(watchlistItem) = item else { return }
+        guard case Wrapper.item(let watchlistItem) = item else { return }
 
         if action == .details {
             switch watchlistItem.type {
             case .movie, .show:
-                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel.init(item: watchlistItem))
+                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel(item: watchlistItem))
             case .episode, .season:
                 performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel.show(watchlistItem.show!))
             default:
@@ -1179,7 +1217,6 @@ extension ListViewController: ListTableViewCellDelegate {
 }
 
 extension ListViewController: UISearchResultsUpdating {
-
     func updateSearchResults(for searchController: UISearchController) {
         searchQuery = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         updateDatasource()

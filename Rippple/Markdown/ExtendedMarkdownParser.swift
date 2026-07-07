@@ -7,9 +7,9 @@
 //
 
 import Haring
+import UIKit
 
 final class SpoilerMarkdownParser: MarkdownParser {
-
     let highlight = MarkdownHighlight(font: UIFont.preferredFont(forTextStyle: .body), color: .label)
     let mention = MarkdownMention(font: UIFont.preferredFont(forTextStyle: .headline), color: .label)
     let strike = MarkdownStrike(font: UIFont.preferredFont(forTextStyle: .body), color: .label)
@@ -35,7 +35,7 @@ final class SpoilerMarkdownParser: MarkdownParser {
         }
     }
 
-    lazy private var _elements: [MarkdownElement] = [header, list, quote, bold, italic, highlight, mention, strike]
+    private lazy var _elements: [MarkdownElement] = [header, list, quote, bold, italic, highlight, mention, strike]
 
     override func elements() -> [MarkdownElement] {
         return _elements
@@ -43,7 +43,6 @@ final class SpoilerMarkdownParser: MarkdownParser {
 }
 
 final class BoldMarkdownParser: MarkdownParser {
-
     override func elements() -> [MarkdownElement] {
         return [bold]
     }

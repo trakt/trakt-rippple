@@ -16,25 +16,25 @@ final class PulseTableViewCell: UITableViewCell {
         case alone
     }
 
-    @IBOutlet weak var activityType: UILabel!
-    @IBOutlet weak var referenceDate: UILabel!
-    @IBOutlet weak var metaInfo: UILabel!
-    @IBOutlet weak var picto: UIImageView!
+    @IBOutlet var activityType: UILabel!
+    @IBOutlet var referenceDate: UILabel!
+    @IBOutlet var metaInfo: UILabel!
+    @IBOutlet var picto: UIImageView!
 
-    @IBOutlet weak var ownEventIndicator: UIView!
+    @IBOutlet var ownEventIndicator: UIView!
 
-    @IBOutlet weak var backdrop: BackdropImageView!
-    @IBOutlet weak var rateButton: UIButton?
+    @IBOutlet var backdrop: BackdropImageView!
+    @IBOutlet var rateButton: UIButton?
 
     @IBOutlet var separator: UIView!
 
-    @IBOutlet weak var bottomConstraint: NSLayoutConstraint!
-    @IBOutlet weak var topConstraint: NSLayoutConstraint!
-    @IBOutlet weak var contentConstraint: NSLayoutConstraint!
+    @IBOutlet var bottomConstraint: NSLayoutConstraint!
+    @IBOutlet var topConstraint: NSLayoutConstraint!
+    @IBOutlet var contentConstraint: NSLayoutConstraint!
 
-    @IBOutlet weak var notes: ActivityLabel!
-    @IBOutlet weak var notesPicto: UIImageView!
-    @IBOutlet weak var noteButton: UIButton!
+    @IBOutlet var notes: ActivityLabel!
+    @IBOutlet var notesPicto: UIImageView!
+    @IBOutlet var noteButton: UIButton!
     var onTapNoteButton: (() -> Void)?
 
     var ratedItem: RatedItem? {
@@ -43,7 +43,7 @@ final class PulseTableViewCell: UITableViewCell {
         }
     }
 
-    var cardType: CardType = CardType.middle {
+    var cardType: CardType = .middle {
         didSet {
             switch cardType {
             case .top:

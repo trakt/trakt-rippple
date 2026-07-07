@@ -6,11 +6,10 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
-import UIKit
 import Receiver
+import UIKit
 
 final class NotificationCenterViewController: UITableViewController {
-
     enum Section: Hashable {
         case empty
         case day(Date)
@@ -22,7 +21,7 @@ final class NotificationCenterViewController: UITableViewController {
         case notification(RipppleNotification)
     }
 
-    private class NotificationCenterDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> { }
+    private class NotificationCenterDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> {}
 
     private var headerDateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -67,11 +66,11 @@ final class NotificationCenterViewController: UITableViewController {
                                                                                  second: 0,
                                                                                  of: date)!).day ?? 0
             if diff == 0 {
-                cell.subtitle?.text =  "today"
+                cell.subtitle?.text = "today"
             } else if diff == -1 {
-                cell.subtitle?.text =  "yesterday"
+                cell.subtitle?.text = "yesterday"
             } else {
-                cell.subtitle?.text =  "\(abs(diff)) days ago"
+                cell.subtitle?.text = "\(abs(diff)) days ago"
             }
 
             return cell
@@ -185,7 +184,7 @@ extension NotificationCenterViewController {
         if let link = notification.link, let url = URL(string: link) {
             DeeplinkManager.shared.registerDeeplink(url: url)
             if SessionManager.shared.isLoggedIn,
-                DeeplinkManager.shared.shouldOpenDeeplink() {
+               DeeplinkManager.shared.shouldOpenDeeplink() {
                 UIApplication.shared.switchToDeeplink()
             }
         }
@@ -199,7 +198,7 @@ extension NotificationCenterViewController {
         switch wrapper {
         case .notification(let notification):
             let clear = UIContextualAction(style: .normal,
-                                             title: "Clear") { _, _, boolValue in
+                                           title: "Clear") { _, _, boolValue in
                 NotificationCenterManager.shared.delete(notification: notification)
                 boolValue(true)
             }

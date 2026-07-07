@@ -9,8 +9,8 @@
 import UIKit
 
 final class L1BrowseCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var poster: PosterImageView!
-    @IBOutlet weak var notesLabel: UILabel?
+    @IBOutlet var poster: PosterImageView!
+    @IBOutlet var notesLabel: UILabel?
 
     var edgeToEdgeLayout = false {
         didSet {

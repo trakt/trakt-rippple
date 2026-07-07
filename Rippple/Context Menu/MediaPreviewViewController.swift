@@ -6,17 +6,16 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import NVActivityIndicatorView
+import UIKit
 
 final class MediaPreviewViewController: UIViewController {
     var media: MediaModel!
 
-    @IBOutlet weak var tinyPosterImageView: PosterImageView!
-    @IBOutlet weak var posterImageView: PosterImageView!
+    @IBOutlet var tinyPosterImageView: PosterImageView!
+    @IBOutlet var posterImageView: PosterImageView!
 
-    @IBOutlet weak var loadingIndicator: NVActivityIndicatorView!
+    @IBOutlet var loadingIndicator: NVActivityIndicatorView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,10 +51,10 @@ final class MediaPreviewViewController: UIViewController {
 final class PeoplePreviewViewController: UIViewController {
     var person: Person!
 
-    @IBOutlet weak var tinyAvatarImageView: BigPeopleProfileImageView!
-    @IBOutlet weak var avatarImageView: BigPeopleProfileImageView!
+    @IBOutlet var tinyAvatarImageView: BigPeopleProfileImageView!
+    @IBOutlet var avatarImageView: BigPeopleProfileImageView!
 
-    @IBOutlet weak var loadingIndicator: NVActivityIndicatorView!
+    @IBOutlet var loadingIndicator: NVActivityIndicatorView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -82,13 +81,13 @@ final class PeoplePreviewViewController: UIViewController {
 final class EpisodePreviewViewController: UIViewController {
     var media: MediaModel!
 
-    @IBOutlet weak var backPreviewBackdropImageView: BackdropImageView!
-    @IBOutlet weak var backBackdropImageView: BackdropImageView!
+    @IBOutlet var backPreviewBackdropImageView: BackdropImageView!
+    @IBOutlet var backBackdropImageView: BackdropImageView!
 
-    @IBOutlet weak var frontPreviewBackdropImageView: BackdropImageView!
-    @IBOutlet weak var frontBackdropImageView: BackdropImageView!
+    @IBOutlet var frontPreviewBackdropImageView: BackdropImageView!
+    @IBOutlet var frontBackdropImageView: BackdropImageView!
 
-    @IBOutlet weak var loadingIndicator: NVActivityIndicatorView!
+    @IBOutlet var loadingIndicator: NVActivityIndicatorView!
 
     private var showSpoilers = false {
         didSet {

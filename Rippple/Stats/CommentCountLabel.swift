@@ -1,25 +1,23 @@
 //
-//  StatsLabel.swift
+//  CommentCountLabel.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 07/12/2017.
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Moya
+import Receiver
 import UIKit
 
-import Moya
-
-import Receiver
-
 final class CommentCountLabel: UILabel {
-
     private let disposeBag = DisposeBag()
 
     enum Mode: Int {
         case text
         case alone
     }
+
     var mode: Mode = .text
 
     override func awakeFromNib() {
@@ -29,13 +27,13 @@ final class CommentCountLabel: UILabel {
             guard let self = self else { return }
 
             if let media = self.media,
-                media == commentModel.media {
+               media == commentModel.media {
                 self.update(with: media)
             }
 
             if let comment = self.comment,
-                comment == commentModel.comment {
-                    self.cancellable = self.fetchCommentCount(type: .comment(commentId: comment.identifier))
+               comment == commentModel.comment {
+                self.cancellable = self.fetchCommentCount(type: .comment(commentId: comment.identifier))
             }
         }.disposed(by: disposeBag)
     }
@@ -100,18 +98,18 @@ final class CommentCountLabel: UILabel {
         }
 
         switch media {
-        case let .movie(movie):
+        case .movie(let movie):
             commentCount = movie.commentCount
             cancellable = fetchCommentCount(type: .movie(movieId: movie.identifiers.trakt!))
-        case let .show(show):
+        case .show(let show):
             commentCount = show.commentCount
             cancellable = fetchCommentCount(type: .show(showId: show.identifiers.trakt!))
-        case let .episode(episode, show):
+        case .episode(let episode, let show):
             commentCount = episode.commentCount
             cancellable = fetchCommentCount(type: .episode(showId: show.identifiers.trakt!,
                                                            season: episode.season,
                                                            episode: episode.number))
-        case let .season(season, show):
+        case .season(let season, let show):
             commentCount = season.commentCount
             cancellable = fetchCommentCount(type: .season(showId: show.identifiers.trakt!,
                                                           season: season.number))
@@ -189,7 +187,7 @@ final class CommentCountLabel: UILabel {
         return TraktAPIProvider.provider.request(.commentCount(type: type), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -204,7 +202,7 @@ final class CommentCountLabel: UILabel {
                 } catch {
                     print("Stats request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 if error.localizedDescription == "cancelled" { return }
                 print("Stats request failure \(error)")
             }

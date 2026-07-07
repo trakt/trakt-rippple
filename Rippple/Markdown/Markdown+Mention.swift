@@ -6,7 +6,9 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Foundation
 import Haring
+import UIKit
 
 class MarkdownMention: MarkdownCommonElement {
     fileprivate static let regex = "(\\s+|^|\\B)@[\\w_-]+"
@@ -18,7 +20,7 @@ class MarkdownMention: MarkdownCommonElement {
         return MarkdownMention.regex
     }
 
-    public init(font: UIFont? = nil, color: UIColor? = nil) {
+    init(font: UIFont? = nil, color: UIColor? = nil) {
         self.font = font
         self.color = color
     }

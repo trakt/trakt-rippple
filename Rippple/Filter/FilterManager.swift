@@ -7,19 +7,16 @@
 //
 
 import Foundation
-
 import Receiver
 
 final class FilterManager {
-
     static let shared = FilterManager()
 
     private let disposeBag = DisposeBag()
 
-    fileprivate init() { }
+    private init() {}
 
     func setup() {
-
         onSettingsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             if SessionManager.shared.isLoggedIn {
@@ -60,19 +57,19 @@ final class FilterManager {
         guard let slug = user.identifiers.slug else { return }
 
         TraktAPIProvider.noRatingProvider.request(TraktAPIService.hideUser(section: .comments,
-                                                                   slug: slug),
-                                          callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-                                                    print("Block user successful \(response)")
-                                                } catch {
-                                                    print("Block user error \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Block user error \(error)")
-                                            }
+                                                                           slug: slug),
+                                                  callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+                    print("Block user successful \(response)")
+                } catch {
+                    print("Block user error \(error)")
+                }
+            case .failure(let error):
+                print("Block user error \(error)")
+            }
         }
     }
 
@@ -90,29 +87,29 @@ final class FilterManager {
         TraktAPIProvider.provider.request(TraktAPIService.hideUser(section: .comments,
                                                                    slug: slug),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    print("Block user successful \(response)")
+                    print("Block user successful \(response)")
 
-                                                    DispatchQueue.main.async {
-                                                        HiddenMediaManager.shared.refresh()
-                                                        SwiftMessages.show(message: "🔇 \(user.username) blocked")
-                                                        userBlockedTransmitter.broadcast(user)
-                                                    }
+                    DispatchQueue.main.async {
+                        HiddenMediaManager.shared.refresh()
+                        SwiftMessages.show(message: "🔇 \(user.username) blocked")
+                        userBlockedTransmitter.broadcast(user)
+                    }
 
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                }
-                                            }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 
@@ -128,60 +125,60 @@ final class FilterManager {
         TraktAPIProvider.provider.request(TraktAPIService.unhideUser(section: .comments,
                                                                      slug: slug),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    print("Unblock user successful \(response)")
+                    print("Unblock user successful \(response)")
 
-                                                    DispatchQueue.main.async {
-                                                        HiddenMediaManager.shared.refresh()
-                                                        SwiftMessages.show(message: "🔈 \(user.username) unblocked")
-                                                        userBlockedTransmitter.broadcast(user)
-                                                    }
+                    DispatchQueue.main.async {
+                        HiddenMediaManager.shared.refresh()
+                        SwiftMessages.show(message: "🔈 \(user.username) unblocked")
+                        userBlockedTransmitter.broadcast(user)
+                    }
 
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                }
-                                            }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 }
 
 extension User {
-    public var isBlocked: Bool {
+    var isBlocked: Bool {
         return FilterManager.shared.blockedUsers?.contains(self) == true
     }
 
-    public func block() {
+    func block() {
         if FollowManager.shared.followed(user: self) {
             FollowManager.shared.follow(user: self)
         }
         FilterManager.shared.block(user: self)
     }
 
-    public func unblock() {
+    func unblock() {
         FilterManager.shared.unblock(user: self)
     }
 }
 
 extension Comment {
-    public var isFiltered: Bool {
+    var isFiltered: Bool {
         return user.isBlocked
     }
 
-    public func filter() {
+    func filter() {
         user.block()
     }
 
-    public func unfilter() {
+    func unfilter() {
         user.unblock()
     }
 }

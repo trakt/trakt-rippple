@@ -6,8 +6,8 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
-import UIKit
 import SwiftUI
+import UIKit
 
 final class AutomationViewController: UIHostingController<AutomationSettingsView> {
     required init?(coder aDecoder: NSCoder) {

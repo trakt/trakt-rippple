@@ -6,19 +6,16 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
-import Moya
 import Kingfisher
-
+import Moya
 import Receiver
+import UIKit
 
 protocol ListTableViewCellDelegate: AnyObject {
     func cell(_ cell: ListTableViewCell, action: ListTableViewCell.Action)
 }
 
 final class ListTableViewCell: UITableViewCell {
-
     enum Action {
         case touch
         case user
@@ -28,26 +25,26 @@ final class ListTableViewCell: UITableViewCell {
 
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var descriptionLabel: LinkEnabledLabel?
-    @IBOutlet weak var accessoryIndicator: UIImageView?
+    @IBOutlet var accessoryIndicator: UIImageView?
 
     @IBOutlet var likesCountLabel: UILabel?
     @IBOutlet var itemsCountLabel: UILabel?
 
-    @IBOutlet weak var avatarButton: UIButton?
+    @IBOutlet var avatarButton: UIButton?
 
-    @IBOutlet weak var privacyBackgroundView: UIView?
-    @IBOutlet weak var privacyLabel: UILabel?
-    @IBOutlet weak var privacyImageView: UIImageView!
+    @IBOutlet var privacyBackgroundView: UIView?
+    @IBOutlet var privacyLabel: UILabel?
+    @IBOutlet var privacyImageView: UIImageView!
 
-    @IBOutlet weak var collaboratorBackgroundView: UIView?
-    @IBOutlet weak var collaboratorLabel: UILabel?
-    @IBOutlet weak var collaboratorImageView: UIImageView!
+    @IBOutlet var collaboratorBackgroundView: UIView?
+    @IBOutlet var collaboratorLabel: UILabel?
+    @IBOutlet var collaboratorImageView: UIImageView!
 
-    @IBOutlet weak var collectionSpaceView: UIView?
-    @IBOutlet weak var collectionContainerView: UIView?
-    @IBOutlet weak var collectionView: UICollectionView?
+    @IBOutlet var collectionSpaceView: UIView?
+    @IBOutlet var collectionContainerView: UIView?
+    @IBOutlet var collectionView: UICollectionView?
 
-    @IBOutlet weak var likeButton: UIButton?
+    @IBOutlet var likeButton: UIButton?
 
     private var items: [WatchlistItem]? {
         didSet {
@@ -94,7 +91,7 @@ final class ListTableViewCell: UITableViewCell {
         collaboratorBackgroundView?.layer.masksToBounds = true
 
         if let avatarButton = avatarButton {
-            avatarButton.layer.cornerRadius = avatarButton.bounds.height/2.0
+            avatarButton.layer.cornerRadius = avatarButton.bounds.height / 2.0
             avatarButton.layer.borderWidth = 1
             avatarButton.layer.borderColor = UIColor.tertiarySystemFill.cgColor
             avatarButton.clipsToBounds = true
@@ -143,7 +140,7 @@ final class ListTableViewCell: UITableViewCell {
         }
     }
 
-    // Filter
+    /// Filter
     private static let userFilter = RoundCornerImageProcessor(
         cornerRadius: 20.0,
         targetSize: CGSize(width: 40.0, height: 40.0)
@@ -168,9 +165,9 @@ final class ListTableViewCell: UITableViewCell {
         }
     }
 
-    public var user: User?
+    var user: User?
 
-    public var list: List? {
+    var list: List? {
         didSet {
             guard let list = list else { return }
             titleLabel.text = list.name.emojiUnescapedString
@@ -304,11 +301,11 @@ final class ListTableViewCell: UITableViewCell {
                                                                    extended: .full,
                                                                    pageInfo: PageInfo(page: 1, limit: 20, pageCount: 20, itemCount: 20),
                                                                    marker: ListItemsMarkerManager.shared.marker(for: list.identifiers.trakt!)),
-                                                      callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                                                        callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -324,7 +321,7 @@ final class ListTableViewCell: UITableViewCell {
                         print("List items request JSON mapping failed! \(error)")
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("List items request failure \(error)")
                 }
@@ -380,9 +377,9 @@ extension ListTableViewCell: UICollectionViewDelegate {
         contextMenu.controller = (delegate as! UIViewController)
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-            return self.contextMenu.previewViewController
+            self.contextMenu.previewViewController
         }, actionProvider: { _ in
-            return self.contextMenu.menu
+            self.contextMenu.menu
         })
     }
 

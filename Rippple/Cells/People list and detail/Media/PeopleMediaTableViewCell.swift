@@ -6,16 +6,14 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import UIKit
 
 protocol PeopleMediaTableViewCellDelegate: AnyObject {
     func cell(_ cell: PeopleMediaTableViewCell, action: PeopleMediaTableViewCell.Action)
 }
 
 final class PeopleMediaTableViewCell: UITableViewCell {
-
     enum Action {
 //        case showAll
         case showCast(Cast)
@@ -25,10 +23,10 @@ final class PeopleMediaTableViewCell: UITableViewCell {
 
     weak var delegate: PeopleMediaTableViewCellDelegate?
 
-    @IBOutlet weak var collectionView: UICollectionView!
-    @IBOutlet weak var title: UILabel!
+    @IBOutlet var collectionView: UICollectionView!
+    @IBOutlet var title: UILabel!
 
-    @IBOutlet weak var moreButton: UIButton!
+    @IBOutlet var moreButton: UIButton!
 
     private let contextMenu = ContextMenuHelper()
 
@@ -83,9 +81,9 @@ final class PeopleMediaTableViewCell: UITableViewCell {
 extension PeopleMediaTableViewCell: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if knownFor == nil {
-            return CGSize(width: 95, height: 133+30)
+            return CGSize(width: 95, height: 133 + 30)
         } else {
-            return CGSize(width: 108, height: 133+30)
+            return CGSize(width: 108, height: 133 + 30)
         }
     }
 }
@@ -97,9 +95,9 @@ extension PeopleMediaTableViewCell: UICollectionViewDelegate {
         contextMenu.controller = (delegate as! UIViewController)
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-            return self.contextMenu.previewViewController
+            self.contextMenu.previewViewController
         }, actionProvider: { _ in
-            return self.contextMenu.menu
+            self.contextMenu.menu
         })
     }
 

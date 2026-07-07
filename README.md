@@ -2,7 +2,7 @@
 
 Enter the Trakt community — **discover**, **track** and **share** movies and TV shows.
 
-Rippple is a native client for [Trakt](https://trakt.tv) that runs on iPhone, iPad and Mac. You need to sign in with a Trakt account to use Rippple.
+Rippple is a native client for [Trakt](https://app.trakt.tv) that runs on iPhone, iPad and Mac. You need to sign in with a Trakt account to use Rippple.
  
 - **Learn more:** [Rippple 101](/docs/RIPPPLE_101.md) — what Rippple is and how it works. 
 - **Questions?** [Get help](/docs/GET_HELP.md) — FAQ and contact.
@@ -36,7 +36,7 @@ With **Trakt VIP** you get:
 
 - iOS/iPadOS/macOS 26+
 - Xcode 26+
-- a [Trakt](https://trakt.tv) account
+- a [Trakt](https://app.trakt.tv) account
 
 ## Building
 
@@ -46,13 +46,9 @@ With **Trakt VIP** you get:
    cd trakt-rippple
    ```
 
-2. Install CocoaPods dependencies:
+2. Open the project in Xcode. App dependencies are resolved through Swift Package Manager:
    ```bash
-   pod install
-   ```
-   Then open the workspace (not the project) in Xcode:
-   ```bash
-   open Rippple.xcworkspace
+   open Rippple.xcodeproj
    ```
 
 3. **Secrets** — Copy `Rippple/Secrets-Template.swift` to `Rippple/Secrets.swift` and fill in the required values (see [Secrets setup](#secrets-setup) below). `Secrets.swift` is gitignored.
@@ -69,7 +65,9 @@ With **Trakt VIP** you get:
 |--------|------------------|
 | **Trakt** | `clientId` and `secretId` from your [Trakt API application](https://trakt.tv/oauth/applications). Required for Trakt login and sync. |
 | **TMDb** | `apiKey` from [The Movie Database](https://www.themoviedb.org/settings/api). Used for fetching images and “where to watch” data. |
-| **AWS** | Optional. `identityPoolId` and the various topic ARNs if you want remote push notifications (e.g. trending/recommended). Leave as `nil` to disable. |
+| **Remote notifications** | Optional maintainer infrastructure. Public forks can leave `RemoteNotificationsConfiguration.remoteNotificationsBaseURL`, `remoteNotificationsAPIKey`, and all `AWSConfiguration` values as `nil`; remote push is disabled while local notifications still work. |
+
+Maintainer builds use a small REST API proxy for endpoint registration, push information, and topic subscription updates. Remote push backend details are intentionally not required for local development, and the app no longer depends on the AWS SDK.
 
 The build includes a run script that fails if `Secrets.swift` is missing or still contains template placeholders.
 
@@ -90,7 +88,7 @@ The build includes a run script that fails if `Secrets.swift` is missing or stil
   
 - **`NotificationService/`** — Notification Service Extension to enrich notifications
 
-- **Dependencies** — Swift Package Manager (Xcode project) and **CocoaPods** (`Podfile`; run `pod install` and use `Rippple.xcworkspace`). See [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md) for more info about dependencies.
+- **Dependencies** — Swift Package Manager through the Xcode project. See [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md) for more info about dependencies.
 
 - **Key libraries:** The app relies heavily on [Receiver](https://github.com/kevincador/Receiver) for observability (Observer pattern—broadcast/listen). All API networking is built on [Moya](https://github.com/Moya/Moya) (network abstraction layer on top of Alamofire).
 
@@ -104,4 +102,4 @@ This project is licensed under the GNU General Public License v3.0 — see the [
 
 ## Disclaimer
 
-Rippple is affiliated with [Trakt](https://trakt.tv). Rippple uses the TMDb APIs for "Where to watch" information and images but is not endorsed or certified by TMDb. The source of "Where to watch" information is provided by JustWatch via the TMDb API. Rippple cannot be used to stream or play movies or TV shows. Some features may be limited by the APIs. [Terms of Use](TERMS.md) · [Privacy Policy](PRIVACY.md)
+Rippple is affiliated with [Trakt](https://app.trakt.tv). Rippple uses the TMDb APIs for "Where to watch" information and images but is not endorsed or certified by TMDb. The source of "Where to watch" information is provided by JustWatch via the TMDb API. Rippple cannot be used to stream or play movies or TV shows. Some features may be limited by the APIs. [Terms of Use](TERMS.md) · [Privacy Policy](PRIVACY.md)

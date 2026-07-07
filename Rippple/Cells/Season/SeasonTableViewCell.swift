@@ -9,8 +9,8 @@
 import UIKit
 
 final class SeasonTableViewCell: UITableViewCell {
-    @IBOutlet weak var seasonTitleLabel: UILabel!
-    @IBOutlet weak var commentsLabel: CommentCountLabel!
+    @IBOutlet var seasonTitleLabel: UILabel!
+    @IBOutlet var commentsLabel: CommentCountLabel!
 
     var season: (show: Show, season: Season)! {
         didSet {

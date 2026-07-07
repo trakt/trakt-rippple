@@ -7,22 +7,19 @@
 //
 
 import Foundation
-
+import Moya
 import Receiver
 
-import Moya
-
 final class WatchingManager {
-
     static let shared = WatchingManager()
 
     private let disposeBag = DisposeBag()
 
     let (onWatchingItemChangedTransmitter, onWatchingItemChangedReceiver) = Receiver<(WatchingItem?, WatchingItem?)>.make(with: .warm(upTo: 1))
-    let (onProgressChangedTransmitter, onProgressChangedReceiver) = Receiver<(Double)>.make(with: .warm(upTo: 1))
+    let (onProgressChangedTransmitter, onProgressChangedReceiver) = Receiver<Double>.make(with: .warm(upTo: 1))
 
     var refreshWatchingTimer: Timer?
-    var refreshProgressTimer: Timer! = nil
+    var refreshProgressTimer: Timer!
 
     var watchingItem: WatchingItem? {
         didSet {
@@ -31,6 +28,7 @@ final class WatchingManager {
             }
         }
     }
+
     var progress: Double = 0 {
         didSet {
             onProgressChangedTransmitter.broadcast(progress)
@@ -52,7 +50,7 @@ final class WatchingManager {
     private func updateProgress() {
         let currentProgress = latestProgress
 
-        if currentProgress == 0.0 && progress != 0.0 {
+        if currentProgress == 0.0, progress != 0.0 {
             progress = 0.0
         } else if currentProgress != progress {
             progress = currentProgress
@@ -75,18 +73,18 @@ final class WatchingManager {
 
         refreshProgressTimer = Timer.scheduledTimer(withTimeInterval: 5.0,
                                                     repeats: true) { _ in
-                                                        self.updateProgress()
+            self.updateProgress()
         }
     }
 
     func refreshWatching(after time: Double = 0) {
         guard let refreshTimer = refreshWatchingTimer, refreshTimer.isValid else {
             // No refresh timer in progress. Creating one.
-            self.refreshWatchingTimer = Timer.scheduledTimer(withTimeInterval: time,
-                                                     repeats: false,
-                                                     block: { _ in
-                                                        self.fetchWatching()
-            })
+            refreshWatchingTimer = Timer.scheduledTimer(withTimeInterval: time,
+                                                        repeats: false,
+                                                        block: { _ in
+                                                            self.fetchWatching()
+                                                        })
             return
         }
         // A refresh timer is already in progress.
@@ -107,7 +105,7 @@ final class WatchingManager {
 
     private func fetchWatching() {
         if SessionManager.shared.isLoggedOut {
-            self.updateWatchingItem(with: nil)
+            updateWatchingItem(with: nil)
             return
         }
 
@@ -120,7 +118,7 @@ final class WatchingManager {
             }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     if response.statusCode == 204 {
@@ -139,7 +137,7 @@ final class WatchingManager {
                 } catch {
                     print("Watching request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Watching request failure \(error)")
             }
         }
@@ -147,8 +145,8 @@ final class WatchingManager {
 
     private func updateWatchingItem(with item: WatchingItem?) {
         guard let watchingItem = item else {
-            if self.watchingItem != nil {
-                self.watchingItem = nil
+            if watchingItem != nil {
+                watchingItem = nil
             }
             return
         }

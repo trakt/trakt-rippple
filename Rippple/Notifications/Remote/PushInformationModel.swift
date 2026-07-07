@@ -8,24 +8,14 @@
 
 import Foundation
 
-import AWSDynamoDB
+struct PushInformationModel: Codable {
+    let traktId: String
+    let enpointARN: String
+    let environement: String
+    let premium: String
 
-final class PushInformationModel: AWSDynamoDBObjectModel, AWSDynamoDBModeling {
-    @objc var traktId: String?
-    @objc var enpointARN: String?
-    @objc var environement: String?
-    @objc var premium: String?
-
-    @objc var commentNewLikes: NSNumber?
-    @objc var commentNewReply: NSNumber?
-    @objc var commentNewMention: NSNumber?
-    @objc var activityNewFollower: NSNumber?
-
-    static func dynamoDBTableName() -> String {
-        return "Rippple"
-    }
-
-    static func hashKeyAttribute() -> String {
-        return "enpointARN"
-    }
+    let commentNewLikes: Bool
+    let commentNewReply: Bool
+    let commentNewMention: Bool
+    let activityNewFollower: Bool
 }

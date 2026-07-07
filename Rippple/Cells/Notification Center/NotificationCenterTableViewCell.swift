@@ -9,10 +9,10 @@
 import UIKit
 
 final class NotificationCenterTableViewCell: UITableViewCell {
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var subtitle: UILabel!
-    @IBOutlet weak var body: UILabel!
-    @IBOutlet weak var date: UILabel!
+    @IBOutlet var title: UILabel!
+    @IBOutlet var subtitle: UILabel!
+    @IBOutlet var body: UILabel!
+    @IBOutlet var date: UILabel!
 
     override func awakeFromNib() {
         super.awakeFromNib()

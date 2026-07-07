@@ -1,11 +1,12 @@
 //
-//  InReviewCard.swift
+//  InReviewBrowseRail.swift
 //
 //
 //  Created by Kevin Cador on 29/10/2025.
 //
 
 import SwiftUI
+import UIKit
 
 private enum InReviewCardConstants {
     static let size = CGSize(width: 200, height: 280)
@@ -13,7 +14,7 @@ private enum InReviewCardConstants {
 
 private extension View {
     func inReviewCardFrame() -> some View {
-        self.frame(width: InReviewCardConstants.size.width, height: InReviewCardConstants.size.height)
+        frame(width: InReviewCardConstants.size.width, height: InReviewCardConstants.size.height)
     }
 }
 
@@ -95,7 +96,6 @@ struct MeshGradientView: View {
 }
 
 struct MonthInReviewCard: View {
-
     var year: Int
     var month: Int
 
@@ -190,7 +190,6 @@ struct MonthInReviewCard: View {
     }()
 
     private func fetchMIR() async {
-
         await MainActor.run {
             self.isLoading = true
             self.errorText = nil
@@ -201,7 +200,7 @@ struct MonthInReviewCard: View {
                                                                 callbackQueue: .global(qos: .userInitiated)) { result in
                 _Concurrency.Task {
                     switch result {
-                    case let .success(moyaResponse):
+                    case .success(let moyaResponse):
                         do {
                             let response = try moyaResponse.filterSuccessfulStatusCodes()
                             // Decode the same model used by MirTableViewCell
@@ -234,7 +233,6 @@ struct MonthInReviewCard: View {
 }
 
 struct AllTimeReviewCard: View {
-
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Spacer()
@@ -288,7 +286,6 @@ struct AllTimeReviewCard: View {
 }
 
 struct YearInReviewCard: View {
-
     var year: Int
 
     @State private var isLoading = true
@@ -368,7 +365,6 @@ struct YearInReviewCard: View {
     }
 
     private func fetchYIR() async {
-
         await MainActor.run {
             self.isLoading = true
             self.errorText = nil
@@ -379,7 +375,7 @@ struct YearInReviewCard: View {
                                                                 callbackQueue: .global(qos: .userInitiated)) { result in
                 _Concurrency.Task {
                     switch result {
-                    case let .success(moyaResponse):
+                    case .success(let moyaResponse):
                         do {
                             let response = try moyaResponse.filterSuccessfulStatusCodes()
                             let stats = try response.map(IRUserStats.self, using: TraktAPIProvider.decoder).stats.all
@@ -411,8 +407,13 @@ struct YearInReviewCard: View {
 }
 
 struct InReviewView: View {
-    private var currentYear: Int { Calendar.current.component(.year, from: Date()) }
-    private var lastYear: Int { currentYear - 1 }
+    private var currentYear: Int {
+        Calendar.current.component(.year, from: Date())
+    }
+
+    private var lastYear: Int {
+        currentYear - 1
+    }
 
     private var last4Months: [YearMonth] {
         let calendar = Calendar.current
@@ -445,19 +446,20 @@ struct InReviewView: View {
 }
 
 private struct YearMonth: Hashable, Identifiable {
+    var id: Int {
+        year + month
+    }
 
-    public var id: Int { year + month }
+    let year: Int
+    let month: Int
 
-    public let year: Int
-    public let month: Int
-
-    public init(year: Int, month: Int) {
+    init(year: Int, month: Int) {
         precondition((1...12).contains(month), "Month must be between 1 and 12")
         self.year = year
         self.month = month
     }
 
-    public init(_ date: Date, calendar: Calendar = .current) {
+    init(_ date: Date, calendar: Calendar = .current) {
         let comps = calendar.dateComponents([.year, .month], from: date)
         self.init(year: comps.year ?? 1, month: comps.month ?? 1)
     }

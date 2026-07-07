@@ -6,9 +6,9 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
-import WidgetKit
-import SwiftUI
 import Intents
+import SwiftUI
+import WidgetKit
 
 struct IconProvider: IntentTimelineProvider {
     typealias Intent = IconTypeIntent

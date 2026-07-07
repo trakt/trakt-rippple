@@ -7,11 +7,10 @@
 //
 
 import Foundation
-import UserNotifications
 import Receiver
+import UserNotifications
 
 final class AnticipatedNotificationsManager {
-
     static let shared = AnticipatedNotificationsManager()
 
     // Settings
@@ -22,6 +21,7 @@ final class AnticipatedNotificationsManager {
             UserDefaults.standard.synchronize()
         }
     }
+
     var anticipatedMovies: Bool {
         didSet {
             UserDefaults.standard.set(anticipatedMovies, forKey: "AnticipatedNotificationsManager.anticipatedMovies")
@@ -60,7 +60,7 @@ final class AnticipatedNotificationsManager {
     }
 
     private func fetchAndBuildAnticipated() {
-        Task.init {
+        Task {
             do {
                 let anticipatedMovies = anticipatedMovies ? try await fetchAnticipatedMovies() : [MediaItem]()
                 rebuildMovieNotifications(with: anticipatedMovies)
@@ -69,7 +69,7 @@ final class AnticipatedNotificationsManager {
             }
             do {
                 let anticipatedShows = anticipatedShows ? try await fetchAnticipatedShows() : [MediaItem]()
-                let premiere = try await fetchPremiereCalendar(date: .now, days: 7)
+                let premiere = try await fetchPremiereCalendar(date: .now, days: 15)
 
                 var anticipatedShowsWithPremiereDate = [MediaItem]()
                 for p in premiere {
@@ -116,11 +116,10 @@ final class AnticipatedNotificationsManager {
     }
 
     private func fetchAnticipatedMovies() async throws -> [MediaItem] {
-        let result: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
-            TraktAPIProvider.provider.request(.anticipatedMovies(filters: [String: String](), extended: .full, pageInfo: PageInfo.firstPage(with: 7)), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-
+        return try await withCheckedThrowingContinuation { continuation in
+            TraktAPIProvider.provider.request(.anticipatedMovies(filters: [String: String](), extended: .full, pageInfo: PageInfo.firstPage(with: 20)), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -129,20 +128,18 @@ final class AnticipatedNotificationsManager {
                     } catch {
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     private func fetchAnticipatedShows() async throws -> [MediaItem] {
-        let result: [MediaItem] = try await withCheckedThrowingContinuation { continuation in
-            TraktAPIProvider.provider.request(.anticipatedShows(filters: [String: String](), extended: .full, pageInfo: PageInfo.firstPage(with: 7)), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-
+        return try await withCheckedThrowingContinuation { continuation in
+            TraktAPIProvider.provider.request(.anticipatedShows(filters: [String: String](), extended: .full, pageInfo: PageInfo.firstPage(with: 20)), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -151,20 +148,18 @@ final class AnticipatedNotificationsManager {
                     } catch {
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     private func fetchPremiereCalendar(date: Date, days: Int) async throws -> [ShowEpisodeCalendarItem] {
-        let result: [ShowEpisodeCalendarItem] = try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.premiereCalendar(startDate: date, days: days), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
-
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let showEpisodeCalendarItems = try response.map([ShowEpisodeCalendarItem].self, using: TraktAPIProvider.decoder)
@@ -172,18 +167,21 @@ final class AnticipatedNotificationsManager {
                     } catch {
                         continuation.resume(throwing: error)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     continuation.resume(throwing: error)
                 }
             }
         }
-        return result
     }
 
     private func rebuildMovieNotifications(with mediaItems: [MediaItem]) {
         var requests = [UNNotificationRequest]()
+        let latestReleaseDate = Calendar.current.date(byAdding: .day, value: 15, to: .now) ?? .now
 
         for mediaItem in mediaItems {
+            guard let movie = mediaItem.movie,
+                  let releaseDate = releaseDate(for: movie),
+                  releaseDate <= latestReleaseDate else { continue }
             if let request = scheduleNotification(for: mediaItem,
                                                   with: "",
                                                   subtitle: "") {
@@ -201,7 +199,7 @@ final class AnticipatedNotificationsManager {
             notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
         }
         for request in requests {
-            notificationCenter.add(request) { (error) in
+            notificationCenter.add(request) { error in
                 if error != nil {
                     print("notificationCenter.add error: \(error!)")
                 } else {
@@ -232,7 +230,7 @@ final class AnticipatedNotificationsManager {
             notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
         }
         for request in requests {
-            notificationCenter.add(request) { (error) in
+            notificationCenter.add(request) { error in
                 if error != nil {
                     print("notificationCenter.add error: \(error!)")
                 } else {
@@ -258,11 +256,7 @@ final class AnticipatedNotificationsManager {
             content.threadIdentifier = "\(movie.identifiers.trakt!)"
             content.userInfo = ["link": "ripl://movies/\(movie.identifiers.trakt!)"]
 
-            let dateFormatter = DateFormatter()
-            dateFormatter.locale = Locale(identifier: "en_US")
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            guard let released = movie.released else { return nil }
-            guard let date = dateFormatter.date(from: released) else { return nil }
+            guard let date = releaseDate(for: movie) else { return nil }
 
             let triggerDate = Calendar.current.date(bySettingHour: 9,
                                                     minute: 0,
@@ -271,13 +265,13 @@ final class AnticipatedNotificationsManager {
             if triggerDate <= .now { return nil }
 
             let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second],
-                                                                         from: triggerDate)
+                                                             from: triggerDate)
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
             let uuidString = identifier(for: mediaItem)
             return UNNotificationRequest(identifier: uuidString,
-                                            content: content,
-                                            trigger: trigger)
+                                         content: content,
+                                         trigger: trigger)
         } else if let show = mediaItem.show {
             guard let triggerDate = show.firstAired else { return nil }
             if triggerDate <= .now { return nil }
@@ -292,14 +286,14 @@ final class AnticipatedNotificationsManager {
             content.userInfo = ["link": "ripl://shows/\(show.identifiers.trakt!)"]
 
             let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second],
-                                                                         from: triggerDate)
+                                                             from: triggerDate)
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
 
             let uuidString = identifier(for: mediaItem)
             return UNNotificationRequest(identifier: uuidString,
-                                            content: content,
-                                            trigger: trigger)
+                                         content: content,
+                                         trigger: trigger)
         } else {
             return nil
         }
@@ -312,14 +306,23 @@ final class AnticipatedNotificationsManager {
             return uuidPrefixForShows + "\(mediaItem.show!.identifiers.trakt!)"
         }
     }
+
+    private func releaseDate(for movie: Movie) -> Date? {
+        guard let released = movie.released else { return nil }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US")
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        return dateFormatter.date(from: released)
+    }
 }
 
 extension UNNotificationRequest {
     var isAnticipatedMovie: Bool {
-        return self.identifier.hasPrefix(AnticipatedNotificationsManager.shared.uuidPrefixForMovies)
+        return identifier.hasPrefix(AnticipatedNotificationsManager.shared.uuidPrefixForMovies)
     }
 
     var isAnticipatedShow: Bool {
-        return self.identifier.hasPrefix(AnticipatedNotificationsManager.shared.uuidPrefixForShows)
+        return identifier.hasPrefix(AnticipatedNotificationsManager.shared.uuidPrefixForShows)
     }
 }

@@ -1,5 +1,5 @@
 //
-//  CommentsManager.swift
+//  OwnCommentsManager.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 18/08/2020.
@@ -7,16 +7,14 @@
 //
 
 import Foundation
-
 import Receiver
 
 let (onOwnCommentsChangedTransmitter, onOwnCommentsChangedReceiver) = Receiver<[CommentItem]>.make(with: .hot)
 
 final class OwnCommentsManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     func setup() {
         applicationLifecycleReceiver.listen { applicationLifecycle in
@@ -62,7 +60,6 @@ final class OwnCommentsManager {
 }
 
 private extension OwnCommentsManager {
-
     private func refreshOwnComments(pageInfo: PageInfo = PageInfo.firstPage(with: 10),
                                     latestOwnComments: [CommentItem] = [CommentItem]()) {
         if SessionManager.shared.isLoggedOut { return }
@@ -74,14 +71,14 @@ private extension OwnCommentsManager {
                                                     replies: nil),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let commentItems = try response.map([CommentItem].self, using: TraktAPIProvider.decoder)
 
                     if let response = response.response,
-                    let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
+                       let pageInfo = PageInfo(headers: response.allHeaderFields)?.nextPage {
                         DispatchQueue.main.async {
                             if pageInfo.page <= pageInfo.pageCount {
                                 self.refreshOwnComments(pageInfo: pageInfo.nextPage,
@@ -94,7 +91,7 @@ private extension OwnCommentsManager {
                 } catch {
                     print("refreshOwnComments request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("refreshOwnComments request failure \(error)")
             }
         }

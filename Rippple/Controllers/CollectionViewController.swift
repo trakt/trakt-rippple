@@ -6,11 +6,9 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
-import UIKit
-
-import Receiver
-
 import NVActivityIndicatorView
+import Receiver
+import UIKit
 
 extension CollectionItem {
     var title: String {
@@ -46,7 +44,7 @@ extension CollectionItem {
     var releaseDate: Date {
         switch type {
         case .movie:
-            let dateFormatter = DateFormatter.init()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             return dateFormatter.date(from: movie!.released ?? "1900-01-01") ?? Date.distantPast
         case .show:
@@ -103,25 +101,25 @@ extension CollectionItem {
             let C = 6.5
             let v = Double(movie!.votes ?? 0)
             let R = movie!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .show:
             let m = 3000.0
             let C = 6.5
             let v = Double(show!.votes ?? 0)
             let R = show!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .season:
             let m = 3000.0
             let C = 6.5
             let v = Double(season!.votes ?? 0)
             let R = season!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .episode:
             let m = 3000.0
             let C = 6.5
             let v = Double(episode!.votes ?? 0)
             let R = episode!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .list, .officiallist:
             return 0
         case .unknown:
@@ -148,11 +146,10 @@ extension CollectionItem {
 }
 
 final class CollectionViewController: UITableViewController {
-
     var user: User!
 
     required init?(coder aDecoder: NSCoder) {
-        self.user = UserManager.shared.currentUser
+        user = UserManager.shared.currentUser
         super.init(coder: aDecoder)
     }
 
@@ -174,6 +171,7 @@ final class CollectionViewController: UITableViewController {
             reset()
         }
     }
+
     private var fetchTask: Task<Void, Never>?
 
     private let disposeBag = DisposeBag()
@@ -184,12 +182,12 @@ final class CollectionViewController: UITableViewController {
     private let searchController = UISearchController(searchResultsController: nil)
     private var searchQuery = ""
 
-    // Empty
+    /// Empty
     @IBOutlet private var emptyView: UIView!
 
     // Paging Management
     @IBOutlet private var loadingView: UIView!
-    @IBOutlet private weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet private var animationViewContainer: NVActivityIndicatorView!
 
     // Error Management
     @IBOutlet private var errorView: UIView!
@@ -202,10 +200,11 @@ final class CollectionViewController: UITableViewController {
             }
         }
     }
-    @IBOutlet weak var errorLabel: UILabel!
+
+    @IBOutlet var errorLabel: UILabel!
 
     // Filters
-    @IBOutlet weak var filterButtonItem: UIBarButtonItem!
+    @IBOutlet var filterButtonItem: UIBarButtonItem!
     private var currentFilter = Filter.movies {
         didSet {
             if user.isCurrentUser {
@@ -239,6 +238,16 @@ final class CollectionViewController: UITableViewController {
         }
     }
 
+    func cycleFilter() {
+        let cycle: [Filter] = [.movies, .shows, .episodes]
+        guard let currentIndex = cycle.firstIndex(of: currentFilter) else {
+            currentFilter = cycle[0]
+            return
+        }
+
+        currentFilter = cycle[(currentIndex + 1) % cycle.count]
+    }
+
     private enum Sort: Int {
         case listed
         case title
@@ -250,7 +259,7 @@ final class CollectionViewController: UITableViewController {
         case random
     }
 
-    // Sort
+    /// Sort
     private var currentSorting = Sort.listed {
         didSet {
             UserDefaults.standard.set(currentSorting.rawValue, forKey: "CollectionViewController.currentSorting")
@@ -284,8 +293,8 @@ final class CollectionViewController: UITableViewController {
 
     private class WatchlistDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> {
         override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-            guard let item = self.itemIdentifier(for: indexPath) else { return false }
-            guard case let Wrapper.watchlist(watchlistItem) = item else { return false }
+            guard let item = itemIdentifier(for: indexPath) else { return false }
+            guard case Wrapper.watchlist(let watchlistItem) = item else { return false }
             let media = MediaModel(item: watchlistItem)
             switch media {
             case .movie:
@@ -495,9 +504,9 @@ final class CollectionViewController: UITableViewController {
         navigationItem.searchController = searchController
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         commandReceiver.listen { [weak self] keyCommand in
             guard let self = self else { return }
@@ -560,18 +569,18 @@ final class CollectionViewController: UITableViewController {
         }
 
         fetchTask?.cancel()
-        guard case let .collection(slug, type, extended, sort, _) = self.service else { return }
+        guard case .collection(let slug, let type, let extended, let sort, _) = service else { return }
         TraktAPIProvider.fetchAllCollectionItems(slug: slug,
                                                  type: type,
                                                  extended: extended,
                                                  sort: sort) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(results):
+            case .success(let results):
                 DispatchQueue.main.async {
                     self.watchlistItems = Array(Set(results))
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Comments request JSON mapping failed! \(error)")
 
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
@@ -586,11 +595,10 @@ final class CollectionViewController: UITableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let commentsViewController = segue.destination as? CommentsViewController,
-            let cell = sender as? MediaTableViewCell,
-            let index = tableView.indexPath(for: cell) {
-
+           let cell = sender as? MediaTableViewCell,
+           let index = tableView.indexPath(for: cell) {
             guard let item = dataSource.itemIdentifier(for: index) else { return }
-            guard case let Wrapper.watchlist(watchlistItem) = item else { return }
+            guard case Wrapper.watchlist(let watchlistItem) = item else { return }
 
             switch watchlistItem.type {
             case .movie:
@@ -603,66 +611,66 @@ final class CollectionViewController: UITableViewController {
                 fatalError("Unhandled media type fed to search results view controller")
             }
         } else if let mediaViewController = segue.destination as? MediaViewController,
-            let media = sender as? MediaModel {
+                  let media = sender as? MediaModel {
             mediaViewController.media = media
         }
     }
 
     private func filterMenu() -> UIMenu {
         let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
-            let movies = UIAction(title: "Movies", image: nil, state: (self.currentFilter == .movies ? .on : .off)) { [weak self] _ in
+            let movies = UIAction(title: "Movies", image: nil, state: self.currentFilter == .movies ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .movies
             }
 
-            let shows = UIAction(title: "Shows", image: nil, state: (self.currentFilter == .shows ? .on : .off)) { [weak self] _ in
+            let shows = UIAction(title: "Shows", image: nil, state: self.currentFilter == .shows ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .shows
             }
 
-            let episodes = UIAction(title: "Episodes", image: nil, state: (self.currentFilter == .episodes ? .on : .off)) { [weak self] _ in
+            let episodes = UIAction(title: "Episodes", image: nil, state: self.currentFilter == .episodes ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .episodes
             }
 
             let filters = UIMenu(title: "What do you want to see?", options: .displayInline, children: [movies, shows, episodes])
 
-            let added = UIAction(title: "Recently Added", image: nil, state: (self.currentSorting == .listed ? .on : .off)) { [weak self] _ in
+            let added = UIAction(title: "Recently Added", image: nil, state: self.currentSorting == .listed ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .listed
             }
 
-            let title = UIAction(title: "Title", image: nil, state: (self.currentSorting == .title ? .on : .off)) { [weak self] _ in
+            let title = UIAction(title: "Title", image: nil, state: self.currentSorting == .title ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .title
             }
 
-            let release = UIAction(title: "Release Date", image: nil, state: (self.currentSorting == .releaseDate ? .on : .off)) { [weak self] _ in
+            let release = UIAction(title: "Release Date", image: nil, state: self.currentSorting == .releaseDate ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .releaseDate
             }
 
-            let runtime = UIAction(title: "Runtime", image: nil, state: (self.currentSorting == .runtime ? .on : .off)) { [weak self] _ in
+            let runtime = UIAction(title: "Runtime", image: nil, state: self.currentSorting == .runtime ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .runtime
             }
 
-            let weightedRating = UIAction(title: "Weighted Ratings", image: nil, state: (self.currentSorting == .weightedRating ? .on : .off)) { [weak self] _ in
+            let weightedRating = UIAction(title: "Weighted Ratings", image: nil, state: self.currentSorting == .weightedRating ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .weightedRating
             }
 
-            let rating = UIAction(title: "Ratings", image: nil, state: (self.currentSorting == .rating ? .on : .off)) { [weak self] _ in
+            let rating = UIAction(title: "Ratings", image: nil, state: self.currentSorting == .rating ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .rating
             }
 
-            let votes = UIAction(title: "Votes", image: nil, state: (self.currentSorting == .votes ? .on : .off)) { [weak self] _ in
+            let votes = UIAction(title: "Votes", image: nil, state: self.currentSorting == .votes ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .votes
             }
 
-            let random = UIAction(title: "Random", image: nil, state: (self.currentSorting == .random ? .on : .off)) { [weak self] _ in
+            let random = UIAction(title: "Random", image: nil, state: self.currentSorting == .random ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .random
             }
@@ -742,9 +750,9 @@ extension CollectionViewController {
             contextMenu.controller = self
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return self.contextMenu.previewViewController
+                self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
     }
@@ -766,7 +774,7 @@ extension CollectionViewController {
 
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.watchlist(watchlistItem) = item else { return nil }
+        guard case Wrapper.watchlist(let watchlistItem) = item else { return nil }
         let media = MediaModel(item: watchlistItem)
         return media.trailingSwipeActions(for: self)
     }
@@ -775,11 +783,11 @@ extension CollectionViewController {
         if !user.isCurrentUser { return nil }
 
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.watchlist(collectionItem) = item else { return nil }
+        guard case Wrapper.watchlist(let collectionItem) = item else { return nil }
         let media = MediaModel(item: collectionItem)
 
         let remove = UIContextualAction(style: .normal,
-                                         title: "Remove") { _, _, boolValue in
+                                        title: "Remove") { _, _, boolValue in
             media.removeFromCollection()
             boolValue(true)
         }
@@ -803,14 +811,14 @@ extension CollectionViewController: MediaTableViewCellDelegate {
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.watchlist(watchlistItem) = item else { return }
+        guard case Wrapper.watchlist(let watchlistItem) = item else { return }
 
         if action == .details {
             switch watchlistItem.type {
             case .movie, .show:
-                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel.init(item: watchlistItem))
+                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel(item: watchlistItem))
             case .episode:
-                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel.init(item: watchlistItem))
+                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel(item: watchlistItem))
             default:
                 fatalError("Unhandled media type")
             }
@@ -819,7 +827,6 @@ extension CollectionViewController: MediaTableViewCellDelegate {
 }
 
 extension CollectionViewController: UISearchResultsUpdating {
-
     func updateSearchResults(for searchController: UISearchController) {
         searchQuery = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         updateDatasource()

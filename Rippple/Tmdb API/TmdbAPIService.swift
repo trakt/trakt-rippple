@@ -7,7 +7,6 @@
 //
 
 import Foundation
-
 import Moya
 
 enum TmdbAPIService {
@@ -29,7 +28,7 @@ enum TmdbAPIService {
     case providersForMovieInRegion(String)
     case providersForTVInRegion(String)
 
-    // for search
+    /// for search
     case trending
 
     case search(String)
@@ -43,6 +42,7 @@ enum TmdbAPIService {
 }
 
 // MARK: - TargetType Protocol Implementation
+
 extension TmdbAPIService: TargetType {
     var validationType: ValidationType {
         switch self {
@@ -82,7 +82,11 @@ extension TmdbAPIService: TargetType {
             return .successCodes
         }
     }
-    var baseURL: URL { return URL(string: TmdbAPIConfiguration.baseURL)! }
+
+    var baseURL: URL {
+        return URL(string: TmdbAPIConfiguration.baseURL)!
+    }
+
     var path: String {
         switch self {
         case .configuration:
@@ -121,12 +125,14 @@ extension TmdbAPIService: TargetType {
             return "/tv/\(tmdbId)/season/\(seasonNumber)/images"
         }
     }
+
     var method: Moya.Method {
         switch self {
         case .configuration, .movieImages, .tvImages, .people, .episode, .movieProviders, .showProviders, .trending, .search, .combinedCredit, .showKeywords, .movieKeywords, .tvChanges, .seasonProviders, .providersForMovieInRegion, .providersForTVInRegion, .season:
             return .get
         }
     }
+
     var task: Task {
         switch self {
         case .configuration:
@@ -190,6 +196,7 @@ extension TmdbAPIService: TargetType {
                                       encoding: URLEncoding.default)
         }
     }
+
     var headers: [String: String]? {
         switch self {
         default:

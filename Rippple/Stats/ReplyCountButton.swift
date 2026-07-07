@@ -6,14 +6,11 @@
 //  Copyright © 2025 Trakt. All rights reserved.
 //
 
+import Moya
+import Receiver
 import UIKit
 
-import Moya
-
-import Receiver
-
 final class ReplyCountButton: UIButton {
-
     private let disposeBag = DisposeBag()
 
     override func awakeFromNib() {
@@ -23,13 +20,13 @@ final class ReplyCountButton: UIButton {
             guard let self = self else { return }
 
             if let media = self.media,
-                media == commentModel.media {
+               media == commentModel.media {
                 self.update(with: media)
             }
 
             if let comment = self.comment,
-                comment == commentModel.comment {
-                    self.cancellable = self.fetchCommentCount(type: .comment(commentId: comment.identifier))
+               comment == commentModel.comment {
+                self.cancellable = self.fetchCommentCount(type: .comment(commentId: comment.identifier))
             }
         }.disposed(by: disposeBag)
     }
@@ -66,18 +63,18 @@ final class ReplyCountButton: UIButton {
     private func update(with media: MediaModel?) {
         guard let media = media else { return }
         switch media {
-        case let .movie(movie):
+        case .movie(let movie):
             commentCount = movie.commentCount
             cancellable = fetchCommentCount(type: .movie(movieId: movie.identifiers.trakt!))
-        case let .show(show):
+        case .show(let show):
             commentCount = show.commentCount
             cancellable = fetchCommentCount(type: .show(showId: show.identifiers.trakt!))
-        case let .episode(episode, show):
+        case .episode(let episode, let show):
             commentCount = episode.commentCount
             cancellable = fetchCommentCount(type: .episode(showId: show.identifiers.trakt!,
                                                            season: episode.season,
                                                            episode: episode.number))
-        case let .season(season, show):
+        case .season(let season, let show):
             commentCount = season.commentCount
             cancellable = fetchCommentCount(type: .season(showId: show.identifiers.trakt!,
                                                           season: season.number))
@@ -90,7 +87,7 @@ final class ReplyCountButton: UIButton {
 
     private var commentCount: Int? {
         didSet {
-            guard var configuration = self.configuration else {
+            guard var configuration = configuration else {
                 fatalError()
             }
             var container = AttributeContainer()
@@ -122,7 +119,7 @@ final class ReplyCountButton: UIButton {
         return TraktAPIProvider.provider.request(.commentCount(type: type), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -137,7 +134,7 @@ final class ReplyCountButton: UIButton {
                 } catch {
                     print("Stats request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 if error.localizedDescription == "cancelled" { return }
                 print("Stats request failure \(error)")
             }

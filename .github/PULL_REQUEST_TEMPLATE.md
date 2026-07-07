@@ -15,6 +15,6 @@
 
 ## Checklist
 
-- [ ] My code passes SwiftLint (see [.swiftlint.yml](.swiftlint.yml)).
+- [ ] My code passes SwiftFormat (`Scripts/swiftformat.sh --lint --strict --changed`).
 - [ ] I have tested my changes (simulator and/or device).
 - [ ] I have updated documentation or comments where needed.

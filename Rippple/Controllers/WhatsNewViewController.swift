@@ -7,12 +7,10 @@
 //
 
 import UIKit
-
 import WebKit
 
 final class WhatsNewViewController: UIViewController {
-
-    @IBOutlet weak var webView: WKWebView!
+    @IBOutlet var webView: WKWebView!
 
     override func viewDidLoad() {
         super.viewDidLoad()

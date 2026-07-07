@@ -6,14 +6,12 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import NVActivityIndicatorView
 import Receiver
+import UIKit
 
 final class InitialViewController: UIViewController {
-
-    @IBOutlet weak var loadingAnimationContainer: NVActivityIndicatorView!
+    @IBOutlet var loadingAnimationContainer: NVActivityIndicatorView!
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

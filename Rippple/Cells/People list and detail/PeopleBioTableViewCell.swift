@@ -1,5 +1,5 @@
 //
-//  OverviewTableViewCell.swift
+//  PeopleBioTableViewCell.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 12/01/2019.
@@ -9,8 +9,7 @@
 import UIKit
 
 final class PeopleBioTableViewCell: UITableViewCell {
-
-    @IBOutlet weak var biography: UILabel!
+    @IBOutlet var biography: UILabel!
 
     var person: Person! {
         didSet {

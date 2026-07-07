@@ -2,7 +2,7 @@
 
 ## What is Rippple?
 
-Rippple is a [Trakt](https://trakt.tv) client built on top of the [public Trakt API](https://trakt.docs.apiary.io/#).
+Rippple is a [Trakt](https://app.trakt.tv) client built on top of the [public Trakt API](https://docs.trakt.tv).
 
 The project started in 2017. The first version came out in early 2018 with an iPhone-only app focused on Trakt’s “Comments” feature. Since then, it has been improved with [many releases](https://headwayapp.co/rippple-updates) to become the full-fledged app it is today.
 
@@ -12,7 +12,7 @@ Rippple is a passion project. It’s built by one person with early contribution
 
 ## What is Trakt?
 
-[Trakt](https://trakt.tv/) is a platform and community that helps you keep track of the TV shows and movies you watch. It helps you stay on top of trending and popular content thanks to community-driven lists, ratings and comments. You can link a media center for automatic scrobbling or manually check in when you’re watching something.
+[Trakt](https://app.trakt.tv) is a platform and community that helps you keep track of the TV shows and movies you watch. It helps you stay on top of trending and popular content thanks to community-driven lists, ratings and comments. You can link a media center for automatic scrobbling or manually check in when you’re watching something.
 
 Trakt provides a public API for [third-party apps](https://trakt.tv/apps) or scripts to interact with your own data and the community.
 

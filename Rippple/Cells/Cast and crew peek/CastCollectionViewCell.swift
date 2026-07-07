@@ -9,13 +9,19 @@
 import UIKit
 
 final class CastCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var avatarImageView: PeopleProfileImageView!
-    @IBOutlet weak var avatarContainer: UIView!
-    @IBOutlet weak var avatarInitialLabel: UILabel!
+    @IBOutlet var avatarImageView: PeopleProfileImageView!
+    @IBOutlet var avatarContainer: UIView!
+    @IBOutlet var avatarInitialLabel: UILabel!
 
-    @IBOutlet weak var personNameLabel: UILabel!
-    @IBOutlet weak var asLabel: UILabel!
-    @IBOutlet weak var additionalInfoLabel: UILabel!
+    @IBOutlet var personNameLabel: UILabel!
+    @IBOutlet var asLabel: UILabel!
+    @IBOutlet var additionalInfoLabel: UILabel!
+
+    var showsEpisodeCount = true {
+        didSet {
+            updateAdditionalInfo()
+        }
+    }
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -31,18 +37,17 @@ final class CastCollectionViewCell: UICollectionViewCell {
 
     var cast: Cast? {
         didSet {
-            if cast?.person?.ids == oldValue?.person?.ids { return }
+            if cast?.person?.ids == oldValue?.person?.ids {
+                updateAdditionalInfo()
+                return
+            }
             if let cast = cast {
-                self.crew = nil
+                crew = nil
                 personNameLabel.text = cast.person!.name
                 asLabel.text = cast.characters.joined(separator: ", ")
                 avatarImageView.person = cast.person
                 avatarInitialLabel.text = cast.person!.name.initials
-                if let episodeCount = cast.episodeCount {
-                    additionalInfoLabel.text = episodeCount <= 1 ? "\(episodeCount) episode" : "\(episodeCount) episodes"
-                } else {
-                    additionalInfoLabel.text = " "
-                }
+                updateAdditionalInfo()
             }
         }
     }
@@ -51,13 +56,25 @@ final class CastCollectionViewCell: UICollectionViewCell {
         didSet {
             if crew?.person?.ids == oldValue?.person?.ids { return }
             if let crew = crew {
-                self.cast = nil
+                cast = nil
                 personNameLabel.text = crew.person!.name
                 avatarInitialLabel.text = crew.person!.name.initials
                 asLabel.text = crew.jobs.joined(separator: ", ")
                 avatarImageView.person = crew.person
-                additionalInfoLabel.text = " "
+                additionalInfoLabel.text = nil
+                additionalInfoLabel.isHidden = true
             }
         }
+    }
+
+    private func updateAdditionalInfo() {
+        guard showsEpisodeCount, let episodeCount = cast?.episodeCount else {
+            additionalInfoLabel.text = nil
+            additionalInfoLabel.isHidden = true
+            return
+        }
+
+        additionalInfoLabel.isHidden = false
+        additionalInfoLabel.text = episodeCount <= 1 ? "\(episodeCount) episode" : "\(episodeCount) episodes"
     }
 }

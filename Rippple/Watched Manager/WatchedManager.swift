@@ -7,11 +7,9 @@
 //
 
 import Foundation
-import UIKit
-
 import Receiver
-
 import TinyStorage
+import UIKit
 
 extension TinyStorage {
     static let cache: TinyStorage = {
@@ -24,7 +22,6 @@ let (onWatchedMoviesChangedTransmitter, onWatchedMoviesChangedReceiver) = Receiv
 let (onWatchedShowsChangedTransmitter, onWatchedShowsChangedReceiver) = Receiver<Set<Int64>>.make(with: .warm(upTo: 1))
 
 final class WatchedManager {
-
     private let disposeBag = DisposeBag()
 
     private var debouncedRefreshWatchedMovies: Debouncer!
@@ -119,7 +116,6 @@ final class WatchedManager {
                 self.watchedEpisodes.removeAll()
                 self.watchedShows.removeAll()
                 self.watchedMovies.removeAll()
-                self.rewatchingShows.removeAll()
             }
         }.disposed(by: disposeBag)
 
@@ -167,6 +163,10 @@ final class WatchedManager {
             self.refreshWatchedShows()
         }.disposed(by: disposeBag)
 
+        onRewatchingShowsChangedReceiver.listen { _ in
+            self.refreshWatchedShows()
+        }.disposed(by: disposeBag)
+
         lastShowsAndEpisodesCheck = .now
         lastMoviesCheck = .now
         refreshWatchedEpisodes()
@@ -179,6 +179,7 @@ final class WatchedManager {
     var watchedMoviesMediaModels: [MediaModel] {
         return moviesHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }.compactMap { $0.movie?.mediaModel }
     }
+
     var watchedShowsMediaModels: [MediaModel] {
         return showsHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }.compactMap { $0.show?.mediaModel }
     }
@@ -186,14 +187,14 @@ final class WatchedManager {
     var watchedMoviesItems: [WatchedItem] {
         return moviesHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }
     }
+
     var watchedShowsItems: [WatchedItem] {
         return showsHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }
     }
 
-    fileprivate var showsHistoryItems = [WatchedItem]() {
+    private var showsHistoryItems = [WatchedItem]() {
         didSet {
             watchedShows = Set(showsHistoryItems.compactMap { $0.show?.identifiers.trakt })
-            rewatchingShows = Set(showsHistoryItems.filter { $0.resetAt != nil }.compactMap { $0.show?.identifiers.trakt })
 
             if oldValue.isEmpty == false {
                 let oldShows = Set(oldValue)
@@ -209,7 +210,8 @@ final class WatchedManager {
             onWatchedShowsChangedTransmitter.broadcast(watchedShows)
         }
     }
-    fileprivate var moviesHistoryItems = [WatchedItem]() {
+
+    private var moviesHistoryItems = [WatchedItem]() {
         didSet {
             watchedMovies = Set(moviesHistoryItems.compactMap { $0.movie?.identifiers.trakt })
             TinyStorage.cache.store(moviesHistoryItems, forKey: "WatchedManager.moviesHistoryItems")
@@ -225,14 +227,11 @@ final class WatchedManager {
 
     fileprivate var watchedEpisodes = [Int64]()
 
-    fileprivate var watchedShows = Set<Int64>()
-    fileprivate var watchedMovies = Set<Int64>()
-
-    fileprivate var rewatchingShows = Set<Int64>()
+    private var watchedShows = Set<Int64>()
+    private var watchedMovies = Set<Int64>()
 }
 
 extension WatchedManager {
-
     private func refreshWatchedEpisodes() {
         debouncedRefreshWatchedEpisodes.call()
     }
@@ -252,7 +251,7 @@ extension WatchedManager {
         TraktAPIProvider.provider.request(.history(type: .episodes, id: nil, pageInfo: PageInfo.firstPage(with: 100), endDate: nil),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -266,7 +265,7 @@ extension WatchedManager {
                 } catch {
                     print("History request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("History request failure \(error)")
             }
         }
@@ -279,11 +278,11 @@ extension WatchedManager {
         TraktAPIProvider.fetchAllWatchedItems(type: .movies,
                                               extended: .full) { result in
             switch result {
-            case let .success(items):
+            case .success(let items):
                 DispatchQueue.main.async {
                     self.moviesHistoryItems = items
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Watched Movies request failure \(error)")
                 DispatchQueue.main.async {
                     onWatchedMoviesChangedTransmitter.broadcast(self.watchedMovies)
@@ -300,11 +299,11 @@ extension WatchedManager {
                                               type: .shows,
                                               extended: .fullnoseasons) { result in
             switch result {
-            case let .success(items):
+            case .success(let items):
                 DispatchQueue.main.async {
-                    self.showsHistoryItems = items
+                    self.showsHistoryItems = self.polyfilledWatchedShows(items)
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Watched Shows request failure \(error)")
                 DispatchQueue.main.async {
                     onWatchedShowsChangedTransmitter.broadcast(self.watchedShows)
@@ -312,12 +311,33 @@ extension WatchedManager {
             }
         }
     }
+
+    private func polyfilledWatchedShows(_ items: [WatchedItem]) -> [WatchedItem] {
+        let watchedShowIds = Set(items.compactMap { $0.show?.identifiers.trakt })
+        let missingRewatchingShows = HiddenMediaManager.shared.missingRewatchingShows(excluding: watchedShowIds)
+
+        guard missingRewatchingShows.isEmpty == false else { return items }
+
+        let polyfilledItems = missingRewatchingShows.map { show in
+            WatchedItem(plays: 1,
+                        lastWatchedAt: .now,
+                        lastUpdatedAt: .now,
+                        resetAt: nil,
+                        movie: nil,
+                        show: show,
+                        episode: nil,
+                        season: nil,
+                        list: nil)
+        }
+
+        return items + polyfilledItems
+    }
 }
 
 extension Movie {
     var isWatched: Bool {
         guard let traktId = identifiers.trakt else { return false }
-        return WatchedManager.shared.watchedMovies.contains(traktId)
+        return SyncWatchedManager.shared.isWatched(type: .movies, traktId: traktId)
     }
 }
 
@@ -326,12 +346,24 @@ extension Episode {
         guard let traktId = identifiers.trakt else { return false }
         return WatchedManager.shared.watchedEpisodes.contains(traktId)
     }
+
+    var isWatched: Bool {
+        guard let traktId = identifiers.trakt else { return false }
+        return SyncWatchedManager.shared.isWatched(type: .episodes, traktId: traktId)
+    }
+}
+
+extension Season {
+    var isWatchedAtLeastOnce: Bool {
+        guard let traktId = identifiers.trakt else { return false }
+        return SyncWatchedManager.shared.isSeasonWatchedAtLeastOnce(traktId: traktId)
+    }
 }
 
 extension Show {
     var isWatchedAtLeastOnce: Bool {
         guard let traktId = identifiers.trakt else { return false }
-        return WatchedManager.shared.watchedShows.contains(traktId)
+        return SyncWatchedManager.shared.isWatched(type: .shows, traktId: traktId)
     }
 
     var isBingeWatched: Bool {
@@ -347,13 +379,6 @@ extension Show {
     }
 }
 
-extension Show {
-    var isRewatching: Bool {
-        guard let traktId = identifiers.trakt else { return false }
-        return WatchedManager.shared.rewatchingShows.contains(traktId)
-    }
-}
-
 extension Cast {
     var isRencentlyWatched: Bool {
         if let show = show { return show.isWatchedAtLeastOnce }
@@ -362,14 +387,10 @@ extension Cast {
     }
 
     var recentlyWatchedAt: Date? {
-        if let show = show {
-            for item in WatchedManager.shared.showsHistoryItems where item.show == show {
-                return item.lastWatchedAt
-            }
-        } else if let movie = movie {
-            for item in WatchedManager.shared.moviesHistoryItems where item.movie == movie {
-                return item.lastWatchedAt
-            }
+        if let show = show, let traktId = show.identifiers.trakt {
+            return SyncWatchedManager.shared.lastWatchedAt(for: .shows, traktId: traktId)
+        } else if let movie = movie, let traktId = movie.identifiers.trakt {
+            return SyncWatchedManager.shared.lastWatchedAt(for: .movies, traktId: traktId)
         }
         return nil
     }

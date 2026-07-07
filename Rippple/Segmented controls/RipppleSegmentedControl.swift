@@ -9,7 +9,6 @@
 import UIKit
 
 final class RipppleSegmentedControl: UISegmentedControl {
-
     #if targetEnvironment(macCatalyst)
     override func layoutSubviews() {
         super.layoutSubviews()

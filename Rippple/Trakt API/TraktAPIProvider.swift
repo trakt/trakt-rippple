@@ -6,40 +6,38 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import Foundation
-
-import Moya
 import Alamofire
+import Foundation
+import Moya
 
-final class TraktAPIProvider {
-
+enum TraktAPIProvider {
     static let source = TokenSource()
 
     static let networkLogger = NetworkLoggerPlugin(configuration: NetworkLoggerPlugin.Configuration(logOptions: .verbose))
 
     static let debug_provider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy()),
-                                                              plugins: [networkLogger, AuthPlugin { return source.token }])
+                                                              plugins: [networkLogger, AuthPlugin { source.token }])
 
     static let provider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy(),
                                                                          eventMonitors: [checkRatingMonitor]),
-                                                        plugins: [AuthPlugin { return source.token }])
+                                                        plugins: [AuthPlugin { source.token }])
 
     static let noRatingProvider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy()),
-                                                        plugins: [AuthPlugin { return source.token }])
+                                                                plugins: [AuthPlugin { source.token }])
     static let noChacheProvider = MoyaProvider<TraktAPIService>(requestClosure: requestClosure,
                                                                 session: Session(interceptor: RipppleRetryPolicy(),
                                                                                  eventMonitors: [checkRatingMonitor]),
-                                                                plugins: [AuthPlugin { return source.token }])
+                                                                plugins: [AuthPlugin { source.token }])
     static let noChacheDebugProvider = MoyaProvider<TraktAPIService>(requestClosure: requestClosure,
-                                                                session: Session(interceptor: RipppleRetryPolicy(),
-                                                                                 eventMonitors: [checkRatingMonitor]),
-                                                                     plugins: [networkLogger, AuthPlugin { return source.token }])
+                                                                     session: Session(interceptor: RipppleRetryPolicy(),
+                                                                                      eventMonitors: [checkRatingMonitor]),
+                                                                     plugins: [networkLogger, AuthPlugin { source.token }])
 
     static let decoder = setupJSONDecoder()
 
     static let checkRatingMonitor: ClosureEventMonitor = {
         let monitor = ClosureEventMonitor()
-        monitor.requestDidCompleteTaskWithError = { (request, _, error) in
+        monitor.requestDidCompleteTaskWithError = { request, _, error in
             // if it's a post call and the error is nil, check if we ask for a rating
             if request.request?.method == .post, error == nil {
                 AppManager.shared.checkRating()
@@ -75,6 +73,14 @@ final class TraktAPIProvider {
         return formatter
     }
 
+    private static let dateAndTimeWithoutMillisecondsFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter
+    }
+
     private static func setupJSONDecoder() -> JSONDecoder {
         let decoder = TraktJSONDecoder()
         decoder.dateDecodingStrategy = .custom { decoder -> Date in
@@ -82,6 +88,10 @@ final class TraktAPIProvider {
             let dateString = try container.decode(String.self)
             // yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ
             if let date = dateAndTimeFormatter().date(from: dateString) {
+                return date
+            }
+            // yyyy-MM-dd'T'HH:mm:ssZZZZZ
+            if let date = dateAndTimeWithoutMillisecondsFormatter().date(from: dateString) {
                 return date
             }
             // yyyy-MM-dd
@@ -96,7 +106,7 @@ final class TraktAPIProvider {
 }
 
 private final class TraktJSONDecoder: JSONDecoder, @unchecked Sendable {
-    override func decode<T>(_ type: T.Type, from data: Data) throws -> T where T: Decodable {
+    override func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         if type == [Comment].self {
             return try super.decode(LossyCommentArray<Comment>.self, from: data).elements as! T
         }
@@ -120,24 +130,24 @@ private struct LossyCommentArray<Element: Decodable>: Decodable {
             let decodedElement = try container.decode(LossyDecodableElement<Element>.self)
             if let element = decodedElement.value {
                 elements.append(element)
-            } else if let error = decodedElement.error, Self.shouldSkip(error) == false {
+            } else if let error = decodedElement.error, shouldSkip(error) == false {
                 throw error
             }
         }
 
         self.elements = elements
     }
+}
 
-    private static func shouldSkip(_ error: Error) -> Bool {
-        switch error {
-        case DecodingError.keyNotFound(let key, _):
-            return key.stringValue == "comment"
-        case DecodingError.valueNotFound(_, let context),
-             DecodingError.typeMismatch(_, let context):
-            return context.codingPath.last?.stringValue == "comment"
-        default:
-            return false
-        }
+private func shouldSkip(_ error: Error) -> Bool {
+    switch error {
+    case DecodingError.keyNotFound(let key, _):
+        return key.stringValue == "comment"
+    case DecodingError.valueNotFound(_, let context),
+         DecodingError.typeMismatch(_, let context):
+        return context.codingPath.last?.stringValue == "comment"
+    default:
+        return false
     }
 }
 
@@ -160,7 +170,7 @@ private struct LossyDecodableElement<Element: Decodable>: Decodable {
 
 final class TokenSource {
     var token: String?
-    init() { }
+    init() {}
 }
 
 protocol AuthorizedTargetType: TargetType {

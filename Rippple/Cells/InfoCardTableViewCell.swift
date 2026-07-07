@@ -9,9 +9,7 @@
 import UIKit
 
 final class InfoCardTableViewCell: UITableViewCell {
-
-    @IBOutlet weak var infoImage: UIImageView!
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var body: UILabel!
-
+    @IBOutlet var infoImage: UIImageView!
+    @IBOutlet var title: UILabel!
+    @IBOutlet var body: UILabel!
 }

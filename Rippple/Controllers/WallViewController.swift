@@ -6,15 +6,19 @@
 //  Copyright © 2025 Trakt. All rights reserved.
 //
 
-import UIKit
 import Receiver
+import UIKit
 
 final class WallViewController: StyledNavigationController {
-
     private let disposeBag = DisposeBag()
+    private let defaultSavedFilter = SavedFilter(section: "watchlist",
+                                                 name: "Watchlist",
+                                                 path: "/sync/watchlist",
+                                                 query: "",
+                                                 limit: 250)
 
-    // The SavedFilter used to configure the embedded GridViewController.
-    // If not provided, a default will be used and persisted.
+    /// The SavedFilter used to configure the embedded GridViewController.
+    /// If not provided, a default will be used and persisted.
     var savedFilter: SavedFilter? {
         didSet {
             guard let savedFilter = savedFilter else { return }
@@ -32,7 +36,7 @@ final class WallViewController: StyledNavigationController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        savedFilter = loadPersistedFilter() ?? Self.defaultSavedFilter
+        savedFilter = loadPersistedFilter() ?? defaultSavedFilter
 
         onLikedListsChangedReceiver.listen { [weak self] likedLists in
             guard let self = self else { return }
@@ -82,7 +86,8 @@ final class WallViewController: StyledNavigationController {
             let current = (filter == savedFilter)
             return UIAction(title: filter.name,
                             state: current ? .on : .off) { [weak self] _ in
-                self?.savedFilter = filter
+                guard let self = self else { return }
+                self.savedFilter = filter
             }
         }
 
@@ -230,13 +235,5 @@ final class WallViewController: StyledNavigationController {
             return nil
         }
         return filter
-    }
-
-    private static var defaultSavedFilter: SavedFilter {
-        return SavedFilter(section: "watchlist",
-                           name: "Watchlist",
-                           path: "/sync/watchlist",
-                           query: "",
-                           limit: 250)
     }
 }

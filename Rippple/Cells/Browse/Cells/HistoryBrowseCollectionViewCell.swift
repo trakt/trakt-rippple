@@ -6,22 +6,18 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import Kingfisher
+import Receiver
 import UIKit
 
-import Kingfisher
-
-import Receiver
-
-import RPCircularProgress
-
 final class HistoryBrowseCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var label: UILabel!
-    @IBOutlet weak var sublabel: UILabel!
-    @IBOutlet weak var emoji: UILabel!
-    @IBOutlet weak var poster: PosterImageView!
-    @IBOutlet weak var commentCount: CommentCountLabel!
+    @IBOutlet var label: UILabel!
+    @IBOutlet var sublabel: UILabel!
+    @IBOutlet var emoji: UILabel!
+    @IBOutlet var poster: PosterImageView!
+    @IBOutlet var commentCount: CommentCountLabel!
 
-    @IBOutlet weak var progress: RPCircularProgress!
+    @IBOutlet var progress: CircularProgressView!
 
     private let disposeBag = DisposeBag()
 
@@ -29,6 +25,7 @@ final class HistoryBrowseCollectionViewCell: UICollectionViewCell {
         case emoji(label: String, emoji: String)
         case media(media: MediaModel)
     }
+
     var content: Content? {
         didSet {
             switch content {
@@ -79,7 +76,7 @@ final class HistoryBrowseCollectionViewCell: UICollectionViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        poster.layer.cornerRadius = poster.bounds.height/2.0
+        poster.layer.cornerRadius = poster.bounds.height / 2.0
         poster.layer.cornerCurve = .continuous
         poster.layer.masksToBounds = true
         poster.backgroundColor = UIColor.secondarySystemBackground
@@ -130,7 +127,7 @@ final class HistoryBrowseCollectionViewCell: UICollectionViewCell {
         self.emoji.isHidden = false
 
         self.label.text = label
-        self.sublabel.text = nil
+        sublabel.text = nil
         self.emoji.text = emoji
     }
 

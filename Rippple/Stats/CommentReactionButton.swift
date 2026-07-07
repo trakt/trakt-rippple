@@ -6,13 +6,11 @@
 //  Copyright © 2025 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Moya
 import Receiver
+import UIKit
 
 final class CommentReactionButton: UIButton {
-
     private let disposeBag = DisposeBag()
 
     override func awakeFromNib() {
@@ -66,7 +64,7 @@ final class CommentReactionButton: UIButton {
     private var reactions: ReactionSummary? {
         didSet {
             guard let reactions = reactions else { return }
-            guard var configuration = self.configuration else {
+            guard var configuration = configuration else {
                 fatalError()
             }
             var container = AttributeContainer()
@@ -99,7 +97,7 @@ final class CommentReactionButton: UIButton {
         return TraktAPIProvider.provider.request(.commentReactionsSummary(id: commentId), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -111,7 +109,7 @@ final class CommentReactionButton: UIButton {
                 } catch {
                     print(".commentReactionsSummary request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 if error.localizedDescription == "cancelled" { return }
                 print(".commentReactionsSummary request failure \(error)")
             }

@@ -9,7 +9,6 @@
 import UIKit
 
 final class DeeplinkViewController: UIViewController {
-
     var listType: CommentsCoordinator.ListType!
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -21,5 +20,4 @@ final class DeeplinkViewController: UIViewController {
     @IBAction func done(_ sender: Any) {
         dismiss(animated: true, completion: nil)
     }
-
 }

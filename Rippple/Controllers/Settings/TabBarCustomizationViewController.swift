@@ -6,14 +6,12 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import UIKit
 
 let (onTabBarChangedTransmitter, onTabBarChangedReceiver) = Receiver<Int>.make(with: .hot)
 
 final class TabBarCustomizationViewController: UITableViewController {
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -49,7 +47,7 @@ final class TabBarCustomizationViewController: UITableViewController {
             tableView.reloadData()
             return
         }
-        if tabs.contains(where: { $0 == .search }) == false && tabs != defaultSingleTabBar {
+        if tabs.contains(where: { $0 == .search }) == false, tabs != defaultSingleTabBar {
             save(tabs: defaultSingleTabBar)
             tableView.reloadData()
             return
@@ -71,6 +69,7 @@ final class TabBarCustomizationViewController: UITableViewController {
         }
         return decodedData
     }
+
     private var notTabs: [MainTabBarController.Tab] {
         let tabs = tabs
         var all = MainTabBarController.Tab.allCases
@@ -138,6 +137,9 @@ final class TabBarCustomizationViewController: UITableViewController {
         case .watched:
             content.text = "Watched"
             content.image = UIImage(systemName: "checkmark")
+        case .ratings:
+            content.text = "Ratings"
+            content.image = UIImage(systemName: "heart")
         case .profile:
             content.text = "Profile"
             content.image = UIImage(systemName: "person.crop.circle")
@@ -164,11 +166,11 @@ final class TabBarCustomizationViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         /*
-        if indexPath.section == 0, indexPath.row == 0 {
-            save(tabs: defaultTabBar)
-            tableView.reloadData()
-        }
-         */
+         if indexPath.section == 0, indexPath.row == 0 {
+             save(tabs: defaultTabBar)
+             tableView.reloadData()
+         }
+          */
 
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -183,7 +185,7 @@ final class TabBarCustomizationViewController: UITableViewController {
             tabs.remove(at: sourceIndexPath.row)
 
             // if we remove the search, then we switch to default one page
-            if tabs.contains(where: { $0 == .search }) == false && tabs != defaultSingleTabBar {
+            if tabs.contains(where: { $0 == .search }) == false, tabs != defaultSingleTabBar {
                 save(tabs: defaultSingleTabBar)
                 tableView.reloadData()
                 return
@@ -193,7 +195,7 @@ final class TabBarCustomizationViewController: UITableViewController {
             tabs.insert(notTabs[sourceIndexPath.row], at: destinationIndexPath.row)
 
             // if we insert somthing and search is not there, add it automatically
-            if tabs.contains(where: { $0 == .search }) == false && tabs != defaultSingleTabBar {
+            if tabs.contains(where: { $0 == .search }) == false, tabs != defaultSingleTabBar {
                 tabs.append(.search)
                 save(tabs: tabs)
                 tableView.reloadData()

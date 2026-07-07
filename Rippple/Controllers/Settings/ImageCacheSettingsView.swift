@@ -9,7 +9,6 @@
 import SwiftUI
 
 struct ImageCacheSettingsView: View {
-
     @State private var selectedMode: ImagesManager.CacheMode = ImagesManager.shared.cacheMode
     @State private var stats: ImagesManager.CacheStats?
 
@@ -31,24 +30,24 @@ struct ImageCacheSettingsView: View {
 
             Section(header: Text("Cache Mode"),
                     footer: Text(selectedMode.description)
-                .font(.footnote)
-                .foregroundColor(.secondary)) {
-                    if let stats = stats {
-                        Picker("Cache Mode", selection: $selectedMode) {
-                            Text(ImagesManager.CacheMode.offlineFirst.name)
-                                .tag(ImagesManager.CacheMode.offlineFirst)
-                            Text(ImagesManager.CacheMode.balanced.name)
-                                .tag(ImagesManager.CacheMode.balanced)
-                            Text(ImagesManager.CacheMode.alwaysFresh.name)
-                                .tag(ImagesManager.CacheMode.alwaysFresh)
-                        }.pickerStyle(.segmented)
+                        .font(.footnote)
+                        .foregroundColor(.secondary)) {
+                if let stats = stats {
+                    Picker("Cache Mode", selection: $selectedMode) {
+                        Text(ImagesManager.CacheMode.offlineFirst.name)
+                            .tag(ImagesManager.CacheMode.offlineFirst)
+                        Text(ImagesManager.CacheMode.balanced.name)
+                            .tag(ImagesManager.CacheMode.balanced)
+                        Text(ImagesManager.CacheMode.alwaysFresh.name)
+                            .tag(ImagesManager.CacheMode.alwaysFresh)
+                    }.pickerStyle(.segmented)
 
-                        statRow(title: "Memory Expiration", value: stats.memoryExpirationDescription)
-                        statRow(title: "Disk Expiration", value: stats.diskExpirationDescription)
-                    } else {
-                        Text("Loading...")
-                            .foregroundColor(.secondary)
-                    }
+                    statRow(title: "Memory Expiration", value: stats.memoryExpirationDescription)
+                    statRow(title: "Disk Expiration", value: stats.diskExpirationDescription)
+                } else {
+                    Text("Loading...")
+                        .foregroundColor(.secondary)
+                }
             }
         }.navigationTitle("Image Cache")
             .onAppear {

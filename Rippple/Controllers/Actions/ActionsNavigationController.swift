@@ -9,12 +9,10 @@
 import UIKit
 
 class ActionsNavigationController: StyledNavigationController {
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
         if let presentationController = presentationController as? UISheetPresentationController {
-
             presentationController.detents = [
                 .medium(),
                 .large()
@@ -22,5 +20,4 @@ class ActionsNavigationController: StyledNavigationController {
             presentationController.prefersGrabberVisible = true
         }
     }
-
 }

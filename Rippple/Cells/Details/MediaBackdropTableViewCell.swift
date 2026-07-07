@@ -6,13 +6,11 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import NVActivityIndicatorView
 import Receiver
+import UIKit
 
 final class MediaBackdropTableViewCell: UITableViewCell {
-
     let (backdropDownloadResultTransmitter, backdropDownloadResultReceiver) = Receiver<Bool>.make(with: .hot)
 
     var media: MediaModel! {
@@ -75,12 +73,12 @@ final class MediaBackdropTableViewCell: UITableViewCell {
         }
     }
 
-    @IBOutlet weak var backPreviewBackdropImageView: BackdropImageView!
-    @IBOutlet weak var backBackdropImageView: BackdropImageView!
+    @IBOutlet var backPreviewBackdropImageView: BackdropImageView!
+    @IBOutlet var backBackdropImageView: BackdropImageView!
 
-    @IBOutlet weak var loadingIndicator: NVActivityIndicatorView!
+    @IBOutlet var loadingIndicator: NVActivityIndicatorView!
 
-    @IBOutlet weak var cardView: UIView!
+    @IBOutlet var cardView: UIView!
 
     override func awakeFromNib() {
         super.awakeFromNib()

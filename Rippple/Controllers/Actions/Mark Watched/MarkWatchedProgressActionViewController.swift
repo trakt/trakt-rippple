@@ -6,11 +6,9 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import NVActivityIndicatorView
-
 import Receiver
+import UIKit
 
 let (onMarkWatchedTransmitter, onMarkWatchedReceiver) = Receiver<MediaModel>.make(with: .hot)
 
@@ -20,7 +18,7 @@ final class MarkWatchedProgressActionViewController: UIViewController {
     private var episodes: [MediaModel]?
     private var watchedAt: Date?
 
-    @IBOutlet weak var loading: NVActivityIndicatorView!
+    @IBOutlet var loading: NVActivityIndicatorView!
 
     deinit {
         print("deinit MarkWatchedProgressActionViewController")
@@ -51,6 +49,7 @@ final class MarkWatchedProgressActionViewController: UIViewController {
         super.init(coder: coder)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -58,9 +57,9 @@ final class MarkWatchedProgressActionViewController: UIViewController {
     @IBSegueAction
     func makeMarkWatchedActionErrorViewController(coder: NSCoder, sender: Any?) -> MarkWatchedActionErrorViewController? {
         return MarkWatchedActionErrorViewController(coder: coder,
-                                               media: media,
-                                               watchedAt: watchedAt,
-                                               unwatched: unwatched)
+                                                    media: media,
+                                                    watchedAt: watchedAt,
+                                                    unwatched: unwatched)
     }
 
     @IBSegueAction
@@ -102,7 +101,7 @@ final class MarkWatchedProgressActionViewController: UIViewController {
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -121,7 +120,7 @@ final class MarkWatchedProgressActionViewController: UIViewController {
                             AppManager.shared.isUserInteractionEnabled = true
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error marking watched movie \(error)")
                     DispatchQueue.main.async {
                         self.performSegue(withIdentifier: "error", sender: nil)
@@ -131,10 +130,10 @@ final class MarkWatchedProgressActionViewController: UIViewController {
             }
         case .episode(let episode, _):
             TraktAPIProvider.provider.request(TraktAPIService.addEpisodeToHistory(id: episode.identifiers.trakt!, watchedAt: watchedAt),
-            callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -157,7 +156,7 @@ final class MarkWatchedProgressActionViewController: UIViewController {
                             AppManager.shared.isUserInteractionEnabled = true
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error marking watched episode \(error)")
                     DispatchQueue.main.async {
                         self.performSegue(withIdentifier: "error", sender: nil)
@@ -167,10 +166,10 @@ final class MarkWatchedProgressActionViewController: UIViewController {
             }
         case .season(let season, _):
             TraktAPIProvider.provider.request(TraktAPIService.addSeasonToHistory(id: season.identifiers.trakt!, watchedAt: watchedAt),
-            callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -189,7 +188,7 @@ final class MarkWatchedProgressActionViewController: UIViewController {
                             AppManager.shared.isUserInteractionEnabled = true
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error marking watched season \(error)")
                     DispatchQueue.main.async {
                         self.performSegue(withIdentifier: "error", sender: nil)
@@ -199,11 +198,11 @@ final class MarkWatchedProgressActionViewController: UIViewController {
             }
         case .show(let show):
             if let episodes = episodes {
-                TraktAPIProvider.provider.request(TraktAPIService.addEpisodesToHistory(showId: show.identifiers.trakt!, watchedAt: watchedAt, seasonsEpisodes: episodes.map { ($0.episode!.season, $0.episode!.number )}, runtime: show.runtime),
-                callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                TraktAPIProvider.provider.request(TraktAPIService.addEpisodesToHistory(showId: show.identifiers.trakt!, watchedAt: watchedAt, seasonsEpisodes: episodes.map { ($0.episode!.season, $0.episode!.number) }, runtime: show.runtime),
+                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                     guard let self = self else { return }
                     switch result {
-                    case let .success(moyaResponse):
+                    case .success(let moyaResponse):
                         do {
                             let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -222,7 +221,7 @@ final class MarkWatchedProgressActionViewController: UIViewController {
                                 AppManager.shared.isUserInteractionEnabled = true
                             }
                         }
-                    case let .failure(error):
+                    case .failure(let error):
                         print("Error marking watched show \(error)")
                         DispatchQueue.main.async {
                             self.performSegue(withIdentifier: "error", sender: nil)
@@ -232,10 +231,10 @@ final class MarkWatchedProgressActionViewController: UIViewController {
                 }
             } else {
                 TraktAPIProvider.provider.request(TraktAPIService.addShowToHistory(id: show.identifiers.trakt!, watchedAt: watchedAt),
-                callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                     guard let self = self else { return }
                     switch result {
-                    case let .success(moyaResponse):
+                    case .success(let moyaResponse):
                         do {
                             let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -254,7 +253,7 @@ final class MarkWatchedProgressActionViewController: UIViewController {
                                 AppManager.shared.isUserInteractionEnabled = true
                             }
                         }
-                    case let .failure(error):
+                    case .failure(let error):
                         print("Error marking watched show \(error)")
                         DispatchQueue.main.async {
                             self.performSegue(withIdentifier: "error", sender: nil)

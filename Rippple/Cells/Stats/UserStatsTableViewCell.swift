@@ -6,27 +6,24 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
+import Moya
+import Receiver
 import UIKit
 
-import Moya
-
-import Receiver
-
 final class UserStatsTableViewCell: UITableViewCell {
+    @IBOutlet var plays: EFCountingLabel!
+    @IBOutlet var minutes: EFCountingLabel!
 
-    @IBOutlet weak var plays: EFCountingLabel!
-    @IBOutlet weak var minutes: EFCountingLabel!
+    @IBOutlet var moviesPlays: EFCountingLabel!
+    @IBOutlet var showsPlays: EFCountingLabel!
+    @IBOutlet var episodesPlays: EFCountingLabel!
 
-    @IBOutlet weak var moviesPlays: EFCountingLabel!
-    @IBOutlet weak var showsPlays: EFCountingLabel!
-    @IBOutlet weak var episodesPlays: EFCountingLabel!
+    @IBOutlet var ratings: EFCountingLabel!
+    @IBOutlet var comments: EFCountingLabel!
 
-    @IBOutlet weak var ratings: EFCountingLabel!
-    @IBOutlet weak var comments: EFCountingLabel!
+    @IBOutlet var yirButton: UIButton!
 
-    @IBOutlet weak var yirButton: UIButton!
-
-    @IBOutlet private weak var statsColumnsStack: UIStackView!
+    @IBOutlet private var statsColumnsStack: UIStackView!
 
     private let disposeBag = DisposeBag()
 
@@ -70,7 +67,7 @@ final class UserStatsTableViewCell: UITableViewCell {
     }
 
     private func configureStatsColumnsPriorities() {
-        statsColumnsStack.arrangedSubviews.forEach { column in
+        for column in statsColumnsStack.arrangedSubviews {
             column.setContentHuggingPriority(.required, for: .horizontal)
             column.setContentCompressionResistancePriority(.required, for: .horizontal)
         }
@@ -93,7 +90,7 @@ final class UserStatsTableViewCell: UITableViewCell {
         cancelCancellable()
     }
 
-    private let numberFormatter: NumberFormatter = NumberFormatter()
+    private let numberFormatter: NumberFormatter = .init()
     private let dateFormatter = DateComponentsFormatter()
 
     private func update(with user: User) {
@@ -174,15 +171,15 @@ final class UserStatsTableViewCell: UITableViewCell {
     }
 
     private func updateMoviesPlaysWith(plays: Int?) {
-        self.moviesPlays.countFromCurrentValueTo(CGFloat(plays ?? 0), withDuration: 0.7)
+        moviesPlays.countFromCurrentValueTo(CGFloat(plays ?? 0), withDuration: 0.7)
     }
 
     private func updateShowsPlaysWith(plays: Int?) {
-        self.showsPlays.countFromCurrentValueTo(CGFloat(plays ?? 0), withDuration: 0.7)
+        showsPlays.countFromCurrentValueTo(CGFloat(plays ?? 0), withDuration: 0.7)
     }
 
     private func updateEpisodesPlaysWith(plays: Int?) {
-        self.episodesPlays.countFromCurrentValueTo(CGFloat(plays ?? 0), withDuration: 0.7)
+        episodesPlays.countFromCurrentValueTo(CGFloat(plays ?? 0), withDuration: 0.7)
     }
 
     private func updateCommentsWith(comments: Int?) {
@@ -203,7 +200,7 @@ final class UserStatsTableViewCell: UITableViewCell {
         return TraktAPIProvider.provider.request(.stats(type: type), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -222,7 +219,7 @@ final class UserStatsTableViewCell: UITableViewCell {
                 } catch {
                     print("fetchStatsFor request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("fetchStatsFor request failure \(error)")
             }
         }
@@ -232,7 +229,7 @@ final class UserStatsTableViewCell: UITableViewCell {
         TraktAPIProvider.provider.request(.commentCount(type: type), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -248,7 +245,7 @@ final class UserStatsTableViewCell: UITableViewCell {
                 } catch {
                     print("Stats request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 if error.localizedDescription == "cancelled" { return }
                 print("Stats request failure \(error)")
             }

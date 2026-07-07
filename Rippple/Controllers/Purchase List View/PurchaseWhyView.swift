@@ -9,7 +9,6 @@
 import SwiftUI
 
 struct PurchaseWhyView: View {
-
     let callback: () -> Void
 
     @State private var selectedSegment = 0
@@ -143,7 +142,6 @@ struct PurchaseWhyView: View {
 }
 
 struct FeatureItemView: View {
-
     var imageName: String
     var title: String
     var description: String
@@ -168,7 +166,6 @@ struct FeatureItemView: View {
 }
 
 struct ReviewItemView: View {
-
     @Environment(\.colorScheme) var colorScheme
 
     var title: String
@@ -206,8 +203,6 @@ struct ReviewItemView: View {
 
 #Preview {
     ScrollView {
-        PurchaseWhyView {
-
-        }
+        PurchaseWhyView {}
     }
 }

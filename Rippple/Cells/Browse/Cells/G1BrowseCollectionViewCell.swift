@@ -9,12 +9,12 @@
 import UIKit
 
 final class G1BrowseCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var backdrop: BackdropImageView!
+    @IBOutlet var backdrop: BackdropImageView!
 
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var subtitle: UILabel!
-    @IBOutlet weak var meta: UILabel!
-    @IBOutlet weak var actionButton: UIButton!
+    @IBOutlet var title: UILabel!
+    @IBOutlet var subtitle: UILabel!
+    @IBOutlet var meta: UILabel!
+    @IBOutlet var actionButton: UIButton!
 
     weak var presentingViewController: UIViewController? {
         didSet {
@@ -60,7 +60,7 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
                     subtitle.isHidden = true
                 }
                 if let airedEpisodes = show.airedEpisodes {
-                    meta.text = "\(airedEpisodes) episode\((airedEpisodes > 1 ? "s" : ""))"
+                    meta.text = "\(airedEpisodes) episode\(airedEpisodes > 1 ? "s" : "")"
                     meta.isHidden = false
                 } else {
                     meta.isHidden = true
@@ -82,7 +82,7 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
                 subtitle.text = season.title ?? "Season \(season.number)"
                 subtitle.isHidden = false
                 if let airedEpisodes = season.airedEpisodes {
-                    meta.text = "\(airedEpisodes) episode\((airedEpisodes > 1 ? "s" : ""))"
+                    meta.text = "\(airedEpisodes) episode\(airedEpisodes > 1 ? "s" : "")"
                     meta.isHidden = false
                 } else {
                     meta.isHidden = true
@@ -132,7 +132,7 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
         backdrop.layer.borderWidth = 1
         backdrop.layer.borderColor = UIColor.tertiarySystemFill.cgColor
 
-        let colorEnd =  UIColor.clear.cgColor
+        let colorEnd = UIColor.clear.cgColor
         let colorStart = UIColor.black.withAlphaComponent(0.85).cgColor
 
         let gradientLayer = CAGradientLayer()
@@ -260,18 +260,21 @@ final class ShelfBrowseActionButtonController {
             button.showsMenuAsPrimaryAction = true
         case .checkmark:
             button.addAction(UIAction(title: "", image: nil, identifier: checkmarkActionIdentifier) { [weak self] _ in
-                self?.actionableMedia?.markWatched()
-                self?.animateButton()
+                guard let self = self else { return }
+                self.actionableMedia?.markWatched()
+                self.animateButton()
             }, for: .primaryActionTriggered)
         case .play:
             button.addAction(UIAction(title: "", image: nil, identifier: playActionIdentifier) { [weak self] _ in
-                self?.actionableMedia?.checkin()
-                self?.animateButton()
+                guard let self = self else { return }
+                self.actionableMedia?.checkin()
+                self.animateButton()
             }, for: .primaryActionTriggered)
         case .plus:
             button.addAction(UIAction(title: "", image: nil, identifier: plusActionIdentifier) { [weak self] _ in
-                self?.contextMenu.markWatched()
-                self?.animateButton()
+                guard let self = self else { return }
+                self.contextMenu.markWatched()
+                self.animateButton()
             }, for: .primaryActionTriggered)
         }
     }
@@ -297,7 +300,7 @@ final class ShelfBrowseActionButtonController {
     private var actionableMedia: MediaModel? {
         guard let media else { return nil }
 
-        if case let .showProgress(show, progress) = media,
+        if case .showProgress(let show, let progress) = media,
            let episode = progress.nextEpisodeToWatch {
             return episode.mediaModel(given: show)
         }

@@ -11,9 +11,9 @@ import Foundation
 import ActivityKit
 
 struct RipppleLiveActivityAttributes: ActivityAttributes {
-    public typealias LiveActivityStatus = ContentState
+    typealias LiveActivityStatus = ContentState
 
-    public struct ContentState: Codable, Hashable {
+    struct ContentState: Codable, Hashable {
         var entry: WidgetModel
     }
 }

@@ -7,18 +7,17 @@
 //
 
 import Foundation
-
 import Receiver
+import UIKit
 
 let (onNotesChangedTransmitter, onNotesChangedReceiver) = Receiver<[NoteItem]>.make(with: .warm(upTo: 1))
 
 final class NotesManager {
-
     private let disposeBag = DisposeBag()
 
     private var debouncedRefresh: Debouncer!
 
-    private init() { }
+    private init() {}
 
     private var refreshing = false
 
@@ -66,7 +65,7 @@ final class NotesManager {
         debouncedRefresh.call()
     }
 
-    public func showNotes(for media: MediaModel) {
+    func showNotes(for media: MediaModel) {
         let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
         let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
         notesViewController.media = media
@@ -74,7 +73,7 @@ final class NotesManager {
         AppManager.shared.present(viewController: notesRootViewController, animated: true)
     }
 
-    public func showNotes(for ratedItem: RatedItem) {
+    func showNotes(for ratedItem: RatedItem) {
         let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
         let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
         notesViewController.ratedItem = ratedItem
@@ -82,7 +81,7 @@ final class NotesManager {
         AppManager.shared.present(viewController: notesRootViewController, animated: true)
     }
 
-    public func showNotes(for historyItem: HistoryItem) {
+    func showNotes(for historyItem: HistoryItem) {
         let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
         let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
         notesViewController.historyItem = historyItem
@@ -90,7 +89,7 @@ final class NotesManager {
         AppManager.shared.present(viewController: notesRootViewController, animated: true)
     }
 
-    public func showNotes(for collectionItem: CollectionItem) {
+    func showNotes(for collectionItem: CollectionItem) {
         let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
         let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
         notesViewController.collectionItem = collectionItem
@@ -98,34 +97,33 @@ final class NotesManager {
         AppManager.shared.present(viewController: notesRootViewController, animated: true)
     }
 
-    public func showNotes(for noteItem: NoteItem) {
+    func showNotes(for noteItem: NoteItem) {
         let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
         let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
         notesViewController.noteItem = noteItem
         AppManager.shared.present(viewController: notesRootViewController, animated: true)
     }
 
-    public func showNotes(for watchlistType: WatchlistType) {
+    func showNotes(for watchlistType: WatchlistType) {
         let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
         let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
         notesViewController.watchlistType = watchlistType
         AppManager.shared.present(viewController: notesRootViewController, animated: true)
     }
 
-    public func showNotes(for person: Person) {
+    func showNotes(for person: Person) {
         let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
         let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
         notesViewController.person = person
         AppManager.shared.present(viewController: notesRootViewController, animated: true)
     }
 
-    public func refresh() {
+    func refresh() {
         debouncedRefresh.call()
     }
 }
 
 private extension NotesManager {
-
     private func refreshNotes(pageInfo: PageInfo = PageInfo.firstPage(with: 50), notes: [NoteItem] = [NoteItem]()) {
         if SessionManager.shared.isLoggedOut {
             refreshing = false
@@ -139,7 +137,7 @@ private extension NotesManager {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -162,7 +160,7 @@ private extension NotesManager {
                     print("Notes request JSON mapping failed! \(error)")
                     self.refreshing = false
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Notes request failure \(error)")
                 self.refreshing = false
             }
@@ -189,7 +187,7 @@ extension MediaModel {
             }
             return nil
         case .season(let season, let show):
-            if let noteItem = NotesManager.shared.notes.first(where: { $0.type == .season && $0.noteAttachement.type == .season && $0.season == season && $0.show == show}) {
+            if let noteItem = NotesManager.shared.notes.first(where: { $0.type == .season && $0.noteAttachement.type == .season && $0.season == season && $0.show == show }) {
                 return noteItem
             }
             return nil
@@ -205,7 +203,7 @@ extension MediaModel {
         case .movie(let movie):
             return NotesManager.shared.notes.filter { $0.movie == movie && $0.noteAttachement.type == .movie }
         case .episode(let episode, let show):
-            return NotesManager.shared.notes.filter { $0.episode == episode && $0.show == show && $0.noteAttachement.type == .episode}
+            return NotesManager.shared.notes.filter { $0.episode == episode && $0.show == show && $0.noteAttachement.type == .episode }
         case .show(let show):
             return NotesManager.shared.notes.filter { $0.show == show && ($0.noteAttachement.type == .show || $0.noteAttachement.type == .episode || $0.noteAttachement.type == .season) }
         case .season(let season, let show):

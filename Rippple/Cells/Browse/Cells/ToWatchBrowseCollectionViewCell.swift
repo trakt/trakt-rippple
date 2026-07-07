@@ -9,11 +9,11 @@
 import UIKit
 
 final class ToWatchBrowseCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var backdrop: BackdropImageView!
-    @IBOutlet weak var label: UILabel?
-    @IBOutlet weak var sublabel: UILabel?
-    @IBOutlet weak var pinned: UIImageView?
-    @IBOutlet weak var actionButton: UIButton!
+    @IBOutlet var backdrop: BackdropImageView!
+    @IBOutlet var label: UILabel?
+    @IBOutlet var sublabel: UILabel?
+    @IBOutlet var pinned: UIImageView?
+    @IBOutlet var actionButton: UIButton!
 
     weak var presentingViewController: UIViewController? {
         didSet {
@@ -89,9 +89,9 @@ final class ToWatchBrowseCollectionViewCell: UICollectionViewCell {
 }
 
 final class StandardHistoryBrowseCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var backdrop: BackdropImageView!
-    @IBOutlet weak var label: UILabel?
-    @IBOutlet weak var sublabel: UILabel?
+    @IBOutlet var backdrop: BackdropImageView!
+    @IBOutlet var label: UILabel?
+    @IBOutlet var sublabel: UILabel?
 
     var media: MediaModel! {
         didSet {

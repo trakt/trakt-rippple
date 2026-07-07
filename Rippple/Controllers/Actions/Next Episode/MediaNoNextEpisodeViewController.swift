@@ -9,7 +9,6 @@
 import UIKit
 
 final class MediaNoNextEpisodeViewController: UITableViewController {
-
     var media: MediaModel!
 
     override func viewDidLoad() {

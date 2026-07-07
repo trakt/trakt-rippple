@@ -6,21 +6,17 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Haring
+import Receiver
+import SafariServices
 import UIKit
 
-import Haring
-
-import SafariServices
-
-import Receiver
-
 final class LoginViewController: UIViewController {
+    @IBOutlet var footerLabel: UILabel!
+    @IBOutlet var subtitleLabel: UILabel!
+    @IBOutlet var headerLabel: UILabel!
 
-    @IBOutlet weak var footerLabel: UILabel!
-    @IBOutlet weak var subtitleLabel: UILabel!
-    @IBOutlet weak var headerLabel: UILabel!
-
-    @IBOutlet weak var loginButton: UIButton!
+    @IBOutlet var loginButton: UIButton!
 
     private let disposeBag = DisposeBag()
 
@@ -47,15 +43,15 @@ final class LoginViewController: UIViewController {
     private func configureHeader() {
         let markdownParser = MarkdownParser(font: UIFont(name: "HelveticaNeue-Bold", size: 29)!,
                                             color: .label,
-                            automaticLinkDetectionEnabled: false)
+                                            automaticLinkDetectionEnabled: false)
         markdownParser.bold.color = UIColor(asset: .globalTint)
         markdownParser.bold.font = UIFont(name: "HelveticaNeue-Bold", size: 29)!
         let markdown = """
-Track.
-Discover.
-Share.
-Everywhere__*__
-"""
+        Track.
+        Discover.
+        Share.
+        Everywhere__*__
+        """
         headerLabel.attributedText = markdownParser.parse(markdown)
 
         title = ""
@@ -64,15 +60,15 @@ Everywhere__*__
     private func configureFooter() {
         let markdownParser = MarkdownParser(font: UIFont.preferredFont(forTextStyle: .caption1),
                                             color: .secondaryLabel,
-                            automaticLinkDetectionEnabled: false)
-                markdownParser.bold.color = UIColor(asset: .globalTint)
-                markdownParser.bold.font = UIFont.preferredFont(forTextStyle: .caption1)
-                let markdown = """
+                                            automaticLinkDetectionEnabled: false)
+        markdownParser.bold.color = UIColor(asset: .globalTint)
+        markdownParser.bold.font = UIFont.preferredFont(forTextStyle: .caption1)
+        let markdown = """
         __*__ Rippple is a Trakt client available on iPhone, iPad and Mac. Sign in to your Trakt account to track, discover and share with the community.
         When signed in, enjoy a lot of Rippple's features for free. Then, unlock additional Premium features with a subscription. Or not.
         Don't hesitate to check our **Privacy Policy**.
         """
-                footerLabel.attributedText = markdownParser.parse(markdown)
+        footerLabel.attributedText = markdownParser.parse(markdown)
     }
 
     @IBAction func privacyAndTerms(_ sender: Any) {
@@ -91,7 +87,7 @@ Everywhere__*__
 
     @IBAction func loginToTrakt(_ sender: UIButton) {
         sender.isEnabled = false
-        SessionManager.shared.initiateTraktLogin { [weak self] (isLoggedIn) in
+        SessionManager.shared.initiateTraktLogin { [weak self] isLoggedIn in
             guard let self = self else { return }
 
             defer {

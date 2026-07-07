@@ -6,22 +6,17 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-
-import Receiver
-
-import SafariServices
-
 import Moya
-
+import Receiver
+import SafariServices
 import SwiftUI
+import UIKit
 
 let (onRemoveWatchTransmitter, onRemoveWatchReceiver) = Receiver<Int64>.make(with: .hot)
 let (onRemoveWatchMediaTransmitter, onRemoveWatchMediaReceiver) = Receiver<MediaModel>.make(with: .hot)
 let (onRemoveMultipleMediaTransmitter, onRemoveMultipleMediaReceiver) = Receiver<MediaModel>.make(with: .hot)
 
 final class MediaViewController: UITableViewController {
-
     private let disposeBag = DisposeBag()
 
     private var didDownloadFull = false {
@@ -36,6 +31,7 @@ final class MediaViewController: UITableViewController {
             }
         }
     }
+
     private var didDownloadPoster = true {
         didSet {
             if didDownloadPoster == false {
@@ -43,6 +39,7 @@ final class MediaViewController: UITableViewController {
             }
         }
     }
+
     var media: MediaModel! {
         didSet {
             if isViewLoaded {
@@ -66,6 +63,7 @@ final class MediaViewController: UITableViewController {
             }
         }
     }
+
     private func progress(for season: Season) -> SeasonProgress? {
         guard let progress = progress else { return nil }
         for seasonProgress in progress.seasons where seasonProgress.number == season.number {
@@ -73,6 +71,7 @@ final class MediaViewController: UITableViewController {
         }
         return nil
     }
+
     private func progress(for episode: Episode, in season: Season) -> EpisodeProgress? {
         guard let seasonProgress = progress(for: season) else { return nil }
         for episodeProgress in seasonProgress.episodes where episodeProgress.number == episode.number {
@@ -82,6 +81,18 @@ final class MediaViewController: UITableViewController {
     }
 
     private var linkCount = 0
+
+    private var shouldShowSocialActivity: Bool {
+        guard FollowManager.shared.followingCount > 0 else { return false }
+
+        switch media! {
+        case .movie, .show, .episode:
+            return true
+        case .season, .list, .showProgress:
+            return false
+        }
+    }
+
     private func updateDatasource() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.content])
@@ -155,8 +166,22 @@ final class MediaViewController: UITableViewController {
             snapshot.deleteItems([.whereToWatch])
         }
 
+        if snapshot.indexOfItem(.activity) != nil {
+            if shouldShowSocialActivity {
+                snapshot.insertItems([.socialActivity], afterItem: .activity)
+            } else {
+                snapshot.insertItems([.spacer(5.002)], afterItem: .activity)
+            }
+        }
+
         if media.noteItem != nil {
-            snapshot.insertItems([.notes], afterItem: .activity)
+            if snapshot.indexOfItem(.socialActivity) != nil {
+                snapshot.insertItems([.notes], afterItem: .socialActivity)
+            } else if snapshot.indexOfItem(.spacer(5.002)) != nil {
+                snapshot.insertItems([.notes], afterItem: .spacer(5.002))
+            } else if snapshot.indexOfItem(.activity) != nil {
+                snapshot.insertItems([.notes], afterItem: .activity)
+            }
         }
 
         linkCount = 0
@@ -214,6 +239,7 @@ final class MediaViewController: UITableViewController {
         case backdrop
         case title
         case activity
+        case socialActivity
         case rating
         case comments
         case cast
@@ -257,6 +283,12 @@ final class MediaViewController: UITableViewController {
             return cell
         case .activity:
             let cell = tableView.dequeueReusableCell(withIdentifier: "activity") as! PulsePreviewTableViewCell
+            cell.cardType = shouldShowSocialActivity ? .top : .alone
+            cell.media = self.media
+            return cell
+        case .socialActivity:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "social activity") as! SocialActivityTableViewCell
+            cell.cardType = .bottom
             cell.media = self.media
             return cell
         case .rating:
@@ -271,6 +303,7 @@ final class MediaViewController: UITableViewController {
             return cell
         case .cast:
             let cell = tableView.dequeueReusableCell(withIdentifier: "cast") as! CastTableViewCell
+            cell.showsCastEpisodeCount = self.media.episode == nil
             cell.media = self.media
             cell.delegate = self
             return cell
@@ -382,6 +415,7 @@ final class MediaViewController: UITableViewController {
 
         tableView.allowsFocus = false
         tableView.register(UINib(nibName: "PulsePreviewTableViewCell", bundle: nil), forCellReuseIdentifier: "activity")
+        tableView.register(UINib(nibName: "SocialActivityTableViewCell", bundle: nil), forCellReuseIdentifier: "social activity")
         tableView.register(UINib(nibName: "MediaBackdropTableViewCell", bundle: nil), forCellReuseIdentifier: "backdrop")
         tableView.register(UINib(nibName: "MediaPosterTableViewCell", bundle: nil), forCellReuseIdentifier: "poster")
         tableView.register(UINib(nibName: "MediaOverviewTableViewCell", bundle: nil), forCellReuseIdentifier: "overview")
@@ -425,7 +459,7 @@ final class MediaViewController: UITableViewController {
                 loadFullMovie()
             }
             fetchMovieOfficialList()
-            // fetchMovieTranslations()
+        // fetchMovieTranslations()
         case .show:
             if !didDownloadFull {
                 loadFullShow()
@@ -465,6 +499,11 @@ final class MediaViewController: UITableViewController {
         }.disposed(by: disposeBag)
 
         onCommentsDisplayReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.updateDatasource()
+        }.disposed(by: disposeBag)
+
+        FollowManager.shared.onFollowingChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.updateDatasource()
         }.disposed(by: disposeBag)
@@ -745,24 +784,24 @@ final class MediaViewController: UITableViewController {
         guard let movie = media.movie else { fatalError("Media should be a Movie") }
         TraktAPIProvider.provider.request(TraktAPIService.movie(id: movie.identifiers.traktIdOrSlug, extended: .full),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let movie = try response.map(Movie.self, using: TraktAPIProvider.decoder)
+                    let movie = try response.map(Movie.self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.media = MediaModel.movie(movie)
-                                                        self.didDownloadFull = true
-                                                    }
-                                                } catch {
-                                                    print("Error fetching movie \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching movie \(error)")
-                                            }
+                    DispatchQueue.main.async {
+                        self.media = MediaModel.movie(movie)
+                        self.didDownloadFull = true
+                    }
+                } catch {
+                    print("Error fetching movie \(error)")
+                }
+            case .failure(let error):
+                print("Failed fetching movie \(error)")
+            }
         }
     }
 
@@ -770,49 +809,49 @@ final class MediaViewController: UITableViewController {
         guard let show = media.show else { fatalError("Media should be a Show") }
         TraktAPIProvider.provider.request(TraktAPIService.show(id: show.identifiers.traktIdOrSlug, extended: .full),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let show = try response.map(Show.self, using: TraktAPIProvider.decoder)
+                    let show = try response.map(Show.self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.media = MediaModel.show(show)
-                                                        self.didDownloadFull = true
-                                                    }
-                                                } catch {
-                                                    print("Error fetching movie \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching movie \(error)")
-                                            }
+                    DispatchQueue.main.async {
+                        self.media = MediaModel.show(show)
+                        self.didDownloadFull = true
+                    }
+                } catch {
+                    print("Error fetching movie \(error)")
+                }
+            case .failure(let error):
+                print("Failed fetching movie \(error)")
+            }
         }
     }
 
     private func loadFullEpisode() {
-        guard case let .episode(episode, show) = media else { fatalError("Media should be an episode") }
+        guard case .episode(let episode, let show) = media else { fatalError("Media should be an episode") }
         TraktAPIProvider.provider.request(TraktAPIService.episode(id: show.identifiers.traktIdOrSlug, season: episode.season, episode: episode.number),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
+                    let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.media = MediaModel.episode(episode, show)
-                                                        self.didDownloadFull = true
-                                                    }
-                                                } catch {
-                                                    print("Error fetching movie \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching movie \(error)")
-                                            }
+                    DispatchQueue.main.async {
+                        self.media = MediaModel.episode(episode, show)
+                        self.didDownloadFull = true
+                    }
+                } catch {
+                    print("Error fetching movie \(error)")
+                }
+            case .failure(let error):
+                print("Failed fetching movie \(error)")
+            }
         }
     }
 
@@ -902,23 +941,23 @@ final class MediaViewController: UITableViewController {
         guard let traktId = media.movie?.identifiers.trakt else { fatalError("Media should be a Movie with a valid id") }
         TraktAPIProvider.provider.request(TraktAPIService.movieLists(id: traktId, type: .official),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
+                    let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.officialList = lists.first
-                                                    }
-                                                } catch {
-                                                    print("Error fetching movie lists \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching movie lists \(error)")
-                                            }
+                    DispatchQueue.main.async {
+                        self.officialList = lists.first
+                    }
+                } catch {
+                    print("Error fetching movie lists \(error)")
+                }
+            case .failure(let error):
+                print("Failed fetching movie lists \(error)")
+            }
         }
     }
 
@@ -926,23 +965,23 @@ final class MediaViewController: UITableViewController {
         guard let traktId = media.show?.identifiers.trakt else { fatalError("Media should be a Show with a valid id") }
         TraktAPIProvider.provider.request(TraktAPIService.showLists(id: traktId, type: .official),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
+                    let lists = try response.map([List].self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.officialList = lists.first
-                                                    }
-                                                } catch {
-                                                    print("Error fetching show lists \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching show lists \(error)")
-                                            }
+                    DispatchQueue.main.async {
+                        self.officialList = lists.first
+                    }
+                } catch {
+                    print("Error fetching show lists \(error)")
+                }
+            case .failure(let error):
+                print("Failed fetching show lists \(error)")
+            }
         }
     }
 
@@ -952,50 +991,56 @@ final class MediaViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                    // Filter seasons without episodes or special seasons
-                    let seasons = try response.map([Season].self, using: TraktAPIProvider.decoder).filter { $0.number != 0 && $0.episodes?.isEmpty == false }
+                    let allSeasons = try response.map([Season].self, using: TraktAPIProvider.decoder)
+
+                    // Filter seasons without episodes or special seasons for swipe navigation.
+                    let seasons = allSeasons.filter { $0.number != 0 && $0.episodes?.isEmpty == false }
 
                     DispatchQueue.main.async {
                         self.seasons = seasons
+                        if case .season(let currentSeason, let show) = self.media,
+                           let hydratedSeason = allSeasons.first(where: { $0.number == currentSeason.number }) {
+                            self.media = hydratedSeason.mediaModel(given: show)
+                        }
                     }
                 } catch {
                     print("Seasons request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Seasons request failure \(error)")
             }
         }
     }
 
     /*
-    private func fetchMovieTranslations() {
-        guard let traktId = media.movie?.identifiers.traktIdOrSlug else { fatalError("Media should be a Movie with a valid id") }
-        TraktAPIProvider.provider.request(.movieTranslations(id: traktId),
-                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+     private func fetchMovieTranslations() {
+         guard let traktId = media.movie?.identifiers.traktIdOrSlug else { fatalError("Media should be a Movie with a valid id") }
+         TraktAPIProvider.provider.request(.movieTranslations(id: traktId),
+                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                                             guard let self = self else { return }
+                                             switch result {
+                                             case let .success(moyaResponse):
+                                                 do {
+                                                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let translations = try response.map([Translation].self, using: TraktAPIProvider.decoder)
+                                                     let translations = try response.map([Translation].self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        print("Translations fetched: \(translations)")
-                                                    }
-                                                } catch {
-                                                    print("Error fetching movie translations \(error)")
-                                                }
-                                            case let .failure(error):
-                                                print("Failed fetching movie translations \(error)")
-                                            }
-        }
-    }
-     */
+                                                     DispatchQueue.main.async {
+                                                         print("Translations fetched: \(translations)")
+                                                     }
+                                                 } catch {
+                                                     print("Error fetching movie translations \(error)")
+                                                 }
+                                             case let .failure(error):
+                                                 print("Failed fetching movie translations \(error)")
+                                             }
+         }
+     }
+      */
 
     private var firstEverScrollOffset: CGPoint?
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -1008,7 +1053,7 @@ final class MediaViewController: UITableViewController {
             if contentOffsetY <= 0 {
                 cell.contentView.alpha = 1.0
             } else {
-                cell.contentView.alpha = 1.0 - (contentOffsetY/60.0)
+                cell.contentView.alpha = 1.0 - (contentOffsetY / 60.0)
             }
         }
 
@@ -1056,6 +1101,8 @@ extension MediaViewController {
             return UITableView.automaticDimension
         case .activity:
             return UITableView.automaticDimension
+        case .socialActivity:
+            return UITableView.automaticDimension
         case .rating:
             return UITableView.automaticDimension
         case .comments:
@@ -1099,6 +1146,10 @@ extension MediaViewController {
             present(browserNavigationController, animated: true, completion: nil)
         case .activity:
             performSegue(withIdentifier: "activities", sender: media)
+        case .socialActivity:
+            let socialActivitiesViewController = SocialActivitiesViewController(style: .plain)
+            socialActivitiesViewController.media = media
+            navigationController?.pushViewController(socialActivitiesViewController, animated: true)
         case .rating:
             return
         case .comments:
@@ -1232,12 +1283,11 @@ extension MediaViewController: UITableViewDragDelegate {
                     self.writeToPhotoAlbum(image: image)
                 }
                 let shareAction = UIAction(title: "Share Image",
-                                          image: UIImage(systemName: "square.and.arrow.up"),
-                                          identifier: nil) { _ in
+                                           image: UIImage(systemName: "square.and.arrow.up"),
+                                           identifier: nil) { _ in
                     self.share(image: image)
                 }
-                let menu = UIMenu(children: [copyAction, saveAction, shareAction])
-                return menu
+                return UIMenu(children: [copyAction, saveAction, shareAction])
             }
         }
 

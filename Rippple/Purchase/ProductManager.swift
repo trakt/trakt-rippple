@@ -7,19 +7,17 @@
 //
 
 import Foundation
-
-import StoreKit
 import Receiver
+import StoreKit
 
 final class ProductManager {
-
     enum State {
         case loading
         case error
         case content
     }
 
-    private init() { }
+    private init() {}
 
     static let shared = ProductManager()
 
@@ -49,7 +47,7 @@ final class ProductManager {
         loading = true
         isEligibleForFreeTrial = false
 
-        Task.init {
+        Task {
             await retrieveProductsInfo()
         }
     }

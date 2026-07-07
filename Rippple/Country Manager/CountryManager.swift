@@ -10,7 +10,7 @@ import Foundation
 
 enum Country: String, CaseIterable, Identifiable {
     var id: String {
-        return self.rawValue
+        return rawValue
     }
 
     case AD
@@ -154,7 +154,7 @@ enum Country: String, CaseIterable, Identifiable {
     case ZW
 
     var localizedCountry: String {
-        return Locale.current.localizedString(forRegionCode: self.rawValue) ?? "Unknown"
+        return Locale.current.localizedString(forRegionCode: rawValue) ?? "Unknown"
     }
 }
 
@@ -163,12 +163,11 @@ import Receiver
 let (onCountryChangedTransmitter, onCountryChangedReceiver) = Receiver<Country>.make(with: .hot)
 
 final class CountryManager {
-
     private init() {
         disabled = UserDefaults.standard.bool(forKey: "CountryManager.disabled")
         favoritesOnly = UserDefaults.standard.bool(forKey: "CountryManager.favoritesOnly")
         if let data = UserDefaults.standard.data(forKey: "CountryManager.favoriteProviders.\(CountryManager.userCountry.rawValue)"),
-            let array = try? PropertyListDecoder().decode([ProviderType].self, from: data) {
+           let array = try? PropertyListDecoder().decode([ProviderType].self, from: data) {
             favoriteProviders = array
         } else {
             favoriteProviders = [ProviderType]()
@@ -214,7 +213,7 @@ final class CountryManager {
         UserDefaults.standard.setValue(country, forKey: "CountryManager.userCountry")
         UserDefaults.standard.synchronize()
         if let data = UserDefaults.standard.data(forKey: "CountryManager.favoriteProviders.\(CountryManager.userCountry.rawValue)"),
-            let array = try? PropertyListDecoder().decode([ProviderType].self, from: data) {
+           let array = try? PropertyListDecoder().decode([ProviderType].self, from: data) {
             favoriteProviders = array
         } else {
             favoriteProviders = [ProviderType]()
@@ -256,8 +255,8 @@ extension Array where Element == ProviderType {
 }
 
 extension ProviderType {
-    private static let streamPriorityBoost = 10_000
-    private static let freePriorityBoost = 20_000
+    private static let streamPriorityBoost = 10000
+    private static let freePriorityBoost = 20000
     private static let maximumLinkPriorityBoost = streamPriorityBoost + freePriorityBoost
     private static let missingDisplayPriority = Int.max - maximumLinkPriorityBoost
 

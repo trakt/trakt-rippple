@@ -1,5 +1,5 @@
 //
-//  SwiftMessage+Extension.swift
+//  SwiftMessage.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 11/01/2018.
@@ -9,9 +9,9 @@
 import UIKit
 
 final class RipppleBannerMessage: UIView {
-    @IBOutlet weak var message: UILabel!
-    @IBOutlet weak var pillView: UIView!
-    @IBOutlet weak var subtext: UILabel!
+    @IBOutlet var message: UILabel!
+    @IBOutlet var pillView: UIView!
+    @IBOutlet var subtext: UILabel!
 
     private let relativeDateTimeFormatter: RelativeDateTimeFormatter = {
         let dateFormatter = RelativeDateTimeFormatter()
@@ -20,6 +20,7 @@ final class RipppleBannerMessage: UIView {
         dateFormatter.formattingContext = .standalone
         return dateFormatter
     }()
+
     private var timer: Timer?
 
     var date: Date? {
@@ -48,12 +49,12 @@ final class RipppleBannerMessage: UIView {
         pillView.layer.shadowOffset = CGSize(width: 0, height: 0)
         pillView.layer.shadowRadius = 2
         pillView.layer.shadowOpacity = 0.2
-        pillView.layer.cornerRadius = pillView.bounds.size.height/2.0
+        pillView.layer.cornerRadius = pillView.bounds.size.height / 2.0
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        pillView.layer.cornerRadius = pillView.bounds.size.height/2.0
+        pillView.layer.cornerRadius = pillView.bounds.size.height / 2.0
     }
 }

@@ -6,12 +6,10 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class ShowProgressBar: UIView {
-
     private let disposeBag = DisposeBag()
 
     var hideIfNoProgress = false
@@ -65,7 +63,7 @@ final class ShowProgressBar: UIView {
                     episodes += 1
                 }
             }
-            let episodeWidth = (width-((seasons-1)*seasonWidth))/episodes
+            let episodeWidth = (width - ((seasons - 1) * seasonWidth)) / episodes
             var origin: CGPoint = .zero
 
             let watchedPath = UIBezierPath()

@@ -6,6 +6,7 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Emoji
 import Foundation
 
 // MARK: - Unknown value Enum
@@ -112,9 +113,11 @@ struct Show: Codable, Equatable, Hashable {
             return officialTitle
         }
     }
+
     var sortableTitle: String {
         title.sortableString
     }
+
     let releaseYear: Int?
     let identifiers: Identifiers
 
@@ -253,6 +256,7 @@ struct Movie: Codable, Equatable, Hashable {
             return officialTitle
         }
     }
+
     let releaseYear: Int?
     let identifiers: Identifiers
 
@@ -365,7 +369,6 @@ struct ListItem: Codable {
 }
 
 struct List: Codable, Equatable, Hashable {
-
     func hash(into hasher: inout Hasher) {
         hasher.combine(identifiers)
     }
@@ -374,7 +377,7 @@ struct List: Codable, Equatable, Hashable {
         return lhs.identifiers == rhs.identifiers
     }
 
-    let name: String
+    private let _name: String
     let description: String?
     let commentsAllowed: Bool
     let displayRank: Bool
@@ -393,7 +396,7 @@ struct List: Codable, Equatable, Hashable {
     let user: User
 
     enum CodingKeys: String, CodingKey {
-        case name
+        case _name = "name"
         case description
         case commentsAllowed = "allow_comments"
         case itemCount = "item_count"
@@ -405,6 +408,10 @@ struct List: Codable, Equatable, Hashable {
         case user
         case type
         case shareLink = "share_link"
+    }
+
+    var name: String {
+        return _name.emojiUnescapedString
     }
 }
 
@@ -433,20 +440,20 @@ struct WatchingItem: Codable, Equatable {
     let episode: Episode?
 
     init(media: MediaModel) {
-        self.startDate = Date()
-        self.expireDate = startDate.addingTimeInterval(7200)
-        self.action = .checkin
+        startDate = Date()
+        expireDate = startDate.addingTimeInterval(7200)
+        action = .checkin
         switch media {
         case .movie(let movie):
-            self.type = .movie
+            type = .movie
             self.movie = movie
-            self.show = nil
-            self.episode = nil
+            show = nil
+            episode = nil
         case .episode(let episode, let show):
-            self.type = .episode
+            type = .episode
             self.show = show
             self.episode = episode
-            self.movie = nil
+            movie = nil
         default:
             fatalError()
         }
@@ -549,7 +556,7 @@ struct User: Codable, Equatable, Hashable {
     }
 
     var isTraktVIP: Bool {
-        return (isVip ?? false || isVipOg ?? false || isVipEp ?? false)
+        return isVip ?? false || isVipOg ?? false || isVipEp ?? false
     }
 }
 
@@ -886,6 +893,74 @@ struct Follow: Codable {
     }
 }
 
+// MARK: - Social
+
+struct SocialEntry: Codable, Equatable, Hashable {
+    let followedAt: Date
+    let user: User
+    let watched: SocialWatched?
+    let watchlisted: SocialWatchlisted?
+
+    enum CodingKeys: String, CodingKey {
+        case followedAt = "followed_at"
+        case user
+        case watched
+        case watchlisted
+    }
+}
+
+struct SocialWatched: Codable, Equatable, Hashable {
+    let plays: Int
+    let lastWatchedAt: Date?
+    let lastUpdatedAt: Date?
+    let rating: SocialRating?
+    let comment: SocialComment?
+
+    enum CodingKeys: String, CodingKey {
+        case plays
+        case lastWatchedAt = "last_watched_at"
+        case lastUpdatedAt = "last_updated_at"
+        case rating
+        case comment
+    }
+}
+
+struct SocialRating: Codable, Equatable, Hashable {
+    let rating: Int
+    let ratedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case rating
+        case ratedAt = "rated_at"
+    }
+}
+
+struct SocialComment: Codable, Equatable, Hashable {
+    let identifiers: Identifiers
+    let body: String?
+    let containsSpoiler: Bool
+    let isReview: Bool
+    let createDate: Date?
+    let updateDate: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case identifiers = "ids"
+        case body = "comment"
+        case containsSpoiler = "spoiler"
+        case isReview = "review"
+        case createDate = "created_at"
+        case updateDate = "updated_at"
+    }
+}
+
+struct SocialWatchlisted: Codable, Equatable, Hashable {
+    let listedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case listedAt = "listed_at"
+    }
+}
+
 // MARK: - Media Item
 
 struct MediaItem: Codable, Equatable {
@@ -1084,11 +1159,6 @@ struct Like: Codable, Equatable, Hashable {
         case user
     }
 
-    static func == (lhs: Like, rhs: Like) -> Bool {
-        return lhs.user == rhs.user &&
-            lhs.likedAt == rhs.likedAt
-    }
-
     func hash(into hasher: inout Hasher) {
         hasher.combine(user)
         hasher.combine(likedAt)
@@ -1148,12 +1218,6 @@ struct TMDbRatings: Codable {
 }
 
 struct TraktRatings: Codable, Equatable, Hashable {
-    static func == (lhs: TraktRatings, rhs: TraktRatings) -> Bool {
-        return lhs.rating == rhs.rating &&
-            lhs.votes == rhs.votes &&
-            lhs.distribution == rhs.distribution
-    }
-
     func hash(into hasher: inout Hasher) {
         hasher.combine(rating)
         hasher.combine(votes)
@@ -1166,19 +1230,6 @@ struct TraktRatings: Codable, Equatable, Hashable {
 }
 
 struct RatingDistribution: Codable, Equatable, Hashable {
-    static func == (lhs: RatingDistribution, rhs: RatingDistribution) -> Bool {
-        return lhs.one == rhs.one &&
-            lhs.two == rhs.two &&
-            lhs.three == rhs.three &&
-            lhs.four == rhs.four &&
-            lhs.five == rhs.five &&
-        lhs.six == rhs.six &&
-        lhs.seven == rhs.seven &&
-        lhs.eight == rhs.eight &&
-        lhs.nine == rhs.nine &&
-        lhs.ten == rhs.ten
-    }
-
     func hash(into hasher: inout Hasher) {
         hasher.combine(one)
         hasher.combine(two)
@@ -1246,17 +1297,6 @@ struct RatedItem: Codable, Equatable, Hashable {
         case season
     }
 
-    static func == (lhs: RatedItem, rhs: RatedItem) -> Bool {
-        return lhs.type == rhs.type &&
-            lhs.movie == rhs.movie &&
-            lhs.show == rhs.show &&
-            lhs.episode == rhs.episode &&
-            lhs.season == rhs.season &&
-        lhs.rating == rhs.rating &&
-        lhs.rateDate == rhs.rateDate &&
-        lhs.episode == rhs.episode
-    }
-
     func hash(into hasher: inout Hasher) {
         hasher.combine(type)
         hasher.combine(rating)
@@ -1296,15 +1336,15 @@ struct CheckinItem: Codable {
     let appVersion: String?
 
     init(episode: Episode) {
-        self.movie = nil
-               self.episode = episode
-        self.appVersion = "\(Bundle.main.releaseVersionNumber!)"
+        movie = nil
+        self.episode = episode
+        appVersion = "\(Bundle.main.releaseVersionNumber!)"
     }
 
     init(movie: Movie) {
         self.movie = movie
-        self.episode = nil
-        self.appVersion = "\(Bundle.main.releaseVersionNumber!)"
+        episode = nil
+        appVersion = "\(Bundle.main.releaseVersionNumber!)"
     }
 }
 
@@ -1316,7 +1356,8 @@ struct ShowProgress: Codable, Hashable {
     let nextEpisodeToWatch: Episode?
     let resetAt: Date?
     let seasons: [SeasonProgress]
-    let lastEpisode: Episode?
+    let lastWatchedEpisode: Episode?
+    let lastAiredEpisode: Episode?
 
     enum CodingKeys: String, CodingKey {
         case lastWatchedAt = "last_watched_at"
@@ -1325,17 +1366,20 @@ struct ShowProgress: Codable, Hashable {
         case aired
         case seasons
         case completed
-        case lastEpisode = "last_episode"
+        case lastWatchedEpisode = "last_episode"
+        case lastAiredEpisode = "last_aired_episode"
     }
 
     var toRewatchCount: Int {
         guard let resetDate = resetAt else { return 0 }
         var index = 0
-        for season in seasons {
-            for episode in season.episodes {
+        for season in seasons.sorted(by: { $0.number > $1.number }) where season.number != 0 {
+            for episode in season.episodes.sorted(by: { $0.number > $1.number }) {
                 if let lastWatchedDate = episode.lastWatchedAt {
                     if lastWatchedDate < resetDate {
                         index += 1
+                    } else {
+                        return index
                     }
                 }
             }
@@ -1345,16 +1389,19 @@ struct ShowProgress: Codable, Hashable {
 
     var nextToRewatch: (SeasonProgress, EpisodeProgress)? {
         guard let resetDate = resetAt else { return nil }
-        for season in seasons {
-            for episode in season.episodes {
+        var nextToRewatch: (SeasonProgress, EpisodeProgress)?
+        for season in seasons.sorted(by: { $0.number > $1.number }) where season.number != 0 {
+            for episode in season.episodes.sorted(by: { $0.number > $1.number }) {
                 if let lastWatchedDate = episode.lastWatchedAt {
                     if lastWatchedDate < resetDate {
-                        return (season, episode)
+                        nextToRewatch = (season, episode)
+                    } else {
+                        return nextToRewatch
                     }
                 }
             }
         }
-        return nil
+        return nextToRewatch
     }
 
     var behind: Int {
@@ -1406,31 +1453,31 @@ struct WatchlistedItem: Codable {
     let episodes: [Episode]?
 
     init(episode: Episode) {
-        self.movies = nil
-        self.shows = nil
-        self.seasons = nil
-        self.episodes = [episode]
+        movies = nil
+        shows = nil
+        seasons = nil
+        episodes = [episode]
     }
 
     init(movie: Movie) {
-        self.movies = [movie]
-        self.shows = nil
-        self.seasons = nil
-        self.episodes = nil
+        movies = [movie]
+        shows = nil
+        seasons = nil
+        episodes = nil
     }
 
     init(season: Season) {
-        self.movies = nil
-        self.shows = nil
-        self.seasons = [season]
-        self.episodes = nil
+        movies = nil
+        shows = nil
+        seasons = [season]
+        episodes = nil
     }
 
     init(show: Show) {
-        self.movies = nil
-        self.shows = [show]
-        self.seasons = nil
-        self.episodes = nil
+        movies = nil
+        shows = [show]
+        seasons = nil
+        episodes = nil
     }
 
     init(models: [MediaModel]) {
@@ -1504,13 +1551,6 @@ struct WatchlistedItemWithNotes: Codable {
 struct People: Codable {
     let cast: [Cast]
     let crew: Crew?
-    let guestStars: [Cast]?
-
-    enum CodingKeys: String, CodingKey {
-        case cast
-        case crew
-        case guestStars = "guest_stars"
-    }
 
     var allMovies: [Movie] {
         var result: [Movie] = []
@@ -1518,13 +1558,6 @@ struct People: Codable {
         // From cast credits
         for c in cast {
             if let m = c.movie, !result.contains(m) { result.append(m) }
-        }
-
-        // From guest star appearances
-        if let guest = guestStars {
-            for g in guest {
-                if let m = g.movie, !result.contains(m) { result.append(m) }
-            }
         }
 
         // From crew jobs
@@ -1543,13 +1576,6 @@ struct People: Codable {
         // From cast credits
         for c in cast {
             if let s = c.show, !result.contains(s) { result.append(s) }
-        }
-
-        // From guest star appearances
-        if let guest = guestStars {
-            for g in guest {
-                if let s = g.show, !result.contains(s) { result.append(s) }
-            }
         }
 
         // From crew jobs
@@ -1572,20 +1598,16 @@ struct Cast: Codable, Equatable, Hashable {
     let show: Show?
 
     enum CodingKeys: String, CodingKey {
-        case characters = "characters"
-        case person = "person"
+        case characters
+        case person
         case episodeCount = "episode_count"
 
-        case movie = "movie"
-        case show = "show"
+        case movie
+        case show
     }
 }
 
 struct PersonItem: Codable, Equatable, Hashable {
-    static func == (lhs: PersonItem, rhs: PersonItem) -> Bool {
-        return lhs.person == rhs.person
-    }
-
     func hash(into hasher: inout Hasher) {
         hasher.combine(person)
     }
@@ -1738,17 +1760,17 @@ struct Crew: Codable {
     let createdBy: [Job]?
 
     enum CodingKeys: String, CodingKey {
-        case production = "production"
-        case art = "art"
-        case crew = "crew"
+        case production
+        case art
+        case crew
         case costumeAndMakeUp = "costume & make-up"
-        case directing = "directing"
-        case writing = "writing"
-        case sound = "sound"
-        case camera = "camera"
+        case directing
+        case writing
+        case sound
+        case camera
         case visualEffects = "visual effects"
-        case lighting = "lighting"
-        case editing = "editing"
+        case lighting
+        case editing
         case createdBy = "created by"
     }
 
@@ -1824,6 +1846,113 @@ struct Job: Codable, Equatable, Hashable {
 }
 
 // MARK: - Watched Item
+
+struct SyncWatchedItem: Equatable, Hashable {
+    let traktId: Int64
+    let watchedAt: [Date]
+}
+
+struct SyncWatchedItems: Codable, Equatable {
+    let watchedDatesByTraktId: [Int64: [Date]]
+    let watchedSeasonIds: Set<Int64>
+
+    var items: [SyncWatchedItem] {
+        return watchedDatesByTraktId
+            .map { SyncWatchedItem(traktId: $0.key, watchedAt: $0.value) }
+            .sorted { $0.traktId < $1.traktId }
+    }
+
+    subscript(traktId: Int64) -> [Date]? {
+        return watchedDatesByTraktId[traktId]
+    }
+
+    init(watchedDatesByTraktId: [Int64: [Date]],
+         watchedSeasonIds: Set<Int64> = []) {
+        self.watchedDatesByTraktId = watchedDatesByTraktId
+        self.watchedSeasonIds = watchedSeasonIds
+    }
+
+    init(from decoder: Decoder) throws {
+        if let cacheContainer = try? decoder.container(keyedBy: SyncWatchedItemsCodingKeys.self),
+           cacheContainer.contains(.watchedDatesByTraktId) {
+            watchedDatesByTraktId = try cacheContainer.decode([Int64: [Date]].self, forKey: .watchedDatesByTraktId)
+            watchedSeasonIds = try cacheContainer.decodeIfPresent(Set<Int64>.self, forKey: .watchedSeasonIds) ?? []
+            return
+        }
+
+        let container = try decoder.container(keyedBy: SyncWatchedCodingKey.self)
+        var watchedDatesByTraktId = [Int64: [Date]]()
+        var watchedSeasonIds = Set<Int64>()
+
+        for key in container.allKeys {
+            guard let traktId = Int64(key.stringValue) else {
+                throw DecodingError.dataCorruptedError(forKey: key,
+                                                       in: container,
+                                                       debugDescription: "Expected a Trakt id key, got \(key.stringValue)")
+            }
+
+            if let watchedDates = try? container.decode([Date].self, forKey: key) {
+                watchedDatesByTraktId[traktId] = watchedDates
+            } else {
+                let seasonsContainer = try container.nestedContainer(keyedBy: SyncWatchedCodingKey.self, forKey: key)
+                var watchedDates = [Date]()
+
+                for seasonKey in seasonsContainer.allKeys {
+                    guard let seasonTraktId = Int64(seasonKey.stringValue) else {
+                        throw DecodingError.dataCorruptedError(forKey: seasonKey,
+                                                               in: seasonsContainer,
+                                                               debugDescription: "Expected a season Trakt id key, got \(seasonKey.stringValue)")
+                    }
+
+                    let episodesContainer = try seasonsContainer.nestedContainer(keyedBy: SyncWatchedCodingKey.self, forKey: seasonKey)
+                    var hasWatchedEpisode = false
+                    for episodeKey in episodesContainer.allKeys {
+                        let episodeWatchedDates = try episodesContainer.decode([Date].self, forKey: episodeKey)
+                        if episodeWatchedDates.isEmpty == false {
+                            hasWatchedEpisode = true
+                        }
+                        watchedDates.append(contentsOf: episodeWatchedDates)
+                    }
+
+                    if hasWatchedEpisode {
+                        watchedSeasonIds.insert(seasonTraktId)
+                    }
+                }
+
+                watchedDatesByTraktId[traktId] = watchedDates
+            }
+        }
+
+        self.watchedDatesByTraktId = watchedDatesByTraktId
+        self.watchedSeasonIds = watchedSeasonIds
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: SyncWatchedItemsCodingKeys.self)
+        try container.encode(watchedDatesByTraktId, forKey: .watchedDatesByTraktId)
+        try container.encode(watchedSeasonIds, forKey: .watchedSeasonIds)
+    }
+}
+
+private enum SyncWatchedItemsCodingKeys: String, CodingKey {
+    case watchedDatesByTraktId
+    case watchedSeasonIds
+}
+
+private struct SyncWatchedCodingKey: CodingKey {
+    let stringValue: String
+    let intValue: Int?
+
+    init?(stringValue: String) {
+        self.stringValue = stringValue
+        intValue = Int(stringValue)
+    }
+
+    init?(intValue: Int) {
+        stringValue = String(intValue)
+        self.intValue = intValue
+    }
+}
 
 struct WatchedItem: Codable, Equatable, Hashable {
     var type: CommentType {
@@ -1935,10 +2064,46 @@ struct AddHistoryEpisode: Codable {
 
 struct SavedFilter: Codable, Equatable, Hashable {
     let section: String
-    let name: String
+    private let _name: String
     let path: String
     let query: String
     let limit: Int?
+
+    init(section: String, name: String, path: String, query: String, limit: Int?) {
+        self.section = section
+        _name = name
+        self.path = path
+        self.query = query
+        self.limit = limit
+    }
+
+    static func == (lhs: SavedFilter, rhs: SavedFilter) -> Bool {
+        return lhs.section == rhs.section &&
+            lhs.name == rhs.name &&
+            lhs.path == rhs.path &&
+            lhs.query == rhs.query &&
+            lhs.limit == rhs.limit
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(section)
+        hasher.combine(name)
+        hasher.combine(path)
+        hasher.combine(query)
+        hasher.combine(limit)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case section
+        case _name = "name"
+        case path
+        case query
+        case limit
+    }
+
+    var name: String {
+        return _name.emojiUnescapedString
+    }
 
     var normalized: SavedFilter {
         if path != "/all/trending" { return self }
@@ -2171,7 +2336,7 @@ struct LastCommentsActivities: Codable, Equatable, Hashable {
     }
 }
 
-/*
+/**
    {
      "country": "us",
      "certification": "PG",
@@ -2399,6 +2564,7 @@ struct Video: Codable, Identifiable, Hashable {
 }
 
 // MARK: - Translations
+
 /*
  "title": "Winter Is Coming",
      "overview": "Jon Arryn, the Hand of the King, is dead. King Robert Baratheon plans to ask his oldest friend, Eddard Stark, to take Jon's place. Across the sea, Viserys Targaryen plans to wed his sister to a nomadic warlord in exchange for an army.",
@@ -2465,8 +2631,8 @@ struct ReactionDistribution: Codable {
         return like + love + laugh + bravo - dislike
     }
 
-    // Returns up to three emojis representing the most common reactions.
-    // Order ties are broken using the fixed priority: 👍👎❤️😂😱👏🫣
+    /// Returns up to three emojis representing the most common reactions.
+    /// Order ties are broken using the fixed priority: 👍👎❤️😂😱👏🫣
     var top3Emojis: String {
         struct ReactionEntry {
             let emoji: String
@@ -2512,12 +2678,6 @@ struct CommentReaction: Codable, Equatable, Hashable {
         case user
     }
 
-    static func == (lhs: CommentReaction, rhs: CommentReaction) -> Bool {
-        return lhs.user == rhs.user &&
-            lhs.reaction == rhs.reaction &&
-            lhs.reactedAt == rhs.reactedAt
-    }
-
     func hash(into hasher: inout Hasher) {
         hasher.combine(user)
         hasher.combine(reaction)
@@ -2526,7 +2686,9 @@ struct CommentReaction: Codable, Equatable, Hashable {
 }
 
 struct ReactionType: Codable, Equatable, Hashable, Identifiable {
-    var id: String { type }
+    var id: String {
+        type
+    }
 
     let type: String
     let emoji: String
@@ -2534,11 +2696,6 @@ struct ReactionType: Codable, Equatable, Hashable, Identifiable {
     enum CodingKeys: String, CodingKey {
         case emoji
         case type
-    }
-
-    static func == (lhs: ReactionType, rhs: ReactionType) -> Bool {
-        return lhs.type == rhs.type &&
-            lhs.emoji == rhs.emoji
     }
 
     func hash(into hasher: inout Hasher) {
@@ -2566,7 +2723,7 @@ struct RemoteIAPInfo: Encodable {
         case userID = "user_id"
         case currencyCode = "currency"
         case countryCode = "country"
-        case price = "price"
+        case price
         case appStoreReceiptData = "app_store_receipt_data"
     }
 }

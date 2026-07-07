@@ -6,12 +6,10 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class PinnedImageView: UIImageView {
-
     private let disposeBag = DisposeBag()
 
     var media: MediaModel? {

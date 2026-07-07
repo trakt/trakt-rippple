@@ -6,27 +6,23 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
+import Moya
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import Receiver
-
-import NVActivityIndicatorView
-
-import Moya
-
 final class ListSearchResultsViewController: UITableViewController {
-
-    // Public
+    /// Public
     var service: TraktAPIService!
 
     private let disposeBag = DisposeBag()
 
-    // Empty
+    /// Empty
     @IBOutlet private var emptyView: UIView!
 
     // Paging Management
     @IBOutlet private var loadingView: UIView!
-    @IBOutlet private weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet private var animationViewContainer: NVActivityIndicatorView!
 
     // Error Management
     @IBOutlet private var errorView: UIView!
@@ -92,7 +88,7 @@ final class ListSearchResultsViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -116,7 +112,7 @@ final class ListSearchResultsViewController: UITableViewController {
                         self.dataSource.apply(snapshot, animatingDifferences: false)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("List request failure \(error)")
                 self.error = error
 
@@ -139,18 +135,17 @@ final class ListSearchResultsViewController: UITableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "user",
-            let list = sender as? List,
-            let commentsViewController = segue.destination as? CommentsViewController {
+           let list = sender as? List,
+           let commentsViewController = segue.destination as? CommentsViewController {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.user(list.user))
         }
     }
 }
 
 extension ListSearchResultsViewController {
-
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        if case let Wrapper.list(list) = item {
+        if case Wrapper.list(let list) = item {
             performSegue(withIdentifier: "list", sender: list)
         }
     }

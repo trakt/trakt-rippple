@@ -9,14 +9,14 @@
 import UIKit
 
 final class ServiceBrowseCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var backgroundContainer: UIView!
+    @IBOutlet var backgroundContainer: UIView!
 
-    @IBOutlet weak var logoImageView: UIImageView!
+    @IBOutlet var logoImageView: UIImageView!
 
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        backgroundContainer.layer.cornerRadius = backgroundContainer.bounds.height/2.0
+        backgroundContainer.layer.cornerRadius = backgroundContainer.bounds.height / 2.0
         backgroundContainer.layer.cornerCurve = .continuous
         backgroundContainer.layer.masksToBounds = true
         backgroundContainer.backgroundColor = UIColor.tertiarySystemFill

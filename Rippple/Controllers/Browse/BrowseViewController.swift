@@ -6,16 +6,13 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import NVActivityIndicatorView
+import Receiver
+import SafariServices
+import SwiftUI
 import UIKit
 
-import Receiver
-import NVActivityIndicatorView
-import SafariServices
-
-import SwiftUI
-
 final class BrowseViewController: UITableViewController {
-
     struct ModuleType: Codable, Equatable, Hashable {
         let module: String
         let filter: SavedFilter
@@ -100,7 +97,7 @@ final class BrowseViewController: UITableViewController {
     private let disposeBag = DisposeBag()
 
     @IBOutlet var loadingView: UIView!
-    @IBOutlet weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet var animationViewContainer: NVActivityIndicatorView!
 
     @IBOutlet var menuBarButtonItem: UIBarButtonItem?
 
@@ -119,15 +116,14 @@ final class BrowseViewController: UITableViewController {
         case weeklyTrackerLink
     }
 
-    private class BrowseViewDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> { }
+    private class BrowseViewDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> {}
 
     private lazy var dataSource = BrowseViewDiffibleDataSource(tableView: tableView) { [weak self] tableView, _, wrapper in
         guard let self = self else { return nil }
 
         switch wrapper {
         case .loading:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
-            return cell
+            return tableView.dequeueReusableCell(withIdentifier: "loading") as! LoadingIndicatorTableViewCell
         case .header(let title, let savedFilter, _):
             let cell = tableView.dequeueReusableCell(withIdentifier: "header") as! ActivityHeaderTableViewCell
             cell.title.text = title
@@ -136,7 +132,7 @@ final class BrowseViewController: UITableViewController {
             if (savedFilter.path.isEmpty ||
                 self.isDisplayingNewAndHot ||
                 (savedFilter.section == "movies,shows" &&
-                 !["/media/trending", "/all/trending"].contains(savedFilter.path))) &&
+                    !["/media/trending", "/all/trending"].contains(savedFilter.path))) &&
                 savedFilter.section != "episodes_to_watch" &&
                 savedFilter.section != "movies_to_watch" &&
                 savedFilter.section != "pinned_to_watch" &&
@@ -200,8 +196,7 @@ final class BrowseViewController: UITableViewController {
                 .margins(.horizontal, 12)
             return cell
         case .weeklyTrackerLink:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "browse link")
-            return cell
+            return tableView.dequeueReusableCell(withIdentifier: "browse link")
         }
     }
 
@@ -395,9 +390,9 @@ final class BrowseViewController: UITableViewController {
         }.disposed(by: disposeBag)
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         commandReceiver.listen { [weak self] keyCommand in
             guard let self = self else { return }
@@ -483,11 +478,11 @@ final class BrowseViewController: UITableViewController {
         // Determine which header cell was long-pressed
         let location = gesture.location(in: tableView)
         guard let indexPath = tableView.indexPathForRow(at: location),
-              case let .header(_, _, moduleType) = dataSource.itemIdentifier(for: indexPath) else { return }
+              case .header(_, _, let moduleType) = dataSource.itemIdentifier(for: indexPath) else { return }
 
         let hosting = UIHostingController(rootView: ShelfRowQuickConfigView(row: moduleType))
         hosting.modalPresentationStyle = .formSheet
-        self.present(hosting, animated: true, completion: nil)
+        present(hosting, animated: true, completion: nil)
     }
 
     @objc func refresh(_ sender: Any) {
@@ -500,23 +495,23 @@ final class BrowseViewController: UITableViewController {
     }
 
     private func menu() -> UIMenu {
-        let home = UIAction(title: "Home", image: nil, state: ((BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.defaultConfig || BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.freeConfig)  ? .on : .off)) { _ in
+        let home = UIAction(title: "Home", image: nil, state: (BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.defaultConfig || BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.freeConfig) ? .on : .off) { _ in
             BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.defaultConfig
         }
 
-        let tv = UIAction(title: "TV Shows", image: nil, state: (BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.showsConfig ? .on : .off)) { _ in
+        let tv = UIAction(title: "TV Shows", image: nil, state: BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.showsConfig ? .on : .off) { _ in
             BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.showsConfig
         }
 
-        let movie = UIAction(title: "Movies", image: nil, state: (BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.moviesConfig ? .on : .off)) { _ in
+        let movie = UIAction(title: "Movies", image: nil, state: BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.moviesConfig ? .on : .off) { _ in
             BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.moviesConfig
         }
 
-        let new = UIAction(title: "This Week", image: nil, state: (BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.newAndHot ? .on : .off)) { _ in
+        let new = UIAction(title: "This Week", image: nil, state: BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.newAndHot ? .on : .off) { _ in
             BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.newAndHot
         }
 
-        let shelf = UIAction(title: "Shelf", image: nil, state: (BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.shelfConfig ? .on : .off)) { _ in
+        let shelf = UIAction(title: "Shelf", image: nil, state: BrowseConfigManager.shared.currentConfig == BrowseConfigManager.shared.shelfConfig ? .on : .off) { _ in
             BrowseConfigManager.shared.currentConfig = BrowseConfigManager.shared.shelfConfig
         }
 
@@ -566,7 +561,7 @@ final class BrowseViewController: UITableViewController {
                         snapshot.appendItems([.header(filter.name, filter, moduleType)])
                     }
                     snapshot.appendItems([.content(moduleType.module, filter, moduleType)])
-                    if self.isDisplayingNewAndHot {
+                    if isDisplayingNewAndHot {
                         snapshot.appendItems([.weeklyTrackerLink])
                     }
                 } else {
@@ -589,17 +584,17 @@ final class BrowseViewController: UITableViewController {
         if navigationItem.title == "Shelf" || navigationItem.subtitle == "Shelf" {
             let customizeShelf = UIBarButtonItem(image: UIImage(systemName: "slider.horizontal.3"),
                                                  primaryAction: UIAction { [weak self] _ in
-                guard let self = self else { return }
-                if PurchaseManager.shared.purchased {
-                    if self.menuBarButtonItem == nil {
-                        self.present(UIHostingController(rootView: ShelfConfigView()), animated: true)
-                    } else {
-                        self.performSegue(withIdentifier: "customizeShelf", sender: nil)
-                    }
-                } else {
-                    UIApplication.shared.switchToPurchase()
-                }
-             })
+                                                     guard let self = self else { return }
+                                                     if PurchaseManager.shared.purchased {
+                                                         if self.menuBarButtonItem == nil {
+                                                             self.present(UIHostingController(rootView: ShelfConfigView()), animated: true)
+                                                         } else {
+                                                             self.performSegue(withIdentifier: "customizeShelf", sender: nil)
+                                                         }
+                                                     } else {
+                                                         UIApplication.shared.switchToPurchase()
+                                                     }
+                                                 })
             if let menuBarButtonItem = menuBarButtonItem {
                 navigationItem.setRightBarButtonItems([customizeShelf, .fixedSpace(), menuBarButtonItem],
                                                       animated: true)
@@ -609,7 +604,6 @@ final class BrowseViewController: UITableViewController {
         } else if let menuBarButtonItem = menuBarButtonItem {
             navigationItem.setRightBarButtonItems([menuBarButtonItem], animated: true)
         }
-
     }
 
     private var searchButton: UIButton?
@@ -637,12 +631,12 @@ final class BrowseViewController: UITableViewController {
 
             if tabBarController?.isTabBarHidden == true {
                 structureActions.append(UIAction(title: "Reset Default Tabs",
-                                        image: UIImage(systemName: "arrow.counterclockwise"),
-                                        handler: { _ in
-                    if let tabBarController = self.tabBarController as? MainTabBarController {
-                        tabBarController.resetDefault()
-                    }
-                }))
+                                                 image: UIImage(systemName: "arrow.counterclockwise"),
+                                                 handler: { _ in
+                                                     if let tabBarController = self.tabBarController as? MainTabBarController {
+                                                         tabBarController.resetDefault()
+                                                     }
+                                                 }))
                 structureMenu = UIMenu(options: .displayInline,
                                        children: structureActions)
             }
@@ -653,36 +647,36 @@ final class BrowseViewController: UITableViewController {
             let toWatch = UIAction(title: "To Watch",
                                    image: UIImage(systemName: "checklist"),
                                    handler: { _ in
-                self.performSegue(withIdentifier: "to watch", sender: nil)
-            })
+                                       self.performSegue(withIdentifier: "to watch", sender: nil)
+                                   })
             navigationActions.append(toWatch)
 
             let history = UIAction(title: "History",
                                    image: UIImage(systemName: "memories"),
                                    handler: { _ in
-                self.performSegue(withIdentifier: "history", sender: nil)
-            })
+                                       self.performSegue(withIdentifier: "history", sender: nil)
+                                   })
             navigationActions.append(history)
 
             let lists = UIAction(title: "Lists",
                                  image: UIImage(systemName: "text.justify.left"),
                                  handler: { _ in
-                self.performSegue(withIdentifier: "lists", sender: nil)
-            })
+                                     self.performSegue(withIdentifier: "lists", sender: nil)
+                                 })
             navigationActions.append(lists)
 
             let calendar = UIAction(title: "Calendar",
                                     image: UIImage(systemName: "calendar.day.timeline.left"),
                                     handler: { _ in
-                self.performSegue(withIdentifier: "calendar", sender: nil)
-            })
+                                        self.performSegue(withIdentifier: "calendar", sender: nil)
+                                    })
             navigationActions.append(calendar)
 
             let search = UIAction(title: "Search",
                                   image: UIImage(systemName: "magnifyingglass"),
                                   handler: { _ in
-                self.performSegue(withIdentifier: "search", sender: nil)
-            })
+                                      self.performSegue(withIdentifier: "search", sender: nil)
+                                  })
             navigationActions.append(search)
 
             navigationMenu = UIMenu(options: .displayInline,
@@ -690,7 +684,7 @@ final class BrowseViewController: UITableViewController {
 
             searchButton.menu = UIMenu(children: [structureMenu, navigationMenu])
 
-         }, for: .menuActionTriggered)
+        }, for: .menuActionTriggered)
 
         searchButton.menu = UIMenu()
 
@@ -701,7 +695,8 @@ final class BrowseViewController: UITableViewController {
             searchButton.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20),
             searchButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12),
             searchButton.widthAnchor.constraint(equalToConstant: 60),
-            searchButton.heightAnchor.constraint(equalToConstant: 60)])
+            searchButton.heightAnchor.constraint(equalToConstant: 60)
+        ])
 
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
     }
@@ -823,7 +818,6 @@ final class BrowseViewController: UITableViewController {
 }
 
 extension BrowseViewController {
-
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
         if case .weeklyTrackerLink = dataSource.itemIdentifier(for: indexPath) {
@@ -833,7 +827,7 @@ extension BrowseViewController {
             tableView.deselectRow(at: indexPath, animated: true)
             return
         }
-        guard case let .header(_, savedFilter, _) = dataSource.itemIdentifier(for: indexPath) else { return }
+        guard case .header(_, let savedFilter, _) = dataSource.itemIdentifier(for: indexPath) else { return }
         if savedFilter.section == "episodes_to_watch" || savedFilter.section == "pinned_to_watch" || savedFilter.section == "unpinned_to_watch" {
             performSegue(withIdentifier: "episodes to watch", sender: nil)
             return
@@ -854,4 +848,4 @@ extension BrowseViewController {
     }
 }
 
-final class BrowseLongPressGestureRecognizer: UILongPressGestureRecognizer { }
+final class BrowseLongPressGestureRecognizer: UILongPressGestureRecognizer {}

@@ -7,13 +7,12 @@
 //
 
 import Foundation
-
 import Receiver
+import UserNotifications
 
 let (onDVDMoviesNotificationsChangedTransmitter, onDVDMoviesNotificationsChangedReceiver) = Receiver<[UNNotificationRequest]>.make(with: .warm(upTo: 1))
 
 final class DVDMovieNotificationsManager {
-
     static let shared = DVDMovieNotificationsManager()
 
     private let disposeBag = DisposeBag()
@@ -26,6 +25,7 @@ final class DVDMovieNotificationsManager {
             UserDefaults.standard.synchronize()
         }
     }
+
     var toWatchMovieRelease: Bool {
         didSet {
             UserDefaults.standard.set(toWatchMovieRelease, forKey: "DVDMovieNotificationsManager.toWatchMovieRelease")
@@ -38,32 +38,24 @@ final class DVDMovieNotificationsManager {
     private init() {
         watchlistMovieRelease = UserDefaults.standard.bool(forKey: "DVDMovieNotificationsManager.watchlistMovieRelease")
         toWatchMovieRelease = UserDefaults.standard.bool(forKey: "DVDMovieNotificationsManager.toWatchMovieRelease")
+        debouncedRebuildNotifications = Debouncer(delay: 2.0) { [weak self] in
+            guard let self = self else { return }
+            self.rebuildNotifications()
+        }
     }
 
     fileprivate let uuidPrefix = "DVDMovieRelease"
 
-    private var toWatchMovies: [Movie]? {
-        didSet {
-            rebuildNotifications()
-        }
-    }
-
-    private var watchlistedMovies: [Movie]? {
-        didSet {
-            rebuildNotifications()
-        }
-    }
+    private var debouncedRebuildNotifications: Debouncer!
 
     private var movieCalendarItems: [MovieCalendarItem]? {
         didSet {
-            rebuildNotifications()
+            debouncedRebuildNotifications.call()
         }
     }
 
     private func rebuildNotifications() {
         guard let movieCalendarItems = movieCalendarItems else { return }
-        guard let watchlistedMovies = watchlistedMovies else { return }
-        guard let toWatchMovies = toWatchMovies else { return }
 
         UNUserNotificationCenter.current().getPendingNotificationRequests { [weak self] pendingNotificationRequests in
             guard let self = self else { return }
@@ -75,14 +67,14 @@ final class DVDMovieNotificationsManager {
 
             var requests = [UNNotificationRequest]()
             for movieCalendarItem in movieCalendarItems {
-                if toWatchMovies.contains(movieCalendarItem.movie) {
+                if movieCalendarItem.movie.isInToWatch {
                     if DVDMovieNotificationsManager.shared.toWatchMovieRelease {
                         if let request = self.scheduleNotification(for: movieCalendarItem, with: "DVD & Blu-ray Release", subtitle: "") {
                             requests.append(request)
                         }
                         continue
                     }
-                } else if watchlistedMovies.contains(movieCalendarItem.movie) {
+                } else if movieCalendarItem.movie.isWatchlisted {
                     if DVDMovieNotificationsManager.shared.watchlistMovieRelease {
                         if let request = self.scheduleNotification(for: movieCalendarItem, with: "DVD & Blu-ray Release", subtitle: "") {
                             requests.append(request)
@@ -93,7 +85,7 @@ final class DVDMovieNotificationsManager {
             }
             let notificationCenter = UNUserNotificationCenter.current()
             for request in requests {
-                notificationCenter.add(request) { (error) in
+                notificationCenter.add(request) { error in
                     if error != nil {
                         print("notificationCenter.add error: \(error!)")
                     } else {
@@ -108,28 +100,17 @@ final class DVDMovieNotificationsManager {
     func setup() {
         onNotificationsSettingsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.rebuildNotifications()
+            self.debouncedRebuildNotifications.fireNow()
         }.disposed(by: disposeBag)
 
-        onAllMoviesToWatchChangedReceiver.listen { [weak self] movies in
+        onAllMoviesToWatchChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.toWatchMovies = movies
+            self.debouncedRebuildNotifications.call()
         }.disposed(by: disposeBag)
 
         onMoviesWatchlistedChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            TraktAPIProvider.fetchAllWatchlistItems(slug: "me",
-                                                    type: .movies,
-                                                    extended: .full,
-                                                    sort: nil) { [weak self] result in
-                guard let self = self else { return }
-                switch result {
-                case let .success(watchlistItems):
-                    self.watchlistedMovies = watchlistItems.map { $0.movie! }
-                case let .failure(error):
-                    print("watchlist request failure \(error)")
-                }
-            }
+            self.debouncedRebuildNotifications.call()
         }
 
         fetchCalendar()
@@ -140,7 +121,7 @@ final class DVDMovieNotificationsManager {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -149,7 +130,7 @@ final class DVDMovieNotificationsManager {
                 } catch {
                     print("dvdMoviesCalendar request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("dvdMoviesCalendar request failure \(error)")
             }
         }
@@ -174,20 +155,18 @@ final class DVDMovieNotificationsManager {
         content.userInfo = ["link": "ripl://movies/\(movieCalendarItem.movie.identifiers.trakt!)"]
 
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second],
-                                                                     from: triggerDate)
+                                                         from: triggerDate)
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let uuidString = uuidPrefix + "\(movieCalendarItem.movie.identifiers.trakt!)"
-        let request = UNNotificationRequest(identifier: uuidString,
-                                            content: content,
-                                            trigger: trigger)
-
-        return request
+        return UNNotificationRequest(identifier: uuidString,
+                                     content: content,
+                                     trigger: trigger)
     }
 }
 
 extension UNNotificationRequest {
     var isDVDMovieNotification: Bool {
-        return self.identifier.hasPrefix(DVDMovieNotificationsManager.shared.uuidPrefix)
+        return identifier.hasPrefix(DVDMovieNotificationsManager.shared.uuidPrefix)
     }
 }

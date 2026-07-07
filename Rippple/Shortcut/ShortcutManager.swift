@@ -9,7 +9,6 @@
 import UIKit
 
 final class ShortcutManager {
-
     let searchAndKeyboardShortcutItem = UIApplicationShortcutItem(type: "SearchAndKeyboard",
                                                                   localizedTitle: "Search",
                                                                   localizedSubtitle: nil,
@@ -22,7 +21,7 @@ final class ShortcutManager {
                                                         icon: UIApplicationShortcutIcon(systemImageName: "app"),
                                                         userInfo: nil)
 
-    private init() { }
+    private init() {}
 
     static let shared = ShortcutManager()
 

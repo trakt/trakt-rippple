@@ -46,7 +46,6 @@ private var appTint: Color {
 
 @available(iOS 18.0, *)
 struct RipppleLiveActivityWidget: Widget {
-
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: RipppleLiveActivityAttributes.self) { context in
             ActivityWidgetEntryView(progress: context.state.entry)
@@ -94,9 +93,9 @@ struct RipppleLiveActivityWidget: Widget {
                                      countsDown: false,
                                      label: { EmptyView() },
                                      currentValueLabel: { EmptyView() })
-                        .progressViewStyle(.circular)
-                        .frame(width: 30, height: 30)
-                        .tint(appTint)
+                            .progressViewStyle(.circular)
+                            .frame(width: 30, height: 30)
+                            .tint(appTint)
 
                     }.padding([.leading, .trailing, .bottom], 5)
                 }
@@ -114,18 +113,18 @@ struct RipppleLiveActivityWidget: Widget {
                              countsDown: false,
                              label: { EmptyView() },
                              currentValueLabel: { EmptyView() })
-                .progressViewStyle(.circular)
-                .frame(width: 24, height: 24)
-                .tint(appTint)
+                    .progressViewStyle(.circular)
+                    .frame(width: 24, height: 24)
+                    .tint(appTint)
             } minimal: {
                 let progress = context.state.entry
                 ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
                              countsDown: false,
                              label: { EmptyView() },
                              currentValueLabel: { EmptyView() })
-                .progressViewStyle(.circular)
-                .frame(width: 22, height: 22)
-                .tint(appTint)
+                    .progressViewStyle(.circular)
+                    .frame(width: 22, height: 22)
+                    .tint(appTint)
             }.widgetURL(context.state.entry.deeplink)
         }.supplementalActivityFamilies([.small])
     }
@@ -150,7 +149,6 @@ struct ActivityWidgetEntryView: View {
 }
 
 struct MediumLiveActivityView: View {
-
     var progress: WidgetModel
 
     var body: some View {
@@ -191,12 +189,12 @@ struct MediumLiveActivityView: View {
                 }
                 Spacer()
                 ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
-                                         countsDown: false,
-                                         label: { EmptyView() },
-                                         currentValueLabel: { EmptyView() })
-                                .progressViewStyle(.circular)
-                                .frame(width: 30, height: 30)
-                                .tint(.primary)
+                             countsDown: false,
+                             label: { EmptyView() },
+                             currentValueLabel: { EmptyView() })
+                    .progressViewStyle(.circular)
+                    .frame(width: 30, height: 30)
+                    .tint(.primary)
             }.padding()
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
             .widgetURL(progress.deeplink)
@@ -204,7 +202,6 @@ struct MediumLiveActivityView: View {
 }
 
 struct SmallLiveActivityView: View {
-
     var progress: WidgetModel
 
     var body: some View {
@@ -224,12 +221,12 @@ struct SmallLiveActivityView: View {
                             .aspectRatio(contentMode: .fit)
                             .clipShape(RoundedRectangle(cornerRadius: 9))
                     }
-                } /*else {
-                   Rectangle()
-                       .fill(.blue)
-                       .aspectRatio(50/75, contentMode: .fit)
-                       .clipShape(RoundedRectangle(cornerRadius: 9))
-                }*/
+                } /* else {
+                    Rectangle()
+                        .fill(.blue)
+                        .aspectRatio(50/75, contentMode: .fit)
+                        .clipShape(RoundedRectangle(cornerRadius: 9))
+                 } */
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: 0)
                     if let label = progress.label {
@@ -253,9 +250,9 @@ struct SmallLiveActivityView: View {
                                      countsDown: false,
                                      label: { EmptyView() },
                                      currentValueLabel: { EmptyView() })
-                        .progressViewStyle(.circular)
-                        .tint(appTint)
-                        .frame(width: 18, height: 18)
+                            .progressViewStyle(.circular)
+                            .tint(appTint)
+                            .frame(width: 18, height: 18)
                     }
                 }
             }
@@ -306,12 +303,12 @@ struct ActivityWidgetEntryViewLegacy: View {
                 }
                 Spacer()
                 ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
-                                         countsDown: false,
-                                         label: { EmptyView() },
-                                         currentValueLabel: { EmptyView() })
-                                .progressViewStyle(.circular)
-                                .frame(width: 30, height: 30)
-                                .tint(.primary)
+                             countsDown: false,
+                             label: { EmptyView() },
+                             currentValueLabel: { EmptyView() })
+                    .progressViewStyle(.circular)
+                    .frame(width: 30, height: 30)
+                    .tint(.primary)
             }.padding()
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
             .widgetURL(progress.deeplink)
@@ -330,7 +327,7 @@ extension RipppleLiveActivityAttributes.ContentState {
                                  progress: 0.5,
                                  runtime: 4000,
                                  endDate: Date.now.advanced(by: 3600)))
-     }
+    }
 }
 
 @available(iOS 18.0, *)

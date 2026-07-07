@@ -1,12 +1,14 @@
 //
-//  MArkdown+Extensions.swift
+//  Markdown+Strike.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 22/11/2017.
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Foundation
 import Haring
+import UIKit
 
 class MarkdownStrike: MarkdownCommonElement {
     fileprivate static let regex = "(\\s+|^|\\B)(~~)(.+?)(\\2)"
@@ -19,7 +21,7 @@ class MarkdownStrike: MarkdownCommonElement {
         return MarkdownStrike.regex
     }
 
-    public init(font: UIFont? = nil, color: UIColor? = nil, strikeColor: UIColor? = nil) {
+    init(font: UIFont? = nil, color: UIColor? = nil, strikeColor: UIColor? = nil) {
         self.font = font
         self.color = color
         self.strikeColor = strikeColor

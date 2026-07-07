@@ -6,18 +6,15 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Moya
-
 import Receiver
+import UIKit
 
 protocol FollowersAndFriendsTableViewCellDelegate: AnyObject {
     func cell(_ cell: FollowersAndFriendsTableViewCell, action: FollowersAndFriendsTableViewCell.Action)
 }
 
 final class FollowersAndFriendsTableViewCell: UITableViewCell {
-
     enum Action {
         case followers
         case following
@@ -27,20 +24,20 @@ final class FollowersAndFriendsTableViewCell: UITableViewCell {
 
     weak var delegate: FollowersAndFriendsTableViewCellDelegate?
 
-    @IBOutlet weak var followersCount: EFCountingLabel!
-    @IBOutlet weak var followingCount: EFCountingLabel!
-    @IBOutlet weak var friendsCount: EFCountingLabel!
+    @IBOutlet var followersCount: EFCountingLabel!
+    @IBOutlet var followingCount: EFCountingLabel!
+    @IBOutlet var friendsCount: EFCountingLabel!
 
-    @IBOutlet weak var blockedSeparator: UIView?
-    @IBOutlet weak var blockedCount: EFCountingLabel?
+    @IBOutlet var blockedSeparator: UIView?
+    @IBOutlet var blockedCount: EFCountingLabel?
 
     private let disposeBag = DisposeBag()
 
-    @IBOutlet weak var cardView: CardView?
+    @IBOutlet var cardView: CardView?
 
     private let numberFormatter = NumberFormatter()
 
-    // request
+    /// request
     private var request: Cancellable?
 
     override func awakeFromNib() {
@@ -101,7 +98,7 @@ final class FollowersAndFriendsTableViewCell: UITableViewCell {
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -115,7 +112,7 @@ final class FollowersAndFriendsTableViewCell: UITableViewCell {
                 } catch {
                     print("/stats request JSON mapping failed! \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("/stats request failure \(error)")
             }
         }

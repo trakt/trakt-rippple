@@ -7,11 +7,9 @@
 //
 
 import Foundation
-
 import Moya
 
-final class TmdbAPIProvider {
-
+enum TmdbAPIProvider {
     static let source = TokenSource()
 
     static var networkLogger: NetworkLoggerPlugin {
@@ -20,8 +18,8 @@ final class TmdbAPIProvider {
         return networkLogger
     }
 
-    static var provider = MoyaProvider<TmdbAPIService>(session: Session.init(interceptor: RipppleRetryPolicy()),
-                                                       plugins: [/*networkLogger*/])
+    static var provider = MoyaProvider<TmdbAPIService>(session: Session(interceptor: RipppleRetryPolicy()),
+                                                       plugins: [ /* networkLogger */ ])
 
     static var decoder: JSONDecoder {
         let decoder = JSONDecoder()

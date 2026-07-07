@@ -7,12 +7,10 @@
 //
 
 import Foundation
-
 import Receiver
 import StoreKit
 
 final class PurchaseManager {
-
     private let disposeBag = DisposeBag()
 
     var appEnvironement: AppStore.Environment?
@@ -38,7 +36,7 @@ final class PurchaseManager {
     }
 
     func refresh() {
-        Task.init {
+        Task {
             for await result in Transaction.all {
                 guard case .verified(let transaction) = result else { continue }
                 if transaction.environment == .sandbox || transaction.environment == .xcode {
@@ -116,7 +114,7 @@ final class PurchaseManager {
 
     func purchase(product: Product, completion: @escaping (_ error: Error?) -> Void) {
         print("💰 Purchasing \(product.id)")
-        Task.init {
+        Task {
             do {
                 let result = try await product.purchase()
 
@@ -153,7 +151,7 @@ final class PurchaseManager {
                 DispatchQueue.main.async {
                     let alertController = UIAlertController(title: "Purchase Error",
                                                             message: "An error occurred with your purchase: \(error.localizedDescription)",
-                        preferredStyle: .alert)
+                                                            preferredStyle: .alert)
 
                     let cancel = UIAlertAction(title: "Okay", style: .cancel)
                     alertController.addAction(cancel)
@@ -194,30 +192,30 @@ final class PurchaseManager {
         if transaction.environment == .sandbox {
             // Enable to test in-app purchase on the Sandbox
             /*
-            TraktAPIProvider.debug_provider.request(.verifySandboxIAP(transactionId: transaction.id,
-                                                                      userId: userId),
-                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
-                switch result {
-                case .success(let response):
-                    if response.statusCode == 204 {
-                        print("IAP verification successful")
-                        DispatchQueue.main.async {
-                            SwiftMessages.show(message: "🧪 IAP /verify successful")
-                        }
-                    } else {
-                        print("IAP verification failed: status code \(response.statusCode)")
-                        DispatchQueue.main.async {
-                            SwiftMessages.show(message: "🧪 IAP /verify failed (\(response.statusCode))!", style: .standout)
-                        }
-                    }
-                case .failure(let error):
-                    print("IAP verification error: \(error)")
-                    DispatchQueue.main.async {
-                        SwiftMessages.show(message: "🧪 IAP /verify error!", style: .error(error))
-                    }
-                }
-            }
-             */
+             TraktAPIProvider.debug_provider.request(.verifySandboxIAP(transactionId: transaction.id,
+                                                                       userId: userId),
+                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                 switch result {
+                 case .success(let response):
+                     if response.statusCode == 204 {
+                         print("IAP verification successful")
+                         DispatchQueue.main.async {
+                             SwiftMessages.show(message: "🧪 IAP /verify successful")
+                         }
+                     } else {
+                         print("IAP verification failed: status code \(response.statusCode)")
+                         DispatchQueue.main.async {
+                             SwiftMessages.show(message: "🧪 IAP /verify failed (\(response.statusCode))!", style: .standout)
+                         }
+                     }
+                 case .failure(let error):
+                     print("IAP verification error: \(error)")
+                     DispatchQueue.main.async {
+                         SwiftMessages.show(message: "🧪 IAP /verify error!", style: .error(error))
+                     }
+                 }
+             }
+              */
         } else {
             TraktAPIProvider.provider.request(.verifyIAP(transactionId: transaction.id,
                                                          userId: userId),

@@ -70,6 +70,7 @@
             <connections>
                 <outlet property="button" destination="ofE-cT-T7u" id="PlS-FO-1FF"/>
                 <outlet property="chevron" destination="CzK-IW-eqy" id="oD2-hi-HxL"/>
+                <outlet property="contentTrailingConstraint" destination="eXh-Tl-VVf" id="TrK-5P-Y1k"/>
                 <outlet property="subtitle" destination="PnH-ck-p8H" id="YPT-Ia-NZR"/>
                 <outlet property="title" destination="qK4-7C-DSt" id="1Rn-Nn-dNT"/>
             </connections>

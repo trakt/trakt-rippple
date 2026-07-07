@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last update:** February 24, 2026
+**Last update:** June 12, 2026
 
 ## Intro
 
@@ -14,13 +14,13 @@ We use third-party services. We encourage you to check their privacy policy.
 
 ## Trakt
 
-Rippple is a Trakt client. As such, the app makes a lot of requests to the [Trakt API](https://trakt.docs.apiary.io/#). This includes requests to fetch the content you’ll read on screen and the content you (intentionally through Rippple) share with the community. We recommend that you read [Trakt.tv Privacy Policy](https://trakt.tv/privacy) to see what Trakt can do with your data.
+Rippple is a Trakt client. As such, the app makes a lot of requests to the [Trakt API](https://docs.trakt.tv). This includes requests to fetch the content you’ll read on screen and the content you (intentionally through Rippple) share with the community. We recommend that you read [Trakt.tv Privacy Policy](https://app.trakt.tv/privacy) to see what Trakt can do with your data.
 
 ## Push Notifications
 
-In order to be able to send you Push Notifications, we need to send some information to our servers. The information we send is transported securely and the information is stored securely.
+In order to be able to send you Push Notifications, we need to send some information to Rippple's remote notification API. The API only proxies the information needed to register your device for push notifications and keep your notification topic subscriptions in sync. The information we send is transported securely and stored securely.
 
-This information has only one purpose: for us to be able to link your Trakt username with your push identifier to be able to send a notification to your device. That push id can't be used to identify you through other apps. It is linke to Rippple and your device. It doesn't identify you or your device specificaly.
+This information has only one purpose: for us to be able to link your Trakt username with your push identifier so we can send a notification to your device. That push id can't be used to identify you through other apps. It is linked to Rippple and your device. It doesn't identify you or your device specifically.
 
 We also store some information about the version of the app you are using to be able to make smart choices when formatting the notification.
 

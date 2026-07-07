@@ -6,16 +6,12 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
+import NVActivityIndicatorView
+import Receiver
+import SafariServices
 import UIKit
 
-import NVActivityIndicatorView
-
-import Receiver
-
-import SafariServices
-
 final class PeopleViewController: UITableViewController {
-
     private let disposeBag = DisposeBag()
 
     private var searchController = UISearchController(searchResultsController: PeopleChronologyTableViewController())
@@ -33,7 +29,7 @@ final class PeopleViewController: UITableViewController {
 
     private var socials = 0
 
-    // fetched for full info
+    /// fetched for full info
     private var person: Person? {
         didSet {
             socials = 0
@@ -91,9 +87,9 @@ final class PeopleViewController: UITableViewController {
                 navigationItem.subtitle = "\(count) Known Credits"
             }
             if isLoading == false,
-                let person = person,
-                let birthday = person.birthday,
-                person.death == nil {
+               let person = person,
+               let birthday = person.birthday,
+               person.death == nil {
                 let components1 = Calendar.current.dateComponents([.year, .month, .day], from: Date())
                 let components2 = Calendar.current.dateComponents([.year, .month, .day], from: birthday)
 
@@ -231,6 +227,7 @@ final class PeopleViewController: UITableViewController {
         super.init(coder: coder)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -243,7 +240,7 @@ final class PeopleViewController: UITableViewController {
         let share = UIAction(title: "Share",
                              image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
             guard let self = self else { return }
-            guard let sharedURL = URL(string: "https://trakt.tv/people/\(person!.ids.slugOrTraktId)") else { return }
+            guard let sharedURL = URL(string: "https://app.trakt.tv/people/\(person!.ids.slugOrTraktId)") else { return }
             let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
             UIApplication.shared.present(activityViewController)
         }
@@ -300,9 +297,9 @@ final class PeopleViewController: UITableViewController {
         fetchPerson()
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         commandReceiver.listen { [weak self] keyCommand in
             guard let self = self else { return }
@@ -344,30 +341,30 @@ final class PeopleViewController: UITableViewController {
     private func fetchPerson() {
         TraktAPIProvider.provider.request(TraktAPIService.people(id: identifier),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
+            guard let self = self else { return }
 
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let person = try response.map(Person.self, using: TraktAPIProvider.decoder)
+                    let person = try response.map(Person.self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.person = person
-                                                    }
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        print("Failed fetching full person \(error)")
-                                                        self.error = error
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    print("Failed fetching full person \(error)")
-                                                    self.error = error
-                                                }
-                                            }
+                    DispatchQueue.main.async {
+                        self.person = person
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        print("Failed fetching full person \(error)")
+                        self.error = error
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    print("Failed fetching full person \(error)")
+                    self.error = error
+                }
+            }
         }
     }
 
@@ -377,9 +374,15 @@ final class PeopleViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
+                    if response.statusCode == 204 {
+                        DispatchQueue.main.async {
+                            self.knownFor = []
+                        }
+                        return
+                    }
 
                     let knownFor = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
 
@@ -392,7 +395,7 @@ final class PeopleViewController: UITableViewController {
                         self.error = error
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("Failed fetching known for for person \(error)")
                     self.error = error
@@ -404,60 +407,72 @@ final class PeopleViewController: UITableViewController {
     private func fetchMovies() {
         TraktAPIProvider.provider.request(TraktAPIService.peopleMovies(id: person!.ids.trakt!),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
+            guard let self = self else { return }
 
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+                    if response.statusCode == 204 {
+                        DispatchQueue.main.async {
+                            self.movies = People(cast: [], crew: nil)
+                        }
+                        return
+                    }
 
-                                                    let people = try response.map(People.self, using: TraktAPIProvider.decoder)
+                    let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.movies = people
-                                                    }
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        print("Failed fetching movies for person \(error)")
-                                                        self.error = error
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    print("Failed fetching movies for person \(error)")
-                                                    self.error = error
-                                                }
-                                            }
+                    DispatchQueue.main.async {
+                        self.movies = people
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        print("Failed fetching movies for person \(error)")
+                        self.error = error
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    print("Failed fetching movies for person \(error)")
+                    self.error = error
+                }
+            }
         }
     }
 
     private func fetchShows() {
         TraktAPIProvider.provider.request(TraktAPIService.peopleShows(id: person!.ids.trakt!),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                                            guard let self = self else { return }
+            guard let self = self else { return }
 
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+                    if response.statusCode == 204 {
+                        DispatchQueue.main.async {
+                            self.shows = People(cast: [], crew: nil)
+                        }
+                        return
+                    }
 
-                                                    let people = try response.map(People.self, using: TraktAPIProvider.decoder)
+                    let people = try response.map(People.self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.shows = people
-                                                    }
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        print("Failed fetching shows for person \(error)")
-                                                        self.error = error
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    print("Failed fetching shows for person \(error)")
-                                                    self.error = error
-                                                }
-                                            }
+                    DispatchQueue.main.async {
+                        self.shows = people
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        print("Failed fetching shows for person \(error)")
+                        self.error = error
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    print("Failed fetching shows for person \(error)")
+                    self.error = error
+                }
+            }
         }
     }
 
@@ -647,7 +662,7 @@ extension PeopleViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
 
-        if indexPath.section >= 2 && indexPath.section < 2 + allJobs.count {
+        if indexPath.section >= 2, indexPath.section < 2 + allJobs.count {
             let job = allJobs[indexPath.section - 2]
 
             if let knownFor = job.knownFor {
@@ -755,16 +770,16 @@ extension PeopleViewController {
 
         if indexPath.section == 1,
            indexPath.item == 0,
-            let person = person,
-            person.birthday == nil,
-            person.birthplace == nil,
-            person.death == nil {
+           let person = person,
+           person.birthday == nil,
+           person.birthplace == nil,
+           person.death == nil {
             return 0
         }
 
         if indexPath.section == 3 + allJobs.count,
-            let person = person,
-            person.biography?.isEmpty == true {
+           let person = person,
+           person.biography?.isEmpty == true {
             return 0
         }
 
@@ -800,16 +815,15 @@ extension PeopleViewController {
 
             return UIContextMenuConfiguration(identifier: indexPath as NSCopying,
                                               previewProvider: {
-                let mediaPreviewViewController = UIStoryboard(name: "PersonPreview", bundle: nil).instantiateInitialViewController() as! PeoplePreviewViewController
+                                                  let mediaPreviewViewController = UIStoryboard(name: "PersonPreview", bundle: nil).instantiateInitialViewController() as! PeoplePreviewViewController
 
-                mediaPreviewViewController.person = person
-                mediaPreviewViewController.preferredContentSize = CGSize(width: 500,
-                                                                         height: 500 * 1.5)
-                return mediaPreviewViewController
-            }, actionProvider: { _ -> UIMenu? in
-                let menu = UIMenu(children: [])
-                return menu
-            })
+                                                  mediaPreviewViewController.person = person
+                                                  mediaPreviewViewController.preferredContentSize = CGSize(width: 500,
+                                                                                                           height: 500 * 1.5)
+                                                  return mediaPreviewViewController
+                                              }, actionProvider: { _ -> UIMenu? in
+                                                  return UIMenu(children: [])
+                                              })
         }
 
         return nil
@@ -923,7 +937,7 @@ extension PeopleViewController: LinkTableViewCellDelegate {
 extension Person {
     var traktURL: URL? {
         guard let info = ids.trakt else { return nil }
-        return URL(string: "https://trakt.tv/people/\(info)")
+        return URL(string: "https://app.trakt.tv/people/\(info)")
     }
 
     var tmdbURL: URL? {
@@ -963,7 +977,6 @@ extension Person {
 }
 
 extension PeopleViewController: UISearchResultsUpdating {
-
     func updateSearchResults(for searchController: UISearchController) {
         let searchQuery = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         if let controller = searchController.searchResultsController as? PeopleChronologyTableViewController {
@@ -972,6 +985,4 @@ extension PeopleViewController: UISearchResultsUpdating {
     }
 }
 
-extension PeopleViewController: UISearchBarDelegate {
-
-}
+extension PeopleViewController: UISearchBarDelegate {}

@@ -1,5 +1,5 @@
 //
-//  CastCollectionViewCell.swift
+//  MediaCollectionViewCell.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 21/09/2019.
@@ -9,9 +9,9 @@
 import UIKit
 
 final class MediaCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var posterImageView: PosterImageView!
-    @IBOutlet weak var mediaTitleLabel: UILabel!
-    @IBOutlet weak var additionalInfoLabel: UILabel!
+    @IBOutlet var posterImageView: PosterImageView!
+    @IBOutlet var mediaTitleLabel: UILabel!
+    @IBOutlet var additionalInfoLabel: UILabel!
 
     var isRecentlyWatched = false
 
@@ -39,8 +39,8 @@ final class MediaCollectionViewCell: UICollectionViewCell {
     var cast: Cast? {
         didSet {
             if let cast = cast {
-                self.crew = nil
-                self.mediaItem = nil
+                crew = nil
+                mediaItem = nil
 
                 additionalInfoLabel.isHidden = true
                 mediaTitleLabel.isHidden = false
@@ -83,8 +83,8 @@ final class MediaCollectionViewCell: UICollectionViewCell {
     var crew: Job? {
         didSet {
             if let crew = crew {
-                self.cast = nil
-                self.mediaItem = nil
+                cast = nil
+                mediaItem = nil
 
                 mediaTitleLabel.isHidden = false
                 additionalInfoLabel.isHidden = false
@@ -108,8 +108,8 @@ final class MediaCollectionViewCell: UICollectionViewCell {
     var mediaItem: MediaItem? {
         didSet {
             if let mediaItem = mediaItem {
-                self.cast = nil
-                self.crew = nil
+                cast = nil
+                crew = nil
 
                 additionalInfoLabel.isHidden = true
                 mediaTitleLabel.isHidden = true

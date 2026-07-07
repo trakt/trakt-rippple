@@ -6,15 +6,13 @@
 //  Copyright © 2021 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class AppearanceViewController: UITableViewController {
-
     private let disposeBag = DisposeBag()
 
-    @IBOutlet weak var tintColorButton: UIButton!
+    @IBOutlet var tintColorButton: UIButton!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,7 +53,7 @@ final class AppearanceViewController: UITableViewController {
 
         // Create rounded rectangle path
         let roundedRect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
-        let roundedPath = UIBezierPath(roundedRect: roundedRect, cornerRadius: size.width/2)
+        let roundedPath = UIBezierPath(roundedRect: roundedRect, cornerRadius: size.width / 2)
 
         // Set background color
         backgroundColor.setFill()
@@ -205,5 +203,4 @@ final class AppearanceViewController: UITableViewController {
         }
     }
     #endif
-
 }

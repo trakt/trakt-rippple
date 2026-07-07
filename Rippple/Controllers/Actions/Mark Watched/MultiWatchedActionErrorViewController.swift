@@ -9,7 +9,6 @@
 import UIKit
 
 final class MultiWatchedActionErrorViewController: UITableViewController {
-
     private var media: MediaModel!
     private var watchedAt: Date?
     private var unwatched: [(SeasonProgress, EpisodeProgress)]!
@@ -33,6 +32,7 @@ final class MultiWatchedActionErrorViewController: UITableViewController {
         super.init(coder: coder)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -40,9 +40,9 @@ final class MultiWatchedActionErrorViewController: UITableViewController {
     @IBSegueAction
     func makeMultiWatchedProgressActionViewController(coder: NSCoder, sender: Any?) -> MultiWatchedProgressActionViewController? {
         return MultiWatchedProgressActionViewController(coder: coder,
-                                               media: media,
-                                               watchedAt: watchedAt,
-                                               unwatched: unwatched)
+                                                        media: media,
+                                                        watchedAt: watchedAt,
+                                                        unwatched: unwatched)
     }
 }
 

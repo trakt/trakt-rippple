@@ -6,20 +6,14 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import AlamofireNetworkActivityIndicator
-import Receiver
-
 import BackgroundTasks
+import NVActivityIndicatorView
+import Receiver
+import UIKit
 
 // Push management
 import UserNotifications
-import AWSCore
-import AWSSNS
-import AWSDynamoDB
-
-import NVActivityIndicatorView
 
 enum ApplicationLifecycle {
     case didFinishLaunching
@@ -29,14 +23,30 @@ enum ApplicationLifecycle {
 
 let (applicationLifecycleTransmitter, applicationLifecycleReceiver) = Receiver<ApplicationLifecycle>.make(with: .hot)
 let (pushTokenReceiveAndUpdatedTransmitter, pushTokenReceiveAndUpdatedReceiver) = Receiver<Error?>.make(with: .hot)
-let (arnUpdatedTransmitter, arnUpdatedReceiver) = Receiver<String>.make(with: .warm(upTo: 1))
+let (remoteNotificationsEndpointUpdatedTransmitter, remoteNotificationsEndpointUpdatedReceiver) = Receiver<String>.make(with: .warm(upTo: 1))
 let (testPushTransmitter, testPushReceiver) = Receiver<String>.make(with: .hot)
 let (commandTransmitter, commandReceiver) = Receiver<UIKeyCommand>.make(with: .hot)
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
     private let disposeBag = DisposeBag()
+    private lazy var debouncedRegisterForPushNotifications = Debouncer(delay: 1.0) { [weak self] in
+        guard SessionManager.shared.isLoggedIn else { return }
+        guard let self = self else { return }
+        self.registerForPushNotifications()
+    }
+
+    private lazy var debouncedUpdatePushInformation = Debouncer(delay: 1.0) { [weak self] in
+        guard SessionManager.shared.isLoggedIn, let endpointARN = endpointARN else { return }
+        guard let self = self else { return }
+        self.updatePushInformation(endpointARN: endpointARN)
+    }
+
+    private lazy var debouncedRemovePushInformation = Debouncer(delay: 1.0) { [weak self] in
+        guard SessionManager.shared.isLoggedOut, let endpointARN = endpointARN else { return }
+        guard let self = self else { return }
+        self.removePushInformation(endpointARN: endpointARN)
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
@@ -59,11 +69,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                   "CalendarSettings.hideRecentlyWatchedMovies": false,
                                                   "CalendarSettings.hideRecentlyWatchedShows": false,
                                                   "EpisodeNotificationsManager.groupEpisodes": true,
+                                                  "EpisodeNotificationsManager.reduceBasedOnProgress": true,
+                                                  "EpisodeNotificationsManager.postponeNighttimeNotifications": true,
                                                   "EpisodeNotificationsManager.watchlistShowPremiere": true,
                                                   "EpisodeNotificationsManager.watchlistSeasonPremiere": true,
+                                                  "EpisodeNotificationsManager.watchlistShowFinale": true,
+                                                  "EpisodeNotificationsManager.watchlistSeasonFinale": true,
                                                   "EpisodeNotificationsManager.watchlistEpisodeRelease": true,
                                                   "EpisodeNotificationsManager.toWatchShowPremiere": true,
                                                   "EpisodeNotificationsManager.toWatchSeasonPremiere": true,
+                                                  "EpisodeNotificationsManager.toWatchShowFinale": true,
+                                                  "EpisodeNotificationsManager.toWatchSeasonFinale": true,
                                                   "EpisodeNotificationsManager.toWatchEpisodeRelease": true,
                                                   "MovieNotificationsManager.watchlistMovieRelease": true,
                                                   "MovieNotificationsManager.toWatchMovieRelease": true,
@@ -73,6 +89,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                   "ActivityNotificationsManager.activityNewFollower": true,
                                                   "DVDMovieNotificationsManager.watchlistMovieRelease": true,
                                                   "DVDMovieNotificationsManager.toWatchMovieRelease": true,
+                                                  "StreamingMovieNotificationsManager.watchlistMovieRelease": true,
+                                                  "StreamingMovieNotificationsManager.toWatchMovieRelease": true,
                                                   "TrendingNotificationsManager.trendingShows": true,
                                                   "TrendingNotificationsManager.trendingMovies": true,
                                                   "RecommendedNotificationsManager.recommendedShows": true,
@@ -107,7 +125,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://whatsnew")!)
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://comments/160618")!)
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://people/quentin-krog")!)
-        // DeeplinkManager.shared.registerDeeplink(url: URL(string: "https://trakt.tv/people/quentin-krog")!)
+        // DeeplinkManager.shared.registerDeeplink(url: URL(string: "https://app.trakt.tv/people/quentin-krog")!)
 
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://tmdb/shows/97546")!)
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://tmdb/shows/97546/seasons/3")!)
@@ -142,7 +160,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
          *Rippple*
          ripl://whatsnew -> Ok
          ripl://settings/notifications -> Ok
-         
+
          *Search*
          ripl://search/[query]
 
@@ -190,53 +208,38 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         EpisodeNotificationsManager.shared.setup()
         MovieNotificationsManager.shared.setup()
         DVDMovieNotificationsManager.shared.setup()
+        StreamingMovieNotificationsManager.shared.setup()
 
         NotificationCenterManager.shared.setup()
 
-        // AWS setup Config
-        if let identityPoolId = AWSConfiguration.identityPoolId {
-            let credentialsProvider = AWSCognitoCredentialsProvider(regionType: .USEast1,
-                                                                    identityPoolId: identityPoolId)
-
-            let configuration = AWSServiceConfiguration(region: .USEast1,
-                                                        credentialsProvider: credentialsProvider)
-
-            AWSServiceManager.default().defaultServiceConfiguration = configuration
-
-            getNotificationSettings()
-
+        // Remote push setup config
+        RemoteNotificationsManager.shared.configure()
+        if RemoteNotificationsManager.shared.isConfigured {
             if SessionManager.shared.isLoggedIn {
-                self.registerForPushNotifications()
+                registerForPushNotifications()
             }
 
-            onSettingsChangedReceiver.listen { [weak self] _ in
+            onSettingsChangedReceiver.hotOnly().listen { [weak self] _ in
                 guard let self = self else { return }
                 if SessionManager.shared.isLoggedIn {
-                    self.registerForPushNotifications()
-                    if let ARN = endpointARN {
-                        self.updateDynamoDB(ARN: ARN)
-                    }
+                    self.debouncedRegisterForPushNotifications.call()
                 } else if SessionManager.shared.isLoggedOut {
-                    if let ARN = endpointARN {
-                        self.removeFromDynamoDB(ARN: ARN)
-                    }
+                    self.debouncedRemovePushInformation.call()
                 }
             }.disposed(by: disposeBag)
 
             onNotificationsSettingsChangedReceiver.listen { [weak self] _ in
                 guard let self = self else { return }
-                if let ARN = endpointARN {
-                    self.updateDynamoDB(ARN: ARN)
-                }
+                self.debouncedUpdatePushInformation.call()
             }.disposed(by: disposeBag)
 
-            // Placed here because they need AWS setup first
+            // Placed here because they need remote push setup first
             TrendingNotificationsManager.shared.setup()
             RecommendedNotificationsManager.shared.setup()
             ManualRemoteNotificationsManager.shared.setup()
         }
 
-        // End AWS push stuff
+        // End remote push stuff
 
         WidgetManager.shared.setup()
         SavedFiltersManager.shared.setup()
@@ -247,6 +250,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         CompletedShowsManager.shared.setup()
         DroppedShowsManager.shared.setup()
         WatchedManager.shared.setup()
+        SyncWatchedManager.shared.setup()
         RecommendedManager.shared.setup()
         CollectionManager.shared.setup()
         FollowManager.shared.setup()
@@ -265,7 +269,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         CalendarManager.shared.setup()
 
         BGTaskScheduler.shared.register(forTaskWithIdentifier: "tv.trakt.towatch.refresh", using: nil) { task in
-
             #if !targetEnvironment(macCatalyst)
             Task {
                 await LiveActivityManager.shared.stopActivityIfNeeded()
@@ -334,6 +337,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
     }
+
     private var moviesSmartSearch = SmartSearch.smartSearches(for: .movie) {
         didSet {
             if moviesSmartSearch != oldValue {
@@ -352,11 +356,11 @@ private var endpointARN: String? {
     get {
         return UserDefaults.standard.string(forKey: "Rippple.endpointArnForSNS")
     }
-    set(newEndpointArnForSNS) {
-        UserDefaults.standard.set(newEndpointArnForSNS, forKey: "Rippple.endpointArnForSNS")
+    set(newEndpointARN) {
+        UserDefaults.standard.set(newEndpointARN, forKey: "Rippple.endpointArnForSNS")
         UserDefaults.standard.synchronize()
-        if let newEndpointArnForSNS = newEndpointArnForSNS {
-            arnUpdatedTransmitter.broadcast(newEndpointArnForSNS)
+        if let newEndpointARN = newEndpointARN {
+            remoteNotificationsEndpointUpdatedTransmitter.broadcast(newEndpointARN)
         }
     }
 }
@@ -372,14 +376,14 @@ private var token: String? {
 }
 
 extension AppDelegate {
-
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        if AWSServiceManager.default().defaultServiceConfiguration == nil {
-            // Do nothing, AWS is not configured
+        if !RemoteNotificationsManager.shared.isConfigured {
+            // Do nothing, remote push is not configured
             pushTokenReceiveAndUpdatedTransmitter.broadcast(NSError(domain: "Rippple", code: 0, userInfo: nil))
             return
         }
+        guard SessionManager.shared.isLoggedIn else { return }
 
         let tokenParts = deviceToken.map { data -> String in
             return String(format: "%02.2hhx", data)
@@ -388,12 +392,12 @@ extension AppDelegate {
         let latestToken = tokenParts.joined()
 
         if let endpointARN = endpointARN,
-            let token = token,
-            latestToken == token {
-            updateARNOnAWS(ARN: endpointARN)
-            updateDynamoDB(ARN: endpointARN)
+           let token = token,
+           latestToken == token {
+            updateEndpoint(endpointARN: endpointARN)
+            updatePushInformation(endpointARN: endpointARN)
         } else {
-            saveTokenOnAWS(newToken: latestToken)
+            saveToken(newToken: latestToken)
         }
     }
 
@@ -403,105 +407,91 @@ extension AppDelegate {
         pushTokenReceiveAndUpdatedTransmitter.broadcast(error)
     }
 
-    private func saveTokenOnAWS(newToken: String) {
+    private func saveToken(newToken: String) {
         token = newToken
 
-        let sns = AWSSNS.default()
+        let customUserData = endpointCustomUserData()
 
-        guard let request = AWSSNSCreatePlatformEndpointInput() else { return }
-        request.token = newToken
-        guard let platformApplicationARN = AWSConfiguration.platformApplicationARN else { return }
-        request.platformApplicationArn = platformApplicationARN
-
-        var type = "App Store"
-        if Bundle.main.isSimulator() {
-            type = "Simulator"
-        }
-        request.customUserData = "\(UserManager.shared.currentUser?.slug ?? ""), \(type), \(Bundle.main.releaseVersionNumber!), \(Bundle.main.buildVersionNumber!)"
-
-        sns.createPlatformEndpoint(request).continueWith(executor: AWSExecutor.mainThread(), block: { [weak self] task in
-            guard let self = self else { return nil }
-            if task.error != nil {
-                print("💀 AWS SNS createPlatformEndpoint Error: \(String(describing: task.error))")
-                pushTokenReceiveAndUpdatedTransmitter.broadcast(task.error)
-            } else if let createEndpointResponse = task.result,
-                let endpointArnForSNS = createEndpointResponse.endpointArn {
-                print("🎉 endpointArn from AWS SNS: \(endpointArnForSNS)")
-                endpointARN = endpointArnForSNS
-                self.updateDynamoDB(ARN: endpointArnForSNS)
-            } else {
-                fatalError()
+        Task { [weak self] in
+            do {
+                let createdEndpointARN = try await RemoteNotificationsManager.shared.createEndpoint(
+                    token: newToken,
+                    customUserData: customUserData
+                )
+                await MainActor.run {
+                    guard let self = self else { return }
+                    print("🎉 endpoint ARN from remote notifications API: \(createdEndpointARN)")
+                    endpointARN = createdEndpointARN
+                    self.updatePushInformation(endpointARN: createdEndpointARN)
+                }
+            } catch {
+                await MainActor.run {
+                    print("💀 Remote notifications create endpoint Error: \(error)")
+                    pushTokenReceiveAndUpdatedTransmitter.broadcast(error)
+                }
             }
-            return nil
-        })
+        }
     }
 
-    private func updateARNOnAWS(ARN: String) {
-        let sns = AWSSNS.default()
+    private func updateEndpoint(endpointARN: String) {
+        let customUserData = endpointCustomUserData()
 
-        guard let setAttributesRequest = AWSSNSSetEndpointAttributesInput() else { return }
-        setAttributesRequest.endpointArn = ARN
-
-        var type = "App Store"
-        if Bundle.main.isSimulator() {
-            type = "Simulator"
-        }
-        setAttributesRequest.attributes = ["CustomUserData": "\(UserManager.shared.currentUser?.slug ?? ""), \(type), \(Bundle.main.releaseVersionNumber!), \(Bundle.main.buildVersionNumber!)", "Enabled": "true"]
-        sns.setEndpointAttributes(setAttributesRequest, completionHandler: { error in
-            if let error = error {
-                print("💀 AWS SNS setEndpointAttributes Error: \(error)")
+        Task {
+            do {
+                try await RemoteNotificationsManager.shared.updateEndpoint(endpointARN: endpointARN, customUserData: customUserData)
+            } catch {
+                print("💀 Remote notifications update endpoint Error: \(error)")
             }
-        })
+        }
     }
 
-    private func updateDynamoDB(ARN: String) {
-        let dynamoDbObjectMapper = AWSDynamoDBObjectMapper.default()
-
-        guard let pushInfo = PushInformationModel() else { return }
+    private func updatePushInformation(endpointARN: String) {
         guard let traktSlug = UserManager.shared.currentUser?.slug else { return }
 
-        pushInfo.enpointARN = ARN
-        pushInfo.traktId = traktSlug
+        let pushInfo = PushInformationModel(traktId: traktSlug,
+                                            enpointARN: endpointARN,
+                                            environement: endpointEnvironment(),
+                                            premium: PurchaseManager.shared.purchased ? "VIP" : "non-VIP",
+                                            commentNewLikes: ActivityNotificationsManager.shared.commentNewLikes,
+                                            commentNewReply: ActivityNotificationsManager.shared.commentNewReply,
+                                            commentNewMention: ActivityNotificationsManager.shared.commentNewMention,
+                                            activityNewFollower: ActivityNotificationsManager.shared.activityNewFollower)
 
-        pushInfo.environement = "App Store"
-        if Bundle.main.isSimulator() {
-            pushInfo.environement = "Simulator"
-        }
-
-        pushInfo.premium = PurchaseManager.shared.purchased ? "VIP" : "non-VIP"
-
-        pushInfo.activityNewFollower = NSNumber(value: ActivityNotificationsManager.shared.activityNewFollower)
-        pushInfo.commentNewMention = NSNumber(value: ActivityNotificationsManager.shared.commentNewMention)
-        pushInfo.commentNewReply = NSNumber(value: ActivityNotificationsManager.shared.commentNewReply)
-        pushInfo.commentNewLikes = NSNumber(value: ActivityNotificationsManager.shared.commentNewLikes)
-
-        // Save a new item
-        dynamoDbObjectMapper.save(pushInfo, completionHandler: { error in
-            if let error = error {
-                print("💀 Amazon DynamoDB Save Error: \(error)")
-                pushTokenReceiveAndUpdatedTransmitter.broadcast(error)
-            } else {
-                print("🎉 An item was saved on DynmoDB.")
-                pushTokenReceiveAndUpdatedTransmitter.broadcast(nil)
+        Task {
+            do {
+                let savedPushInformation = try await RemoteNotificationsManager.shared.savePushInformation(pushInfo)
+                await MainActor.run {
+                    if savedPushInformation {
+                        print("🎉 Push information was saved through remote notifications API.")
+                    }
+                    pushTokenReceiveAndUpdatedTransmitter.broadcast(nil)
+                }
+            } catch {
+                await MainActor.run {
+                    print("💀 Remote notifications save push information Error: \(error)")
+                    pushTokenReceiveAndUpdatedTransmitter.broadcast(error)
+                }
             }
-        })
+        }
     }
 
-    private func removeFromDynamoDB(ARN: String) {
-        let dynamoDbObjectMapper = AWSDynamoDBObjectMapper.default()
-
-        guard let pushInfo = PushInformationModel() else { return }
-
-        pushInfo.enpointARN = ARN
-
-        // Remove the item
-        dynamoDbObjectMapper.remove(pushInfo, completionHandler: { error in
-            if let error = error {
-                print("💀 Amazon DynamoDB Remove Error: \(error)")
-                return
+    private func removePushInformation(endpointARN: String) {
+        Task {
+            do {
+                try await RemoteNotificationsManager.shared.removePushInformation(endpointARN: endpointARN)
+                print("🎉 Push information was removed through remote notifications API.")
+            } catch {
+                print("💀 Remote notifications remove push information Error: \(error)")
             }
-            print("🎉 An item was removed on DynmoDB.")
-        })
+        }
+    }
+
+    private func endpointCustomUserData() -> String {
+        return "\(UserManager.shared.currentUser?.slug ?? ""), \(endpointEnvironment()), \(Bundle.main.releaseVersionNumber!), \(Bundle.main.buildVersionNumber!)"
+    }
+
+    private func endpointEnvironment() -> String {
+        return Bundle.main.isSimulator() ? "Simulator" : "App Store"
     }
 }
 
@@ -517,7 +507,7 @@ extension Bundle {
 
 extension AppDelegate {
     func registerForPushNotifications() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .providesAppNotificationSettings]) { (granted, _) in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .providesAppNotificationSettings]) { granted, _ in
             print("Permission granted: \(granted)")
 
             guard granted else { return }
@@ -526,7 +516,7 @@ extension AppDelegate {
     }
 
     func getNotificationSettings() {
-        UNUserNotificationCenter.current().getNotificationSettings { (settings) in
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
             print("Notification settings: \(settings)")
             guard settings.authorizationStatus == .authorized else { return }
             DispatchQueue.main.async {
@@ -546,7 +536,6 @@ extension UIView {
 }
 
 extension AppDelegate {
-
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         print("canPerformAction \(action)")
         if UIApplication.shared.isModalDisplayed() { return false }
@@ -562,7 +551,7 @@ extension AppDelegate {
     override func find(_ sender: Any?) {
         ShortcutManager.shared.shouldHandle(shortcut: ShortcutManager.shared.searchAndKeyboardShortcutItem)
         if SessionManager.shared.isLoggedIn,
-            DeeplinkManager.shared.shouldOpenDeeplink() {
+           DeeplinkManager.shared.shouldOpenDeeplink() {
             UIApplication.shared.switchToDeeplink()
         }
     }

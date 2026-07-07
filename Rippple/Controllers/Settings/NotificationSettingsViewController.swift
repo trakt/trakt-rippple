@@ -6,13 +6,374 @@
 //  Copyright © 2020 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import SwiftUI
+import UIKit
 
 let (onNotificationsSettingsChangedTransmitter, onNotificationsSettingsChangedReceiver) = Receiver<NotificationSettingsViewController>.make(with: .hot)
 
-final class NotificationSettingsViewController: UITableViewController {
+struct NotificationSettingsView: View {
+    var onTroubleshoot: () -> Void = {}
+
+    @State private var values = NotificationSetting.currentValues()
+
+    private let tintColor = Color(UIColor(asset: .globalTint))
+
+    var body: some View {
+        Form {
+            Section {
+                Button(action: onTroubleshoot) {
+                    HStack {
+                        Text("Troubleshoot Notifications")
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .foregroundStyle(.primary)
+            } header: {
+                Text("🛠️ Troubleshooting")
+            } footer: {
+                Text("Make sure you're not in a Focus mode that can \"hide\" Rippple's notifications.")
+            }
+
+            toggleSection(title: "📢 Rippple Updates",
+                          footer: "Get a notification when Rippple is updated or when a new Weekly post is available. Blog posts includes Rippple Weekly Tracker. Delivered by realtime push notifications.",
+                          settings: [.appUpdate, .blogPost])
+
+            toggleSection(title: "🔔 Check-in",
+                          footer: "Get a notification when checking in a movie that includes during or after-credits stinger.",
+                          settings: [.stingerAlert])
+
+            toggleSection(title: "🔔 Anticipated",
+                          footer: "Get a notification when a Movie or Show was Anticipated and is released. Scheduled locally on this device.",
+                          settings: [.anticipatedMovie, .anticipatedShow])
+
+            toggleSection(title: "📢 Trending",
+                          footer: "Get a notification when a Movie or Show becomes trending. Delivered by realtime push notifications.",
+                          settings: [.trendingMovie, .trendingShow])
+
+            toggleSection(title: "📢 Favorited",
+                          footer: "Get a notification when a Movie or Show becomes most favorited. Delivered by realtime push notifications.",
+                          settings: [.favoritedMovie, .favoritedShow])
+
+            toggleSection(title: "✨ Smart Episode Releases",
+                          footer: "Tune how local episode release notifications are grouped, filtered by show progress, and delivered when an episode airs overnight.",
+                          settings: [.groupEpisodes, .reduceBasedOnProgress, .postponeNighttimeNotifications])
+
+            toggleSection(title: "🔔 Watchlist",
+                          footer: "Manual release notifications are scheduled locally on this device.",
+                          settings: [.watchlistMovieRelease,
+                                     .watchlistDVDMovieRelease,
+                                     .watchlistStreamingMovieRelease,
+                                     .watchlistShowPremiere,
+                                     .watchlistSeasonPremiere,
+                                     .watchlistShowFinale,
+                                     .watchlistSeasonFinale,
+                                     .watchlistEpisodeRelease])
+
+            toggleSection(title: "🔔 To Watch",
+                          footer: "Manual release notifications are scheduled locally on this device.",
+                          settings: [.toWatchMovieRelease,
+                                     .toWatchDVDMovieRelease,
+                                     .toWatchStreamingMovieRelease,
+                                     .toWatchShowPremiere,
+                                     .toWatchSeasonPremiere,
+                                     .toWatchShowFinale,
+                                     .toWatchSeasonFinale,
+                                     .toWatchEpisodeRelease])
+
+            toggleSection(title: "📢 Comments",
+                          footer: "Delivered by realtime push notifications.",
+                          settings: [.commentNewLike, .commentNewReply, .commentNewMention])
+
+            toggleSection(title: "📢 Activity",
+                          footer: "Delivered by realtime push notifications.",
+                          settings: [.activityNewFollower])
+        }
+        .navigationTitle("Notifications")
+        .tint(tintColor)
+        .onAppear {
+            values = NotificationSetting.currentValues()
+        }
+    }
+
+    private func toggleSection(title: String, footer: String, settings: [NotificationSetting]) -> some View {
+        Section {
+            ForEach(settings) { setting in
+                Toggle(setting.title, isOn: binding(for: setting))
+                    .toggleStyle(.switch)
+            }
+        } header: {
+            Text(title)
+        } footer: {
+            Text(footer)
+        }
+    }
+
+    private func binding(for setting: NotificationSetting) -> Binding<Bool> {
+        Binding {
+            values[setting, default: setting.isOn]
+        } set: { newValue in
+            values[setting] = newValue
+            setting.isOn = newValue
+        }
+    }
+}
+
+private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
+    case appUpdate
+    case blogPost
+    case stingerAlert
+    case anticipatedMovie
+    case anticipatedShow
+    case trendingMovie
+    case trendingShow
+    case favoritedMovie
+    case favoritedShow
+    case groupEpisodes
+    case reduceBasedOnProgress
+    case postponeNighttimeNotifications
+    case watchlistMovieRelease
+    case watchlistDVDMovieRelease
+    case watchlistStreamingMovieRelease
+    case watchlistShowPremiere
+    case watchlistSeasonPremiere
+    case watchlistShowFinale
+    case watchlistSeasonFinale
+    case watchlistEpisodeRelease
+    case toWatchMovieRelease
+    case toWatchDVDMovieRelease
+    case toWatchStreamingMovieRelease
+    case toWatchShowPremiere
+    case toWatchSeasonPremiere
+    case toWatchShowFinale
+    case toWatchSeasonFinale
+    case toWatchEpisodeRelease
+    case commentNewLike
+    case commentNewReply
+    case commentNewMention
+    case activityNewFollower
+
+    var id: Self {
+        self
+    }
+
+    var title: String {
+        switch self {
+        case .appUpdate:
+            return "App Update"
+        case .blogPost:
+            return "New Weekly Post"
+        case .stingerAlert:
+            return "Credits Stinger Alert"
+        case .anticipatedMovie:
+            return "Anticipated Movie"
+        case .anticipatedShow:
+            return "Anticipated Show"
+        case .trendingMovie:
+            return "Trending Movie"
+        case .trendingShow:
+            return "Trending Show"
+        case .favoritedMovie:
+            return "Favorited Movie"
+        case .favoritedShow:
+            return "Favorited Show"
+        case .groupEpisodes:
+            return "Group Binge Releases"
+        case .reduceBasedOnProgress:
+            return "Reduce Based on Progress"
+        case .postponeNighttimeNotifications:
+            return "Postpone Nighttime Notifications"
+        case .watchlistMovieRelease, .toWatchMovieRelease:
+            return "Movie Released"
+        case .watchlistDVDMovieRelease, .toWatchDVDMovieRelease:
+            return "Movie DVD & Blu-Ray Released"
+        case .watchlistStreamingMovieRelease, .toWatchStreamingMovieRelease:
+            return "Movie Streaming Released"
+        case .watchlistShowPremiere, .toWatchShowPremiere:
+            return "TV show Premiere"
+        case .watchlistSeasonPremiere, .toWatchSeasonPremiere:
+            return "Season Premiere"
+        case .watchlistShowFinale, .toWatchShowFinale:
+            return "TV show Finale"
+        case .watchlistSeasonFinale, .toWatchSeasonFinale:
+            return "Season Finale"
+        case .watchlistEpisodeRelease, .toWatchEpisodeRelease:
+            return "Episode Released"
+        case .commentNewLike:
+            return "New Like"
+        case .commentNewReply:
+            return "New Reply"
+        case .commentNewMention:
+            return "New Mention"
+        case .activityNewFollower:
+            return "New Follower"
+        }
+    }
+
+    var isOn: Bool {
+        get {
+            switch self {
+            case .appUpdate:
+                return ManualRemoteNotificationsManager.shared.appUpdate
+            case .blogPost:
+                return ManualRemoteNotificationsManager.shared.blogPost
+            case .stingerAlert:
+                return UserDefaults.standard.bool(forKey: "Stinger.alert.type")
+            case .anticipatedMovie:
+                return AnticipatedNotificationsManager.shared.anticipatedMovies
+            case .anticipatedShow:
+                return AnticipatedNotificationsManager.shared.anticipatedShows
+            case .trendingMovie:
+                return TrendingNotificationsManager.shared.trendingMovies
+            case .trendingShow:
+                return TrendingNotificationsManager.shared.trendingShows
+            case .favoritedMovie:
+                return RecommendedNotificationsManager.shared.recommendedMovies
+            case .favoritedShow:
+                return RecommendedNotificationsManager.shared.recommendedShows
+            case .groupEpisodes:
+                return EpisodeNotificationsManager.shared.groupEpisodes
+            case .reduceBasedOnProgress:
+                return EpisodeNotificationsManager.shared.reduceBasedOnProgress
+            case .postponeNighttimeNotifications:
+                return EpisodeNotificationsManager.shared.postponeNighttimeNotifications
+            case .watchlistMovieRelease:
+                return MovieNotificationsManager.shared.watchlistMovieRelease
+            case .watchlistDVDMovieRelease:
+                return DVDMovieNotificationsManager.shared.watchlistMovieRelease
+            case .watchlistStreamingMovieRelease:
+                return StreamingMovieNotificationsManager.shared.watchlistMovieRelease
+            case .watchlistShowPremiere:
+                return EpisodeNotificationsManager.shared.watchlistShowPremiere
+            case .watchlistSeasonPremiere:
+                return EpisodeNotificationsManager.shared.watchlistSeasonPremiere
+            case .watchlistShowFinale:
+                return EpisodeNotificationsManager.shared.watchlistShowFinale
+            case .watchlistSeasonFinale:
+                return EpisodeNotificationsManager.shared.watchlistSeasonFinale
+            case .watchlistEpisodeRelease:
+                return EpisodeNotificationsManager.shared.watchlistEpisodeRelease
+            case .toWatchMovieRelease:
+                return MovieNotificationsManager.shared.toWatchMovieRelease
+            case .toWatchDVDMovieRelease:
+                return DVDMovieNotificationsManager.shared.toWatchMovieRelease
+            case .toWatchStreamingMovieRelease:
+                return StreamingMovieNotificationsManager.shared.toWatchMovieRelease
+            case .toWatchShowPremiere:
+                return EpisodeNotificationsManager.shared.toWatchShowPremiere
+            case .toWatchSeasonPremiere:
+                return EpisodeNotificationsManager.shared.toWatchSeasonPremiere
+            case .toWatchShowFinale:
+                return EpisodeNotificationsManager.shared.toWatchShowFinale
+            case .toWatchSeasonFinale:
+                return EpisodeNotificationsManager.shared.toWatchSeasonFinale
+            case .toWatchEpisodeRelease:
+                return EpisodeNotificationsManager.shared.toWatchEpisodeRelease
+            case .commentNewLike:
+                return ActivityNotificationsManager.shared.commentNewLikes
+            case .commentNewReply:
+                return ActivityNotificationsManager.shared.commentNewReply
+            case .commentNewMention:
+                return ActivityNotificationsManager.shared.commentNewMention
+            case .activityNewFollower:
+                return ActivityNotificationsManager.shared.activityNewFollower
+            }
+        }
+        nonmutating set {
+            switch self {
+            case .appUpdate:
+                ManualRemoteNotificationsManager.shared.appUpdate = newValue
+            case .blogPost:
+                ManualRemoteNotificationsManager.shared.blogPost = newValue
+            case .stingerAlert:
+                UserDefaults.standard.set(newValue, forKey: "Stinger.alert.type")
+                UserDefaults.standard.synchronize()
+            case .anticipatedMovie:
+                AnticipatedNotificationsManager.shared.anticipatedMovies = newValue
+            case .anticipatedShow:
+                AnticipatedNotificationsManager.shared.anticipatedShows = newValue
+            case .trendingMovie:
+                TrendingNotificationsManager.shared.trendingMovies = newValue
+            case .trendingShow:
+                TrendingNotificationsManager.shared.trendingShows = newValue
+            case .favoritedMovie:
+                RecommendedNotificationsManager.shared.recommendedMovies = newValue
+            case .favoritedShow:
+                RecommendedNotificationsManager.shared.recommendedShows = newValue
+            case .groupEpisodes:
+                EpisodeNotificationsManager.shared.groupEpisodes = newValue
+            case .reduceBasedOnProgress:
+                EpisodeNotificationsManager.shared.reduceBasedOnProgress = newValue
+            case .postponeNighttimeNotifications:
+                EpisodeNotificationsManager.shared.postponeNighttimeNotifications = newValue
+            case .watchlistMovieRelease:
+                MovieNotificationsManager.shared.watchlistMovieRelease = newValue
+            case .watchlistDVDMovieRelease:
+                DVDMovieNotificationsManager.shared.watchlistMovieRelease = newValue
+            case .watchlistStreamingMovieRelease:
+                StreamingMovieNotificationsManager.shared.watchlistMovieRelease = newValue
+            case .watchlistShowPremiere:
+                EpisodeNotificationsManager.shared.watchlistShowPremiere = newValue
+            case .watchlistSeasonPremiere:
+                EpisodeNotificationsManager.shared.watchlistSeasonPremiere = newValue
+            case .watchlistShowFinale:
+                EpisodeNotificationsManager.shared.watchlistShowFinale = newValue
+            case .watchlistSeasonFinale:
+                EpisodeNotificationsManager.shared.watchlistSeasonFinale = newValue
+            case .watchlistEpisodeRelease:
+                EpisodeNotificationsManager.shared.watchlistEpisodeRelease = newValue
+            case .toWatchMovieRelease:
+                MovieNotificationsManager.shared.toWatchMovieRelease = newValue
+            case .toWatchDVDMovieRelease:
+                DVDMovieNotificationsManager.shared.toWatchMovieRelease = newValue
+            case .toWatchStreamingMovieRelease:
+                StreamingMovieNotificationsManager.shared.toWatchMovieRelease = newValue
+            case .toWatchShowPremiere:
+                EpisodeNotificationsManager.shared.toWatchShowPremiere = newValue
+            case .toWatchSeasonPremiere:
+                EpisodeNotificationsManager.shared.toWatchSeasonPremiere = newValue
+            case .toWatchShowFinale:
+                EpisodeNotificationsManager.shared.toWatchShowFinale = newValue
+            case .toWatchSeasonFinale:
+                EpisodeNotificationsManager.shared.toWatchSeasonFinale = newValue
+            case .toWatchEpisodeRelease:
+                EpisodeNotificationsManager.shared.toWatchEpisodeRelease = newValue
+            case .commentNewLike:
+                ActivityNotificationsManager.shared.commentNewLikes = newValue
+            case .commentNewReply:
+                ActivityNotificationsManager.shared.commentNewReply = newValue
+            case .commentNewMention:
+                ActivityNotificationsManager.shared.commentNewMention = newValue
+            case .activityNewFollower:
+                ActivityNotificationsManager.shared.activityNewFollower = newValue
+            }
+        }
+    }
+
+    static func currentValues() -> [NotificationSetting: Bool] {
+        Dictionary(uniqueKeysWithValues: allCases.map { ($0, $0.isOn) })
+    }
+}
+
+final class NotificationSettingsViewController: UIHostingController<NotificationSettingsView> {
+    init() {
+        super.init(rootView: NotificationSettingsView())
+        rootView = NotificationSettingsView(onTroubleshoot: { [weak self] in
+            guard let self = self else { return }
+            self.showTroubleshooting()
+        })
+    }
+
+    @objc dynamic required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder, rootView: NotificationSettingsView())
+        rootView = NotificationSettingsView(onTroubleshoot: { [weak self] in
+            guard let self = self else { return }
+            self.showTroubleshooting()
+        })
+    }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
@@ -20,143 +381,16 @@ final class NotificationSettingsViewController: UITableViewController {
         onNotificationsSettingsChangedTransmitter.broadcast(self)
     }
 
-    @IBOutlet weak var stingerAlert: UISwitch!
-
-    @IBOutlet weak var groupEpisodes: UISwitch!
-
-    @IBOutlet weak var watchlistMovieReleaseSwitch: UISwitch!
-    @IBOutlet weak var watchlistDVDMovieReleaseSwitch: UISwitch!
-    @IBOutlet weak var watchlistShowPremiereSwitch: UISwitch!
-    @IBOutlet weak var watchlistSeasonPremiereSwitch: UISwitch!
-    @IBOutlet weak var watchlistEpisodeReleaseSwitch: UISwitch!
-
-    @IBOutlet weak var toWatchMovieReleaseSwitch: UISwitch!
-    @IBOutlet weak var toWatchDVDMovieReleaseSwitch: UISwitch!
-    @IBOutlet weak var toWatchShowPremiereSwitch: UISwitch!
-    @IBOutlet weak var toWatchSeasonPremiereSwitch: UISwitch!
-    @IBOutlet weak var toWatchEpisodeReleaseSwitch: UISwitch!
-
-    @IBOutlet weak var commentNewLikeSwitch: UISwitch!
-    @IBOutlet weak var commentNewReplySwitch: UISwitch!
-    @IBOutlet weak var commentNewMentionSwitch: UISwitch!
-
-    @IBOutlet weak var activityFollowSwitch: UISwitch!
-
-    @IBOutlet weak var trendingMoviesSwitch: UISwitch!
-    @IBOutlet weak var trendingShowsSwitch: UISwitch!
-
-    @IBOutlet weak var recommendedMoviesSwitch: UISwitch!
-    @IBOutlet weak var recommendedShowsSwitch: UISwitch!
-
-    @IBOutlet weak var anticipatedMoviesSwitch: UISwitch!
-    @IBOutlet weak var anticipatedShowsSwitch: UISwitch!
-
-    @IBOutlet weak var appUpdateSwitch: UISwitch!
-    @IBOutlet weak var blogPostSwitch: UISwitch!
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-
-        updateSwitches()
+    private func showTroubleshooting() {
+        guard let controller = storyboard?.instantiateViewController(withIdentifier: "notificationsTroubleshoot") else { return }
+        navigationController?.pushViewController(controller, animated: true)
     }
-
-    private func updateSwitches() {
-        stingerAlert.isOn = UserDefaults.standard.bool(forKey: "Stinger.alert.type")
-
-        groupEpisodes.isOn = EpisodeNotificationsManager.shared.groupEpisodes
-
-        watchlistMovieReleaseSwitch.isOn = MovieNotificationsManager.shared.watchlistMovieRelease
-        watchlistDVDMovieReleaseSwitch.isOn = DVDMovieNotificationsManager.shared.watchlistMovieRelease
-        watchlistShowPremiereSwitch.isOn = EpisodeNotificationsManager.shared.watchlistShowPremiere
-        watchlistSeasonPremiereSwitch.isOn = EpisodeNotificationsManager.shared.watchlistSeasonPremiere
-        watchlistEpisodeReleaseSwitch.isOn = EpisodeNotificationsManager.shared.watchlistEpisodeRelease
-
-        toWatchMovieReleaseSwitch.isOn = MovieNotificationsManager.shared.toWatchMovieRelease
-        toWatchDVDMovieReleaseSwitch.isOn = DVDMovieNotificationsManager.shared.toWatchMovieRelease
-        toWatchShowPremiereSwitch.isOn = EpisodeNotificationsManager.shared.toWatchShowPremiere
-        toWatchSeasonPremiereSwitch.isOn = EpisodeNotificationsManager.shared.toWatchSeasonPremiere
-        toWatchEpisodeReleaseSwitch.isOn = EpisodeNotificationsManager.shared.toWatchEpisodeRelease
-
-        commentNewLikeSwitch.isOn = ActivityNotificationsManager.shared.commentNewLikes
-        commentNewReplySwitch.isOn = ActivityNotificationsManager.shared.commentNewReply
-        commentNewMentionSwitch.isOn = ActivityNotificationsManager.shared.commentNewMention
-
-        activityFollowSwitch.isOn = ActivityNotificationsManager.shared.activityNewFollower
-
-        trendingShowsSwitch.isOn = TrendingNotificationsManager.shared.trendingShows
-        trendingMoviesSwitch.isOn = TrendingNotificationsManager.shared.trendingMovies
-
-        recommendedShowsSwitch.isOn = RecommendedNotificationsManager.shared.recommendedShows
-        recommendedMoviesSwitch.isOn = RecommendedNotificationsManager.shared.recommendedMovies
-
-        anticipatedShowsSwitch.isOn = AnticipatedNotificationsManager.shared.anticipatedShows
-        anticipatedMoviesSwitch.isOn = AnticipatedNotificationsManager.shared.anticipatedMovies
-
-        appUpdateSwitch.isOn = ManualRemoteNotificationsManager.shared.appUpdate
-        blogPostSwitch.isOn = ManualRemoteNotificationsManager.shared.blogPost
-    }
-
-    @IBAction func switchValueChanged(_ sender: UISwitch) {
-        if sender == groupEpisodes {
-            EpisodeNotificationsManager.shared.groupEpisodes = sender.isOn
-        } else if sender == watchlistMovieReleaseSwitch {
-            MovieNotificationsManager.shared.watchlistMovieRelease = sender.isOn
-        } else if sender == watchlistShowPremiereSwitch {
-            EpisodeNotificationsManager.shared.watchlistShowPremiere = sender.isOn
-        } else if sender == watchlistSeasonPremiereSwitch {
-            EpisodeNotificationsManager.shared.watchlistSeasonPremiere = sender.isOn
-        } else if sender == watchlistEpisodeReleaseSwitch {
-            EpisodeNotificationsManager.shared.watchlistEpisodeRelease = sender.isOn
-        } else if sender == toWatchMovieReleaseSwitch {
-            MovieNotificationsManager.shared.toWatchMovieRelease = sender.isOn
-        } else if sender == toWatchShowPremiereSwitch {
-            EpisodeNotificationsManager.shared.toWatchShowPremiere = sender.isOn
-        } else if sender == toWatchSeasonPremiereSwitch {
-            EpisodeNotificationsManager.shared.toWatchSeasonPremiere = sender.isOn
-        } else if sender == toWatchEpisodeReleaseSwitch {
-            EpisodeNotificationsManager.shared.toWatchEpisodeRelease = sender.isOn
-        } else if sender == commentNewLikeSwitch {
-            ActivityNotificationsManager.shared.commentNewLikes = sender.isOn
-        } else if sender == commentNewReplySwitch {
-            ActivityNotificationsManager.shared.commentNewReply = sender.isOn
-        } else if sender == commentNewMentionSwitch {
-            ActivityNotificationsManager.shared.commentNewMention = sender.isOn
-        } else if sender == activityFollowSwitch {
-            ActivityNotificationsManager.shared.activityNewFollower = sender.isOn
-        } else if sender == watchlistDVDMovieReleaseSwitch {
-            DVDMovieNotificationsManager.shared.watchlistMovieRelease = sender.isOn
-        } else if sender == toWatchDVDMovieReleaseSwitch {
-            DVDMovieNotificationsManager.shared.toWatchMovieRelease = sender.isOn
-        } else if sender == trendingMoviesSwitch {
-            TrendingNotificationsManager.shared.trendingMovies = sender.isOn
-        } else if sender == trendingShowsSwitch {
-            TrendingNotificationsManager.shared.trendingShows = sender.isOn
-        } else if sender == recommendedMoviesSwitch {
-            RecommendedNotificationsManager.shared.recommendedMovies = sender.isOn
-        } else if sender == recommendedShowsSwitch {
-            RecommendedNotificationsManager.shared.recommendedShows = sender.isOn
-        } else if sender == stingerAlert {
-            UserDefaults.standard.set(sender.isOn, forKey: "Stinger.alert.type")
-            UserDefaults.standard.synchronize()
-        } else if sender == anticipatedShowsSwitch {
-            AnticipatedNotificationsManager.shared.anticipatedShows = sender.isOn
-        } else if sender == anticipatedMoviesSwitch {
-            AnticipatedNotificationsManager.shared.anticipatedMovies = sender.isOn
-        } else if sender == appUpdateSwitch {
-            ManualRemoteNotificationsManager.shared.appUpdate = sender.isOn
-        } else if sender == blogPostSwitch {
-            ManualRemoteNotificationsManager.shared.blogPost = sender.isOn
-        }
-        updateSwitches()
-    }
-
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-    }
-
-    #if targetEnvironment(macCatalyst)
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 44.0
-    }
-    #endif
 }
+
+#if DEBUG
+#Preview("Notifications Settings") {
+    NavigationStack {
+        NotificationSettingsView()
+    }
+}
+#endif

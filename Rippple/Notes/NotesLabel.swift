@@ -9,7 +9,6 @@
 import UIKit
 
 final class NotesLabel: LinkEnabledLabel {
-
     var noteItem: NoteItem? {
         didSet {
             attributedText = attributedString()
@@ -42,7 +41,6 @@ final class NotesLabel: LinkEnabledLabel {
 }
 
 final class ActivityLabel: LinkEnabledLabel {
-
     private func commonInit() {
         isUserInteractionEnabled = true
         tintColor = UIColor(asset: .globalTint)
@@ -80,7 +78,6 @@ final class ActivityLabel: LinkEnabledLabel {
 }
 
 class LinkEnabledLabel: UILabel {
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         commonInit()
@@ -116,7 +113,7 @@ class LinkEnabledLabel: UILabel {
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let url = self.url(at: touches) {
+        if let url = url(at: touches) {
             didTapOnURL(url)
         } else {
             super.touchesEnded(touches, with: event)

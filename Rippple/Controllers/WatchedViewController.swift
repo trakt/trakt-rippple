@@ -6,13 +6,10 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
-import UIKit
-
-import Receiver
-
-import NVActivityIndicatorView
-
 import Moya
+import NVActivityIndicatorView
+import Receiver
+import UIKit
 
 extension WatchedItem {
     var title: String {
@@ -109,25 +106,25 @@ extension WatchedItem {
             let C = 6.5
             let v = Double(movie!.votes ?? 0)
             let R = movie!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .show:
             let m = 3000.0
             let C = 6.5
             let v = Double(show!.votes ?? 0)
             let R = show!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .season:
             let m = 3000.0
             let C = 6.5
             let v = Double(season!.votes ?? 0)
             let R = season!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .episode:
             let m = 3000.0
             let C = 6.5
             let v = Double(episode!.votes ?? 0)
             let R = episode!.rating ?? 0
-            return (v / (v+m)) * R + (m / (v+m)) * C
+            return (v / (v + m)) * R + (m / (v + m)) * C
         case .list, .officiallist:
             return 0
         case .unknown:
@@ -154,11 +151,10 @@ extension WatchedItem {
 }
 
 final class WatchedViewController: UITableViewController {
-
     var user: User!
 
     required init?(coder aDecoder: NSCoder) {
-        self.user = UserManager.shared.currentUser
+        user = UserManager.shared.currentUser
         super.init(coder: aDecoder)
     }
 
@@ -199,12 +195,12 @@ final class WatchedViewController: UITableViewController {
     private let searchController = UISearchController(searchResultsController: nil)
     private var searchQuery = ""
 
-    // Empty
+    /// Empty
     @IBOutlet private var emptyView: UIView!
 
     // Paging Management
     @IBOutlet private var loadingView: UIView!
-    @IBOutlet private weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet private var animationViewContainer: NVActivityIndicatorView!
 
     // Error Management
     @IBOutlet private var errorView: UIView!
@@ -217,10 +213,11 @@ final class WatchedViewController: UITableViewController {
             }
         }
     }
-    @IBOutlet weak var errorLabel: UILabel!
+
+    @IBOutlet var errorLabel: UILabel!
 
     // Filters
-    @IBOutlet weak var filterButtonItem: UIBarButtonItem!
+    @IBOutlet var filterButtonItem: UIBarButtonItem!
     private var currentFilter = Filter.movies {
         didSet {
             if user.isCurrentUser {
@@ -267,6 +264,15 @@ final class WatchedViewController: UITableViewController {
         }
     }
 
+    func cycleFilter() {
+        switch currentFilter {
+        case .movies:
+            currentFilter = .shows
+        case .shows:
+            currentFilter = .movies
+        }
+    }
+
     private enum Sort: Int {
         case lastWatched
         case title
@@ -278,7 +284,7 @@ final class WatchedViewController: UITableViewController {
         case random
     }
 
-    // Sort
+    /// Sort
     private var currentSorting = Sort.lastWatched {
         didSet {
             UserDefaults.standard.set(currentSorting.rawValue, forKey: "WatchedViewController.currentSorting")
@@ -314,8 +320,8 @@ final class WatchedViewController: UITableViewController {
 
     private class WatchlistDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> {
         override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-            guard let item = self.itemIdentifier(for: indexPath) else { return false }
-            guard case let Wrapper.watchlist(watchlistItem) = item else { return false }
+            guard let item = itemIdentifier(for: indexPath) else { return false }
+            guard case Wrapper.watchlist(let watchlistItem) = item else { return false }
             let media = MediaModel(item: watchlistItem)
             switch media {
             case .movie:
@@ -336,14 +342,15 @@ final class WatchedViewController: UITableViewController {
 
     private var watchedMovies: [WatchedItem]? {
         didSet {
-            if user.isCurrentUser && currentFilter == .movies {
+            if user.isCurrentUser, currentFilter == .movies {
                 watchlistItems = watchedMovies
             }
         }
     }
+
     private var watchedShows: [WatchedItem]? {
         didSet {
-            if user.isCurrentUser && currentFilter == .shows {
+            if user.isCurrentUser, currentFilter == .shows {
                 if let watchedShows = watchedShows {
                     watchlistItems = watchedShows.sorted(by: { $0.lastWatchedAt > $1.lastWatchedAt })
                 } else {
@@ -352,6 +359,7 @@ final class WatchedViewController: UITableViewController {
             }
         }
     }
+
     private var watchlistItems: [WatchedItem]? {
         didSet {
             updateDatasource()
@@ -404,7 +412,7 @@ final class WatchedViewController: UITableViewController {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.content])
         snapshot.appendItems([.stats(watchlistedItems.map { MediaModel(item: $0) })])
-        if currentFilter == .shows && user.isCurrentUser && searchQuery.isEmpty {
+        if currentFilter == .shows, user.isCurrentUser, searchQuery.isEmpty {
             snapshot.appendItems([.spacer(5.001),
                                   .sublist("Pinned", .top, WatchedViewController.ViewControllerSegue.pinned.rawValue),
                                   .sublist("Hidden", .middle, WatchedViewController.ViewControllerSegue.hidden.rawValue),
@@ -524,9 +532,9 @@ final class WatchedViewController: UITableViewController {
         navigationItem.searchController = searchController
 
         #if !targetEnvironment(macCatalyst)
-        self.refreshControl = UIRefreshControl()
+        refreshControl = UIRefreshControl()
         #endif
-        self.refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
 
         commandReceiver.listen { [weak self] keyCommand in
             guard let self = self else { return }
@@ -600,12 +608,12 @@ final class WatchedViewController: UITableViewController {
             }
 
             switch result {
-            case let .success(items):
+            case .success(let items):
                 let results = Array(Set(items))
                 DispatchQueue.main.async {
                     self.watchlistItems = results
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Watched request failure \(error)")
 
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
@@ -627,11 +635,10 @@ final class WatchedViewController: UITableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let commentsViewController = segue.destination as? CommentsViewController,
-            let cell = sender as? MediaTableViewCell,
-            let index = tableView.indexPath(for: cell) {
-
+           let cell = sender as? MediaTableViewCell,
+           let index = tableView.indexPath(for: cell) {
             guard let item = dataSource.itemIdentifier(for: index) else { return }
-            guard case let Wrapper.watchlist(watchlistItem) = item else { return }
+            guard case Wrapper.watchlist(let watchlistItem) = item else { return }
 
             switch watchlistItem.type {
             case .movie:
@@ -642,61 +649,61 @@ final class WatchedViewController: UITableViewController {
                 fatalError("Unhandled media type fed to search results view controller")
             }
         } else if let mediaViewController = segue.destination as? MediaViewController,
-            let media = sender as? MediaModel {
+                  let media = sender as? MediaModel {
             mediaViewController.media = media
         }
     }
 
     private func filterMenu() -> UIMenu {
         let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
-            let movies = UIAction(title: "Movies", image: nil, state: (self.currentFilter == .movies ? .on : .off)) { [weak self] _ in
+            let movies = UIAction(title: "Movies", image: nil, state: self.currentFilter == .movies ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .movies
             }
 
-            let shows = UIAction(title: "Shows", image: nil, state: (self.currentFilter == .shows ? .on : .off)) { [weak self] _ in
+            let shows = UIAction(title: "Shows", image: nil, state: self.currentFilter == .shows ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .shows
             }
 
             let filters = UIMenu(title: "What do you want to see?", options: .displayInline, children: [movies, shows])
 
-            let added = UIAction(title: "Watch Date", image: nil, state: (self.currentSorting == .lastWatched ? .on : .off)) { [weak self] _ in
+            let added = UIAction(title: "Watch Date", image: nil, state: self.currentSorting == .lastWatched ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .lastWatched
             }
 
-            let title = UIAction(title: "Title", image: nil, state: (self.currentSorting == .title ? .on : .off)) { [weak self] _ in
+            let title = UIAction(title: "Title", image: nil, state: self.currentSorting == .title ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .title
             }
 
-            let release = UIAction(title: "Release Date", image: nil, state: (self.currentSorting == .releaseDate ? .on : .off)) { [weak self] _ in
+            let release = UIAction(title: "Release Date", image: nil, state: self.currentSorting == .releaseDate ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .releaseDate
             }
 
-            let runtime = UIAction(title: "Runtime", image: nil, state: (self.currentSorting == .runtime ? .on : .off)) { [weak self] _ in
+            let runtime = UIAction(title: "Runtime", image: nil, state: self.currentSorting == .runtime ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .runtime
             }
 
-            let weightedRating = UIAction(title: "Weighted Ratings", image: nil, state: (self.currentSorting == .weightedRating ? .on : .off)) { [weak self] _ in
+            let weightedRating = UIAction(title: "Weighted Ratings", image: nil, state: self.currentSorting == .weightedRating ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .weightedRating
             }
 
-            let rating = UIAction(title: "Ratings", image: nil, state: (self.currentSorting == .rating ? .on : .off)) { [weak self] _ in
+            let rating = UIAction(title: "Ratings", image: nil, state: self.currentSorting == .rating ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .rating
             }
 
-            let votes = UIAction(title: "Votes", image: nil, state: (self.currentSorting == .votes ? .on : .off)) { [weak self] _ in
+            let votes = UIAction(title: "Votes", image: nil, state: self.currentSorting == .votes ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .votes
             }
 
-            let random = UIAction(title: "Random", image: nil, state: (self.currentSorting == .random ? .on : .off)) { [weak self] _ in
+            let random = UIAction(title: "Random", image: nil, state: self.currentSorting == .random ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .random
             }
@@ -719,7 +726,7 @@ extension WatchedViewController {
             performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
                          sender: MediaModel(item: watchedItem))
         case .sublist(_, _, let segueIdentifier):
-            self.performSegue(withIdentifier: segueIdentifier, sender: nil)
+            performSegue(withIdentifier: segueIdentifier, sender: nil)
         default:
             return
         }
@@ -784,9 +791,9 @@ extension WatchedViewController {
             contextMenu.controller = self
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return self.contextMenu.previewViewController
+                self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         case .sublist:
             return nil
@@ -812,17 +819,17 @@ extension WatchedViewController {
 
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.watchlist(watchlistItem) = item else { return nil }
+        guard case Wrapper.watchlist(let watchlistItem) = item else { return nil }
         let media = MediaModel(item: watchlistItem)
         return media.trailingSwipeActions(for: self)
     }
 
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        guard let item = self.dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.watchlist(watchedItem) = item else { return nil }
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
+        guard case Wrapper.watchlist(let watchedItem) = item else { return nil }
 
         let share = UIContextualAction(style: .normal,
-                                      title: "Share") { _, _, boolValue in
+                                       title: "Share") { _, _, boolValue in
             guard let sharedURL = MediaModel(item: watchedItem).traktWebsiteMediaLink else { return }
             let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
             UIApplication.shared.present(activityViewController)
@@ -843,32 +850,32 @@ extension WatchedViewController {
         comment.image = UIImage(systemName: "pencil.circle.fill")
 
         let recommend = UIContextualAction(style: .normal,
-                                         title: "Favorite") { _, _, boolValue in
+                                           title: "Favorite") { _, _, boolValue in
             SwiftMessages.show(message: "Adding to Favorites...", style: .loading)
             TraktAPIProvider.provider.request(TraktAPIService.addToRecommendations(item: WatchlistedItem(models: [MediaModel(item: watchedItem)])),
-                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /*[weak self]*/ result in
-        //                                                    guard let self = self else { return }
-                                                            switch result {
-                                                            case let .success(moyaResponse):
-                                                                do {
-                                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /* [weak self] */ result in
+                //                                                    guard let self = self else { return }
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                                    DispatchQueue.main.async {
-                                                                        RecommendedManager.shared.refresh()
-                                                                        SwiftMessages.show(message: "⭐️ Added to Favorites")
-                                                                        print("Recommendation successful \(response)")
-                                                                    }
+                        DispatchQueue.main.async {
+                            RecommendedManager.shared.refresh()
+                            SwiftMessages.show(message: "⭐️ Added to Favorites")
+                            print("Recommendation successful \(response)")
+                        }
 
-                                                                } catch {
-                                                                    DispatchQueue.main.async {
-                                                                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                                    }
-                                                                }
-                                                            case let .failure(error):
-                                                                DispatchQueue.main.async {
-                                                                    SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
-                                                                }
-                                                            }
+                    } catch {
+                        DispatchQueue.main.async {
+                            SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                        }
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: " 😓 An error occurred", style: .error(error))
+                    }
+                }
             }
             boolValue(false)
         }
@@ -886,12 +893,12 @@ extension WatchedViewController: MediaTableViewCellDelegate {
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.watchlist(watchlistItem) = item else { return }
+        guard case Wrapper.watchlist(let watchlistItem) = item else { return }
 
         if action == .details {
             switch watchlistItem.type {
             case .movie, .show:
-                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel.init(item: watchlistItem))
+                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel(item: watchlistItem))
             default:
                 fatalError("Unhandled media type")
             }
@@ -900,7 +907,6 @@ extension WatchedViewController: MediaTableViewCellDelegate {
 }
 
 extension WatchedViewController: UISearchResultsUpdating {
-
     func updateSearchResults(for searchController: UISearchController) {
         searchQuery = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         updateDatasource()

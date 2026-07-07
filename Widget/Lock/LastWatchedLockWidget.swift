@@ -6,9 +6,9 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
-import WidgetKit
-import SwiftUI
 import Intents
+import SwiftUI
+import WidgetKit
 
 #if !targetEnvironment(macCatalyst)
 
@@ -46,7 +46,7 @@ struct RectangularLockProvider: TimelineProvider {
             if let runtime = entry.progress.runtime, let endDate = entry.progress.endDate, endDate > Date.now {
                 let now = Date.now.timeIntervalSinceReferenceDate
                 let end = endDate.timeIntervalSinceReferenceDate
-                let start = end - (Double(runtime)*60.0)
+                let start = end - (Double(runtime) * 60.0)
 
                 let currentProgress = (now - start) / (end - start)
                 entry.date = Date.now
@@ -81,14 +81,13 @@ struct RectangularLockProvider: TimelineProvider {
             entries.append(entry)
         }
 
-        completion(Timeline(entries: entries, policy: .after(Date.now.advanced(by: 60*60))))
+        completion(Timeline(entries: entries, policy: .after(Date.now.advanced(by: 60 * 60))))
     }
 
     private func decodeEntry(for type: WidgetType) -> Entry? {
         if let encodedData = UserDefaults(suiteName: "group.tv.trakt.rippple")!.object(forKey: type.rawValue) as? Data {
             if let progress = try? JSONDecoder().decode(WidgetModel.self, from: encodedData) {
-                let entry = Entry(date: Date(), progress: progress)
-                return entry
+                return Entry(date: Date(), progress: progress)
             }
         }
         return nil
@@ -228,11 +227,11 @@ struct RectangularLockEntryView: View {
 struct RectangularLockWidget_Previews: PreviewProvider {
     static var previews: some View {
         let progress = WidgetModel(label: "Now Watching",
-                                title: "The Room",
-                                subtitle: "S04E08",
-                                image: nil,
-                                behind: "2 behind",
-                                redacted: true,
+                                   title: "The Room",
+                                   subtitle: "S04E08",
+                                   image: nil,
+                                   behind: "2 behind",
+                                   redacted: true,
                                    progress: 0.5)
 
         RectangularLockEntryView(entry: RectangularLockEntry(date: Date.now, progress: progress)).previewContext(WidgetPreviewContext(family: .accessoryRectangular))

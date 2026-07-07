@@ -1,5 +1,5 @@
 //
-//  OverviewTableViewCell.swift
+//  MediaOverviewTableViewCell.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 12/01/2019.
@@ -9,9 +9,8 @@
 import UIKit
 
 final class MediaOverviewTableViewCell: UITableViewCell {
-
-    @IBOutlet weak var taglineLabel: UILabel!
-    @IBOutlet weak var overviewLabel: UILabel!
+    @IBOutlet var taglineLabel: UILabel!
+    @IBOutlet var overviewLabel: UILabel!
 
     var media: MediaModel! {
         didSet {
@@ -63,7 +62,6 @@ final class MediaOverviewTableViewCell: UITableViewCell {
             case .showProgress:
                 fatalError()
             }
-
         }
     }
 }

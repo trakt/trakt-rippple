@@ -6,13 +6,11 @@
 //  Copyright © 2025 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class BlockedViewController: UITableViewController {
-
-    // Empty
+    /// Empty
     @IBOutlet private var emptyView: UIView!
 
     private let disposeBag = DisposeBag()
@@ -79,7 +77,7 @@ final class BlockedViewController: UITableViewController {
 extension BlockedViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.blocked(user) = item else { return }
+        guard case Wrapper.blocked(let user) = item else { return }
 
         let nextType = CommentsCoordinator.ListType.user(user)
 

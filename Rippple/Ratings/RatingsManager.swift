@@ -7,21 +7,19 @@
 //
 
 import Foundation
-
 import Receiver
 
 final class RatingsManager {
-
     private let disposeBag = DisposeBag()
 
     private init() {
         applicationLifecycleReceiver.listen { applicationLifecycle in
             switch applicationLifecycle {
             case .didFinishLaunching:
-                self.refreshRatings { }
+                self.refreshRatings {}
             case .didBecomeActive(let time):
                 if time > 3600 {
-                    self.refreshRatings { }
+                    self.refreshRatings {}
                 }
             case .didEnterBackground:
                 break
@@ -30,13 +28,13 @@ final class RatingsManager {
 
         onSettingsChangedReceiver.listen { settings in
             if settings != nil {
-                self.refreshRatings { }
+                self.refreshRatings {}
             } else {
                 self.rated.removeAll()
             }
         }.disposed(by: disposeBag)
 
-        refreshRatings { }
+        refreshRatings {}
     }
 
     static let shared = RatingsManager()
@@ -73,7 +71,7 @@ final class RatingsManager {
     fileprivate func ratingFor(movie: Movie) -> Int? {
         for ratedItem in rated {
             if let ratedMovie = ratedItem.movie,
-                ratedMovie == movie {
+               ratedMovie == movie {
                 return ratedItem.rating
             }
         }
@@ -84,9 +82,9 @@ final class RatingsManager {
     fileprivate func ratingFor(show: Show) -> Int? {
         for ratedItem in rated {
             if ratedItem.episode == nil,
-                ratedItem.season == nil,
-                let ratedShow = ratedItem.show,
-                ratedShow == show {
+               ratedItem.season == nil,
+               let ratedShow = ratedItem.show,
+               ratedShow == show {
                 return ratedItem.rating
             }
         }
@@ -97,9 +95,9 @@ final class RatingsManager {
     fileprivate func ratingFor(episode: Episode, show: Show) -> Int? {
         for ratedItem in rated {
             if let ratedShow = ratedItem.show,
-                let ratedEpisode = ratedItem.episode,
-                ratedShow == show,
-                ratedEpisode == episode {
+               let ratedEpisode = ratedItem.episode,
+               ratedShow == show,
+               ratedEpisode == episode {
                 return ratedItem.rating
             }
         }
@@ -110,10 +108,10 @@ final class RatingsManager {
     fileprivate func ratingFor(season: Season, show: Show) -> Int? {
         for ratedItem in rated {
             if ratedItem.episode == nil,
-                let ratedShow = ratedItem.show,
-                let ratedSeason = ratedItem.season,
-                ratedShow == show,
-                ratedSeason == season {
+               let ratedShow = ratedItem.show,
+               let ratedSeason = ratedItem.season,
+               ratedShow == show,
+               ratedSeason == season {
                 return ratedItem.rating
             }
         }
@@ -122,7 +120,6 @@ final class RatingsManager {
     }
 
     func rate(media: MediaModel, rating: Int, with completion: @escaping (_ error: Error?) -> Void) {
-
         func addRatingService(for media: MediaModel, and rating: Int) -> TraktAPIService {
             switch media {
             case .movie(let movie):
@@ -165,7 +162,7 @@ final class RatingsManager {
                                               callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         print("\(response)")
@@ -182,7 +179,7 @@ final class RatingsManager {
                             self.onRatedItemsChangedTransmitter.broadcast(self.rated)
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Rate failed \(error)")
                     DispatchQueue.main.async {
                         completion(error)
@@ -198,7 +195,7 @@ final class RatingsManager {
                                               callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         print("\(response)")
@@ -215,7 +212,7 @@ final class RatingsManager {
                             self.onRatedItemsChangedTransmitter.broadcast(self.rated)
                         }
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Rate failed \(error)")
                     DispatchQueue.main.async {
                         completion(error)
@@ -228,7 +225,6 @@ final class RatingsManager {
 }
 
 private extension RatingsManager {
-
     private func refreshRatings(with completion: @escaping () -> Void) {
         if SessionManager.shared.isLoggedOut {
             return
@@ -236,7 +232,7 @@ private extension RatingsManager {
         TraktAPIProvider.provider.request(.rated(slug: "me", type: .all, extended: nil),
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -252,7 +248,7 @@ private extension RatingsManager {
                         completion()
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Rated Items request failure \(error)")
                 DispatchQueue.main.async {
                     completion()
@@ -260,7 +256,6 @@ private extension RatingsManager {
             }
         }
     }
-
 }
 
 extension MediaModel {

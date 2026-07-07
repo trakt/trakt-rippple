@@ -6,9 +6,8 @@
 //  Copyright © 2021 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import UIKit
 
 struct ProviderType: Identifiable, Equatable, Hashable, Codable {
     var id: Int {
@@ -31,8 +30,7 @@ struct ProviderType: Identifiable, Equatable, Hashable, Codable {
 }
 
 final class WhereToWatchTableViewCell: UITableViewCell, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet var collectionView: UICollectionView!
 
     private let disposeBag = DisposeBag()
 
@@ -41,11 +39,11 @@ final class WhereToWatchTableViewCell: UITableViewCell, UICollectionViewDelegate
     private var empty: Bool {
         if loading == true { return false }
         if error == true { return false }
-        return self.data.isEmpty
+        return data.isEmpty
     }
 
     private func provider(in country: Country) -> Providers? {
-        guard let result = self.result else { return nil }
+        guard let result = result else { return nil }
         if let results = result.results {
             switch country {
             case .BE:
@@ -449,9 +447,9 @@ final class WhereToWatchTableViewCell: UITableViewCell, UICollectionViewDelegate
             }
             if CountryManager.shared.favoritesOnly {
                 let favorites = CountryManager.shared.favoriteProviders
-                data = data.filter({ provider in
+                data = data.filter { provider in
                     favorites.contains(where: { $0 == provider })
-                })
+                }
             }
             self.data = data.sortedByProviderPriority()
             collectionView.reloadData()
@@ -561,7 +559,7 @@ extension WhereToWatchTableViewCell {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -580,7 +578,7 @@ extension WhereToWatchTableViewCell {
                         self.collectionView.reloadData()
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("TmdbAPIService.showProviders Failure: \(error)")
                 DispatchQueue.main.async {
                     self.loading = false
@@ -605,7 +603,7 @@ extension WhereToWatchTableViewCell {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -624,7 +622,7 @@ extension WhereToWatchTableViewCell {
                         self.collectionView.reloadData()
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("TmdbAPIService.movieProviders Failure: \(error)")
                 DispatchQueue.main.async {
                     self.loading = false
@@ -649,7 +647,7 @@ extension WhereToWatchTableViewCell {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -668,7 +666,7 @@ extension WhereToWatchTableViewCell {
                         self.collectionView.reloadData()
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("TmdbAPIService.seasonProviders Failure: \(error)")
                 DispatchQueue.main.async {
                     self.loading = false

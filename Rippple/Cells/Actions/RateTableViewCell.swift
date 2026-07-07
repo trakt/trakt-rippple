@@ -9,9 +9,8 @@
 import UIKit
 
 final class RateTableViewCell: UITableViewCell {
-
-    @IBOutlet weak var actionTitle: UILabel!
-    @IBOutlet weak var actionEmoji: UILabel!
+    @IBOutlet var actionTitle: UILabel!
+    @IBOutlet var actionEmoji: UILabel!
 
     var currentRating = false {
         didSet {

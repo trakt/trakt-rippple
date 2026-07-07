@@ -9,7 +9,7 @@
 import UIKit
 
 class GenresBrowseTableViewCell: UITableViewCell {
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet var collectionView: UICollectionView!
 
     weak var presentingViewController: UIViewController?
 
@@ -19,13 +19,13 @@ class GenresBrowseTableViewCell: UITableViewCell {
         }
     }
 
-    public var service: TraktAPIService? {
+    var service: TraktAPIService? {
         didSet {
             TraktAPIProvider.provider.request(service ?? .movieGenres, callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
 
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -37,7 +37,7 @@ class GenresBrowseTableViewCell: UITableViewCell {
                     } catch {
                         print("Error Fetching Genres \(error)")
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error Fetching Genres \(error)")
                 }
             }

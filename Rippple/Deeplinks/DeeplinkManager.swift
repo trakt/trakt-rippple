@@ -10,7 +10,7 @@ import Foundation
 
 final class DeeplinkManager {
     static let shared = DeeplinkManager()
-    fileprivate init() {}
+    private init() {}
 
     private var deeplinkType: DeeplinkType?
 
@@ -33,7 +33,7 @@ final class DeeplinkManager {
     func shouldOpenDeeplink() -> Bool {
         if AppManager.shared.mainAppIsDisplayed == false { return false }
         if isProcessingDeeplink == true { return false }
-        if self.deeplinkType != nil {
+        if deeplinkType != nil {
             isProcessingDeeplink = true
             return true
         } else {

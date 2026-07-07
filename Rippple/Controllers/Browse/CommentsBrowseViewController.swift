@@ -6,12 +6,10 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 class CommentsBrowseViewController: UIViewController {
-
     private let disposeBag = DisposeBag()
 
     enum FeedType: Int {
@@ -119,7 +117,6 @@ class CommentsBrowseViewController: UIViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let commentsViewController = segue.destination as? CommentsViewController {
-
             self.commentsViewController = commentsViewController
 
             if let feedType = feedType {
@@ -168,17 +165,17 @@ class CommentsBrowseViewController: UIViewController {
 
     private func filterMenu() -> UIMenu {
         let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
-            let all = UIAction(title: "For You", image: nil, state: (ForYouManager.shared.currentFilter == .all ? .on : .off)) { [weak self] _ in
+            let all = UIAction(title: "For You", image: nil, state: ForYouManager.shared.currentFilter == .all ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .all
             }
 
-            let watched = UIAction(title: "Because You Watched", image: nil, state: (ForYouManager.shared.currentFilter == .becauseYouWatchedOnly ? .on : .off)) { [weak self] _ in
+            let watched = UIAction(title: "Because You Watched", image: nil, state: ForYouManager.shared.currentFilter == .becauseYouWatchedOnly ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .becauseYouWatchedOnly
             }
 
-            let follow = UIAction(title: "Because You Follow", image: nil, state: (ForYouManager.shared.currentFilter == .becauseYouFollowOnly ? .on : .off)) { [weak self] _ in
+            let follow = UIAction(title: "Because You Follow", image: nil, state: ForYouManager.shared.currentFilter == .becauseYouFollowOnly ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .becauseYouFollowOnly
             }

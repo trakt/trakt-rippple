@@ -9,6 +9,6 @@
 import UIKit
 
 final class ToWatchSettingsTableViewCell: UITableViewCell {
-    @IBOutlet weak var sortOrderImageView: UIImageView!
-    @IBOutlet weak var sortLabel: UILabel!
+    @IBOutlet var sortOrderImageView: UIImageView!
+    @IBOutlet var sortLabel: UILabel!
 }

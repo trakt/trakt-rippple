@@ -1,31 +1,33 @@
 //
-//  MArkdown+Extensions.swift
+//  Markdown+Highlight.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 22/11/2017.
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
+import Foundation
 import Haring
+import UIKit
 
 final class MarkdownHighlight: MarkdownCommonElement {
     fileprivate static let regex = "(\\s+|^|\\B)(==)(.+?)(\\2)"
 
-    public var font: UIFont?
-    public var color: UIColor?
-    public var highlightColor: UIColor?
+    var font: UIFont?
+    var color: UIColor?
+    var highlightColor: UIColor?
 
-    public var regex: String {
+    var regex: String {
         return MarkdownHighlight.regex
     }
 
-    public init(font: UIFont? = nil, color: UIColor? = nil, highlightColor: UIColor? = nil) {
+    init(font: UIFont? = nil, color: UIColor? = nil, highlightColor: UIColor? = nil) {
         self.font = font
         self.color = color
         self.highlightColor = highlightColor
     }
 
-    public func addAttributes(_ attributedString: NSMutableAttributedString, range: NSRange) {
+    func addAttributes(_ attributedString: NSMutableAttributedString, range: NSRange) {
         let matchString = attributedString.attributedSubstring(from: range).string
         let newRange = NSRange(location: range.location, length: (matchString as NSString).length)
         attributedString.addAttributes(attributes, range: newRange)

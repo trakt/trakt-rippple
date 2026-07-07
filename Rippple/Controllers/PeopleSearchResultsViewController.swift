@@ -6,27 +6,23 @@
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
+import Moya
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import Receiver
-
-import NVActivityIndicatorView
-
-import Moya
-
 final class PeopleSearchResultsViewController: UITableViewController {
-
-    // Public
+    /// Public
     var service: TraktAPIService!
 
     private let disposeBag = DisposeBag()
 
-    // Empty
+    /// Empty
     @IBOutlet private var emptyView: UIView!
 
     // Paging Management
     @IBOutlet private var loadingView: UIView!
-    @IBOutlet private weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet private var animationViewContainer: NVActivityIndicatorView!
 
     // Error Management
     @IBOutlet private var errorView: UIView!
@@ -99,7 +95,7 @@ final class PeopleSearchResultsViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -123,7 +119,7 @@ final class PeopleSearchResultsViewController: UITableViewController {
                         self.dataSource.apply(snapshot, animatingDifferences: false)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Comments request failure \(error)")
                 self.error = error
 
@@ -149,7 +145,7 @@ final class PeopleSearchResultsViewController: UITableViewController {
 extension PeopleSearchResultsViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.people(personItem) = item else { return }
+        guard case Wrapper.people(let personItem) = item else { return }
         performSegue(withIdentifier: "people", sender: personItem.person)
     }
 
@@ -188,7 +184,7 @@ extension PeopleSearchResultsViewController {
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         if let cell = tableView.cellForRow(at: indexPath) as? PeopleTableViewCell {
             guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-            guard case let Wrapper.people(personItem) = item else { return nil }
+            guard case Wrapper.people(let personItem) = item else { return nil }
 
             let person = personItem.person
 
@@ -196,16 +192,15 @@ extension PeopleSearchResultsViewController {
 
             return UIContextMenuConfiguration(identifier: indexPath as NSCopying,
                                               previewProvider: {
-                let mediaPreviewViewController = UIStoryboard(name: "PersonPreview", bundle: nil).instantiateInitialViewController() as! PeoplePreviewViewController
+                                                  let mediaPreviewViewController = UIStoryboard(name: "PersonPreview", bundle: nil).instantiateInitialViewController() as! PeoplePreviewViewController
 
-                mediaPreviewViewController.person = person
-                mediaPreviewViewController.preferredContentSize = CGSize(width: 500,
-                                                                         height: 500 * 1.5)
-                return mediaPreviewViewController
-            }, actionProvider: { _ -> UIMenu? in
-                let menu = UIMenu(children: [])
-                return menu
-            })
+                                                  mediaPreviewViewController.person = person
+                                                  mediaPreviewViewController.preferredContentSize = CGSize(width: 500,
+                                                                                                           height: 500 * 1.5)
+                                                  return mediaPreviewViewController
+                                              }, actionProvider: { _ -> UIMenu? in
+                                                  return UIMenu(children: [])
+                                              })
         }
 
         return nil
@@ -230,7 +225,7 @@ extension PeopleSearchResultsViewController {
     override func tableView(_ tableView: UITableView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
         guard let indexPath = configuration.identifier as? IndexPath else { return }
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.people(personItem) = item else { return }
+        guard case Wrapper.people(let personItem) = item else { return }
         performSegue(withIdentifier: "people", sender: personItem.person)
     }
 }

@@ -1,17 +1,15 @@
 //
-//  FollowingViewController.swift
+//  FollowingStoryLikeViewController.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 11/01/2018.
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 final class FollowingStoryLikeViewController: UICollectionViewController {
-
     private let disposeBag = DisposeBag()
 
     override func viewDidLoad() {

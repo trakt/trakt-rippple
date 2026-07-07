@@ -9,8 +9,8 @@
 import UIKit
 
 final class ActionTableViewCell: UITableViewCell {
-    @IBOutlet weak var actionTitle: UILabel!
-    @IBOutlet weak var actionImage: UIImageView!
+    @IBOutlet var actionTitle: UILabel!
+    @IBOutlet var actionImage: UIImageView!
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)

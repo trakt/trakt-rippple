@@ -7,18 +7,16 @@
 //
 
 import Foundation
-
 import Receiver
 
 let (onCustomListsChangedTransmitter, onCustomListsChangedReceiver) = Receiver<[List]>.make(with: .warm(upTo: 1))
 
 final class ListsManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
-    public var lists = [List]() {
+    var lists = [List]() {
         didSet {
             onCustomListsChangedTransmitter.broadcast(lists)
             UserDefaults.standard.set(try? PropertyListEncoder().encode(lists), forKey: "ListsManager.lists")
@@ -79,13 +77,12 @@ final class ListsManager {
         refreshLists()
     }
 
-    public func refresh() {
+    func refresh() {
         refreshLists()
     }
 }
 
 private extension ListsManager {
-
     private func refreshLists() {
         if SessionManager.shared.isLoggedOut {
             return
@@ -94,11 +91,11 @@ private extension ListsManager {
             guard let self = self else { return }
 
             switch result {
-            case let .success(lists):
+            case .success(let lists):
                 DispatchQueue.main.async {
                     self.lists = lists
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("customLists request failure \(error)")
             }
         }

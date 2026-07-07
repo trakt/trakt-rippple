@@ -6,16 +6,12 @@
 //  Copyright © 2018 Trakt. All rights reserved.
 //
 
+import Moya
+import NVActivityIndicatorView
+import Receiver
 import UIKit
 
-import Receiver
-
-import NVActivityIndicatorView
-
-import Moya
-
 class SearchResultsViewController: UITableViewController {
-
     var aSmartSearch: SmartSearch? {
         didSet {
             if let smartSearch = aSmartSearch {
@@ -24,6 +20,7 @@ class SearchResultsViewController: UITableViewController {
             }
         }
     }
+
     @IBOutlet private var smartSearchHeader: UIView!
 
     var savedFilter: SavedFilter? {
@@ -37,7 +34,7 @@ class SearchResultsViewController: UITableViewController {
         }
     }
 
-    // Public
+    /// Public
     var service: TraktAPIService? {
         didSet {
             refresh(self)
@@ -55,12 +52,12 @@ class SearchResultsViewController: UITableViewController {
 
     private let contextMenu = ContextMenuHelper()
 
-    // Empty
+    /// Empty
     @IBOutlet private var emptyView: UIView!
 
     // Paging Management
     @IBOutlet private var loadingView: UIView!
-    @IBOutlet private weak var animationViewContainer: NVActivityIndicatorView!
+    @IBOutlet private var animationViewContainer: NVActivityIndicatorView!
 
     // Error Management
     @IBOutlet private var errorView: UIView!
@@ -78,8 +75,8 @@ class SearchResultsViewController: UITableViewController {
 
     private class SearchResultsDiffibleDataSource: UITableViewDiffableDataSource<Section, Wrapper> {
         override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-            guard let item = self.itemIdentifier(for: indexPath) else { return false }
-            guard case let Wrapper.media(media) = item else { return false }
+            guard let item = itemIdentifier(for: indexPath) else { return false }
+            guard case Wrapper.media(let media) = item else { return false }
             switch media {
             case .movie:
                 return true
@@ -161,16 +158,16 @@ class SearchResultsViewController: UITableViewController {
             if PurchaseManager.shared.purchased {
                 let menu = UIMenu(title: "", children: [UIAction(title: "Edit Smart Search",
                                                                  handler: { [weak self] _ in
-                    guard let self = self else { return }
-                    self.performSegue(withIdentifier: "smartsearch", sender: smartSearch)
-                }),
+                                                                     guard let self = self else { return }
+                                                                     self.performSegue(withIdentifier: "smartsearch", sender: smartSearch)
+                                                                 }),
                                                         UIAction(title: "Delete Smart Search",
                                                                  attributes: .destructive,
                                                                  handler: { [weak self] _ in
-                    guard let self = self else { return }
-                    smartSearch.delete()
-                    self.navigationController?.popViewController(animated: true)
-                })])
+                                                                     guard let self = self else { return }
+                                                                     smartSearch.delete()
+                                                                     self.navigationController?.popViewController(animated: true)
+                                                                 })])
 
                 let barButton = UIBarButtonItem(title: nil,
                                                 image: UIImage(systemName: "pencil"),
@@ -183,9 +180,9 @@ class SearchResultsViewController: UITableViewController {
             } else {
                 let menu = UIMenu(title: "", children: [UIAction(title: "Edit Smart Search",
                                                                  handler: { [weak self] _ in
-                    guard let self = self else { return }
-                    self.performSegue(withIdentifier: "smartsearch", sender: smartSearch)
-                })])
+                                                                     guard let self = self else { return }
+                                                                     self.performSegue(withIdentifier: "smartsearch", sender: smartSearch)
+                                                                 })])
 
                 let barButton = UIBarButtonItem(title: nil,
                                                 image: UIImage(systemName: "pencil"),
@@ -257,7 +254,7 @@ class SearchResultsViewController: UITableViewController {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -266,20 +263,20 @@ class SearchResultsViewController: UITableViewController {
                         searchResults = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                     } else if case .popularShows = service {
                         searchResults = try response.map([Show].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: nil, show: $0, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
-                    } else if case let .savedFilter(_, path, _, _) = service {
+                    } else if case .savedFilter(_, let path, _, _) = service {
                         if path == "/shows/popular" {
                             searchResults = try response.map([Show].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: nil, show: $0, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                         } else if path == "/movies/popular" {
                             searchResults = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                         } else {
-                            searchResults = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in
+                            searchResults = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter { media in
                                 media.movie != nil || media.season != nil || media.episode != nil || media.show != nil
-                            })
+                            }
                         }
                     } else {
-                        searchResults = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter({ media in
+                        searchResults = try response.map([MediaItem].self, using: TraktAPIProvider.decoder).filter { media in
                             media.movie != nil || media.season != nil || media.episode != nil || media.show != nil
-                        })
+                        }
                     }
 
                     var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
@@ -300,7 +297,7 @@ class SearchResultsViewController: UITableViewController {
                         self.dataSource.apply(snapshot, animatingDifferences: false)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Comments request failure \(error)")
                 self.error = error
 
@@ -316,10 +313,10 @@ class SearchResultsViewController: UITableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let commentsViewController = segue.destination as? CommentsViewController,
-            let media = sender as? MediaModel {
+           let media = sender as? MediaModel {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.media(media))
         } else if let mediaViewController = segue.destination as? MediaViewController,
-            let media = sender as? MediaModel {
+                  let media = sender as? MediaModel {
             mediaViewController.media = media
         } else if let navigationController = segue.destination as? UINavigationController, let smartSearchBuilderViewController = navigationController.viewControllers.first as? SmartSearchBuilderViewController, let smartSearch = sender as? SmartSearch {
             smartSearchBuilderViewController.smartSearch = smartSearch
@@ -330,7 +327,7 @@ class SearchResultsViewController: UITableViewController {
 extension SearchResultsViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.media(mediaModel) = item else { return }
+        guard case Wrapper.media(let mediaModel) = item else { return }
 
         performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: mediaModel)
     }
@@ -372,15 +369,14 @@ extension SearchResultsViewController {
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
         let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell
         contextMenu.cell = cell
         contextMenu.controller = self
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-            return self.contextMenu.previewViewController
+            self.contextMenu.previewViewController
         }, actionProvider: { _ in
-            return self.contextMenu.menu
+            self.contextMenu.menu
         })
     }
 
@@ -401,14 +397,14 @@ extension SearchResultsViewController {
 
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.media(media) = item else { return nil }
+        guard case Wrapper.media(let media) = item else { return nil }
 
         return media.trailingSwipeActions(for: self)
     }
 
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
-        guard case let Wrapper.media(media) = item else { return nil }
+        guard case Wrapper.media(let media) = item else { return nil }
 
         return media.leadingSwipeActions(for: self)
     }
@@ -418,7 +414,7 @@ extension SearchResultsViewController: MediaTableViewCellDelegate {
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        guard case let Wrapper.media(mediaModel) = item else { return }
+        guard case Wrapper.media(let mediaModel) = item else { return }
 
         if action == .details {
             performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: mediaModel)
@@ -427,10 +423,9 @@ extension SearchResultsViewController: MediaTableViewCellDelegate {
 }
 
 extension MediaModel {
-
     func trailingSwipeActions(for viewController: UIViewController) -> UISwipeActionsConfiguration {
         let next = UIContextualAction(style: .normal,
-                                         title: "Next") { _, _, boolValue in
+                                      title: "Next") { _, _, boolValue in
             let nextEpisodeToWatchNavigationController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "next episode") as! UINavigationController
 
             if let nextEpisodeViewController = nextEpisodeToWatchNavigationController.topViewController as? MediaShowNextLoadingViewController {
@@ -452,7 +447,7 @@ extension MediaModel {
         checkin.backgroundColor = UIColor(resource: .ripppleGray)
 
         let watched = UIContextualAction(style: .normal,
-                                       title: "Watch Now") { _, _, boolValue in
+                                         title: "Watch Now") { _, _, boolValue in
             self.markWatched()
             boolValue(true)
         }
@@ -460,7 +455,7 @@ extension MediaModel {
         watched.backgroundColor = UIColor(resource: .ripppleGray)
 
         let watchedRelease = UIContextualAction(style: .normal,
-                                       title: "Watch on Release") { _, _, boolValue in
+                                                title: "Watch on Release") { _, _, boolValue in
             self.markWatchedWhenReleased()
             boolValue(true)
         }
@@ -468,7 +463,7 @@ extension MediaModel {
         watchedRelease.backgroundColor = UIColor(resource: .ripppleGray)
 
         let more = UIContextualAction(style: .normal,
-                                       title: "Watch on...") { [weak viewController] _, _, boolValue in
+                                      title: "Watch on...") { [weak viewController] _, _, boolValue in
             guard let viewController = viewController else { return }
             guard let navigationController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "Action Navigation Controller") as? UINavigationController else { return }
 
@@ -520,7 +515,7 @@ extension MediaModel {
             var pin: UIContextualAction
             if show.isPinned {
                 pin = UIContextualAction(style: .normal,
-                                                 title: "Unpin") { _, _, boolValue in
+                                         title: "Unpin") { _, _, boolValue in
                     show.unpin()
                     boolValue(true)
                 }
@@ -528,7 +523,7 @@ extension MediaModel {
                 pin.backgroundColor = UIColor(resource: .ripppleGray)
             } else {
                 pin = UIContextualAction(style: .normal,
-                                                 title: "Pin") { _, _, boolValue in
+                                         title: "Pin") { _, _, boolValue in
                     show.pin()
                     boolValue(true)
                 }
@@ -613,7 +608,7 @@ extension MediaModel {
 
     func leadingSwipeActions(for viewController: UIViewController) -> UISwipeActionsConfiguration {
         let addWatchlist = UIContextualAction(style: .normal,
-                                         title: "Watchlist") { _, _, boolValue in
+                                              title: "Watchlist") { _, _, boolValue in
             self.addToWatchlist()
             boolValue(true)
         }
@@ -629,7 +624,7 @@ extension MediaModel {
         collect.backgroundColor = UIColor(resource: .ripppleGray)
 
         let list = UIContextualAction(style: .normal,
-                                         title: "List") { _, _, boolValue in
+                                      title: "List") { _, _, boolValue in
             let listViewController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "Lists Action") as! ListActionViewController
 
             listViewController.media = self
@@ -657,7 +652,7 @@ extension MediaModel {
 
 extension SmartSearch {
     var savedFilter: SavedFilter {
-        if case let .requestParameters(parameters, _) = service.task {
+        if case .requestParameters(let parameters, _) = service.task {
             return SavedFilter(section: contentType == .movie ? "movies" : "shows",
                                name: name ?? "Smart Search",
                                path: service.path,

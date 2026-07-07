@@ -10,7 +10,6 @@ import Foundation
 import Security
 
 struct Token: Codable {
-
     let accessToken: String
     let tokenType: String
     let expiresIn: Int

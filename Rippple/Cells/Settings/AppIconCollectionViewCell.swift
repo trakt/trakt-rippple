@@ -6,15 +6,13 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import SwiftUI
 import UIKit
 
-import SwiftUI
-
 final class AppIconCollectionViewCell: UICollectionViewCell {
-
-    var appIcon: AppIcon = AppIcon(name: "Original", identifier: .original) {
+    var appIcon: AppIcon = .init(name: "Original", identifier: .original) {
         didSet {
-            let vc = UIHostingController(rootView: AppIconGeneratorView(appIconIdentifier: appIcon.identifier) )
+            let vc = UIHostingController(rootView: AppIconGeneratorView(appIconIdentifier: appIcon.identifier))
 
             icon = vc.view
             guard let icon = icon else { return }
@@ -53,6 +51,8 @@ final class AppIconCollectionViewCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
 
-        for view in contentView.subviews { view.removeFromSuperview() }
+        for view in contentView.subviews {
+            view.removeFromSuperview()
+        }
     }
 }

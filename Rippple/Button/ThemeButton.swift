@@ -38,7 +38,6 @@ class TitleOnlyButton: UIButton {
 }
 
 final class ShadowButton: UIButton {
-
     override var isHighlighted: Bool {
         didSet {
             backgroundColor = isHighlighted ? UIColor(asset: .globalTint).lighter() : UIColor(asset: .globalTint)
@@ -50,13 +49,13 @@ final class ShadowButton: UIButton {
         }
     }
 
-    override public var isSelected: Bool {
+    override var isSelected: Bool {
         didSet {
             backgroundColor = isHighlighted ? UIColor(asset: .globalTint).lighter() : UIColor(asset: .globalTint)
         }
     }
 
-    override public var isEnabled: Bool {
+    override var isEnabled: Bool {
         didSet {
             backgroundColor = isEnabled ? UIColor(asset: .globalTint) : UIColor(asset: .globalTint).darker()
         }
@@ -70,7 +69,7 @@ final class ShadowButton: UIButton {
 
     @objc
     private func configureView() {
-        layer.shadowColor = UIColor.init(asset: .shadow).cgColor
+        layer.shadowColor = UIColor(asset: .shadow).cgColor
     }
 
     override init(frame: CGRect) {
@@ -92,15 +91,15 @@ final class ShadowButton: UIButton {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        layer.cornerRadius = bounds.size.height/2.0
-        layer.shadowPath = UIBezierPath(roundedRect: self.bounds, cornerRadius: layer.cornerRadius).cgPath
+        layer.cornerRadius = bounds.size.height / 2.0
+        layer.shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: layer.cornerRadius).cgPath
     }
 
     private func commonSetup() {
         registerForTraitChanges([UITraitUserInterfaceStyle.self],
                                 action: #selector(configureView))
 
-        layer.shadowColor = UIColor.init(asset: .shadow).cgColor
+        layer.shadowColor = UIColor(asset: .shadow).cgColor
         layer.shadowOpacity = 0.6
         layer.shadowRadius = 5
         layer.shadowOffset = CGSize(width: 0, height: 0)
@@ -132,20 +131,19 @@ final class ShadowButton: UIButton {
 }
 
 final class ThemeButton: UIButton {
-
-    override public var isHighlighted: Bool {
+    override var isHighlighted: Bool {
         didSet {
             backgroundColor = isHighlighted ? UIColor(asset: .globalTint).lighter() : UIColor(asset: .globalTint)
         }
     }
 
-    override public var isSelected: Bool {
+    override var isSelected: Bool {
         didSet {
             backgroundColor = isHighlighted ? UIColor(asset: .globalTint).lighter() : UIColor(asset: .globalTint)
         }
     }
 
-    override public var isEnabled: Bool {
+    override var isEnabled: Bool {
         didSet {
             backgroundColor = isEnabled ? UIColor(asset: .globalTint) : UIColor(asset: .globalTint).darker()
         }
@@ -159,7 +157,7 @@ final class ThemeButton: UIButton {
 
     @objc
     private func configureView() {
-        layer.shadowColor = UIColor.init(asset: .shadow).cgColor
+        layer.shadowColor = UIColor(asset: .shadow).cgColor
     }
 
     override init(frame: CGRect) {
@@ -174,7 +172,7 @@ final class ThemeButton: UIButton {
         registerForTraitChanges([UITraitUserInterfaceStyle.self],
                                 action: #selector(configureView))
 
-        layer.shadowColor = UIColor.init(asset: .shadow).cgColor
+        layer.shadowColor = UIColor(asset: .shadow).cgColor
         layer.shadowOpacity = 0.6
         layer.shadowRadius = 5
         layer.shadowOffset = CGSize(width: 0, height: 0)
@@ -191,8 +189,8 @@ final class ThemeButton: UIButton {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        layer.cornerRadius = bounds.size.height/2.0
-        layer.shadowPath = UIBezierPath(roundedRect: self.bounds, cornerRadius: layer.cornerRadius).cgPath
+        layer.cornerRadius = bounds.size.height / 2.0
+        layer.shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: layer.cornerRadius).cgPath
 
         titleLabel?.textColor = UIColor(dynamicProvider: { _ in
             UIColor(asset: .globalTint).isLight == true ? .black : .white

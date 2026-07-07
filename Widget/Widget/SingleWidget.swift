@@ -6,20 +6,19 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
-import WidgetKit
-
-import SwiftUI
 import Intents
+import SwiftUI
+import WidgetKit
 
 struct SingleWidgetProvider: IntentTimelineProvider {
     typealias Entry = SingleEntry
 
     var placeholderProgress = WidgetModel(label: "Widget Preview",
-                                                title: "Stranger Things",
-                            subtitle: "S04E08",
-                            image: nil,
-                            behind: "2 behind",
-                            redacted: false)
+                                          title: "Stranger Things",
+                                          subtitle: "S04E08",
+                                          image: nil,
+                                          behind: "2 behind",
+                                          redacted: false)
 
     func placeholder(in context: Context) -> Entry {
         let uiImage = UIImage(named: "WidgetPreview")
@@ -45,32 +44,28 @@ struct SingleWidgetProvider: IntentTimelineProvider {
         if let encodedData = UserDefaults(suiteName: "group.tv.trakt.rippple")!.object(forKey: type.rawValue) as? Data {
             if let progress = try? JSONDecoder().decode(WidgetModel.self, from: encodedData) {
                 guard let imageURL = progress.image else {
-                    let entry = Entry(date: Date(),
-                                      configuration: configuration,
-                                      progress: progress,
-                                      uiImage: nil)
-                    return entry
+                    return Entry(date: Date(),
+                                 configuration: configuration,
+                                 progress: progress,
+                                 uiImage: nil)
                 }
                 guard let data = try? Data(contentsOf: imageURL) else {
-                    let entry = Entry(date: Date(),
-                                      configuration: configuration,
-                                      progress: progress,
-                                      uiImage: nil)
-                    return entry
+                    return Entry(date: Date(),
+                                 configuration: configuration,
+                                 progress: progress,
+                                 uiImage: nil)
                 }
                 guard let uiImage = UIImage(data: data) else {
-                    let entry = Entry(date: Date(),
-                                      configuration: configuration,
-                                      progress: progress,
-                                      uiImage: nil)
-                    return entry
+                    return Entry(date: Date(),
+                                 configuration: configuration,
+                                 progress: progress,
+                                 uiImage: nil)
                 }
 
-                let entry = Entry(date: Date(),
-                                  configuration: configuration,
-                                  progress: progress,
-                                  uiImage: image(source: uiImage, in: context))
-                return entry
+                return Entry(date: Date(),
+                             configuration: configuration,
+                             progress: progress,
+                             uiImage: image(source: uiImage, in: context))
             }
         }
         return nil
@@ -105,7 +100,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                                             and: configuration,
                                             in: context,
                                             adding: "Trending Show")
-                var refreshDate = Date.now.advanced(by: 60*60*3)
+                var refreshDate = Date.now.advanced(by: 60 * 60 * 3)
                 for entry in entries {
                     if let date = entry.progress.endDate, date < refreshDate {
                         refreshDate = date
@@ -122,7 +117,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                                             and: configuration,
                                             in: context,
                                             adding: "Trending Movie")
-                var refreshDate = Date.now.advanced(by: 60*60*3)
+                var refreshDate = Date.now.advanced(by: 60 * 60 * 3)
                 for entry in entries {
                     if let date = entry.progress.endDate, date < refreshDate {
                         refreshDate = date
@@ -139,7 +134,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                                             and: configuration,
                                             in: context,
                                             adding: "Most Favorited Show")
-                var refreshDate = Date.now.advanced(by: 60*60*3)
+                var refreshDate = Date.now.advanced(by: 60 * 60 * 3)
                 for entry in entries {
                     if let date = entry.progress.endDate, date < refreshDate {
                         refreshDate = date
@@ -156,7 +151,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                                             and: configuration,
                                             in: context,
                                             adding: "Most Favorited Movie")
-                var refreshDate = Date.now.advanced(by: 60*60*3)
+                var refreshDate = Date.now.advanced(by: 60 * 60 * 3)
                 for entry in entries {
                     if let date = entry.progress.endDate, date < refreshDate {
                         refreshDate = date
@@ -173,7 +168,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                     if let runtime = entry.progress.runtime, let endDate = entry.progress.endDate, endDate > Date.now {
                         let now = Date.now.timeIntervalSinceReferenceDate
                         let end = endDate.timeIntervalSinceReferenceDate
-                        let start = end - (Double(runtime)*60.0)
+                        let start = end - (Double(runtime) * 60.0)
 
                         let currentProgress = (now - start) / (end - start)
                         entry.date = Date.now
@@ -223,7 +218,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                 entries.append(entry)
             }
 
-            completion(Timeline(entries: entries, policy: .after(Date.now.advanced(by: 60*60))))
+            completion(Timeline(entries: entries, policy: .after(Date.now.advanced(by: 60 * 60))))
         }
     }
 
@@ -252,7 +247,6 @@ struct SingleWidgetProvider: IntentTimelineProvider {
         var refreshDate: Date?
 
         if let movie = data?.movie {
-
             let loadedImage = await TMDbImageLoader().loadImage(for: movie.ids.tmdb,
                                                                 type: "movie",
                                                                 with: imageWidthToGet(for: context))
@@ -471,7 +465,7 @@ struct SingleWidgetEntryView: View {
                     if let behind = progress.behind, configuration?.info?.boolValue ?? true {
                         if behind == "Coming...", let firstAirDate = progress.endDate {
                             if firstAirDate > Date.now {
-                                Text("→ \(firstAirDate, style: .relative)")
+                                Text("→ \(CalendarRelativeDateFormatter.string(for: firstAirDate))")
                                     .font(.caption)
                                     .foregroundColor(.white)
                                     .opacity(0.9)
@@ -490,8 +484,7 @@ struct SingleWidgetEntryView: View {
                 }
                 Spacer()
                 if let progress = progress.progress {
-                    if configuration?.header?.boolValue ?? true || configuration?.title?.boolValue ?? true || configuration?.info?.boolValue ?? true {
-                    }
+                    if configuration?.header?.boolValue ?? true || configuration?.title?.boolValue ?? true || configuration?.info?.boolValue ?? true {}
                     ZStack {
                         Circle()
                             .stroke(.white, lineWidth: 3.0)
@@ -517,11 +510,11 @@ struct SingleWidgetEntryView: View {
 struct SingleWidget_Previews: PreviewProvider {
     static var previews: some View {
         let progress = WidgetModel(label: "Widget Preview",
-                                title: "Stranger Things",
-                                subtitle: "S04E08",
-                                image: nil,
-                                behind: "2 behind",
-                                redacted: false,
+                                   title: "Stranger Things",
+                                   subtitle: "S04E08",
+                                   image: nil,
+                                   behind: "2 behind",
+                                   redacted: false,
                                    progress: 0.4)
         let uiImage: UIImage? = UIImage(named: "WidgetPreview")
 
@@ -737,11 +730,13 @@ struct TraktShowProgress: Codable {
     var toRewatchCount: Int {
         guard let resetDate = resetAt else { return 0 }
         var index = 0
-        for season in seasons {
-            for episode in season.episodes {
+        for season in seasons.sorted(by: { $0.number > $1.number }) where season.number != 0 {
+            for episode in season.episodes.sorted(by: { $0.number > $1.number }) {
                 if let lastWatchedDate = episode.lastWatchedAt {
                     if lastWatchedDate < resetDate {
                         index += 1
+                    } else {
+                        return index
                     }
                 }
             }
@@ -751,16 +746,19 @@ struct TraktShowProgress: Codable {
 
     var nextToRewtach: (TraktSeasonProgress, TraktEpisodeProgress)? {
         guard let resetDate = resetAt else { return nil }
-        for season in seasons {
-            for episode in season.episodes {
+        var nextToRewtach: (TraktSeasonProgress, TraktEpisodeProgress)?
+        for season in seasons.sorted(by: { $0.number > $1.number }) where season.number != 0 {
+            for episode in season.episodes.sorted(by: { $0.number > $1.number }) {
                 if let lastWatchedDate = episode.lastWatchedAt {
                     if lastWatchedDate < resetDate {
-                        return (season, episode)
+                        nextToRewtach = (season, episode)
+                    } else {
+                        return nextToRewtach
                     }
                 }
             }
         }
-        return nil
+        return nextToRewtach
     }
 
     var nextEpisodeToRewtach: TraktEpisode? {
@@ -953,15 +951,15 @@ struct TMDbImageLoader {
 
 extension UIImage {
     func scale(newWidth: CGFloat) -> UIImage {
-        if newWidth >= self.size.width { return self }
+        if newWidth >= size.width { return self }
 
-        let scaleFactor = newWidth / self.size.width
+        let scaleFactor = newWidth / size.width
 
-        let newHeight = self.size.height * scaleFactor
+        let newHeight = size.height * scaleFactor
         let newSize = CGSize(width: newWidth, height: newHeight)
 
         UIGraphicsBeginImageContextWithOptions(newSize, true, 0.0)
-        self.draw(in: CGRect(x: 0, y: 0, width: newWidth, height: newHeight))
+        draw(in: CGRect(x: 0, y: 0, width: newWidth, height: newHeight))
 
         let newImage: UIImage? = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
@@ -975,19 +973,19 @@ extension UIImage {
         let y = cgImage.height / 2 - length / 2
         let cropRect = CGRect(x: x, y: y, width: length, height: length)
 
-        guard let croppedCGImage = cgImage.cropping(to: cropRect) else {  return self }
+        guard let croppedCGImage = cgImage.cropping(to: cropRect) else { return self }
         return UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
     }
 
     var rected: UIImage {
         guard let cgImage = cgImage else { return self }
-        let height = cgImage.width/2
+        let height = cgImage.width / 2
         let cropRect = CGRect(x: 0,
-                              y: cgImage.height/2 - height/2,
+                              y: cgImage.height / 2 - height / 2,
                               width: cgImage.width,
                               height: height)
 
-        guard let croppedCGImage = cgImage.cropping(to: cropRect) else {  return self }
+        guard let croppedCGImage = cgImage.cropping(to: cropRect) else { return self }
         return UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
     }
 }

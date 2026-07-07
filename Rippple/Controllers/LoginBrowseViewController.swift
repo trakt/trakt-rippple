@@ -6,17 +6,15 @@
 //  Copyright © 2024 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
+import UIKit
 
 let (onNeedsToShowLoginTransmitter, onNeedsToShowLoginReceiver) = Receiver<Bool>.make(with: .hot)
 
 final class LoginBrowseViewController: UIViewController {
-
     private let disposeBag = DisposeBag()
 
-    @IBOutlet weak var loginButton: UIButton!
+    @IBOutlet var loginButton: UIButton!
 
     override func viewDidLoad() {
         super.viewDidLoad()

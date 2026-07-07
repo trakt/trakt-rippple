@@ -6,15 +6,17 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
-import UIKit
-import SwiftUI
-
 import Receiver
+import SwiftUI
+import UIKit
 
 let (episodeToWatchSettingsUpdatedTransmitter, episodeToWatchSettingsUpdatedReceiver) = Receiver<EpisodeToWatchSettings>.make(with: .hot)
 
 let (episodeUpcomingEnabledTransmitter, episodeUpcomingEnabledReceiver) = Receiver<Bool>.make(with: .hot)
 let (episodeToWatchGroupModeTransmitter, episodeToWatchGroupModeReceiver) = Receiver<EpisodeToWatchGroupMode>.make(with: .hot)
+let (episodeToWatchBingeableOnlyTransmitter, episodeToWatchBingeableOnlyReceiver) = Receiver<Bool>.make(with: .hot)
+
+private let episodeToWatchGroupModeStorageKey = "EpisodeToWatchSettings.groupMode"
 
 enum EpisodeToWatchGroupMode: Int, CaseIterable {
     case byLists = 0
@@ -22,14 +24,12 @@ enum EpisodeToWatchGroupMode: Int, CaseIterable {
 }
 
 extension EpisodeToWatchGroupMode {
-    static let storageKey = "EpisodeToWatchSettings.groupMode"
-
     static func currentValue(using defaults: UserDefaults = .standard) -> EpisodeToWatchGroupMode {
-        EpisodeToWatchGroupMode(rawValue: defaults.integer(forKey: storageKey)) ?? .byLists
+        EpisodeToWatchGroupMode(rawValue: defaults.integer(forKey: episodeToWatchGroupModeStorageKey)) ?? .byLists
     }
 
     func persist(using defaults: UserDefaults = .standard) {
-        defaults.set(rawValue, forKey: Self.storageKey)
+        defaults.set(rawValue, forKey: episodeToWatchGroupModeStorageKey)
         defaults.synchronize()
     }
 
@@ -58,7 +58,7 @@ struct EpisodeToWatchListItem: Codable, Identifiable, Hashable {
     var rank: Int
 
     var id: String {
-        Self.identifier(kind: kind, smartSearch: smartSearch, list: list)
+        EpisodeToWatchListItem.identifier(kind: kind, smartSearch: smartSearch, list: list)
     }
 
     static func identifier(kind: Kind, smartSearch: SmartSearch?, list: List?) -> String {
@@ -147,7 +147,6 @@ struct EpisodeToWatchListItem: Codable, Identifiable, Hashable {
 
 @MainActor
 final class EpisodeToWatchSettingsViewModel: ObservableObject {
-
     @Published var watched: Bool
     @Published var watchlist: Bool
     @Published var recommended: Bool
@@ -162,6 +161,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     @Published var sort: EpisodeToWatchSettings.Sort
     @Published var reverse: Bool
+    @Published var bingeableOnly: Bool
     @Published var upcomingEnabled: Bool
     @Published var groupMode: EpisodeToWatchGroupMode
 
@@ -177,6 +177,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
         collected = settings.collected
         sort = settings.sort
         reverse = settings.reverse
+        bingeableOnly = settings.bingeableOnly
         upcomingEnabled = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.upcoming")
         groupMode = EpisodeToWatchGroupMode.currentValue()
 
@@ -275,6 +276,16 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     func setReverse(_ newValue: Bool) {
         updateSetting(\.reverse, settingsKeyPath: \.reverse, to: newValue)
+    }
+
+    func setBingeableOnly(_ newValue: Bool) {
+        guard PurchaseManager.shared.purchased else {
+            UIApplication.shared.switchToPurchase()
+            return
+        }
+        bingeableOnly = newValue
+        settings.bingeableOnly = newValue
+        episodeToWatchBingeableOnlyTransmitter.broadcast(newValue)
     }
 
     func setUpcomingEnabled(_ newValue: Bool) {
@@ -489,6 +500,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
         collected = settings.collected
         sort = settings.sort
         reverse = settings.reverse
+        bingeableOnly = settings.bingeableOnly
         upcomingEnabled = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.upcoming")
         groupMode = EpisodeToWatchGroupMode.currentValue()
         rebuildOtherListItems()
@@ -496,7 +508,6 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 }
 
 struct EpisodeToWatchSettingsView: View {
-
     @ObservedObject var viewModel: EpisodeToWatchSettingsViewModel
     @State private var editMode: EditMode = .inactive
     @State private var isPresentingAddListPicker = false
@@ -505,15 +516,15 @@ struct EpisodeToWatchSettingsView: View {
         SwiftUI.List {
             Section {
                 toggleRow(title: "Watched",
-                                 value: Binding(get: { viewModel.watched },
-                                                set: { viewModel.setWatched($0) }))
+                          value: Binding(get: { viewModel.watched },
+                                         set: { viewModel.setWatched($0) }))
                 watchlistedRow
                 toggleRow(title: "Favorites",
-                                 value: Binding(get: { viewModel.recommended },
-                                                set: { viewModel.setRecommended($0) }))
+                          value: Binding(get: { viewModel.recommended },
+                                         set: { viewModel.setRecommended($0) }))
                 toggleRow(title: "Collected",
-                                 value: Binding(get: { viewModel.collected },
-                                                set: { viewModel.setCollected($0) }))
+                          value: Binding(get: { viewModel.collected },
+                                         set: { viewModel.setCollected($0) }))
             } header: {
                 Text("Find next episodes for shows in:")
             }
@@ -537,6 +548,7 @@ struct EpisodeToWatchSettingsView: View {
             Section {
                 sortingRow
                 reverseRow
+                bingeableOnlyRow
             } header: {
                 Text("Then:")
             }
@@ -658,6 +670,18 @@ struct EpisodeToWatchSettingsView: View {
         }
     }
 
+    private var bingeableOnlyRow: some View {
+        HStack {
+            Text("Hide Incomplete Seasons")
+                .foregroundStyle(.primary)
+            Spacer()
+            Toggle("", isOn: Binding(get: { viewModel.bingeableOnly },
+                                     set: { viewModel.setBingeableOnly($0) }))
+                .labelsHidden()
+                .tint(Color(UIColor(asset: .globalTint)))
+        }
+    }
+
     private var groupingRow: some View {
         HStack {
             Text("Group")
@@ -710,7 +734,6 @@ struct EpisodeToWatchSettingsView: View {
 }
 
 struct AddListPickerView: View {
-
     @ObservedObject var viewModel: EpisodeToWatchSettingsViewModel
     @Environment(\.dismiss) private var dismiss
 
@@ -763,9 +786,9 @@ struct AddListPickerView: View {
 
     private var hasNoResults: Bool {
         filteredSmartSearches.isEmpty &&
-        filteredCustomLists.isEmpty &&
-        filteredLikedLists.isEmpty &&
-        filteredCollaborations.isEmpty
+            filteredCustomLists.isEmpty &&
+            filteredLikedLists.isEmpty &&
+            filteredCollaborations.isEmpty
     }
 
     private var filteredSmartSearches: [SmartSearch] {
@@ -891,7 +914,6 @@ struct AddListPickerView: View {
 }
 
 final class EpisodeToWatchSettingsViewController: UIHostingController<EpisodeToWatchSettingsView> {
-
     private let viewModel = EpisodeToWatchSettingsViewModel()
 
     required init?(coder aDecoder: NSCoder) {
@@ -917,7 +939,6 @@ final class EpisodeToWatchSettingsViewController: UIHostingController<EpisodeToW
 }
 
 final class EpisodeToWatchSettings {
-
     private let disposeBag = DisposeBag()
 
     private init() {
@@ -928,6 +949,7 @@ final class EpisodeToWatchSettings {
 
         sort = Sort(rawValue: UserDefaults.standard.integer(forKey: "EpisodeToWatchSettings.sort")) ?? Sort.automatic
         reverse = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.reverse")
+        bingeableOnly = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.bingeableOnly")
 
         // Load otherLists from new format
         if let encodedOtherLists = UserDefaults.standard.object(forKey: "EpisodeToWatchSettings.otherLists") as? Data,
@@ -998,7 +1020,7 @@ final class EpisodeToWatchSettings {
         }
     }
 
-    // Computed properties for backward compatibility
+    /// Computed properties for backward compatibility
     var smartSearches: [SmartSearch] {
         let ordered = otherLists.sorted { $0.rank < $1.rank }
         return ordered.compactMap { config in
@@ -1027,33 +1049,45 @@ final class EpisodeToWatchSettings {
             UserDefaults.standard.synchronize()
         }
     }
+
     var recommended = true {
         didSet {
             UserDefaults.standard.set(recommended, forKey: "EpisodeToWatchSettings.recommended")
             UserDefaults.standard.synchronize()
         }
     }
+
     var collected = true {
         didSet {
             UserDefaults.standard.set(collected, forKey: "EpisodeToWatchSettings.collected")
             UserDefaults.standard.synchronize()
         }
     }
+
     var watched = true {
         didSet {
             UserDefaults.standard.set(watched, forKey: "EpisodeToWatchSettings.watched")
             UserDefaults.standard.synchronize()
         }
     }
+
     var sort = Sort.automatic {
         didSet {
             UserDefaults.standard.set(sort.rawValue, forKey: "EpisodeToWatchSettings.sort")
             UserDefaults.standard.synchronize()
         }
     }
+
     var reverse = false {
         didSet {
             UserDefaults.standard.set(reverse, forKey: "EpisodeToWatchSettings.reverse")
+            UserDefaults.standard.synchronize()
+        }
+    }
+
+    var bingeableOnly = false {
+        didSet {
+            UserDefaults.standard.set(bingeableOnly, forKey: "EpisodeToWatchSettings.bingeableOnly")
             UserDefaults.standard.synchronize()
         }
     }

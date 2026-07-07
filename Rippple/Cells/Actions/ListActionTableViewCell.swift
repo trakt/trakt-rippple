@@ -9,20 +9,19 @@
 import UIKit
 
 final class ListActionTableViewCell: UITableViewCell {
-
     private var fetchTask: _Concurrency.Task<Void, Never>?
 
-    public var isLoading = false
-    public var isInList = false
+    var isLoading = false
+    var isInList = false
 
-    public var media: MediaModel?
+    var media: MediaModel?
 
     @IBOutlet var card: CardView!
 
     @IBOutlet var titleLabel: UILabel!
-    @IBOutlet weak var accessoryIndicator: UIImageView!
+    @IBOutlet var accessoryIndicator: UIImageView!
 
-    @IBOutlet weak var privacyImageView: UIImageView!
+    @IBOutlet var privacyImageView: UIImageView!
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
@@ -42,7 +41,7 @@ final class ListActionTableViewCell: UITableViewCell {
         }
     }
 
-    public var list: List? {
+    var list: List? {
         didSet {
             guard let list = list else { return }
             if list != oldValue {
@@ -107,7 +106,7 @@ final class ListActionTableViewCell: UITableViewCell {
                                            type: listItemsType) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(results):
+            case .success(let results):
                 var inList = false
                 for item in results {
                     if let movie = media.movie {
@@ -146,7 +145,7 @@ final class ListActionTableViewCell: UITableViewCell {
                     self.titleLabel.text = self.list?.name.emojiUnescapedString
                     self.titleLabel.textColor = .label
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     print("List items request failure \(error)")
                     self.isLoading = false

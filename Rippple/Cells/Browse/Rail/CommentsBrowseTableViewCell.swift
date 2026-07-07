@@ -6,12 +6,11 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
-import Receiver
-
 class CommentsBrowseTableViewCell: UITableViewCell {
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet var collectionView: UICollectionView!
 
     weak var presentingViewController: UIViewController?
 
@@ -58,7 +57,6 @@ class CommentsBrowseTableViewCell: UITableViewCell {
                 break
             }
         }.disposed(by: disposeBag)
-
     }
 
     private func fetchHistory() {
@@ -70,7 +68,7 @@ class CommentsBrowseTableViewCell: UITableViewCell {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -82,7 +80,7 @@ class CommentsBrowseTableViewCell: UITableViewCell {
                 } catch {
                     print("Error Fetching History \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Error Fetching History \(error)")
             }
         }
@@ -149,7 +147,6 @@ extension CommentsBrowseTableViewCell: UICollectionViewDataSource, UICollectionV
     }
 
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
         if indexPath.row < 3 { return nil }
 
         if let cell = collectionView.cellForItem(at: indexPath) {
@@ -157,9 +154,9 @@ extension CommentsBrowseTableViewCell: UICollectionViewDataSource, UICollectionV
             contextMenu.controller = presentingViewController
 
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
-                return self.contextMenu.previewViewController
+                self.contextMenu.previewViewController
             }, actionProvider: { _ in
-                return self.contextMenu.menu
+                self.contextMenu.menu
             })
         }
 

@@ -8,17 +8,12 @@
 
 import UIKit
 
-class StyledNavigationController: UINavigationController {
-}
+class StyledNavigationController: UINavigationController {}
 
-class DeeplinkNavigationController: StyledNavigationController {
-}
+class DeeplinkNavigationController: StyledNavigationController {}
 
-class WatchingNavigationController: StyledNavigationController {
-}
+class WatchingNavigationController: StyledNavigationController {}
 
-class EpisodeWatchingNavigationController: StyledNavigationController {
-}
+class EpisodeWatchingNavigationController: StyledNavigationController {}
 
-class SearchNavigationController: StyledNavigationController {
-}
+class SearchNavigationController: StyledNavigationController {}

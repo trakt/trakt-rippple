@@ -9,9 +9,8 @@
 import UIKit
 
 final class WhereToWatchHeaderCollectionViewCell: UICollectionViewCell {
-
-    @IBOutlet weak var info: UILabel!
-    @IBOutlet weak var button: UIButton!
+    @IBOutlet var info: UILabel!
+    @IBOutlet var button: UIButton!
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -19,7 +18,7 @@ final class WhereToWatchHeaderCollectionViewCell: UICollectionViewCell {
         button.addAction(UIAction(handler: { _ in
             DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://settings/wheretowatch")!)
             if SessionManager.shared.isLoggedIn,
-                DeeplinkManager.shared.shouldOpenDeeplink() {
+               DeeplinkManager.shared.shouldOpenDeeplink() {
                 UIApplication.shared.switchToDeeplink()
             }
         }), for: .touchUpInside)

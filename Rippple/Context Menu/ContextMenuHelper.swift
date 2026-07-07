@@ -6,12 +6,10 @@
 //  Copyright © 2019 Trakt. All rights reserved.
 //
 
+import SafariServices
 import UIKit
 
-import SafariServices
-
 class ContextMenuHelper: NSObject {
-
     var media: MediaModel! {
         didSet {
             switch media {
@@ -33,108 +31,109 @@ class ContextMenuHelper: NSObject {
         didSet {
             if let mediaCell = cell as? MediaTableViewCell {
                 if mediaCell.media.movie != nil {
-                    self.media = mediaCell.media
+                    media = mediaCell.media
                 } else {
-                    self.media = mediaCell.media.show?.mediaModel
+                    media = mediaCell.media.show?.mediaModel
                 }
             }
 
             if let commentCell = cell as? CommentTableViewCell {
                 if commentCell.commentModel.media.movie != nil {
-                    self.media = commentCell.commentModel.media
+                    media = commentCell.commentModel.media
                 } else {
-                    self.media = commentCell.commentModel.media.show?.mediaModel
+                    media = commentCell.commentModel.media.show?.mediaModel
                 }
             }
 
             if let mediaCollectionViewCell = cell as? MediaCollectionViewCell {
                 if let cast = mediaCollectionViewCell.cast {
                     if let movie = cast.movie {
-                        self.media = movie.mediaModel
+                        media = movie.mediaModel
                     }
                     if let show = cast.show {
-                        self.media = show.mediaModel
+                        media = show.mediaModel
                     }
                 }
 
                 if let crew = mediaCollectionViewCell.crew {
                     if let movie = crew.movie {
-                        self.media = movie.mediaModel
+                        media = movie.mediaModel
                     }
                     if let show = crew.show {
-                        self.media = show.mediaModel
+                        media = show.mediaModel
                     }
                 }
 
                 if let mediaItem = mediaCollectionViewCell.mediaItem {
                     if let movie = mediaItem.movie {
-                        self.media = movie.mediaModel
+                        media = movie.mediaModel
                     }
                     if let show = mediaItem.show {
-                        self.media = show.mediaModel
+                        media = show.mediaModel
                     }
                 }
             }
 
             if let listMediaCollectionViewCell = cell as? ListMediaCollectionViewCell {
                 if let movie = listMediaCollectionViewCell.item?.movie {
-                    self.media = movie.mediaModel
+                    media = movie.mediaModel
                 } else if let show = listMediaCollectionViewCell.item?.show {
-                    self.media = show.mediaModel
+                    media = show.mediaModel
                 }
             }
 
             if let toWatchStoryCollectionViewCell = cell as? ToWatchStoryCollectionViewCell {
-                self.media = toWatchStoryCollectionViewCell.media
+                media = toWatchStoryCollectionViewCell.media
             }
 
             if let collectionViewCell = cell as? L1BrowseCollectionViewCell {
-                self.media = collectionViewCell.media
+                media = collectionViewCell.media
             }
 
             if let collectionViewCell = cell as? C1BrowseCollectionViewCell {
-                self.media = collectionViewCell.media
+                media = collectionViewCell.media
             }
 
             if let collectionViewCell = cell as? G1BrowseCollectionViewCell {
-                self.media = collectionViewCell.media
+                media = collectionViewCell.media
             }
 
             if let collectionViewCell = cell as? ListBrowseCollectionViewCell {
-                self.media = collectionViewCell.media
+                media = collectionViewCell.media
             }
 
             if let collectionViewCell = cell as? TopBrowseCollectionViewCell {
-                self.media = collectionViewCell.media
+                media = collectionViewCell.media
             }
 
             if let collectionViewCell = cell as? ToWatchBrowseCollectionViewCell {
-                if case let .showProgress(show, showProgress) = collectionViewCell.media {
+                if case .showProgress(let show, let showProgress) = collectionViewCell.media {
                     if let episode = showProgress.nextEpisodeToWatch {
-                        self.media = episode.mediaModel(given: show)
+                        media = episode.mediaModel(given: show)
                     } else {
-                        self.media = show.mediaModel
+                        media = show.mediaModel
                     }
                 }
             }
 
             if let collectionViewCell = cell as? StandardHistoryBrowseCollectionViewCell {
-                self.media = collectionViewCell.media
+                media = collectionViewCell.media
             }
 
             if let collectionViewCell = cell as? HistoryBrowseCollectionViewCell {
-                self.media = collectionViewCell.media
+                media = collectionViewCell.media
             }
 
             if let cell = cell as? LastWatchedTableViewCell {
-                if case let .episode(_, show) = cell.media {
-                    self.media = show.mediaModel
+                if case .episode(_, let show) = cell.media {
+                    media = show.mediaModel
                 } else {
-                    self.media = cell.media
+                    media = cell.media
                 }
             }
         }
     }
+
     weak var controller: UIViewController?
 
     var previewView: UIView? {
@@ -221,7 +220,6 @@ class ContextMenuHelper: NSObject {
 
     var previewViewController: UIViewController? {
         if let mediaPreviewViewController = UIStoryboard(name: "MediaPreview", bundle: nil).instantiateInitialViewController() as? MediaPreviewViewController {
-
             mediaPreviewViewController.media = media
 
             mediaPreviewViewController.preferredContentSize = CGSize(width: 500,
@@ -233,7 +231,6 @@ class ContextMenuHelper: NSObject {
     }
 
     var menu: UIMenu {
-
         guard let media = media else { return UIMenu(title: "Somthing wrong happened. Try again.", children: []) }
         let openInSubmenu = makeOpenInSubmenu(for: media)
 
@@ -243,8 +240,7 @@ class ContextMenuHelper: NSObject {
         }
 
         switch media {
-        case let .movie(movie):
-
+        case .movie(let movie):
             var watchActions = [UIAction]()
             var listsActions = [UIMenuElement]()
             var shareActions = [UIAction]()
@@ -347,7 +343,7 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached({ completion in
+                let addToList = UIDeferredMenuElement.uncached { completion in
                     Task {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
@@ -374,7 +370,7 @@ class ContextMenuHelper: NSObject {
                             completion(safeAddToList)
                         }
                     }
-                })
+                }
                 listsActions.append(UIMenu(title: "Add to List", image: UIImage(systemName: "text.badge.plus"), children: [addToList]))
 
                 let lists = UIAction(title: "Manage in Lists", image: UIImage(systemName: "plusminus.circle")) { [weak self] _ in
@@ -391,7 +387,7 @@ class ContextMenuHelper: NSObject {
             let toWatchSubmenu = UIMenu(title: "", options: .displayInline, children: toWatchActions)
 
             return UIMenu(title: "\(movie.title)", children: [watchSubmenu, toWatchSubmenu, listsSubmenu, media.rateMenu, shareSubmenu, sharingSubmenu])
-        case let .show(show):
+        case .show(let show):
             var watchActions = [UIAction]()
             var listsActions = [UIMenuElement]()
             var shareActions = [UIAction]()
@@ -458,7 +454,7 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached({ completion in
+                let addToList = UIDeferredMenuElement.uncached { completion in
                     Task {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
@@ -485,7 +481,7 @@ class ContextMenuHelper: NSObject {
                             completion(safeAddToList)
                         }
                     }
-                })
+                }
                 listsActions.append(UIMenu(title: "Add to List", image: UIImage(systemName: "text.badge.plus"), children: [addToList]))
 
                 let lists = UIAction(title: "Manage in Lists", image: UIImage(systemName: "plusminus.circle")) { [weak self] _ in
@@ -584,14 +580,14 @@ class ContextMenuHelper: NSObject {
             let toWatchSubmenu = UIMenu(title: "", options: .displayInline, children: toWatchActions)
 
             return UIMenu(title: "\(show.title)", children: [watchSubmenu, toWatchSubmenu, listsSubmenu, media.rateMenu, shareSubmenu, sharingSubmenu])
-        case let .episode(episode, show):
+        case .episode(let episode, let show):
             var watchActions = [UIAction]()
             var listsActions = [UIMenuElement]()
             var shareActions = [UIAction]()
 
             if show.isCurrentlyWatching,
-                let checkedInEpisode = WatchingManager.shared.watchingItem?.episode,
-                episode == checkedInEpisode {
+               let checkedInEpisode = WatchingManager.shared.watchingItem?.episode,
+               episode == checkedInEpisode {
                 let cancel = UIAction(title: "Cancel Check-in", image: UIImage(systemName: "nosign"), attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
                     self.media.cancelCheckin()
@@ -658,7 +654,7 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached({ completion in
+                let addToList = UIDeferredMenuElement.uncached { completion in
                     Task {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
@@ -685,7 +681,7 @@ class ContextMenuHelper: NSObject {
                             completion(safeAddToList)
                         }
                     }
-                })
+                }
                 listsActions.append(UIMenu(title: "Add to List", image: UIImage(systemName: "text.badge.plus"), children: [addToList]))
 
                 let lists = UIAction(title: "Manage in Lists", image: UIImage(systemName: "plusminus.circle")) { [weak self] _ in
@@ -740,7 +736,7 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached({ completion in
+                let addToList = UIDeferredMenuElement.uncached { completion in
                     Task {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
@@ -767,7 +763,7 @@ class ContextMenuHelper: NSObject {
                             completion(safeAddToList)
                         }
                     }
-                })
+                }
                 listsActions.append(UIMenu(title: "Add to List", image: UIImage(systemName: "text.badge.plus"), children: [addToList]))
 
                 let lists = UIAction(title: "Manage in Lists", image: UIImage(systemName: "plusminus.circle")) { [weak self] _ in
@@ -809,6 +805,7 @@ class ContextMenuHelper: NSObject {
 
     var toWatchMenu: UIMenu {
         guard let media = media else { return UIMenu(title: "Somthing wrong happened. Try again.", children: []) }
+        let openInSubmenu = makeOpenInSubmenu(for: media)
 
         let share = UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
             guard let self = self else { return }
@@ -816,7 +813,7 @@ class ContextMenuHelper: NSObject {
         }
 
         switch media {
-        case let .episode(episode, show):
+        case .episode(let episode, let show):
             var watchActions = [UIAction]()
             var toWatchActions = [UIAction]()
             var shortcutsActions = [UIAction]()
@@ -904,7 +901,7 @@ class ContextMenuHelper: NSObject {
             let watchSubmenu = UIMenu(title: "", options: .displayInline, children: watchActions)
             let toWatchSubmenu = UIMenu(title: "", options: .displayInline, children: toWatchActions)
             let shortcutSubmenu = UIMenu(title: "", options: .displayInline, children: shortcutsActions)
-            let sharingSubmenu = UIMenu(title: "", options: .displayInline, children: [share])
+            let sharingSubmenu = UIMenu(title: "", options: .displayInline, children: [share, openInSubmenu])
 
             return UIMenu(title: "\(show.title) \(episode.localizedEpisodeNumber)",
                           children: [watchSubmenu, toWatchSubmenu, shortcutSubmenu, sharingSubmenu])
@@ -922,12 +919,10 @@ class ContextMenuHelper: NSObject {
     }
 
     var quickStackMenu: UIMenu {
-
         guard let media = media else { return UIMenu(title: "Somthing wrong happened. Try again.", children: []) }
 
         switch media {
-        case let .movie(movie):
-
+        case .movie(let movie):
             var listsActions = [UIMenuElement]()
 
             if movie.isWatchlisted {
@@ -959,7 +954,7 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached({ completion in
+                let addToList = UIDeferredMenuElement.uncached { completion in
                     Task {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
@@ -986,7 +981,7 @@ class ContextMenuHelper: NSObject {
                             completion(safeAddToList)
                         }
                     }
-                })
+                }
                 listsActions.append(UIMenu(title: "Add to List", image: UIImage(systemName: "text.badge.plus"), children: [addToList]))
 
                 let lists = UIAction(title: "Manage in Lists", image: UIImage(systemName: "plusminus.circle")) { [weak self] _ in
@@ -997,7 +992,7 @@ class ContextMenuHelper: NSObject {
             }
 
             return UIMenu(title: "\(movie.title)", children: listsActions)
-        case let .show(show):
+        case .show(let show):
             var listsActions = [UIMenuElement]()
 
             if show.isWatchlisted {
@@ -1029,7 +1024,7 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached({ completion in
+                let addToList = UIDeferredMenuElement.uncached { completion in
                     Task {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
@@ -1056,7 +1051,7 @@ class ContextMenuHelper: NSObject {
                             completion(safeAddToList)
                         }
                     }
-                })
+                }
                 listsActions.append(UIMenu(title: "Add to List", image: UIImage(systemName: "text.badge.plus"), children: [addToList]))
 
                 let lists = UIAction(title: "Manage in Lists", image: UIImage(systemName: "plusminus.circle")) { [weak self] _ in
@@ -1067,7 +1062,7 @@ class ContextMenuHelper: NSObject {
             }
 
             return UIMenu(title: "\(show.title)", children: listsActions)
-        case let .episode(episode, show):
+        case .episode(let episode, let show):
             var listsActions = [UIMenuElement]()
 
             if episode.isWatchlisted {
@@ -1099,7 +1094,7 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached({ completion in
+                let addToList = UIDeferredMenuElement.uncached { completion in
                     Task {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
@@ -1126,7 +1121,7 @@ class ContextMenuHelper: NSObject {
                             completion(safeAddToList)
                         }
                     }
-                })
+                }
                 listsActions.append(UIMenu(title: "Add to List", image: UIImage(systemName: "text.badge.plus"), children: [addToList]))
 
                 let lists = UIAction(title: "Manage in Lists", image: UIImage(systemName: "plusminus.circle")) { [weak self] _ in
@@ -1155,7 +1150,7 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached({ completion in
+                let addToList = UIDeferredMenuElement.uncached { completion in
                     Task {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
@@ -1182,7 +1177,7 @@ class ContextMenuHelper: NSObject {
                             completion(safeAddToList)
                         }
                     }
-                })
+                }
                 listsActions.append(UIMenu(title: "Add to List", image: UIImage(systemName: "text.badge.plus"), children: [addToList]))
 
                 let lists = UIAction(title: "Manage in Lists", image: UIImage(systemName: "plusminus.circle")) { [weak self] _ in
@@ -1204,7 +1199,7 @@ class ContextMenuHelper: NSObject {
         guard let media = media else { return UIMenu(title: "Somthing wrong happened. Try again.", children: []) }
 
         switch media {
-        case let .movie(movie):
+        case .movie(let movie):
             var watchActions = [UIAction]()
 
             if movie.isCurrentlyWatching {
@@ -1247,7 +1242,7 @@ class ContextMenuHelper: NSObject {
             let watchSubmenu = UIMenu(title: "", options: .displayInline, children: watchActions)
 
             return UIMenu(title: "\(movie.title)", children: [watchSubmenu, pin])
-        case let .show(show):
+        case .show(let show):
             var watchActions = [UIAction]()
 
             if show.isCurrentlyWatching {
@@ -1293,12 +1288,12 @@ class ContextMenuHelper: NSObject {
             let watchSubmenu = UIMenu(title: "", options: .displayInline, children: watchActions)
 
             return UIMenu(title: "\(show.title)", children: [watchSubmenu, next, pin])
-        case let .episode(episode, show):
+        case .episode(let episode, let show):
             var watchActions = [UIAction]()
 
             if show.isCurrentlyWatching,
-                let checkedInEpisode = WatchingManager.shared.watchingItem?.episode,
-                episode == checkedInEpisode {
+               let checkedInEpisode = WatchingManager.shared.watchingItem?.episode,
+               episode == checkedInEpisode {
                 let cancel = UIAction(title: "Cancel Check-in", image: UIImage(systemName: "nosign"), attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
                     self.media.cancelCheckin()
@@ -1343,7 +1338,6 @@ class ContextMenuHelper: NSObject {
     }
 
     var quickShareMenu: UIMenu {
-
         guard let media = media else { return UIMenu(title: "Somthing wrong happened. Try again.", children: []) }
 
         let share = UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
@@ -1352,8 +1346,7 @@ class ContextMenuHelper: NSObject {
         }
 
         switch media {
-        case let .movie(movie):
-
+        case .movie(let movie):
             var actions = [UIAction]()
             let write = UIAction(title: "Write a Comment", image: UIImage(systemName: "pencil.circle")) { [weak self] _ in
                 guard let self = self else { return }
@@ -1376,7 +1369,7 @@ class ContextMenuHelper: NSObject {
             actions.append(write)
 
             return UIMenu(title: "\(movie.title)", children: [UIMenu(title: "", options: .displayInline, children: actions), share])
-        case let .show(show):
+        case .show(let show):
             var actions = [UIAction]()
 
             let write = UIAction(title: "Write a Comment", image: UIImage(systemName: "pencil.circle")) { [weak self] _ in
@@ -1401,7 +1394,7 @@ class ContextMenuHelper: NSObject {
             actions.append(write)
 
             return UIMenu(title: "\(show.title)", children: [UIMenu(title: "", options: .displayInline, children: actions), share])
-        case let .episode(episode, show):
+        case .episode(let episode, let show):
             var actions = [UIAction]()
 
             let write = UIAction(title: "Write a Comment", image: UIImage(systemName: "pencil.circle")) { [weak self] _ in
@@ -1413,7 +1406,6 @@ class ContextMenuHelper: NSObject {
 
             return UIMenu(title: "\(show.title) \(episode.localizedEpisodeNumber)", children: [UIMenu(title: "", options: .displayInline, children: [write]), share])
         case .season(let season, let show):
-
             let write = UIAction(title: "Write a Comment", image: UIImage(systemName: "pencil.circle")) { [weak self] _ in
                 guard let self = self else { return }
                 self.writeComment(media: self.media)
@@ -1439,7 +1431,8 @@ class ContextMenuHelper: NSObject {
         let actions: [UIAction] = entries.map { entry in
             UIAction(title: entry.action.name,
                      image: UIImage(systemName: entry.action.systemImageName)) { [weak self] _ in
-                self?.openIn(entry.url)
+                guard let self = self else { return }
+                self.openIn(entry.url)
             }
         }
 
@@ -1496,138 +1489,136 @@ class ContextMenuHelper: NSObject {
         SwiftMessages.show(message: "Adding to Watchlist...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.addToWatchlist(item: watchlistItem),
-                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /*[weak self]*/ result in
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /* [weak self] */ result in
 //                                                    guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            print("Add to watchlist successful \(response)")
+                    print("Add to watchlist successful \(response)")
 
-                                                            DispatchQueue.main.async {
-                                                                WatchlistManager.shared.refresh()
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "🕒 Added to Watchlist")
-                                                            }
+                    DispatchQueue.main.async {
+                        WatchlistManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "🕒 Added to Watchlist")
+                    }
 
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                        }
-                                                    }
-    }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                }
+            }
+        }
     }
 
     fileprivate func removeFromWatchlist() {
         SwiftMessages.show(message: "Removing from Watchlist...", style: .loading)
 
-                TraktAPIProvider.provider.request(TraktAPIService.removeFromWatchlist(item: watchlistItem),
-                                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /*[weak self]*/ result in
-    //                                                        guard let self = self else { return }
-                                                            switch result {
-                                                            case let .success(moyaResponse):
-                                                                do {
-                                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+        TraktAPIProvider.provider.request(TraktAPIService.removeFromWatchlist(item: watchlistItem),
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /* [weak self] */ result in
+            //                                                        guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                                    print("Add to watchlist successful \(response)")
+                    print("Add to watchlist successful \(response)")
 
-                                                                    DispatchQueue.main.async {
-                                                                        WatchlistManager.shared.refresh()
-                                                                        AppManager.shared.isUserInteractionEnabled = true
-                                                                        SwiftMessages.show(message: "🕒 Removed from Watchlist")
-                                                                    }
+                    DispatchQueue.main.async {
+                        WatchlistManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "🕒 Removed from Watchlist")
+                    }
 
-                                                                } catch {
-                                                                    DispatchQueue.main.async {
-                                                                        AppManager.shared.isUserInteractionEnabled = true
-                                                                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                                    }
-                                                                }
-                                                            case let .failure(error):
-                                                                DispatchQueue.main.async {
-                                                                    AppManager.shared.isUserInteractionEnabled = true
-                                                                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                                }
-                                                            }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                }
             }
+        }
     }
 
     fileprivate func addToRecommendations() {
-
         SwiftMessages.show(message: "Adding to Favorites...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.addToRecommendations(item: watchlistItem),
-                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /*[weak self]*/ result in
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /* [weak self] */ result in
 //                                                    guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            print("Favoriting successful \(response)")
+                    print("Favoriting successful \(response)")
 
-                                                            DispatchQueue.main.async {
-                                                                RecommendedManager.shared.refresh()
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "⭐️ Added to Favorites")
-                                                            }
+                    DispatchQueue.main.async {
+                        RecommendedManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "⭐️ Added to Favorites")
+                    }
 
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                        }
-                                                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                }
+            }
         }
     }
 
     fileprivate func removeFromRecommendations() {
-
         SwiftMessages.show(message: "Removing from Favorites...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.removeFromRecommendations(item: watchlistItem),
-                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /*[weak self]*/ result in
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /* [weak self] */ result in
 //                                                        guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            print("Removed from recommendations successful \(response)")
+                    print("Removed from recommendations successful \(response)")
 
-                                                            DispatchQueue.main.async {
-                                                                RecommendedManager.shared.refresh()
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "⭐️ Removed from Favorites")
-                                                            }
+                    DispatchQueue.main.async {
+                        RecommendedManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "⭐️ Removed from Favorites")
+                    }
 
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                        }
-                                                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                }
             }
+        }
     }
 
     fileprivate func addToCollection() {
@@ -1638,34 +1629,34 @@ class ContextMenuHelper: NSObject {
         SwiftMessages.show(message: "Removing from Library...", style: .loading)
 
         TraktAPIProvider.provider.request(TraktAPIService.removeFromCollection(item: watchlistItem),
-                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /*[weak self]*/ result in
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { /* [weak self] */ result in
 //                                                        guard let self = self else { return }
-                                                    switch result {
-                                                    case let .success(moyaResponse):
-                                                        do {
-                                                            let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                            print("Removed from Collection successful \(response)")
+                    print("Removed from Collection successful \(response)")
 
-                                                            DispatchQueue.main.async {
-                                                                CollectionManager.shared.refresh()
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "📚 Removed from Library")
-                                                            }
+                    DispatchQueue.main.async {
+                        CollectionManager.shared.refresh()
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "📚 Removed from Library")
+                    }
 
-                                                        } catch {
-                                                            DispatchQueue.main.async {
-                                                                AppManager.shared.isUserInteractionEnabled = true
-                                                                SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                            }
-                                                        }
-                                                    case let .failure(error):
-                                                        DispatchQueue.main.async {
-                                                            AppManager.shared.isUserInteractionEnabled = true
-                                                            SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
-                                                        }
-                                                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        AppManager.shared.isUserInteractionEnabled = true
+                        SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    AppManager.shared.isUserInteractionEnabled = true
+                    SwiftMessages.show(message: "😓 An error occurred", style: .error(error))
+                }
             }
+        }
     }
 
     fileprivate func listManagement(media: MediaModel) {
@@ -1696,8 +1687,8 @@ class ContextMenuHelper: NSObject {
         if let traktURL = media.traktWebsiteMediaLink {
             if let controller = controller {
                 controller.present(SFSafariViewController(url: traktURL),
-                animated: true,
-                completion: nil)
+                                   animated: true,
+                                   completion: nil)
             } else {
                 UIApplication.shared.present(SFSafariViewController(url: traktURL))
             }
@@ -1738,7 +1729,7 @@ class ContextMenuHelper: NSObject {
                                                      item: item),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1753,7 +1744,7 @@ class ContextMenuHelper: NSObject {
                         SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
                 }
@@ -1763,7 +1754,6 @@ class ContextMenuHelper: NSObject {
 }
 
 final class MediaContextMenuInteractionDelegate: ContextMenuHelper, UIContextMenuInteractionDelegate {
-
     var referenceView: UIView?
 
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, highlightPreviewForItemWithIdentifier identifier: any NSCopying) -> UITargetedPreview? {
@@ -1801,7 +1791,6 @@ final class MediaContextMenuInteractionDelegate: ContextMenuHelper, UIContextMen
     }
 
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-
         guard let media = media else { return nil }
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: {

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-
 import Receiver
 
 enum UpcomingLabelStyle: Int, CaseIterable {
@@ -37,7 +36,7 @@ let (upcomingLabelUpdatedTransmitter, upcomingLabelUpdatedReceiver) = Receiver<U
 final class UpcomingLabelManager {
     static let shared = UpcomingLabelManager()
 
-    private init() { }
+    private init() {}
 
     private var currentStyle: UpcomingLabelStyle {
         UpcomingLabelStyle(rawValue: UserDefaults.standard.integer(forKey: "UpcomingLabelManager.labelStyle")) ?? .hotAndUpcoming

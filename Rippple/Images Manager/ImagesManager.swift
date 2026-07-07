@@ -7,9 +7,9 @@
 //
 
 import Foundation
-import UIKit
 @preconcurrency import Kingfisher
 import Moya
+import UIKit
 import Vision
 
 public extension CGImage {
@@ -43,7 +43,7 @@ public extension CGImage {
 
         do {
             try VNImageRequestHandler(cgImage: self, options: [:]).perform([req])
-        } catch let error {
+        } catch {
             completion(.failure(error))
         }
     }
@@ -90,7 +90,9 @@ public enum FaceCropResult {
 struct FaceFilter: ImageProcessor {
     var size: CGFloat
 
-    var identifier: String { "com.rippple.FaceFilter.\(size)" }
+    var identifier: String {
+        "com.rippple.FaceFilter.\(size)"
+    }
 
     func process(item: ImageProcessItem, options: KingfisherParsedOptionsInfo) -> Image? {
         switch item {
@@ -126,7 +128,6 @@ struct FaceFilter: ImageProcessor {
             semaphore.wait()
             return newImage
         }
-
     }
 }
 
@@ -141,7 +142,6 @@ struct SepiaFilter: CIImageProcessor {
 }
 
 final class ImagesManager {
-
     struct CacheStats {
         let memoryExpirationDescription: String
         let diskExpirationDescription: String
@@ -192,7 +192,7 @@ final class ImagesManager {
         case logo
     }
 
-    private var baseURL: URL = URL(string: "https://image.tmdb.org/t/p/")!
+    private var baseURL: URL = .init(string: "https://image.tmdb.org/t/p/")!
 
     private var posterSizes: [String] = ["w92", "w154", "w185", "w342", "w500", "w780", "original"]
     private var backdropSizes: [String] = ["w300", "w780", "w1280", "original"]
@@ -498,7 +498,7 @@ final class ImagesManager {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -515,7 +515,7 @@ final class ImagesManager {
                 } catch {
                     print("TmdbAPIService.configuration Error: \(error)")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("TmdbAPIService.configuration Failure: \(error)")
             }
         }
@@ -540,7 +540,7 @@ extension MediaModel {
 
             TmdbAPIProvider.provider.request(TmdbAPIService.movieImages(tmdbId), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -564,7 +564,7 @@ extension MediaModel {
                         print("Movie posters Error: \(error)")
                         completion(nil)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Movie posters Failure: \(error)")
                     completion(nil)
                 }
@@ -582,7 +582,7 @@ extension MediaModel {
 
             TmdbAPIProvider.provider.request(TmdbAPIService.tvImages(tmdbId), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -606,7 +606,7 @@ extension MediaModel {
                         print("Movie posters Error: \(error)")
                         completion(nil)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Movie posters Failure: \(error)")
                     completion(nil)
                 }
@@ -635,7 +635,7 @@ extension MediaModel {
 
             TmdbAPIProvider.provider.request(TmdbAPIService.movieImages(tmdbId), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -659,7 +659,7 @@ extension MediaModel {
                         print("Movie posters Error: \(error)")
                         completion(nil)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Movie posters Failure: \(error)")
                     completion(nil)
                 }
@@ -677,7 +677,7 @@ extension MediaModel {
 
             TmdbAPIProvider.provider.request(TmdbAPIService.tvImages(tmdbId), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -701,7 +701,7 @@ extension MediaModel {
                         print("Movie posters Error: \(error)")
                         completion(nil)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Movie posters Failure: \(error)")
                     completion(nil)
                 }
@@ -719,7 +719,6 @@ extension MediaModel {
 }
 
 final class PosterImageView: UIImageView {
-
     private var filter: ImageProcessor!
     private var size: CGSize!
 
@@ -735,8 +734,8 @@ final class PosterImageView: UIImageView {
         didSet {
             if movie == oldValue { return }
             if movie != nil {
-                self.show = nil
-                self.season = nil
+                show = nil
+                season = nil
                 loadMoviePoster()
             }
         }
@@ -746,8 +745,8 @@ final class PosterImageView: UIImageView {
         didSet {
             if show == oldValue { return }
             if show != nil {
-                self.movie = nil
-                self.season = nil
+                movie = nil
+                season = nil
                 loadShowPoster()
             }
         }
@@ -757,8 +756,8 @@ final class PosterImageView: UIImageView {
         didSet {
             if season?.0 == oldValue?.0, season?.1 == oldValue?.1 { return }
             if season != nil {
-                self.movie = nil
-                self.show = nil
+                movie = nil
+                show = nil
                 loadSeasonPoster()
             }
         }
@@ -766,7 +765,7 @@ final class PosterImageView: UIImageView {
 
     private func setup() {
         size = if bounds.size.width == 0 {
-            CGSize(width: 300, height: 300*1.5)
+            CGSize(width: 300, height: 300 * 1.5)
         } else {
             bounds.size
         }
@@ -786,17 +785,17 @@ final class PosterImageView: UIImageView {
         contentMode = .scaleAspectFill
         if isRounded {
             if isBlurred {
-                filter = RoundCornerImageProcessor(cornerRadius: bounds.size.height/2.0,
+                filter = RoundCornerImageProcessor(cornerRadius: bounds.size.height / 2.0,
                                                    targetSize: size) |>
-                BlurImageProcessor(blurRadius: 10)
+                    BlurImageProcessor(blurRadius: 10)
             } else {
-                filter = RoundCornerImageProcessor(cornerRadius: bounds.size.height/2.0,
+                filter = RoundCornerImageProcessor(cornerRadius: bounds.size.height / 2.0,
                                                    targetSize: size)
             }
         } else {
             if isBlurred {
                 filter = DownsamplingImageProcessor(size: size) |>
-                BlurImageProcessor(blurRadius: 10)
+                    BlurImageProcessor(blurRadius: 10)
             } else {
                 filter = DownsamplingImageProcessor(size: size)
             }
@@ -849,7 +848,8 @@ final class PosterImageView: UIImageView {
         if let imageURL = ImagesManager.shared.cachedMoviePoster(with: movie.identifiers,
                                                                  for: size) {
             setPosterImage(with: imageURL) { [weak self] in
-                movie == self?.movie
+                guard let self = self else { return false }
+                return movie == self.movie
             }
             return
         }
@@ -858,7 +858,7 @@ final class PosterImageView: UIImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -885,7 +885,8 @@ final class PosterImageView: UIImageView {
                     DispatchQueue.main.async {
                         if movie != self.movie { return }
                         self.setPosterImage(with: imageURL) { [weak self] in
-                            movie == self?.movie
+                            guard let self = self else { return false }
+                            return movie == self.movie
                         }
                     }
 
@@ -897,7 +898,7 @@ final class PosterImageView: UIImageView {
                         if let completion = self.completion { completion(false) }
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Movie posters Failure: \(error)")
                 DispatchQueue.main.async {
                     if movie != self.movie { return }
@@ -923,7 +924,8 @@ final class PosterImageView: UIImageView {
         if let imageURL = ImagesManager.shared.cachedShowPoster(with: show.identifiers,
                                                                 for: size) {
             setPosterImage(with: imageURL) { [weak self] in
-                show == self?.show
+                guard let self = self else { return false }
+                return show == self.show
             }
             return
         }
@@ -932,7 +934,7 @@ final class PosterImageView: UIImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -959,7 +961,8 @@ final class PosterImageView: UIImageView {
                     DispatchQueue.main.async {
                         if show != self.show { return }
                         self.setPosterImage(with: imageURL) { [weak self] in
-                            show == self?.show
+                            guard let self = self else { return false }
+                            return show == self.show
                         }
                     }
 
@@ -971,7 +974,7 @@ final class PosterImageView: UIImageView {
                         if let completion = self.completion { completion(false) }
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Tv posters Failure: \(error)")
                 DispatchQueue.main.async {
                     if show != self.show { return }
@@ -998,7 +1001,8 @@ final class PosterImageView: UIImageView {
                                                                   season: season.1.number,
                                                                   for: size) {
             setPosterImage(with: imageURL) { [weak self] in
-                season.0 == self?.season?.0 && season.1 == self?.season?.1
+                guard let self = self else { return false }
+                return season.0 == self.season?.0 && season.1 == self.season?.1
             }
             return
         }
@@ -1007,7 +1011,7 @@ final class PosterImageView: UIImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1034,7 +1038,8 @@ final class PosterImageView: UIImageView {
                     DispatchQueue.main.async {
                         if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
                         self.setPosterImage(with: imageURL) { [weak self] in
-                            season.0 == self?.season?.0 && season.1 == self?.season?.1
+                            guard let self = self else { return false }
+                            return season.0 == self.season?.0 && season.1 == self.season?.1
                         }
                     }
 
@@ -1046,7 +1051,7 @@ final class PosterImageView: UIImageView {
                         if let completion = self.completion { completion(false) }
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Season posters Failure: \(error)")
                 DispatchQueue.main.async {
                     if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
@@ -1059,7 +1064,6 @@ final class PosterImageView: UIImageView {
 }
 
 final class PeopleProfileImageView: UIImageView {
-
     private var filter: ImageProcessor!
     private var size: CGSize!
 
@@ -1080,9 +1084,9 @@ final class PeopleProfileImageView: UIImageView {
                                                y: AppManager.shared.scale))
         #endif
         contentMode = .scaleAspectFill
-        filter = FaceFilter(size: size.width/2) |>
-                    DownsamplingImageProcessor(size: size) |>
-                    SepiaFilter()
+        filter = FaceFilter(size: size.width / 2) |>
+            DownsamplingImageProcessor(size: size) |>
+            SepiaFilter()
         backgroundColor = UIColor.tertiarySystemFill
     }
 
@@ -1106,7 +1110,7 @@ final class PeopleProfileImageView: UIImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1142,7 +1146,7 @@ final class PeopleProfileImageView: UIImageView {
                         self.image = nil
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Tv posters Failure: \(error)")
                 DispatchQueue.main.async {
                     if person.ids != self.person?.ids { return }
@@ -1154,7 +1158,6 @@ final class PeopleProfileImageView: UIImageView {
 }
 
 final class BigPeopleProfileImageView: UIImageView {
-
     private var filter: ImageProcessor!
     private var size: CGSize!
 
@@ -1219,7 +1222,8 @@ final class BigPeopleProfileImageView: UIImageView {
 
         if let imageURL = ImagesManager.shared.cachedPeopleImage(with: person.ids, for: size) {
             setProfileImage(with: imageURL) { [weak self] in
-                person.ids == self?.person?.ids
+                guard let self = self else { return false }
+                return person.ids == self.person?.ids
             }
             return
         }
@@ -1228,7 +1232,7 @@ final class BigPeopleProfileImageView: UIImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1253,7 +1257,8 @@ final class BigPeopleProfileImageView: UIImageView {
                     DispatchQueue.main.async {
                         if person.ids != self.person?.ids { return }
                         self.setProfileImage(with: imageURL) { [weak self] in
-                            person.ids == self?.person?.ids
+                            guard let self = self else { return false }
+                            return person.ids == self.person?.ids
                         }
                     }
 
@@ -1264,7 +1269,7 @@ final class BigPeopleProfileImageView: UIImageView {
                         self.image = nil
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Tv posters Failure: \(error)")
                 DispatchQueue.main.async {
                     if person.ids != self.person?.ids { return }
@@ -1276,7 +1281,6 @@ final class BigPeopleProfileImageView: UIImageView {
 }
 
 final class PosterButton: UIButton {
-
     private var filter: ImageProcessor!
     private var size: CGSize!
 
@@ -1287,8 +1291,8 @@ final class PosterButton: UIButton {
         didSet {
             if movie == oldValue { return }
             if movie != nil {
-                self.show = nil
-                self.season = nil
+                show = nil
+                season = nil
                 loadMoviePoster()
             }
         }
@@ -1298,8 +1302,8 @@ final class PosterButton: UIButton {
         didSet {
             if show == oldValue { return }
             if show != nil {
-                self.movie = nil
-                self.season = nil
+                movie = nil
+                season = nil
                 loadShowPoster()
             }
         }
@@ -1309,8 +1313,8 @@ final class PosterButton: UIButton {
         didSet {
             if season?.0 == oldValue?.0, season?.1 == oldValue?.1 { return }
             if season != nil {
-                self.movie = nil
-                self.show = nil
+                movie = nil
+                show = nil
                 loadSeasonPoster()
             }
         }
@@ -1326,7 +1330,7 @@ final class PosterButton: UIButton {
         #endif
         contentMode = .scaleAspectFill
         if isRounded {
-            filter = RoundCornerImageProcessor(cornerRadius: bounds.size.height/2.0,
+            filter = RoundCornerImageProcessor(cornerRadius: bounds.size.height / 2.0,
                                                targetSize: size)
         } else {
             filter = DownsamplingImageProcessor(size: size)
@@ -1356,7 +1360,7 @@ final class PosterButton: UIButton {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1394,7 +1398,7 @@ final class PosterButton: UIButton {
                         self.setImage(nil, for: .normal)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Movie posters Failure: \(error)")
                 DispatchQueue.main.async {
                     if movie != self.movie { return }
@@ -1426,7 +1430,7 @@ final class PosterButton: UIButton {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1464,7 +1468,7 @@ final class PosterButton: UIButton {
                         self.setImage(nil, for: .normal)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Tv posters Failure: \(error)")
                 DispatchQueue.main.async {
                     if show != self.show { return }
@@ -1497,7 +1501,7 @@ final class PosterButton: UIButton {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1535,7 +1539,7 @@ final class PosterButton: UIButton {
                         self.setImage(nil, for: .normal)
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Season posters Failure: \(error)")
                 DispatchQueue.main.async {
                     if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
@@ -1547,26 +1551,24 @@ final class PosterButton: UIButton {
 }
 
 // MARK: String Helper
-// Example = Ex
-// For Example = FE
-// for example = fe
-// "" = DP
-extension String {
 
-    public var initials: String {
-
+/// Example = Ex
+/// For Example = FE
+/// for example = fe
+/// "" = DP
+public extension String {
+    var initials: String {
         let words = components(separatedBy: .whitespacesAndNewlines)
 
         // to identify letters
         let letters = CharacterSet.letters
-        var firstChar: String = ""
-        var secondChar: String = ""
+        var firstChar = ""
+        var secondChar = ""
         var firstCharFoundIndex: Int = -1
-        var firstCharFound: Bool = false
-        var secondCharFound: Bool = false
+        var firstCharFound = false
+        var secondCharFound = false
 
         for (index, item) in words.enumerated() {
-
             if item.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 continue
             }
@@ -1579,7 +1581,6 @@ extension String {
                     firstCharFoundIndex = index
 
                 } else if !secondCharFound {
-
                     secondChar = String(char)
                     if firstCharFoundIndex != index {
                         secondCharFound = true
@@ -1602,7 +1603,6 @@ extension String {
 }
 
 final class BackdropImageView: UIImageView {
-
     private var filter: ImageProcessor!
     private var size: CGSize!
 
@@ -1651,7 +1651,7 @@ final class BackdropImageView: UIImageView {
         #endif
         contentMode = .scaleAspectFill
         if isRounded {
-            filter = RoundCornerImageProcessor(cornerRadius: bounds.size.height/2.0,
+            filter = RoundCornerImageProcessor(cornerRadius: bounds.size.height / 2.0,
                                                targetSize: size)
         } else {
             filter = DownsamplingImageProcessor(size: size)
@@ -1706,7 +1706,8 @@ final class BackdropImageView: UIImageView {
         if let imageURL = ImagesManager.shared.cachedMovieBackdrop(with: movie.identifiers,
                                                                    for: size) {
             setBackdropImage(with: imageURL) { [weak self] in
-                movie == self?.media?.movie
+                guard let self = self else { return false }
+                return movie == self.media?.movie
             }
             return
         }
@@ -1715,7 +1716,7 @@ final class BackdropImageView: UIImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1742,7 +1743,8 @@ final class BackdropImageView: UIImageView {
                     DispatchQueue.main.async {
                         if movie != self.media?.movie { return }
                         self.setBackdropImage(with: imageURL) { [weak self] in
-                            movie == self?.media?.movie
+                            guard let self = self else { return false }
+                            return movie == self.media?.movie
                         }
                     }
 
@@ -1754,7 +1756,7 @@ final class BackdropImageView: UIImageView {
                         if let completion = self.completion { completion(false) }
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Movie posters Failure: \(error)")
                 DispatchQueue.main.async {
                     if movie != self.media?.movie { return }
@@ -1780,7 +1782,8 @@ final class BackdropImageView: UIImageView {
         if let imageURL = ImagesManager.shared.cachedShowBackdrop(with: show.identifiers,
                                                                   for: size) {
             setBackdropImage(with: imageURL) { [weak self] in
-                show == self?.media?.show
+                guard let self = self else { return false }
+                return show == self.media?.show
             }
             return
         }
@@ -1789,7 +1792,7 @@ final class BackdropImageView: UIImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1816,7 +1819,8 @@ final class BackdropImageView: UIImageView {
                     DispatchQueue.main.async {
                         if show != self.media?.show { return }
                         self.setBackdropImage(with: imageURL) { [weak self] in
-                            show == self?.media?.show
+                            guard let self = self else { return false }
+                            return show == self.media?.show
                         }
                     }
 
@@ -1828,7 +1832,7 @@ final class BackdropImageView: UIImageView {
                         if let completion = self.completion { completion(false) }
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Tv posters Failure: \(error)")
                 DispatchQueue.main.async {
                     if show != self.media?.show { return }
@@ -1842,7 +1846,7 @@ final class BackdropImageView: UIImageView {
     private func loadEpisodeBackdrop() {
         setup()
 
-        guard case let .episode(episode, show) = media else { return }
+        guard case .episode(let episode, let show) = media else { return }
 
         image = nil
 
@@ -1855,7 +1859,8 @@ final class BackdropImageView: UIImageView {
                                                                   for: size) {
             setBackdropImage(with: imageURL,
                              defaultTransitionDuration: 0.6) { [weak self] in
-                episode == self?.media?.episode
+                guard let self = self else { return false }
+                return episode == self.media?.episode
             }
             return
         }
@@ -1864,7 +1869,7 @@ final class BackdropImageView: UIImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -1888,7 +1893,8 @@ final class BackdropImageView: UIImageView {
                         if episode != self.media?.episode { return }
                         self.setBackdropImage(with: imageURL,
                                               defaultTransitionDuration: 0.6) { [weak self] in
-                            episode == self?.media?.episode
+                            guard let self = self else { return false }
+                            return episode == self.media?.episode
                         }
                     }
 
@@ -1900,7 +1906,7 @@ final class BackdropImageView: UIImageView {
                         if let completion = self.completion { completion(false) }
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Tv posters Failure: \(error)")
                 DispatchQueue.main.async {
                     if episode != self.media?.episode { return }
@@ -1913,7 +1919,6 @@ final class BackdropImageView: UIImageView {
 }
 
 final class LogoImageView: UIImageView {
-
     private var filter: ImageProcessor!
     private var size: CGSize!
 
@@ -1984,7 +1989,7 @@ final class LogoImageView: UIImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -2034,7 +2039,7 @@ final class LogoImageView: UIImageView {
                         if let completion = self.completion { completion(false) }
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Movie Logo Failure: \(error)")
                 DispatchQueue.main.async {
                     if movie != self.media?.movie { return }
@@ -2070,7 +2075,7 @@ final class LogoImageView: UIImageView {
             guard let self = self else { return }
 
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -2120,7 +2125,7 @@ final class LogoImageView: UIImageView {
                         if let completion = self.completion { completion(false) }
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Tv Logo Failure: \(error)")
                 DispatchQueue.main.async {
                     if show != self.media?.show { return }

@@ -7,22 +7,21 @@
 //
 
 import Foundation
-
-import Receiver
 import LRUCache
+import Receiver
 
 struct ShowShowProgress {
     let show: Show
     let showProgress: ShowProgress
 }
+
 let (onProgressCacheChangedTransmitter, onProgressCacheChangedReceiver) = Receiver<ShowShowProgress>.make(with: .hot)
 let (onProgressCacheHitTransmitter, onProgressCacheHitReceiver) = Receiver<ShowShowProgress>.make(with: .hot)
 
 final class ProgressManager {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     fileprivate var cache = LRUCache<Int64, ShowShowProgress>()
 
@@ -59,7 +58,7 @@ final class ProgressManager {
         onRemoveWatchMediaReceiver.listen { [weak self] media in
             guard let self = self else { return }
             switch media {
-            case .episode(_, let show):
+            case .episode(_, let show), .show(let show), .season(_, let show):
                 self.refreshProgress(for: show)
             default:
                 break
@@ -67,14 +66,14 @@ final class ProgressManager {
         }.disposed(by: disposeBag)
     }
 
-    public func refreshProgress(for show: Show) {
+    func refreshProgress(for show: Show) {
         print("ProgressCache - FORCE REFRESHING progress for \(show.title)")
         guard let key = show.identifiers.trakt else { return }
         cache.removeValue(forKey: key)
         show.mediaModel.progress { _ in }
     }
 
-    public func resetCache(for show: Show) {
+    func resetCache(for show: Show) {
         print("ProgressCache - RESET progress for \(show.title)")
         guard let key = show.identifiers.trakt else { return }
         cache.removeValue(forKey: key)
@@ -84,6 +83,10 @@ final class ProgressManager {
                                  showId: Int64,
                                  progress: ShowProgress,
                                  completion: @escaping (ShowProgress) -> Void) {
+        let progressDispatchGroup = DispatchGroup()
+        let progressLock = NSLock()
+        var updatedProgress = progress
+
         let cacheAndComplete: (ShowProgress) -> Void = { [weak self] finalProgress in
             guard let self = self else { return }
             let showShowProgress = ShowShowProgress(show: show,
@@ -93,31 +96,72 @@ final class ProgressManager {
             completion(finalProgress)
         }
 
-        guard let nextToRewatch = progress.nextToRewatch else {
-            cacheAndComplete(progress)
-            return
-        }
-
-        TraktAPIProvider.provider.request(.episode(id: String(showId),
-                                                   season: nextToRewatch.0.number,
-                                                   episode: nextToRewatch.1.number),
+        progressDispatchGroup.enter()
+        TraktAPIProvider.provider.request(.lastEpisode(id: showId),
                                           callbackQueue: .global(qos: .utility)) { result in
+            defer { progressDispatchGroup.leave() }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
-                    let updatedProgress = progress.with(nextEpisode: episode)
-                    cacheAndComplete(updatedProgress)
+                    progressLock.lock()
+                    updatedProgress = updatedProgress.with(lastAiredEpisode: episode)
+                    progressLock.unlock()
                 } catch {
-                    print("Error fetching episode for next to rewatch \(error)")
-                    cacheAndComplete(progress)
+                    print("Error fetching last aired episode for progress \(error)")
                 }
-            case let .failure(error):
-                print("Failed fetching episode for next to rewatch \(error)")
-                cacheAndComplete(progress)
+            case .failure(let error):
+                print("Failed fetching last aired episode for progress \(error)")
             }
         }
+
+        if let nextToRewatch = progress.nextToRewatch {
+            progressDispatchGroup.enter()
+            TraktAPIProvider.provider.request(.episode(id: String(showId),
+                                                       season: nextToRewatch.0.number,
+                                                       episode: nextToRewatch.1.number),
+                                              callbackQueue: .global(qos: .utility)) { result in
+                defer { progressDispatchGroup.leave() }
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                        let episode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
+                        progressLock.lock()
+                        updatedProgress = updatedProgress.with(nextEpisode: episode)
+                        progressLock.unlock()
+                    } catch {
+                        print("Error fetching episode for next to rewatch \(error)")
+                    }
+                case .failure(let error):
+                    print("Failed fetching episode for next to rewatch \(error)")
+                }
+            }
+        }
+
+        progressDispatchGroup.notify(queue: .global(qos: .utility)) {
+            progressLock.lock()
+            let finalProgress = updatedProgress
+            progressLock.unlock()
+            cacheAndComplete(finalProgress)
+        }
+    }
+}
+
+extension SeasonProgress {
+    var isWatched: Bool {
+        return aired > 0 && completed >= aired
+    }
+}
+
+extension ShowProgress {
+    func progress(for season: Season) -> SeasonProgress? {
+        return seasons.first { $0.number == season.number }
+    }
+
+    func isWatched(season: Season) -> Bool {
+        return progress(for: season)?.isWatched == true
     }
 }
 
@@ -139,9 +183,8 @@ extension MediaModel {
 
         print("ProgressCache - FORCED Fecthing progress on Trakt for \(show.title)")
         TraktAPIProvider.noChacheProvider.request(TraktAPIService.showProgress(id: showId, includesSpecials: false), callbackQueue: .global(qos: .utility)) { result in
-
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -156,7 +199,7 @@ extension MediaModel {
                     print("Error Fetching Show progress \(error)")
                     completion(nil)
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("Error Fetching Show progress \(error)")
                 completion(nil)
             }
@@ -186,9 +229,8 @@ extension MediaModel {
         } else {
             print("ProgressCache - Fecthing progress on Trakt for \(show.title)")
             TraktAPIProvider.noChacheProvider.request(TraktAPIService.showProgress(id: showId, includesSpecials: false), callbackQueue: .global(qos: .utility)) { result in
-
                 switch result {
-                case let .success(moyaResponse):
+                case .success(let moyaResponse):
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -203,7 +245,7 @@ extension MediaModel {
                         print("Error Fetching Show progress \(error)")
                         completion(nil)
                     }
-                case let .failure(error):
+                case .failure(let error):
                     print("Error Fetching Show progress \(error)")
                     completion(nil)
                 }
@@ -234,7 +276,7 @@ extension MediaModel {
                 let result: ShowProgress = try await withCheckedThrowingContinuation { continuation in
                     TraktAPIProvider.noChacheProvider.request(.showProgress(id: showId, includesSpecials: false), callbackQueue: DispatchQueue.global(qos: .utility)) { result in
                         switch result {
-                        case let .success(moyaResponse):
+                        case .success(let moyaResponse):
                             do {
                                 let response = try moyaResponse.filterSuccessfulStatusCodes()
 
@@ -249,7 +291,7 @@ extension MediaModel {
                                 print("Error Fetching Show progress \(error)")
                                 continuation.resume(throwing: error)
                             }
-                        case let .failure(error):
+                        case .failure(let error):
                             print("Error Fetching Show progress \(error)")
                             continuation.resume(throwing: error)
                         }
@@ -271,6 +313,18 @@ extension ShowProgress {
                      nextEpisodeToWatch: nextEpisode,
                      resetAt: resetAt,
                      seasons: seasons,
-                     lastEpisode: lastEpisode)
+                     lastWatchedEpisode: lastWatchedEpisode,
+                     lastAiredEpisode: lastAiredEpisode)
+    }
+
+    func with(lastAiredEpisode: Episode?) -> ShowProgress {
+        ShowProgress(aired: aired,
+                     completed: completed,
+                     lastWatchedAt: lastWatchedAt,
+                     nextEpisodeToWatch: nextEpisodeToWatch,
+                     resetAt: resetAt,
+                     seasons: seasons,
+                     lastWatchedEpisode: lastWatchedEpisode,
+                     lastAiredEpisode: lastAiredEpisode)
     }
 }

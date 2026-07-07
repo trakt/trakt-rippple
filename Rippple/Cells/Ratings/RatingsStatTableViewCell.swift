@@ -13,7 +13,6 @@ protocol RatingsStatTableViewCellDelegate: AnyObject {
 }
 
 final class RatingsStatTableViewCell: UITableViewCell {
-
     @IBOutlet var rating: EFCountingLabel!
     @IBOutlet var votes: EFCountingLabel!
 
@@ -21,7 +20,7 @@ final class RatingsStatTableViewCell: UITableViewCell {
     @IBOutlet var distributionHeightConstant: [NSLayoutConstraint]!
     @IBOutlet var ratingLabel: [UILabel]!
 
-    private let votesFormatter: NumberFormatter = NumberFormatter()
+    private let votesFormatter: NumberFormatter = .init()
 
     @IBOutlet var action: UIButton!
 
@@ -43,7 +42,7 @@ final class RatingsStatTableViewCell: UITableViewCell {
 
         for bar in distributionBars {
             bar.backgroundColor = #colorLiteral(red: 0.737254902, green: 0.7333333333, blue: 0.7568627451, alpha: 1)
-            bar.layer.cornerRadius = bar.layer.frame.size.width/2.0
+            bar.layer.cornerRadius = bar.layer.frame.size.width / 2.0
         }
 
         for constant in distributionHeightConstant {
@@ -66,7 +65,8 @@ final class RatingsStatTableViewCell: UITableViewCell {
 
             action.showsMenuAsPrimaryAction = true
             let everyRating = UIAction(title: "All") { [weak self] _ in
-                guard let delegate = self?.delegate else { return }
+                guard let self = self else { return }
+                guard let delegate = self.delegate else { return }
                 delegate.updateFilteredRatings(filteredRatings: Array(1...10))
             }
 
@@ -74,8 +74,9 @@ final class RatingsStatTableViewCell: UITableViewCell {
 
             for i in 1...9 {
                 children.append(UIAction(title: "\(i)") { [weak self] _ in
-                    guard let delegate = self?.delegate else { return }
-                    delegate.updateFilteredRatings(filteredRatings: Array((i+1)...10))
+                    guard let self = self else { return }
+                    guard let delegate = self.delegate else { return }
+                    delegate.updateFilteredRatings(filteredRatings: Array((i + 1)...10))
                 })
             }
             let above = UIMenu(title: "Above...", children: children)
@@ -83,8 +84,9 @@ final class RatingsStatTableViewCell: UITableViewCell {
             children.removeAll()
             for i in 2...10 {
                 children.append(UIAction(title: "\(i)") { [weak self] _ in
-                    guard let delegate = self?.delegate else { return }
-                    delegate.updateFilteredRatings(filteredRatings: Array(1...(i-1)))
+                    guard let self = self else { return }
+                    guard let delegate = self.delegate else { return }
+                    delegate.updateFilteredRatings(filteredRatings: Array(1...(i - 1)))
                 })
             }
             let below = UIMenu(title: "Below...", children: children)
@@ -92,7 +94,8 @@ final class RatingsStatTableViewCell: UITableViewCell {
             children.removeAll()
             for i in 1...10 {
                 children.append(UIAction(title: "\(i)") { [weak self] _ in
-                    guard let delegate = self?.delegate else { return }
+                    guard let self = self else { return }
+                    guard let delegate = self.delegate else { return }
                     delegate.updateFilteredRatings(filteredRatings: [i])
                 })
             }
@@ -106,7 +109,7 @@ final class RatingsStatTableViewCell: UITableViewCell {
         if let filteredRatings = filteredRatings {
             for bar in distributionBars {
                 if filteredRatings.count != distributionBars.count,
-                    filteredRatings.contains(where: { $0 == bar.tag }) {
+                   filteredRatings.contains(where: { $0 == bar.tag }) {
                     bar.backgroundColor = UIColor(asset: .globalTint)
                 } else {
                     bar.backgroundColor = #colorLiteral(red: 0.737254902, green: 0.7333333333, blue: 0.7568627451, alpha: 1)
@@ -149,16 +152,16 @@ final class RatingsStatTableViewCell: UITableViewCell {
                                delay: 0,
                                options: [.curveEaseInOut, .allowUserInteraction],
                                animations: {
-                                for constant in self.distributionHeightConstant {
-                                    let votes = values[Int(constant.identifier!)! - 1]
-                                    let proportion = CGFloat(votes) / CGFloat(max)
-                                    let height = self.distributionBars.first!.superview!.frame.size.height
-                                    constant.constant = height * proportion
-                                }
-                                for bar in self.distributionBars {
-                                    bar.superview!.layoutIfNeeded()
-                                }
-                })
+                                   for constant in self.distributionHeightConstant {
+                                       let votes = values[Int(constant.identifier!)! - 1]
+                                       let proportion = CGFloat(votes) / CGFloat(max)
+                                       let height = self.distributionBars.first!.superview!.frame.size.height
+                                       constant.constant = height * proportion
+                                   }
+                                   for bar in self.distributionBars {
+                                       bar.superview!.layoutIfNeeded()
+                                   }
+                               })
             }
         }
     }

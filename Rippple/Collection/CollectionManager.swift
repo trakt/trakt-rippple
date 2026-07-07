@@ -7,18 +7,17 @@
 //
 
 import Foundation
-
 import Receiver
+import UIKit
 
 let (onMovieCollectionChangedTransmitter, onMovieCollectionChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 let (onShowCollectionChangedTransmitter, onShowCollectionChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 let (onEpisodeCollectionChangedTransmitter, onEpisodeCollectionChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 
 final class CollectionManager: @unchecked Sendable {
-
     private let disposeBag = DisposeBag()
 
-    private init() { }
+    private init() {}
 
     func setup() {
         applicationLifecycleReceiver.listen { applicationLifecycle in
@@ -51,7 +50,7 @@ final class CollectionManager: @unchecked Sendable {
 
     fileprivate var movieCollection = [Int64]() {
         didSet {
-            if self.movieCollection != oldValue {
+            if movieCollection != oldValue {
                 onMovieCollectionChangedTransmitter.broadcast(movieCollection)
             }
         }
@@ -59,7 +58,7 @@ final class CollectionManager: @unchecked Sendable {
 
     fileprivate var showCollection = [Int64]() {
         didSet {
-            if self.showCollection != oldValue {
+            if showCollection != oldValue {
                 onShowCollectionChangedTransmitter.broadcast(showCollection)
             }
         }
@@ -67,7 +66,7 @@ final class CollectionManager: @unchecked Sendable {
 
     fileprivate var episodeCollection = [Int64]() {
         didSet {
-            if self.episodeCollection != oldValue {
+            if episodeCollection != oldValue {
                 onEpisodeCollectionChangedTransmitter.broadcast(episodeCollection)
             }
         }
@@ -79,7 +78,6 @@ final class CollectionManager: @unchecked Sendable {
 }
 
 private extension CollectionManager {
-
     private func refreshMovieCollection() {
         if SessionManager.shared.isLoggedOut {
             return
@@ -90,7 +88,7 @@ private extension CollectionManager {
                                                  sort: .added) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(collectionItems):
+            case .success(let collectionItems):
                 var ids = [Int64]()
                 for item in collectionItems {
                     if let traktId = item.movie?.identifiers.trakt {
@@ -102,7 +100,7 @@ private extension CollectionManager {
                     self.movieCollection = ids
                     self.collectedMovieItems = collectionItems
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("refreshMovieCollection request failure \(error)")
             }
         }
@@ -118,7 +116,7 @@ private extension CollectionManager {
                                                  sort: .added) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(collectionItems):
+            case .success(let collectionItems):
                 var ids = [Int64]()
                 for item in collectionItems {
                     if let traktId = item.show?.identifiers.trakt {
@@ -130,7 +128,7 @@ private extension CollectionManager {
                     self.showCollection = ids
                     self.collectedShowItems = collectionItems
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("refreshShowCollection request failure \(error)")
             }
         }
@@ -146,7 +144,7 @@ private extension CollectionManager {
                                                  sort: .added) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case let .success(collectionItems):
+            case .success(let collectionItems):
                 var ids = [Int64]()
                 for item in collectionItems {
                     if let traktId = item.episode?.identifiers.trakt {
@@ -158,7 +156,7 @@ private extension CollectionManager {
                     self.episodeCollection = ids
                     self.collectedEpisodeItems = collectionItems
                 }
-            case let .failure(error):
+            case .failure(let error):
                 print("refreshEpisodeCollection request failure \(error)")
             }
         }
@@ -215,7 +213,6 @@ extension Episode {
 }
 
 final class CollectedImageView: UIImageView {
-
     private let disposeBag = DisposeBag()
 
     var media: MediaModel? {

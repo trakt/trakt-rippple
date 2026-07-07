@@ -13,13 +13,12 @@ let (onCustomOpenActionsChangedTransmitter, onCustomOpenActionsChangedReceiver) 
 let (onBuiltInOpenActionsChangedTransmitter, onBuiltInOpenActionsChangedReceiver) = Receiver<[BuiltInOpenAction]>.make(with: .warm(upTo: 1))
 
 final class OpenActionManager {
-
     static let shared = OpenActionManager()
 
     private let customOpenActionsKey = "OpenAction.custom.actions"
     private let openActionItemsKey = "OpenAction.items"
 
-    private init() { }
+    private init() {}
 
     func setup() {
         NotificationCenter.default.addObserver(self,
@@ -210,13 +209,13 @@ struct OpenActionItem: Codable, Identifiable, Hashable {
     }
 
     init(builtInAction: BuiltInOpenAction) {
-        self.kind = .builtIn
-        self.rawValue = builtInAction.rawValue
+        kind = .builtIn
+        rawValue = builtInAction.rawValue
     }
 
     init(customActionID: UUID) {
-        self.kind = .custom
-        self.rawValue = customActionID.uuidString
+        kind = .custom
+        rawValue = customActionID.uuidString
     }
 }
 
@@ -227,7 +226,9 @@ enum BuiltInOpenAction: String, CaseIterable, Identifiable, Hashable {
     case stremio
     case infuse
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var title: String {
         switch self {
@@ -385,7 +386,9 @@ enum OpenActionMediaType: String, Codable, CaseIterable, Identifiable {
     case season
     case episode
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var displayName: String {
         switch self {
@@ -415,25 +418,25 @@ enum OpenActionVariable: String, CaseIterable, Identifiable {
     case season
     case episode
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
-    var placeholder: String { "{\(rawValue)}" }
+    var placeholder: String {
+        "{\(rawValue)}"
+    }
 
     var displayName: String {
         switch self {
         case .title: return "Title"
         case .showTitle: return "Show title"
-
         case .slug: return "Slug"
         case .traktId: return "Trakt ID"
-
         case .tmdbId: return "TMDb ID"
         case .imdbId: return "IMDb ID"
-
         case .showTraktId: return "Show Trakt ID"
         case .showTmdbId: return "Show TMDb ID"
         case .showImdbId: return "Show IMDb ID"
-
         case .year: return "Year"
         case .season: return "Season number"
         case .episode: return "Episode number"
@@ -475,6 +478,7 @@ enum OpenActionURLResolver {
                 "traktId": stringValue(show.identifiers.trakt),
                 "slug": stringValue(show.identifiers.slug),
                 "title": urlEscapedString(show.officialTitle),
+                "showTitle": urlEscapedString(show.officialTitle),
                 "year": stringValue(show.releaseYear)
             ]
         case .season(let season, let show):

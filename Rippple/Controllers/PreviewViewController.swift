@@ -6,15 +6,13 @@
 //  Copyright © 2017 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Receiver
 import SafariServices
+import UIKit
 
 let (commentPostedTransmitter, commentPostedReceiver) = Receiver<CommentModel>.make(with: .hot)
 
 final class PreviewViewController: UIViewController {
-
     var commentModel: CommentModel!
 
     @IBOutlet var sendButton: UIBarButtonItem!
@@ -51,22 +49,22 @@ final class PreviewViewController: UIViewController {
                               spoilers: commentModel.comment.containsSpoiler)
         } else {
             switch commentModel.media {
-            case let .movie(movie):
+            case .movie(let movie):
                 return .postComment(type: .movie,
                                     traktId: movie.identifiers.trakt!,
                                     body: commentModel.comment.body,
                                     spoilers: commentModel.comment.containsSpoiler)
-            case let .show(show):
+            case .show(let show):
                 return .postComment(type: .show,
                                     traktId: show.identifiers.trakt!,
                                     body: commentModel.comment.body,
                                     spoilers: commentModel.comment.containsSpoiler)
-            case let .episode(episode, _):
+            case .episode(let episode, _):
                 return .postComment(type: .episode,
                                     traktId: episode.identifiers.trakt!,
                                     body: commentModel.comment.body,
                                     spoilers: commentModel.comment.containsSpoiler)
-            case let .season(season, _):
+            case .season(let season, _):
                 return .postComment(type: .season,
                                     traktId: season.identifiers.trakt!,
                                     body: commentModel.comment.body,
@@ -98,7 +96,7 @@ final class PreviewViewController: UIViewController {
                 return
             }
             switch result {
-            case let .success(moyaResponse):
+            case .success(let moyaResponse):
                 do {
                     //
                     if moyaResponse.statusCode == 401 {
@@ -110,7 +108,7 @@ final class PreviewViewController: UIViewController {
                                                                     preferredStyle: .alert)
                             alertController.addAction(UIAlertAction(title: "Contact Trakt Support", style: .default, handler: { _ in
                                 self.dismiss(animated: true, completion: {
-                                    UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://support.trakt.tv")!))
+                                    UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://forums.trakt.tv")!))
                                 })
                             }))
                             let cancel = UIAlertAction(title: "Okay", style: .cancel)
@@ -143,7 +141,7 @@ final class PreviewViewController: UIViewController {
                         self.navigationItem.rightBarButtonItem = self.sendButton
                     }
                 }
-            case let .failure(error):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 Error posting", style: .error(error))
                     window.isUserInteractionEnabled = true

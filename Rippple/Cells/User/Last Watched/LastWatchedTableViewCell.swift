@@ -6,20 +6,15 @@
 //  Copyright © 2022 Trakt. All rights reserved.
 //
 
-import UIKit
-
 import Moya
-
 import Receiver
-
-import RPCircularProgress
+import UIKit
 
 protocol LastWatchedTableViewCellDelegate: AnyObject {
     func cell(_ cell: LastWatchedTableViewCell, action: LastWatchedTableViewCell.Action)
 }
 
 final class LastWatchedTableViewCell: UITableViewCell {
-
     enum Action {
         case details
     }
@@ -30,22 +25,22 @@ final class LastWatchedTableViewCell: UITableViewCell {
         }
     }
 
-    @IBOutlet weak var title: UILabel!
-    @IBOutlet weak var subtitle: UILabel!
-    @IBOutlet weak var meta: UILabel!
+    @IBOutlet var title: UILabel!
+    @IBOutlet var subtitle: UILabel!
+    @IBOutlet var meta: UILabel!
 
-    @IBOutlet weak var progress: RPCircularProgress!
+    @IBOutlet var progress: CircularProgressView!
 
-    @IBOutlet weak var poster: PosterButton!
+    @IBOutlet var poster: PosterButton!
     private let cellContextMenu = MediaContextMenuInteractionDelegate()
 
     private let disposeBag = DisposeBag()
 
-    @IBOutlet weak var cardView: CardView?
+    @IBOutlet var cardView: CardView?
 
     private var refreshWatchingTimer: Timer?
 
-    // request
+    /// request
     private var request: Cancellable?
 
     override func awakeFromNib() {
@@ -110,9 +105,9 @@ final class LastWatchedTableViewCell: UITableViewCell {
                     refreshWatchingTimer = Timer.scheduledTimer(withTimeInterval: 60.0,
                                                                 repeats: true,
                                                                 block: { [weak self] _ in
-                        guard let self = self else { return }
-                        self.updateInfo()
-                    })
+                                                                    guard let self = self else { return }
+                                                                    self.updateInfo()
+                                                                })
                 }
             }
             updateInfo()
@@ -131,7 +126,7 @@ final class LastWatchedTableViewCell: UITableViewCell {
                                                   callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                     guard let self = self else { return }
                     switch result {
-                    case let .success(moyaResponse):
+                    case .success(let moyaResponse):
                         do {
                             let response = try moyaResponse.filterSuccessfulStatusCodes()
                             if response.statusCode == 204 {
@@ -151,7 +146,7 @@ final class LastWatchedTableViewCell: UITableViewCell {
                                 self.loadLastWatched()
                             }
                         }
-                    case let .failure(error):
+                    case .failure(let error):
                         print("Watching request failure \(error)")
                         DispatchQueue.main.async {
                             self.loadLastWatched()
@@ -179,31 +174,31 @@ final class LastWatchedTableViewCell: UITableViewCell {
 
     private func loadLastHistoryItem(with completion: @escaping (_ error: Error?) -> Void) {
         request = TraktAPIProvider.provider.request(TraktAPIService.history(slug: user.slug, type: nil, id: nil, pageInfo: PageInfo.firstPage(with: 1), endDate: nil),
-                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+                                                    callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
-                                            switch result {
-                                            case let .success(moyaResponse):
-                                                do {
-                                                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                                                    let fetchedActivities = try response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
+                    let fetchedActivities = try response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
 
-                                                    DispatchQueue.main.async {
-                                                        self.lastItem = fetchedActivities.first
-                                                        completion(nil)
-                                                    }
-                                                } catch {
-                                                    DispatchQueue.main.async {
-                                                        print("Last activity (/history) request JSON mapping failed! \(error)")
-                                                        completion(error)
-                                                    }
-                                                }
-                                            case let .failure(error):
-                                                DispatchQueue.main.async {
-                                                    print("Last activity (/history) request failure \(error)")
-                                                    completion(error)
-                                                }
-                                            }
+                    DispatchQueue.main.async {
+                        self.lastItem = fetchedActivities.first
+                        completion(nil)
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        print("Last activity (/history) request JSON mapping failed! \(error)")
+                        completion(error)
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    print("Last activity (/history) request failure \(error)")
+                    completion(error)
+                }
+            }
         }
     }
 
@@ -290,7 +285,7 @@ final class LastWatchedTableViewCell: UITableViewCell {
         cellContextMenu.media = show.mediaModel
     }
 
-    public var media: MediaModel? {
+    var media: MediaModel? {
         if let watching = watching {
             return MediaModel(item: watching)
         } else if let lastItem = lastItem {

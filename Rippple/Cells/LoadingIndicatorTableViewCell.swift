@@ -6,13 +6,11 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import NVActivityIndicatorView
 import UIKit
 
-import NVActivityIndicatorView
-
 final class LoadingIndicatorTableViewCell: UITableViewCell {
-
-    @IBOutlet weak var activityIndicator: NVActivityIndicatorView!
+    @IBOutlet var activityIndicator: NVActivityIndicatorView!
 
     override func awakeFromNib() {
         super.awakeFromNib()

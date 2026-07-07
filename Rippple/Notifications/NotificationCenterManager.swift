@@ -7,13 +7,13 @@
 //
 
 import Foundation
-import UserNotifications
 import Receiver
+import UIKit
+import UserNotifications
 
 let (onNotificationCenterChangedTransmitter, onNotificationCenterChangedReceiver) = Receiver<[RipppleNotification]>.make(with: .hot)
 
 final class NotificationCenterManager: NSObject {
-
     static let shared = NotificationCenterManager()
 
     var notifications: [RipppleNotification]? {
@@ -31,7 +31,7 @@ final class NotificationCenterManager: NSObject {
 
     private let disposeBag = DisposeBag()
 
-    public func update() {
+    func update() {
         getNotifications()
     }
 
@@ -40,7 +40,7 @@ final class NotificationCenterManager: NSObject {
         return UserDefaults(suiteName: "group.tv.trakt.rippple.notificationservice")!.bool(forKey: "NotificationCenterManager.notificationsReceived")
     }
 
-    public func notificationsRead() {
+    func notificationsRead() {
         UserDefaults(suiteName: "group.tv.trakt.rippple.notificationservice")!.set(false, forKey: "NotificationCenterManager.notificationsReceived")
         UserDefaults(suiteName: "group.tv.trakt.rippple.notificationservice")!.synchronize()
         // This is to update the bell with or without dot
@@ -67,7 +67,7 @@ final class NotificationCenterManager: NSObject {
             case .didFinishLaunching:
                 break
             case .didBecomeActive(let time):
-                if time > 60*60*4 {
+                if time > 60 * 60 * 4 {
                     self.getNotifications()
                 }
             case .didEnterBackground:
@@ -76,7 +76,7 @@ final class NotificationCenterManager: NSObject {
         }.disposed(by: disposeBag)
     }
 
-    public func delete(notification: RipppleNotification) {
+    func delete(notification: RipppleNotification) {
         notifications = notifications?.filter { $0.identifier != notification.identifier }
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [notification.identifier])
     }
@@ -94,9 +94,9 @@ final class NotificationCenterManager: NSObject {
                                                                              body: $0.request.content.body,
                                                                              date: $0.date,
                                                                              link: ($0.request.content.userInfo["link"] as? String) ?? nil,
-                                                                             versionToCheck: ($0.request.content.userInfo["version-check"] as? Int) ?? nil)}
+                                                                             versionToCheck: ($0.request.content.userInfo["version-check"] as? Int) ?? nil) }
         guard var notifications = notifications else {
-            self.notifications = newNotifications
+            notifications = newNotifications
             return
         }
         for notification in newNotifications.sorted(by: { $0.date > $1.date }) {
@@ -137,11 +137,15 @@ extension NotificationCenterManager: UNUserNotificationCenterDelegate {
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         save(latestNotifications: [response.notification])
 
+        if response.notification.request.identifier == "TestNotification" {
+            testPushTransmitter.broadcast("TestNotification")
+        }
+
         let userInfo = response.notification.request.content.userInfo
         if let link = userInfo["link"] as? String, let url = URL(string: link) {
             DeeplinkManager.shared.registerDeeplink(url: url)
             if SessionManager.shared.isLoggedIn,
-                DeeplinkManager.shared.shouldOpenDeeplink() {
+               DeeplinkManager.shared.shouldOpenDeeplink() {
                 UIApplication.shared.switchToDeeplink()
             }
         }
@@ -154,7 +158,7 @@ extension NotificationCenterManager: UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, openSettingsFor notification: UNNotification?) {
         DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://settings/notifications")!)
         if SessionManager.shared.isLoggedIn,
-            DeeplinkManager.shared.shouldOpenDeeplink() {
+           DeeplinkManager.shared.shouldOpenDeeplink() {
             UIApplication.shared.switchToDeeplink()
         }
     }
