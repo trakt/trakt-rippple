@@ -8,7 +8,7 @@ Thank you for using Rippple. By downloading or using Rippple, you agree to the t
 
 ## Trakt
 
-Rippple is a Trakt client. We recommend that you read [Trakt.tv Terms of Use](https://trakt.tv/terms) as the use of Rippple is and will always be tied to Trakt.
+Rippple is a Trakt client. We recommend that you read [Trakt.tv Terms of Use](https://app.trakt.tv/terms) as the use of Rippple is and will always be tied to Trakt.
 
 ## Apple App Store
 

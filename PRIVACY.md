@@ -14,7 +14,7 @@ We use third-party services. We encourage you to check their privacy policy.
 
 ## Trakt
 
-Rippple is a Trakt client. As such, the app makes a lot of requests to the [Trakt API](https://trakt.docs.apiary.io/#). This includes requests to fetch the content you’ll read on screen and the content you (intentionally through Rippple) share with the community. We recommend that you read [Trakt.tv Privacy Policy](https://trakt.tv/privacy) to see what Trakt can do with your data.
+Rippple is a Trakt client. As such, the app makes a lot of requests to the [Trakt API](https://docs.trakt.tv). This includes requests to fetch the content you’ll read on screen and the content you (intentionally through Rippple) share with the community. We recommend that you read [Trakt.tv Privacy Policy](https://app.trakt.tv/privacy) to see what Trakt can do with your data.
 
 ## Push Notifications
 

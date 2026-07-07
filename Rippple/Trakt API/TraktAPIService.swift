@@ -500,8 +500,6 @@ extension TraktAPIService: AuthorizedTargetType {
         switch self {
         case .token, .refresh, .revoke:
             return URL(string: TraktAPIConfiguration.authBaseURL)!
-        case .verifyIAP, .verifySandboxIAP:
-            return URL(string: "https://trakt.tv")!
         default:
             return URL(string: TraktAPIConfiguration.baseURL)!
         }

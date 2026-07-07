@@ -211,8 +211,8 @@ final class DeeplinkParser {
     }
 
     private func cleanDeeplink(_ url: URL) -> URL {
-        // https://trakt.tv/comments/158545 -> ripl://comments/158545
-        // ripl://trakt.tv/comments/158545 -> ripl://comments/158545
+        // https://app.trakt.tv/comments/158545 -> ripl://comments/158545
+        // ripl://app.trakt.tv/comments/158545 -> ripl://comments/158545
 
         let absoluteString = url.absoluteString
 
@@ -226,8 +226,18 @@ final class DeeplinkParser {
             return cleanUrl
         }
 
+        if absoluteString.hasPrefix("https://app.trakt.tv/"),
+           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "https://app.trakt.tv/", with: "ripl://")) {
+            return cleanUrl
+        }
+
         if absoluteString.hasPrefix("https://trakt.tv/"),
            let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "https://trakt.tv/", with: "ripl://")) {
+            return cleanUrl
+        }
+
+        if absoluteString.hasPrefix("ripl://app.trakt.tv/"),
+           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "ripl://app.trakt.tv/", with: "ripl://")) {
             return cleanUrl
         }
 

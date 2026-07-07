@@ -203,7 +203,7 @@ struct DeepLinksView: View {
                     Text("Base URL")
                         .font(.headline)
                     Text("""
-                    You can use \(Text("`ripl://`").font(.subheadline.bold())), \(Text("`ripl://trakt/`").font(.subheadline.bold())) or \(Text("`ripl://trakt.tv/`").font(.subheadline.bold())) as base URL for Rippple's deeplinks.
+                    You can use \(Text("`ripl://`").font(.subheadline.bold())), \(Text("`ripl://trakt/`").font(.subheadline.bold())) or \(Text("`ripl://app.trakt.tv/`").font(.subheadline.bold())) as base URL for Rippple's deeplinks.
                     This means the following will work the same for movies, episodes, comments,...
                     """).font(.subheadline)
                     Text("`ripl://comments/_id_`")
@@ -240,18 +240,18 @@ struct DeepLinksView: View {
                                 .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
                         }.buttonStyle(.borderedProminent)
                     }
-                    Text("`ripl://trakt.tv/comments/_id_`")
+                    Text("`ripl://app.trakt.tv/comments/_id_`")
                         .font(.subheadline)
                         .foregroundStyle(Color(UIColor(asset: .globalTint)))
                     HStack(alignment: .center, spacing: 5) {
                         Button {
-                            openURL(URL(string: "ripl://trakt.tv/comments/327791")!)
+                            openURL(URL(string: "ripl://app.trakt.tv/comments/327791")!)
                         } label: {
                             Text("Test it")
                                 .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
                         }.buttonStyle(.borderedProminent)
                         Button {
-                            UIPasteboard.general.string = "ripl://trakt.tv/comments/327791"
+                            UIPasteboard.general.string = "ripl://app.trakt.tv/comments/327791"
                         } label: {
                             Text("Copy it")
                                 .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)

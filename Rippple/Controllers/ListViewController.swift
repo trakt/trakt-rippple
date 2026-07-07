@@ -308,12 +308,29 @@ final class ListViewController: UITableViewController {
         case item(WatchlistItem)
         case stats([MediaModel])
 
+        static func == (lhs: Wrapper, rhs: Wrapper) -> Bool {
+            switch (lhs, rhs) {
+            case (.header, .header):
+                return true
+            case (.item(let lhs), .item(let rhs)):
+                return lhs.id == rhs.id
+            case (.stats(let lhs), .stats(let rhs)):
+                return lhs == rhs
+            default:
+                return false
+            }
+        }
+
         func hash(into hasher: inout Hasher) {
             switch self {
+            case .header:
+                hasher.combine(0)
             case .item(let watchlist):
-                hasher.combine(watchlist)
-            default:
-                break
+                hasher.combine(1)
+                hasher.combine(watchlist.id)
+            case .stats(let mediaModels):
+                hasher.combine(2)
+                hasher.combine(mediaModels)
             }
         }
     }
@@ -776,7 +793,7 @@ final class ListViewController: UITableViewController {
             guard let self = self else { return }
             switch result {
             case .success(let results):
-                self.watchlistItems = results
+                self.watchlistItems = results.removingDuplicates()
             case .failure(let error):
                 print("Comments request JSON mapping failed! \(error)")
 

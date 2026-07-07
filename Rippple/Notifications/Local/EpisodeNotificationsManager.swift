@@ -593,7 +593,7 @@ private enum EpisodeNotificationDelivery: String {
         case .realtime:
             return firstAired
         case .postponed:
-            return Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: firstAired) ?? firstAired
+            return Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: firstAired) ?? firstAired
         }
     }
 }
