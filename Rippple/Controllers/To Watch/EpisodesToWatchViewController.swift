@@ -142,8 +142,9 @@ final class EpisodesToWatchViewController: UITableViewController {
         snapshot.appendSections([Section.stories, Section.header, Section.content(nil, nil), Section.footer])
         dataSource.apply(snapshot, animatingDifferences: false)
 
-        nextEpisodesReceiver.listen { [weak self] futureModels in
+        calendarDataUpdatedReceiver.listen { [weak self] calendarData in
             guard let self else { return }
+            let futureModels = calendarData.nextEpisodesWithBingeableFinales
             self.upcomingModels = futureModels
             self.updateUpcomingSnapshot(with: futureModels)
         }.disposed(by: disposeBag)

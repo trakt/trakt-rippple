@@ -531,13 +531,13 @@ private extension MediaModel {
     }
 }
 
-private extension Episode {
+extension Episode {
     var isBingeableFinale: Bool {
         episodeType?.isBingeableFinale == true
     }
 }
 
-private extension EpisodeType {
+extension EpisodeType {
     var isBingeableFinale: Bool {
         switch self {
         case .midSeasonFinale, .seasonFinale, .seriesFinale:

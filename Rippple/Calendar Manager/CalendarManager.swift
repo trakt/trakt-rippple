@@ -202,6 +202,7 @@ final class CalendarManager {
 
         movieUpcomingEnabledReceiver.listen(to: refreshOnUpcomingChange).disposed(by: disposeBag)
         episodeUpcomingEnabledReceiver.listen(to: refreshOnUpcomingChange).disposed(by: disposeBag)
+        episodeToWatchBingeableOnlyReceiver.listen(to: refreshOnUpcomingChange).disposed(by: disposeBag)
     }
 
     private func loadCacheFromDisk() {
@@ -389,6 +390,37 @@ final class CalendarManager {
         saveCacheToDisk(data)
 
         return data
+    }
+}
+
+extension CalendarData {
+    var nextEpisodesWithBingeableFinales: [MediaModel] {
+        guard EpisodeToWatchSettings.shared.bingeableOnly else { return nextEpisodes }
+
+        let now = Date.now
+        let futureFinales = shows.filter { item in
+            item.firstAired >= now &&
+                item.episode.season != 0 &&
+                item.episode.isBingeableFinale &&
+                item.show.isInToWatch
+        }
+        let earliestFinalePerShow = Dictionary(grouping: futureFinales, by: \ShowEpisodeCalendarItem.show)
+            .values
+            .compactMap { items in
+                items.min(by: { $0.firstAired < $1.firstAired })
+            }
+            .sorted { lhs, rhs in
+                if lhs.firstAired != rhs.firstAired { return lhs.firstAired < rhs.firstAired }
+                return lhs.show.title < rhs.show.title
+            }
+
+        guard !earliestFinalePerShow.isEmpty else { return nextEpisodes }
+
+        let finaleModels = earliestFinalePerShow.map { item in
+            item.episode.mediaModel(given: item.show)
+        }
+
+        return (finaleModels + nextEpisodes).removingDuplicates()
     }
 }
 
