@@ -327,6 +327,8 @@
 		3A93BCBE2521E9040097EBC8 /* CollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A93BCBD2521E9030097EBC8 /* CollectionViewController.swift */; };
 		3A941F642DD728D80096B65A /* MirTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A941F632DD728D80096B65A /* MirTableViewCell.swift */; };
 		3A941F662DD728E80096B65A /* MirTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A941F652DD728E80096B65A /* MirTableViewCell.xib */; };
+		0A4C7D022F10000100C0DE01 /* ActivityPunchcardTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4C7D012F10000100C0DE01 /* ActivityPunchcardTableViewCell.swift */; };
+		0A4C7D042F10000100C0DE01 /* ActivityPunchcardTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A4C7D032F10000100C0DE01 /* ActivityPunchcardTableViewCell.xib */; };
 		3A94F13A23BA0D69007325A1 /* EpisodeToWatchSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A94F13923BA0D69007325A1 /* EpisodeToWatchSettingsViewController.swift */; };
 		3A9877D224264B4500285A5E /* RippleLoadingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9877D124264B4500285A5E /* RippleLoadingIndicator.swift */; };
 		3A9D23252581485B004C49E8 /* ToWatchImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9D23242581485B004C49E8 /* ToWatchImageView.swift */; };
@@ -885,6 +887,8 @@
 		3A93BCBD2521E9030097EBC8 /* CollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewController.swift; sourceTree = "<group>"; };
 		3A941F632DD728D80096B65A /* MirTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirTableViewCell.swift; sourceTree = "<group>"; };
 		3A941F652DD728E80096B65A /* MirTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MirTableViewCell.xib; sourceTree = "<group>"; };
+		0A4C7D012F10000100C0DE01 /* ActivityPunchcardTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityPunchcardTableViewCell.swift; sourceTree = "<group>"; };
+		0A4C7D032F10000100C0DE01 /* ActivityPunchcardTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ActivityPunchcardTableViewCell.xib; sourceTree = "<group>"; };
 		3A94F13923BA0D69007325A1 /* EpisodeToWatchSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeToWatchSettingsViewController.swift; sourceTree = "<group>"; };
 		3A9877D124264B4500285A5E /* RippleLoadingIndicator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RippleLoadingIndicator.swift; sourceTree = "<group>"; };
 		3A9D23242581485B004C49E8 /* ToWatchImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchImageView.swift; sourceTree = "<group>"; };
@@ -2104,6 +2108,8 @@
 				3A40A99F286C94FC00737201 /* ListStatsTableViewCell.xib */,
 				3A941F632DD728D80096B65A /* MirTableViewCell.swift */,
 				3A941F652DD728E80096B65A /* MirTableViewCell.xib */,
+				0A4C7D012F10000100C0DE01 /* ActivityPunchcardTableViewCell.swift */,
+				0A4C7D032F10000100C0DE01 /* ActivityPunchcardTableViewCell.xib */,
 			);
 			path = Stats;
 			sourceTree = "<group>";
@@ -2890,6 +2896,7 @@
 				3AAF0DB321EA1F88006BB569 /* MediaOverviewTableViewCell.xib in Resources */,
 				3A50BA2D2A4D6F4100973862 /* C2BrowseCollectionViewCell.xib in Resources */,
 				3A0551972567BFF400E12647 /* UserStatsTableViewCell.xib in Resources */,
+				0A4C7D042F10000100C0DE01 /* ActivityPunchcardTableViewCell.xib in Resources */,
 				3A216A072C2C1BE40006E14C /* BrowseLinkCardViewCell.xib in Resources */,
 				3A8273261FC1903A00CD25EC /* CommentTableViewCell.xib in Resources */,
 				3AFD2B2B2A54521E0021D5BC /* GenreBrowseCollectionViewCell.xib in Resources */,
@@ -3312,6 +3319,7 @@
 				3A7FCCBE2C85D70600E056E7 /* ShelfConfigViewController.swift in Sources */,
 				3A6F58B9264FC4430087345C /* BadgeAppIconViewController.swift in Sources */,
 				3A941F642DD728D80096B65A /* MirTableViewCell.swift in Sources */,
+				0A4C7D022F10000100C0DE01 /* ActivityPunchcardTableViewCell.swift in Sources */,
 				3A6FB931202B3DF700018413 /* FilterManager.swift in Sources */,
 				3AD80E0C2129560800C70E7F /* SeasonsViewController.swift in Sources */,
 				3AB909A32C594183005EE32D /* SharingViewController.swift in Sources */,

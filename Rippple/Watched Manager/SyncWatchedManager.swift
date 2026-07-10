@@ -133,6 +133,23 @@ final class SyncWatchedManager {
     func lastWatchedAt(for type: SyncWatchedType, traktId: Int64) -> Date? {
         return watchedDates(for: type, traktId: traktId).max()
     }
+
+    func activityCountsByDay(calendar: Calendar = .current) -> [Date: Int] {
+        var counts = [Date: Int]()
+
+        // Show dates are made from their episode dates, so including them would
+        // count every episode play twice.
+        for items in [movieWatchedItems, episodeWatchedItems] {
+            for watchedDates in items.watchedDatesByTraktId.values {
+                for watchedDate in watchedDates {
+                    let day = calendar.startOfDay(for: watchedDate)
+                    counts[day, default: 0] += 1
+                }
+            }
+        }
+
+        return counts
+    }
 }
 
 private extension SyncWatchedManager {

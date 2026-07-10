@@ -88,6 +88,7 @@ final class CommentsViewController: UITableViewController {
         case rating(MediaModel)
         case user(User)
         case stats(User)
+        case punchcard
         case followAndFriends(User)
         case link(CardType, String, String)
         case lastWatched(User)
@@ -208,6 +209,11 @@ final class CommentsViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "stats") as! UserStatsTableViewCell
             cell.user = user
             return cell
+        case .punchcard:
+            let cell = tableView.dequeueReusableCell(withIdentifier: ActivityPunchcardTableViewCell.reuseIdentifier) as! ActivityPunchcardTableViewCell
+            cell.setup(activityCounts: SyncWatchedManager.shared.activityCountsByDay(),
+                       containerWidth: tableView.bounds.width)
+            return cell
         case .followAndFriends(let user):
             let cell = tableView.dequeueReusableCell(withIdentifier: "follow and friends") as! FollowersAndFriendsTableViewCell
             cell.user = user
@@ -258,6 +264,8 @@ final class CommentsViewController: UITableViewController {
         tableView.register(UINib(nibName: "OwnReplyTableViewCell", bundle: nil), forCellReuseIdentifier: "own reply")
         tableView.register(UINib(nibName: "RatingsTableViewCell", bundle: nil), forCellReuseIdentifier: "ratings")
         tableView.register(UINib(nibName: "UserStatsTableViewCell", bundle: nil), forCellReuseIdentifier: "stats")
+        tableView.register(UINib(nibName: "ActivityPunchcardTableViewCell", bundle: nil),
+                           forCellReuseIdentifier: ActivityPunchcardTableViewCell.reuseIdentifier)
         tableView.register(UINib(nibName: "FollowersAndFriendsTableViewCell", bundle: nil), forCellReuseIdentifier: "follow and friends")
         tableView.register(UINib(nibName: "StandardListTableViewCell", bundle: nil), forCellReuseIdentifier: "standard list")
         tableView.register(UINib(nibName: "LastWatchedTableViewCell", bundle: nil), forCellReuseIdentifier: "last watched")
@@ -385,6 +393,18 @@ final class CommentsViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
+        onSyncWatchedMoviesChangedReceiver.listen { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.refreshPunchcard()
+            }
+        }.disposed(by: disposeBag)
+
+        onSyncWatchedEpisodesChangedReceiver.listen { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.refreshPunchcard()
+            }
+        }.disposed(by: disposeBag)
+
         footnoteLabel.maximumContentSizeCategory = .large
         errorLabel.maximumContentSizeCategory = .large
     }
@@ -508,6 +528,7 @@ final class CommentsViewController: UITableViewController {
                     snapshot.appendItems([Wrapper.user(user)], toSection: Section.header)
                 } else if user.isCurrentUser {
                     snapshot.appendItems([Wrapper.user(user),
+                                          Wrapper.punchcard,
                                           Wrapper.followAndFriends(user),
                                           Wrapper.lastWatched(user),
                                           Wrapper.spacer(5.001),
@@ -704,6 +725,13 @@ extension CommentsViewController {
         }
     }
 
+    private func refreshPunchcard() {
+        var snapshot = dataSource.snapshot()
+        guard snapshot.itemIdentifiers.contains(.punchcard) else { return }
+        snapshot.reconfigureItems([.punchcard])
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
     @IBAction func unwindFromCommentComposer(segue: UIStoryboardSegue) {}
 
     private func moreMenu() -> UIMenu? {
@@ -833,6 +861,8 @@ extension CommentsViewController {
             case .user:
                 return 275
             case .stats:
+                return UITableView.automaticDimension
+            case .punchcard:
                 return UITableView.automaticDimension
             case .followAndFriends:
                 return UITableView.automaticDimension
@@ -1008,6 +1038,8 @@ extension CommentsViewController {
         case .user:
             return
         case .stats:
+            return
+        case .punchcard:
             return
         case .followAndFriends:
             return
