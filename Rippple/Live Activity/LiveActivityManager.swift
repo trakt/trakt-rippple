@@ -72,6 +72,16 @@ final class LiveActivityManager {
                 }
             }
         }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.poster")
+            UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.thumb")
+            UserDefaults(suiteName: "group.tv.trakt.rippple")!.synchronize()
+            Task {
+                await self.stopActivity()
+            }
+        }.disposed(by: disposeBag)
     }
 
     private func fetchImageAndSetActivity(widgetModel: WidgetModel, url: URL?) {

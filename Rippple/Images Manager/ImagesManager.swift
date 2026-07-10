@@ -9,6 +9,7 @@
 import Foundation
 @preconcurrency import Kingfisher
 import Moya
+import Receiver
 import UIKit
 import Vision
 
@@ -142,6 +143,8 @@ struct SepiaFilter: CIImageProcessor {
 }
 
 final class ImagesManager {
+    private let disposeBag = DisposeBag()
+
     struct CacheStats {
         let memoryExpirationDescription: String
         let diskExpirationDescription: String
@@ -494,6 +497,20 @@ final class ImagesManager {
     }
 
     func setup() {
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.movieCache.removeAllObjects()
+            self.showCache.removeAllObjects()
+            self.seasonCache.removeAllObjects()
+            self.movieBackdropCache.removeAllObjects()
+            self.showBackdropCache.removeAllObjects()
+            self.movieLogoCache.removeAllObjects()
+            self.showLogoCache.removeAllObjects()
+            self.episodeStillsCache.removeAllObjects()
+            self.peopleCache.removeAllObjects()
+            ImageCache.default.clearMemoryCache()
+        }.disposed(by: disposeBag)
+
         TmdbAPIProvider.provider.request(TmdbAPIService.configuration, callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
 

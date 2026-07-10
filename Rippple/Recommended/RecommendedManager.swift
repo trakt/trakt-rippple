@@ -35,6 +35,12 @@ final class RecommendedManager {
             self.refreshRecommended()
         }.disposed(by: disposeBag)
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.recommended.removeAll()
+            self.recommendedItems.removeAll()
+        }.disposed(by: disposeBag)
+
         refreshRecommended()
     }
 

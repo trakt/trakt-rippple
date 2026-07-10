@@ -55,7 +55,16 @@ final class ListsManager {
                 self.refreshLists()
             } else {
                 self.lists.removeAll()
+                UserDefaults.standard.removeObject(forKey: "ListsManager.lists")
+                UserDefaults.standard.synchronize()
             }
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.lists.removeAll()
+            UserDefaults.standard.removeObject(forKey: "ListsManager.lists")
+            UserDefaults.standard.synchronize()
         }.disposed(by: disposeBag)
 
         onListChangedReceiver.listen { [weak self] lists in

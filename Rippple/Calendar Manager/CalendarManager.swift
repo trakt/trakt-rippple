@@ -110,6 +110,14 @@ final class CalendarManager {
             }
         }
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.cachedData = nil
+            self.storage.remove(key: self.storageKey)
+            nextMoviesTransmitter.broadcast([])
+            nextEpisodesTransmitter.broadcast([])
+        }.disposed(by: disposeBag)
+
         applicationLifecycleReceiver.hotOnly().listen { [weak self] applicationLifecycle in
             guard let self = self else { return }
             switch applicationLifecycle {

@@ -161,6 +161,14 @@ final class EpisodeNotificationsManager {
                                                name: .NSCalendarDayChanged,
                                                object: nil)
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.rebuildNotificationsTask?.cancel()
+            self.cachedCalendarItems = nil
+            self.lastCalendarFetchDate = nil
+            onEpisodesNotificationsChangedTransmitter.broadcast([])
+        }.disposed(by: disposeBag)
+
         onShowsToWatchChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedRebuildNotifications.call()

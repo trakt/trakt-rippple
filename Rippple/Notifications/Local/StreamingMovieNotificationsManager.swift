@@ -113,6 +113,12 @@ final class StreamingMovieNotificationsManager {
             self.debouncedRebuildNotifications.call()
         }
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.movieCalendarItems = nil
+            onStreamingMoviesNotificationsChangedTransmitter.broadcast([])
+        }.disposed(by: disposeBag)
+
         fetchCalendar()
     }
 

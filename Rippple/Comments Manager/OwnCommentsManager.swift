@@ -38,6 +38,11 @@ final class OwnCommentsManager {
             }
         }.disposed(by: disposeBag)
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.latestOwnComments.removeAll()
+        }.disposed(by: disposeBag)
+
         commentPostedReceiver.listen { _ in
             self.refreshOwnComments()
         }.disposed(by: disposeBag)

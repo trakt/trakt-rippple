@@ -37,6 +37,16 @@ final class CollectionManager: @unchecked Sendable {
             self.refresh()
         }.disposed(by: disposeBag)
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.movieCollection.removeAll()
+            self.showCollection.removeAll()
+            self.episodeCollection.removeAll()
+            self.collectedMovieItems.removeAll()
+            self.collectedShowItems.removeAll()
+            self.collectedEpisodeItems.removeAll()
+        }.disposed(by: disposeBag)
+
         refresh()
     }
 

@@ -61,6 +61,23 @@ final class WatchedManager {
             watchedEpisodes = episodeIds
         }
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.lastShowsAndEpisodesCheck = .now
+            self.lastMoviesCheck = .now
+            self.showsHistoryItems.removeAll()
+            self.moviesHistoryItems.removeAll()
+            self.episodeHistoryItems.removeAll()
+            self.watchedEpisodes.removeAll()
+            self.watchedShows.removeAll()
+            self.watchedMovies.removeAll()
+            TinyStorage.cache.remove(key: "WatchedManager.showsHistoryItems")
+            TinyStorage.cache.remove(key: "WatchedManager.moviesHistoryItems")
+            TinyStorage.cache.remove(key: "WatchedManager.episodeHistoryItems")
+            onWatchedShowsChangedTransmitter.broadcast([])
+            onWatchedMoviesChangedTransmitter.broadcast([])
+        }.disposed(by: disposeBag)
+
         onLastWatchedEpisodeActivitiesChangedReceiver.listen { lastActivities in
             if self.lastShowsAndEpisodesCheck < lastActivities.watchedAt {
                 self.lastShowsAndEpisodesCheck = .now
@@ -116,6 +133,11 @@ final class WatchedManager {
                 self.watchedEpisodes.removeAll()
                 self.watchedShows.removeAll()
                 self.watchedMovies.removeAll()
+                TinyStorage.cache.remove(key: "WatchedManager.showsHistoryItems")
+                TinyStorage.cache.remove(key: "WatchedManager.moviesHistoryItems")
+                TinyStorage.cache.remove(key: "WatchedManager.episodeHistoryItems")
+                onWatchedShowsChangedTransmitter.broadcast([])
+                onWatchedMoviesChangedTransmitter.broadcast([])
             }
         }.disposed(by: disposeBag)
 

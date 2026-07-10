@@ -47,6 +47,11 @@ final class FilterManager {
                 self.blockedUsers = blockedUsers
             }
         }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.blockedUsers = nil
+        }.disposed(by: disposeBag)
     }
 
     private func undercoverBlock(user: User) {

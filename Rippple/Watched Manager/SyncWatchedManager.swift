@@ -151,6 +151,18 @@ private extension SyncWatchedManager {
     }
 
     func setupListeners() {
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.lastShowsAndEpisodesCheck = .now
+            self.lastMoviesCheck = .now
+            self.movieWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
+            self.showWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
+            self.episodeWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
+            TinyStorage.cache.remove(key: CacheKey.movies)
+            TinyStorage.cache.remove(key: CacheKey.shows)
+            TinyStorage.cache.remove(key: CacheKey.episodes)
+        }.disposed(by: disposeBag)
+
         onLastWatchedEpisodeActivitiesChangedReceiver.listen { [weak self] lastActivities in
             guard let self = self else { return }
             if self.lastShowsAndEpisodesCheck < lastActivities.watchedAt {
@@ -196,11 +208,15 @@ private extension SyncWatchedManager {
                 self.movieWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
                 self.showWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
                 self.episodeWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
+                TinyStorage.cache.remove(key: CacheKey.movies)
+                TinyStorage.cache.remove(key: CacheKey.shows)
+                TinyStorage.cache.remove(key: CacheKey.episodes)
             }
         }.disposed(by: disposeBag)
 
         onRewatchingShowsChangedReceiver.listen { [weak self] _ in
-            self?.refreshWatchedShows()
+            guard let self = self else { return }
+            self.refreshWatchedShows()
         }.disposed(by: disposeBag)
     }
 

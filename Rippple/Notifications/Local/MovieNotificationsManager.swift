@@ -113,6 +113,12 @@ final class MovieNotificationsManager {
             self.debouncedRebuildNotifications.call()
         }
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.movieCalendarItems = nil
+            onMoviesNotificationsChangedTransmitter.broadcast([])
+        }.disposed(by: disposeBag)
+
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(dayChanged),
                                                name: .NSCalendarDayChanged,

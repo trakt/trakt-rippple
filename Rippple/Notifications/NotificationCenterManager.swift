@@ -61,6 +61,15 @@ final class NotificationCenterManager: NSObject {
         UNUserNotificationCenter.current().delegate = self
         getNotifications()
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.notifications = []
+            let defaults = UserDefaults(suiteName: "group.tv.trakt.rippple.notificationservice")!
+            defaults.removeObject(forKey: "NotificationCenterManager.notifications")
+            defaults.set(false, forKey: "NotificationCenterManager.notificationsReceived")
+            defaults.synchronize()
+        }.disposed(by: disposeBag)
+
         applicationLifecycleReceiver.listen { [weak self] applicationLifecycle in
             guard let self = self else { return }
             switch applicationLifecycle {

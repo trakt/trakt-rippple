@@ -202,6 +202,26 @@ final class MovieToWatchManager {
             self.mediaModels = mediaModels
         }
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.operationQueue.cancelAllOperations()
+            self.timer?.invalidate()
+            self.timer = nil
+            self.status = .content
+            self.moviesInList = nil
+            self.movies = nil
+            self.mediaModels = []
+            self.releaseInfoCache = [:]
+            self.futureMediaModels = []
+            TinyStorage.cache.remove(key: "MovieToWatchManager.moviesInList")
+            TinyStorage.cache.remove(key: "MovieToWatchManager.movies")
+            TinyStorage.cache.remove(key: "MovieToWatchManager.mediaModels")
+            TinyStorage.cache.remove(key: "MovieToWatchManager.releaseInfoCache")
+            TinyStorage.cache.remove(key: "MovieToWatchManager.futureMediaModels")
+            onAllMoviesToWatchChangedTransmitter.broadcast([])
+            self.debouncedTransmit.fireNow()
+        }.disposed(by: disposeBag)
+
         onSettingsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             print("MovieToWatchManager.forceRefresh because settings changes")

@@ -62,6 +62,14 @@ final class NotesManager {
             self.debouncedRefresh.call()
         }.disposed(by: disposeBag)
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.refreshing = false
+            self.notes.removeAll()
+            UserDefaults.standard.removeObject(forKey: "NotesManager.notes")
+            UserDefaults.standard.synchronize()
+        }.disposed(by: disposeBag)
+
         debouncedRefresh.call()
     }
 

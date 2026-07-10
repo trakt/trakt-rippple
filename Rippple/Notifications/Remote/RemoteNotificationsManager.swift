@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Receiver
 
 enum RemoteNotificationTopic: String, Codable {
     case trendingShows
@@ -64,6 +65,7 @@ final class RemoteNotificationsManager {
     }()
 
     private let decoder = JSONDecoder()
+    private let disposeBag = DisposeBag()
     private let session: URLSession
     private let userDefaults: UserDefaults
     private let cacheKeyPrefix = "RemoteNotificationsManager"
@@ -96,6 +98,15 @@ final class RemoteNotificationsManager {
         baseURL = normalizedBaseURL
         isConfigured = true
         print("Initialized remote notifications REST API")
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            let ownedKeyPrefix = "\(self.cacheKeyPrefix)."
+            for key in self.userDefaults.dictionaryRepresentation().keys where key.hasPrefix(ownedKeyPrefix) {
+                self.userDefaults.removeObject(forKey: key)
+            }
+            self.userDefaults.synchronize()
+        }.disposed(by: disposeBag)
     }
 
     func createEndpoint(token: String, customUserData: String) async throws -> String {

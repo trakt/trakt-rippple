@@ -51,6 +51,16 @@ final class DroppedShowsManager {
             droppedShows = array
         }
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.droppedShows.removeAll()
+            self.hiddenShows = nil
+            self.manuallyDroppedShows = nil
+            self.droppedShowsSet.removeAll()
+            TinyStorage.cache.remove(key: "DroppedShowsManager.droppedShows")
+            self.debouncedTransmit.fireNow()
+        }.disposed(by: disposeBag)
+
         onShowsHiddenFromProgressMediaChangedReceiver.listen { [weak self] hiddenShows in
             guard let self = self else { return }
             self.hiddenShows = hiddenShows

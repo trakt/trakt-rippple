@@ -32,6 +32,11 @@ final class LikeManager {
         onSettingsChangedReceiver.listen { _ in
             self.refreshListLikes()
         }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.listLikes.removeAll()
+        }.disposed(by: disposeBag)
     }
 
     static let shared = LikeManager()

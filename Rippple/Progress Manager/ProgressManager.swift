@@ -28,6 +28,11 @@ final class ProgressManager {
     static let shared = ProgressManager()
 
     func setup() {
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.cache.removeAll()
+        }.disposed(by: disposeBag)
+
         onSettingsChangedReceiver.listen { [weak self] settings in
             guard let self = self else { return }
             if settings == nil {

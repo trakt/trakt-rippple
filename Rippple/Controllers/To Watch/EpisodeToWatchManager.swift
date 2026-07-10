@@ -215,6 +215,24 @@ final class EpisodeToWatchManager {
             self.mediaModels = mediaModels
         }
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.operationQueue.cancelAllOperations()
+            self.timer?.invalidate()
+            self.timer = nil
+            self.status = .content
+            self.showsInList = nil
+            self.shows = nil
+            self.mediaModels = []
+            self.futureMediaModels = []
+            TinyStorage.cache.remove(key: "EpisodeToWatchManager.showsInList")
+            TinyStorage.cache.remove(key: "EpisodeToWatchManager.shows")
+            TinyStorage.cache.remove(key: "EpisodeToWatchManager.mediaModels")
+            TinyStorage.cache.remove(key: "EpisodeToWatchManager.futureMediaModels")
+            onShowsToWatchChangedTransmitter.broadcast([])
+            self.debouncedTransmit.fireNow()
+        }.disposed(by: disposeBag)
+
         onSettingsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             print("EpisodeToWatchManager.forceRefresh because settings changes")

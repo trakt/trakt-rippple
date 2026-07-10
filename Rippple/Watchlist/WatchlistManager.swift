@@ -39,6 +39,15 @@ final class WatchlistManager {
             self.refreshWatchlist()
         }.disposed(by: disposeBag)
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.watchlist.removeAll()
+            self.watchlistedMovies.removeAll()
+            self.watchlistedShows.removeAll()
+            self.watchlistedSeasons.removeAll()
+            self.watchlistedEpisodes.removeAll()
+        }.disposed(by: disposeBag)
+
         // refresh if checkin in in progress
         WatchingManager.shared.onWatchingItemChangedReceiver.hotOnly().listen { watchingItem, _ in
             if let watchingItem = watchingItem,

@@ -7,14 +7,23 @@
 //
 
 import Foundation
+import Receiver
 
 final class ListItemsMarkerManager {
     static let shared = ListItemsMarkerManager()
 
+    private let disposeBag = DisposeBag()
     private var markers = [Int64: String]()
     private let lock = NSLock()
 
-    private init() {}
+    private init() {
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.lock.lock()
+            defer { self.lock.unlock() }
+            self.markers.removeAll()
+        }.disposed(by: disposeBag)
+    }
 
     func marker(for listId: Int64) -> String {
         lock.lock()

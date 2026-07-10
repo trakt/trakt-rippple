@@ -27,6 +27,13 @@ final class TraktStatusCheckManager {
     private var refreshTimer: Timer?
 
     func setup() {
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.lastActivities = nil
+            UserDefaults.standard.removeObject(forKey: "TraktStatusCheckManager.lastActivities")
+            UserDefaults.standard.synchronize()
+        }.disposed(by: disposeBag)
+
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
             TraktStatusCheckManager.shared.refresh()
         }

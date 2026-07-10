@@ -14,6 +14,7 @@ import UIKit
 let (onSettingsChangedTransmitter, onSettingsChangedReceiver) = Receiver<Settings?>.make(with: .warm(upTo: 1))
 let (onSettingsRefreshedTransmitter, onSettingsRefreshedReceiver) = Receiver<Bool>.make(with: .hot)
 let (onVIPChangedTransmitter, onVIPChangedReceiver) = Receiver<Bool>.make(with: .hot)
+let (onUserLoggedOutTransmitter, onUserLoggedOutReceiver) = Receiver<Bool>.make(with: .hot)
 
 extension URL {
     func slurmified() -> URL {
@@ -93,6 +94,7 @@ final class UserManager {
 
     func logout() {
         settings = nil
+        onUserLoggedOutTransmitter.broadcast(true)
     }
 
     private func fetchSettings(retryAttempt: Int = 0, transmitRefreshed: Bool = false) {

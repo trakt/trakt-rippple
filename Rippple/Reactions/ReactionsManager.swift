@@ -44,6 +44,11 @@ final class ReactionsManager {
         onSettingsChangedReceiver.listen { _ in
             self.refreshUserCommentsReactions()
         }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.userReactions.removeAll()
+        }.disposed(by: disposeBag)
     }
 
     private func refreshReactions() {

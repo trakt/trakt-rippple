@@ -32,6 +32,12 @@ final class FollowManager {
             self.refreshFollowing()
         }.disposed(by: disposeBag)
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.following.removeAll()
+            self.pendingFollowing.removeAll()
+        }.disposed(by: disposeBag)
+
         refreshFollowing()
     }
 

@@ -71,6 +71,13 @@ final class WatchingManager {
             self.refreshWatching()
         }.disposed(by: disposeBag)
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.refreshWatchingTimer?.invalidate()
+            self.watchingItem = nil
+            self.progress = 0
+        }.disposed(by: disposeBag)
+
         refreshProgressTimer = Timer.scheduledTimer(withTimeInterval: 5.0,
                                                     repeats: true) { _ in
             self.updateProgress()

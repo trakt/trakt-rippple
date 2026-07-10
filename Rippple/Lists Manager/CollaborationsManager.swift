@@ -55,7 +55,16 @@ final class CollaborationsManager {
                 self.refreshCollaborations()
             } else {
                 self.collaborations.removeAll()
+                UserDefaults.standard.removeObject(forKey: "CollaborationsManager.collaborations")
+                UserDefaults.standard.synchronize()
             }
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.collaborations.removeAll()
+            UserDefaults.standard.removeObject(forKey: "CollaborationsManager.collaborations")
+            UserDefaults.standard.synchronize()
         }.disposed(by: disposeBag)
 
         refreshCollaborations()

@@ -46,6 +46,16 @@ final class CompletedShowsManager {
             }
         }
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.withStateLock {
+                self.completedShows.removeAll()
+                self.completedShowSet.removeAll()
+            }
+            TinyStorage.cache.remove(key: "CompletedShowsManager.completedShows")
+            self.debouncedTransmit.fireNow()
+        }.disposed(by: disposeBag)
+
         onShowsHiddenFromProgressMediaChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             onCompletedShowsChangedTransmitter.broadcast(self.completedShowsModels)
