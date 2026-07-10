@@ -20,6 +20,7 @@ private struct DroppedShow: Codable, Hashable {
 
 final class DroppedShowsManager {
     private let disposeBag = DisposeBag()
+    private let stateLock = NSLock()
 
     private init() {}
 
@@ -48,28 +49,36 @@ final class DroppedShowsManager {
         }
 
         if let array = TinyStorage.cache.retrieve(type: [DroppedShow].self, forKey: "DroppedShowsManager.droppedShows") {
-            droppedShows = array
+            withStateLock {
+                droppedShows = array
+            }
         }
 
         onUserLoggedOutReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.droppedShows.removeAll()
-            self.hiddenShows = nil
-            self.manuallyDroppedShows = nil
-            self.droppedShowsSet.removeAll()
+            self.withStateLock {
+                self.droppedShows.removeAll()
+                self.hiddenShows = nil
+                self.manuallyDroppedShows = nil
+                self.droppedShowsSet.removeAll()
+            }
             TinyStorage.cache.remove(key: "DroppedShowsManager.droppedShows")
             self.debouncedTransmit.fireNow()
         }.disposed(by: disposeBag)
 
         onShowsHiddenFromProgressMediaChangedReceiver.listen { [weak self] hiddenShows in
             guard let self = self else { return }
-            self.hiddenShows = hiddenShows
+            self.withStateLock {
+                self.hiddenShows = hiddenShows
+            }
             self.debouncedTransmit.fireNow()
         }.disposed(by: disposeBag)
 
         onShowsDroppedMediaChangedReceiver.listen { [weak self] manuallyDroppedShows in
             guard let self = self else { return }
-            self.manuallyDroppedShows = manuallyDroppedShows
+            self.withStateLock {
+                self.manuallyDroppedShows = manuallyDroppedShows
+            }
             self.debouncedTransmit.fireNow()
         }.disposed(by: disposeBag)
 
@@ -90,32 +99,34 @@ final class DroppedShowsManager {
     }
 
     private func checkDropped(progress: ShowShowProgress) {
-        guard hiddenShows != nil else { return }
-        guard manuallyDroppedShows != nil else { return }
+        let hasRequiredState = withStateLock {
+            hiddenShows != nil && manuallyDroppedShows != nil
+        }
+        guard hasRequiredState else { return }
 
         let show = progress.show
 
         // if it's not in watched, don't try to check if it's dropped
         guard let lastWatchedAt = progress.showProgress.lastWatchedAt else {
-            droppedShows.removeAll(where: { $0.show == show })
+            removeDroppedShow(show)
             return
         }
 
         // if it's completed, it's not dropped
         if show.isCompleted {
-            droppedShows.removeAll(where: { $0.show == show })
+            removeDroppedShow(show)
             return
         }
 
         // if it's pinned, don't drop it!!
         if show.isPinned {
-            droppedShows.removeAll(where: { $0.show == show })
+            removeDroppedShow(show)
             return
         }
 
         // if it's hidden or manually dropped, don't auto-drop it
         if show.isHiddenFromProgress || show.isManuallyDropped {
-            droppedShows.removeAll(where: { $0.show == show })
+            removeDroppedShow(show)
             return
         }
 
@@ -123,21 +134,39 @@ final class DroppedShowsManager {
         if lastWatchedAt < .now.addingTimeInterval(-15780000) {
             // if I'm rewatching, it's not going in the dropped
             if progress.showProgress.nextToRewatch != nil {
-                droppedShows.removeAll(where: { $0.show == show })
+                removeDroppedShow(show)
             } else if let nextEpisode = progress.showProgress.nextEpisodeToWatch,
                       nextEpisode.number > 1, // Next episode is not a premiere
                       nextEpisode.episodeType != .midSeasonPremiere, // Next episode is not a mid-season
                       let firstAired = nextEpisode.firstAired, // Next episode first aired at least 6 month ago
                       firstAired < .now.addingTimeInterval(-15780000) {
-                if droppedShows.contains(where: { $0.show == show }) == false {
-                    droppedShows.append(DroppedShow(show: show,
-                                                    droppedDate: lastWatchedAt))
-                }
+                addDroppedShow(show, droppedDate: lastWatchedAt)
             } else {
-                droppedShows.removeAll(where: { $0.show == show })
+                removeDroppedShow(show)
             }
         } else {
+            removeDroppedShow(show)
+        }
+    }
+
+    private func withStateLock<T>(_ work: () -> T) -> T {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return work()
+    }
+
+    private func removeDroppedShow(_ show: Show) {
+        withStateLock {
             droppedShows.removeAll(where: { $0.show == show })
+        }
+    }
+
+    private func addDroppedShow(_ show: Show, droppedDate: Date) {
+        withStateLock {
+            guard hiddenShows != nil, manuallyDroppedShows != nil else { return }
+            guard droppedShows.contains(where: { $0.show == show }) == false else { return }
+            droppedShows.append(DroppedShow(show: show,
+                                            droppedDate: droppedDate))
         }
     }
 
@@ -146,25 +175,31 @@ final class DroppedShowsManager {
     }
 
     private func rebuildDroppedShowsSet() {
-        var set = Set<Show>()
-        if let manuallyDroppedShows = manuallyDroppedShows {
-            for item in manuallyDroppedShows {
-                set.insert(item.show)
+        withStateLock {
+            var set = Set<Show>()
+            if let manuallyDroppedShows = manuallyDroppedShows {
+                for item in manuallyDroppedShows {
+                    set.insert(item.show)
+                }
             }
-        }
-        if UserDefaults.standard.bool(forKey: "GeneralSettings.droppedshows") == true {
-            for dropped in droppedShows {
-                set.insert(dropped.show)
+            if UserDefaults.standard.bool(forKey: "GeneralSettings.droppedshows") == true {
+                for dropped in droppedShows {
+                    set.insert(dropped.show)
+                }
             }
+            droppedShowsSet = set
         }
-        droppedShowsSet = set
     }
 
     func isDropped(show: Show) -> Bool {
-        return droppedShowsSet.contains(show)
+        return withStateLock { droppedShowsSet.contains(show) }
     }
 
     var droppedShowsModels: [MediaModel] {
+        let (manuallyDroppedShows, droppedShows) = withStateLock {
+            (self.manuallyDroppedShows, self.droppedShows)
+        }
+
         var allDropped = [DroppedShow]()
         if let manuallyDroppedShows = manuallyDroppedShows {
             allDropped = manuallyDroppedShows.compactMap { DroppedShow(show: $0.show,

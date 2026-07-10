@@ -461,6 +461,7 @@ extension SidebarViewController: UICollectionViewDelegate {
         UserDefaults.standard.set(indexPath.row, forKey: "SidebarViewController.selectedIndex.row")
 
         if indexPath.section == 0 {
+            guard secondaryViewControllers.indices.contains(indexPath.row) else { return }
             if let navigationController = splitViewController?.viewController(for: column) as? UINavigationController,
                navigationController == secondaryViewControllers[indexPath.row] {
                 handleReselection(of: navigationController, secondaryViewControllerIndex: indexPath.row)
@@ -469,6 +470,7 @@ extension SidebarViewController: UICollectionViewDelegate {
             }
         } else if indexPath.section == 1 {
             let secondaryViewControllerIndex = tabsItems.count + indexPath.row
+            guard secondaryViewControllers.indices.contains(secondaryViewControllerIndex) else { return }
             if let navigationController = splitViewController?.viewController(for: column) as? UINavigationController,
                navigationController == secondaryViewControllers[secondaryViewControllerIndex] {
                 handleReselection(of: navigationController, secondaryViewControllerIndex: secondaryViewControllerIndex)
@@ -503,7 +505,9 @@ extension SidebarViewController: UICollectionViewDelegate {
             splitViewController?.setViewController(listsViewController, for: column)
             navigationController.topViewController?.navigationItem.hidesBackButton = true
         } else if indexPath.section == 3 {
-            let list = lists[indexPath.row - 1]
+            let listIndex = indexPath.row - 1
+            guard lists.indices.contains(listIndex) else { return }
+            let list = lists[listIndex]
             if let encoded = try? JSONEncoder().encode(list) {
                 UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
                 UserDefaults.standard.set(encoded, forKey: "CustomListsViewController.customList")
@@ -515,7 +519,9 @@ extension SidebarViewController: UICollectionViewDelegate {
             splitViewController?.setViewController(listsViewController, for: column)
             navigationController.topViewController?.navigationItem.hidesBackButton = true
         } else if indexPath.section == 4 {
-            let list = likedLists[indexPath.row - 1]
+            let listIndex = indexPath.row - 1
+            guard likedLists.indices.contains(listIndex) else { return }
+            let list = likedLists[listIndex]
             if let encoded = try? JSONEncoder().encode(list) {
                 UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
                 UserDefaults.standard.set(encoded, forKey: "CustomListsViewController.customList")

@@ -559,6 +559,13 @@ enum SwiftMessages {
     }
 
     static func show(message: String, style: Style? = .content) {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async {
+                show(message: message, style: style)
+            }
+            return
+        }
+
         if UserManager.shared.currentUser == nil {
             return
         }

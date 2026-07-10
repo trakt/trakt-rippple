@@ -466,7 +466,9 @@ final class RatingsViewController: UITableViewController {
         snapshot.appendSections(["stats"])
         snapshot.appendItems([Wrapper.stats(ratingsStats(for: rated))], toSection: "stats")
 
-        let visibleRatedItems = rated.filter { filteredRatings.contains($0.rating) }
+        let visibleRatedItems = rated
+            .filter { filteredRatings.contains($0.rating) }
+            .removingDuplicates()
 
         switch groupingMode {
         case .date:

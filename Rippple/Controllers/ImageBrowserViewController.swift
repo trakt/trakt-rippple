@@ -321,7 +321,7 @@ final class ImageBrowserViewController: UIViewController {
             snapshot.appendItems([.empty], toSection: .empty)
         } else {
             snapshot.appendSections([.content])
-            snapshot.appendItems(filteredImages.map { .content($0) }, toSection: .content)
+            snapshot.appendItems(filteredImages.removingDuplicates().map { .content($0) }, toSection: .content)
         }
 
         dataSource.apply(snapshot, animatingDifferences: animatingDifferences)

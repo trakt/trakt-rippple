@@ -195,6 +195,7 @@ final class ImagesManager {
         case logo
     }
 
+    private let configurationLock = NSLock()
     private var baseURL: URL = .init(string: "https://image.tmdb.org/t/p/")!
 
     private var posterSizes: [String] = ["w92", "w154", "w185", "w342", "w500", "w780", "original"]
@@ -317,10 +318,15 @@ final class ImagesManager {
     }
 
     func imageURL(for providerLogoURL: String) -> URL? {
+        let baseURL = withConfigurationLock { self.baseURL }
         return URL(string: "\(baseURL)original/\(providerLogoURL)")
     }
 
     func imageURL(with filePath: String, with size: CGSize, for type: ImageType) -> URL? {
+        let (baseURL, posterSizes, backdropSizes, profileSizes) = withConfigurationLock {
+            (self.baseURL, self.posterSizes, self.backdropSizes, self.profileSizes)
+        }
+
         switch type {
         case .poster:
             for posterSize in posterSizes where posterSize.hasPrefix("w") {
@@ -368,6 +374,12 @@ final class ImagesManager {
             }
             return URL(string: "\(baseURL)w500/\(filePath)")
         }
+    }
+
+    private func withConfigurationLock<T>(_ work: () -> T) -> T {
+        configurationLock.lock()
+        defer { configurationLock.unlock() }
+        return work()
     }
 
     fileprivate func cachedShowPoster(with identifiers: Identifiers, for size: CGSize) -> URL? {
@@ -521,13 +533,15 @@ final class ImagesManager {
 
                     let configuration = try response.map(Configuration.self, using: TmdbAPIProvider.decoder)
 
-                    if let baseURL = URL(string: configuration.images.baseURL) {
-                        self.baseURL = baseURL
-                    }
+                    self.withConfigurationLock {
+                        if let baseURL = URL(string: configuration.images.baseURL) {
+                            self.baseURL = baseURL
+                        }
 
-                    self.posterSizes = configuration.images.posterSizes
-                    self.backdropSizes = configuration.images.backdropSizes
-                    self.profileSizes = configuration.images.profileSizes
+                        self.posterSizes = configuration.images.posterSizes
+                        self.backdropSizes = configuration.images.backdropSizes
+                        self.profileSizes = configuration.images.profileSizes
+                    }
 
                 } catch {
                     print("TmdbAPIService.configuration Error: \(error)")
