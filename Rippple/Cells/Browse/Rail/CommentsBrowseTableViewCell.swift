@@ -6,10 +6,20 @@
 //  Copyright © 2023 Trakt. All rights reserved.
 //
 
+import LRUCache
 import Receiver
 import UIKit
 
 class CommentsBrowseTableViewCell: UITableViewCell {
+    private struct CacheEntry {
+        let items: [HistoryItem]
+        let expirationDate: Date
+    }
+
+    private static let cacheLifetime: TimeInterval = 2 * 60
+    private static let cacheKey = "history"
+    private static let cache = LRUCache<String, CacheEntry>(countLimit: 1)
+
     @IBOutlet var collectionView: UICollectionView!
 
     weak var presentingViewController: UIViewController?
@@ -32,16 +42,14 @@ class CommentsBrowseTableViewCell: UITableViewCell {
 
         collectionView.register(UINib(nibName: "HistoryBrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "history cell")
 
-        fetchHistory()
-
         onLastWatchedEpisodeActivitiesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.fetchHistory()
+            self.loadItems(ignoringCache: true)
         }.disposed(by: disposeBag)
 
         onLastWatchedMovieActivitiesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.fetchHistory()
+            self.loadItems(ignoringCache: true)
         }.disposed(by: disposeBag)
 
         applicationLifecycleReceiver.listen { [weak self] applicationLifecycle in
@@ -51,7 +59,7 @@ class CommentsBrowseTableViewCell: UITableViewCell {
                 break
             case .didBecomeActive(let time):
                 if time > 60 * 60 * 1 {
-                    self.fetchHistory()
+                    self.loadItems(ignoringCache: true)
                 }
             case .didEnterBackground:
                 break
@@ -59,7 +67,17 @@ class CommentsBrowseTableViewCell: UITableViewCell {
         }.disposed(by: disposeBag)
     }
 
-    private func fetchHistory() {
+    func loadItems(ignoringCache: Bool = false) {
+        if ignoringCache {
+            Self.cache.removeValue(forKey: Self.cacheKey)
+        } else if let entry = Self.cache.value(forKey: Self.cacheKey) {
+            if entry.expirationDate > Date() {
+                items = entry.items
+                return
+            }
+            Self.cache.removeValue(forKey: Self.cacheKey)
+        }
+
         TraktAPIProvider.provider.request(.history(slug: "me",
                                                    type: nil,
                                                    id: nil,
@@ -73,6 +91,9 @@ class CommentsBrowseTableViewCell: UITableViewCell {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let fetchedActivities = try response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
+                    let entry = CacheEntry(items: fetchedActivities,
+                                           expirationDate: Date().addingTimeInterval(Self.cacheLifetime))
+                    Self.cache.setValue(entry, forKey: Self.cacheKey)
 
                     DispatchQueue.main.async {
                         self.items = fetchedActivities
@@ -84,6 +105,10 @@ class CommentsBrowseTableViewCell: UITableViewCell {
                 print("Error Fetching History \(error)")
             }
         }
+    }
+
+    static func removeAllCachedItems() {
+        cache.removeAll()
     }
 }
 

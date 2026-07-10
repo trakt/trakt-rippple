@@ -5,11 +5,51 @@
 //  Created by Kevin Cador on 29/10/2025.
 //
 
+import LRUCache
 import SwiftUI
 import UIKit
 
 private enum InReviewCardConstants {
     static let size = CGSize(width: 200, height: 280)
+}
+
+enum InReviewBrowseCache {
+    struct Stats {
+        let totalWatches: Int
+        let totalMinutes: Int
+    }
+
+    private struct Entry {
+        let stats: Stats
+        let expirationDate: Date
+    }
+
+    private static let lifetime: TimeInterval = 2 * 60
+    private static let cache = LRUCache<String, Entry>(countLimit: 10)
+
+    static func stats(slug: String, year: Int, month: Int? = nil) -> Stats? {
+        let key = key(slug: slug, year: year, month: month)
+        guard let entry = cache.value(forKey: key) else { return nil }
+        guard entry.expirationDate > Date() else {
+            cache.removeValue(forKey: key)
+            return nil
+        }
+        return entry.stats
+    }
+
+    static func store(_ stats: Stats, slug: String, year: Int, month: Int? = nil) {
+        let entry = Entry(stats: stats,
+                          expirationDate: Date().addingTimeInterval(lifetime))
+        cache.setValue(entry, forKey: key(slug: slug, year: year, month: month))
+    }
+
+    static func removeAll() {
+        cache.removeAll()
+    }
+
+    private static func key(slug: String, year: Int, month: Int?) -> String {
+        return "\(slug):\(year):\(month ?? 0)"
+    }
 }
 
 private extension View {
@@ -190,6 +230,16 @@ struct MonthInReviewCard: View {
     }()
 
     private func fetchMIR() async {
+        if let stats = InReviewBrowseCache.stats(slug: slug, year: year, month: month) {
+            await MainActor.run {
+                self.totalWatches = stats.totalWatches
+                self.totalMinutes = stats.totalMinutes
+                self.isLoading = false
+                self.errorText = nil
+            }
+            return
+        }
+
         await MainActor.run {
             self.isLoading = true
             self.errorText = nil
@@ -205,9 +255,12 @@ struct MonthInReviewCard: View {
                             let response = try moyaResponse.filterSuccessfulStatusCodes()
                             // Decode the same model used by MirTableViewCell
                             let stats = try response.map(IRUserStats.self, using: TraktAPIProvider.decoder).stats.all
+                            let cachedStats = InReviewBrowseCache.Stats(totalWatches: stats.playCounts.total,
+                                                                        totalMinutes: stats.minutes.total)
+                            InReviewBrowseCache.store(cachedStats, slug: slug, year: year, month: month)
                             await MainActor.run {
-                                self.totalWatches = stats.playCounts.total
-                                self.totalMinutes = stats.minutes.total
+                                self.totalWatches = cachedStats.totalWatches
+                                self.totalMinutes = cachedStats.totalMinutes
                                 self.isLoading = false
                                 self.errorText = nil
                             }
@@ -365,6 +418,16 @@ struct YearInReviewCard: View {
     }
 
     private func fetchYIR() async {
+        if let stats = InReviewBrowseCache.stats(slug: slug, year: year) {
+            await MainActor.run {
+                self.totalWatches = stats.totalWatches
+                self.totalMinutes = stats.totalMinutes
+                self.isLoading = false
+                self.errorText = nil
+            }
+            return
+        }
+
         await MainActor.run {
             self.isLoading = true
             self.errorText = nil
@@ -379,9 +442,12 @@ struct YearInReviewCard: View {
                         do {
                             let response = try moyaResponse.filterSuccessfulStatusCodes()
                             let stats = try response.map(IRUserStats.self, using: TraktAPIProvider.decoder).stats.all
+                            let cachedStats = InReviewBrowseCache.Stats(totalWatches: stats.playCounts.total,
+                                                                        totalMinutes: stats.minutes.total)
+                            InReviewBrowseCache.store(cachedStats, slug: slug, year: year)
                             await MainActor.run {
-                                self.totalWatches = stats.playCounts.total
-                                self.totalMinutes = stats.minutes.total
+                                self.totalWatches = cachedStats.totalWatches
+                                self.totalMinutes = cachedStats.totalMinutes
                                 self.isLoading = false
                                 self.errorText = nil
                             }

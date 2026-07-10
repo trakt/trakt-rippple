@@ -173,6 +173,7 @@ final class BrowseViewController: UITableViewController {
                 return cell
             } else if let cell = tableView.dequeueReusableCell(withIdentifier: identifier) as? CommentsBrowseTableViewCell {
                 cell.presentingViewController = self
+                cell.loadItems()
                 return cell
             } else if let cell = tableView.dequeueReusableCell(withIdentifier: identifier) as? ServicesBrowseTableViewCell {
                 cell.presentingViewController = self
@@ -280,6 +281,12 @@ final class BrowseViewController: UITableViewController {
             self.model = BrowseConfigManager.shared.shelfConfiguration(for: shelf)
         }.disposed(by: disposeBag)
 
+        onUserLoggedOutReceiver.listen { _ in
+            BrowseTableViewCell.removeAllCachedItems()
+            CommentsBrowseTableViewCell.removeAllCachedItems()
+            InReviewBrowseCache.removeAll()
+        }.disposed(by: disposeBag)
+
         configureSearchButton()
 
         PurchaseManager.shared.onPurchasedChangedReceiver.skipRepeats().listen { [weak self] _ in
@@ -298,6 +305,7 @@ final class BrowseViewController: UITableViewController {
                         switch s {
                         case .content(_, let filter, _):
                             if filter.path == "/sync/watchlist" {
+                                BrowseTableViewCell.removeCachedItems(for: filter)
                                 snapshot.reloadItems([s])
                             }
                         default:
@@ -318,6 +326,7 @@ final class BrowseViewController: UITableViewController {
                         switch s {
                         case .content(_, let filter, _):
                             if filter.path == "/sync/favorites" {
+                                BrowseTableViewCell.removeCachedItems(for: filter)
                                 snapshot.reloadItems([s])
                             }
                         default:
@@ -338,6 +347,7 @@ final class BrowseViewController: UITableViewController {
                         switch s {
                         case .content(_, let filter, _):
                             if filter.path.localizedStandardContains("/lists/\(list.identifiers.trakt!)") {
+                                BrowseTableViewCell.removeCachedItems(for: filter)
                                 snapshot.reloadItems([s])
                             }
                         default:
@@ -358,6 +368,7 @@ final class BrowseViewController: UITableViewController {
                         switch s {
                         case .content(_, let filter, _):
                             if filter.path == "/users/me/collection/movies" {
+                                BrowseTableViewCell.removeCachedItems(for: filter)
                                 snapshot.reloadItems([s])
                             }
                         default:
@@ -378,6 +389,7 @@ final class BrowseViewController: UITableViewController {
                         switch s {
                         case .content(_, let filter, _):
                             if filter.path == "/users/me/collection/shows" {
+                                BrowseTableViewCell.removeCachedItems(for: filter)
                                 snapshot.reloadItems([s])
                             }
                         default:
@@ -486,6 +498,10 @@ final class BrowseViewController: UITableViewController {
     }
 
     @objc func refresh(_ sender: Any) {
+        BrowseTableViewCell.removeAllCachedItems()
+        CommentsBrowseTableViewCell.removeAllCachedItems()
+        GenresBrowseTableViewCell.removeAllCachedItems()
+        InReviewBrowseCache.removeAll()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
             guard let self = self else { return }
             self.dataSource.applySnapshotUsingReloadData(self.dataSource.snapshot()) {
