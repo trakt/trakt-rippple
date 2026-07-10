@@ -152,6 +152,23 @@ extension WatchlistItem {
         }
     }
 
+    var lastWatchedAt: Date? {
+        switch type {
+        case .movie:
+            guard let traktId = movie?.identifiers.trakt else { return nil }
+            return SyncWatchedManager.shared.lastWatchedAt(for: .movies, traktId: traktId)
+        case .show, .season:
+            // Synced season data only retains whether a season was watched, so use the parent show's date.
+            guard let traktId = show?.identifiers.trakt else { return nil }
+            return SyncWatchedManager.shared.lastWatchedAt(for: .shows, traktId: traktId)
+        case .episode:
+            guard let traktId = episode?.identifiers.trakt else { return nil }
+            return SyncWatchedManager.shared.lastWatchedAt(for: .episodes, traktId: traktId)
+        case .list, .officiallist, .unknown:
+            return nil
+        }
+    }
+
     var votes: Int {
         switch type {
         case .movie:
@@ -200,6 +217,7 @@ final class ListViewController: UITableViewController {
         case votes
         case weightedRating
         case random
+        case lastWatched
     }
 
     private var fetchTask: Task<Void, Never>?
@@ -360,6 +378,16 @@ final class ListViewController: UITableViewController {
             return filteredWatchlistItems.sorted { $0.rank < $1.rank }
         case .listed:
             return filteredWatchlistItems.sorted { $0.listedAt > $1.listedAt }
+        case .lastWatched:
+            return filteredWatchlistItems
+                .map { (item: $0, watchedAt: $0.lastWatchedAt ?? Date.distantPast) }
+                .sorted {
+                    if $0.watchedAt == $1.watchedAt {
+                        return $0.item.rank < $1.item.rank
+                    }
+                    return $0.watchedAt > $1.watchedAt
+                }
+                .map { $0.item }
         case .title:
             return filteredWatchlistItems.sorted { $0.title < $1.title }
         case .releaseDate:
@@ -574,6 +602,21 @@ final class ListViewController: UITableViewController {
                     self.fetch()
                 }
             }
+        }.disposed(by: disposeBag)
+
+        onSyncWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self else { return }
+            self.updateDatasourceIfSortingByLastWatched()
+        }.disposed(by: disposeBag)
+
+        onSyncWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self else { return }
+            self.updateDatasourceIfSortingByLastWatched()
+        }.disposed(by: disposeBag)
+
+        onSyncWatchedEpisodesChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self else { return }
+            self.updateDatasourceIfSortingByLastWatched()
         }.disposed(by: disposeBag)
 
         buildMenu()
@@ -898,6 +941,11 @@ final class ListViewController: UITableViewController {
                 self.currentSorting = .listed
             }
 
+            let lastWatched = UIAction(title: "Last Watched", image: nil, state: self.currentSorting == .lastWatched ? .on : .off) { [weak self] _ in
+                guard let self = self else { return }
+                self.currentSorting = .lastWatched
+            }
+
             let title = UIAction(title: "Title", image: nil, state: self.currentSorting == .title ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentSorting = .title
@@ -933,12 +981,17 @@ final class ListViewController: UITableViewController {
                 self.currentSorting = .random
             }
 
-            let sorting = UIMenu(title: "Sort By", children: [rank, added, title, release, runtime, weightedRating, rating, votes, random])
+            let sorting = UIMenu(title: "Sort By", children: [rank, added, lastWatched, title, release, runtime, weightedRating, rating, votes, random])
 
             completion([filters, sorting])
         }
 
         return UIMenu(children: [deferredMenuElement])
+    }
+
+    private func updateDatasourceIfSortingByLastWatched() {
+        guard currentSorting == .lastWatched, watchlistItems != nil else { return }
+        updateDatasource()
     }
 
     private var isListEditable: Bool {
