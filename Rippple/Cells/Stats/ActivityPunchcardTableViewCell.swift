@@ -103,11 +103,11 @@ struct ActivityPunchcardView: View {
 
         switch ratio {
         case ...0.25:
-            color = dynamicTintColor { $0.lighter(amount: 0.2) }
+            color = dynamicTintColor(lightModeAlpha: 0.25) { $0.lighter(amount: 0.2) }
         case ...0.5:
-            color = tint
+            color = dynamicTintColor(lightModeAlpha: 0.5) { $0 }
         case ...0.75:
-            color = dynamicTintColor { $0.darker(amount: 0.2) }
+            color = dynamicTintColor(lightModeAlpha: 0.75) { $0.darker(amount: 0.2) }
         default:
             color = dynamicTintColor { $0.darker(amount: 0.4) }
         }
@@ -115,9 +115,13 @@ struct ActivityPunchcardView: View {
         return Color(uiColor: color)
     }
 
-    private func dynamicTintColor(transform: @escaping (UIColor) -> UIColor) -> UIColor {
+    private func dynamicTintColor(lightModeAlpha: CGFloat? = nil,
+                                  transform: @escaping (UIColor) -> UIColor) -> UIColor {
         return UIColor { traitCollection in
-            transform(tint.resolvedColor(with: traitCollection))
+            let color = transform(tint.resolvedColor(with: traitCollection))
+            guard traitCollection.userInterfaceStyle != .dark,
+                  let lightModeAlpha else { return color }
+            return color.withAlphaComponent(lightModeAlpha)
         }
     }
 }
