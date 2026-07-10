@@ -1058,6 +1058,35 @@ Version 1.0 (123)</string>
                                             <segue destination="qIu-eI-Ric" kind="show" id="xMc-fx-ZN6"/>
                                         </connections>
                                     </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="rNm-6W-tMb">
+                                        <rect key="frame" x="20" y="422.33333015441895" width="374" height="51"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="rNm-6W-tMb" id="T8m-4Z-YqL">
+                                            <rect key="frame" x="0.0" y="0.0" width="374" height="51"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Never Minimize" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7ad-Vp-mN9">
+                                                    <rect key="frame" x="20" y="15" width="223" height="21"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" preferredStyle="sliding" translatesAutoresizingMaskIntoConstraints="NO" id="r7v-N6-2zA">
+                                                    <rect key="frame" x="291" y="10" width="63" height="31"/>
+                                                    <connections>
+                                                        <action selector="neverMinimizeTabBarValueChanged:" destination="Lww-VQ-yej" eventType="valueChanged" id="1fC-y4-pMG"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="7ad-Vp-mN9" firstAttribute="leading" secondItem="T8m-4Z-YqL" secondAttribute="leadingMargin" id="a0N-Fg-JdH"/>
+                                                <constraint firstItem="7ad-Vp-mN9" firstAttribute="centerY" secondItem="T8m-4Z-YqL" secondAttribute="centerY" id="J3L-nf-a47"/>
+                                                <constraint firstItem="r7v-N6-2zA" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="7ad-Vp-mN9" secondAttribute="trailing" constant="8" symbolic="YES" id="Lm8-0x-RgY"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="r7v-N6-2zA" secondAttribute="trailing" id="n6Y-hF-8dC"/>
+                                                <constraint firstItem="r7v-N6-2zA" firstAttribute="centerY" secondItem="T8m-4Z-YqL" secondAttribute="centerY" id="qT2-Pb-Ws5"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
                                 </cells>
                             </tableViewSection>
                         </sections>
@@ -1068,6 +1097,7 @@ Version 1.0 (123)</string>
                     </tableView>
                     <navigationItem key="navigationItem" title="Appearance" id="C8M-8f-uvo"/>
                     <connections>
+                        <outlet property="neverMinimizeTabBarSwitch" destination="r7v-N6-2zA" id="tB8-wd-9Jm"/>
                         <outlet property="tintColorButton" destination="0ng-9g-UGN" id="LBn-AP-zOH"/>
                     </connections>
                 </tableViewController>

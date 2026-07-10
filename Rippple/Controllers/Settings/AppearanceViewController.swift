@@ -9,10 +9,13 @@
 import Receiver
 import UIKit
 
+let (neverMinimizeTabBarTransmitter, neverMinimizeTabBarReceiver) = Receiver<Bool>.make(with: .hot)
+
 final class AppearanceViewController: UITableViewController {
     private let disposeBag = DisposeBag()
 
     @IBOutlet var tintColorButton: UIButton!
+    @IBOutlet var neverMinimizeTabBarSwitch: UISwitch!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,10 +26,18 @@ final class AppearanceViewController: UITableViewController {
         tintColorButton.setTitleColor(UIColor(asset: .globalTint), for: .focused)
         tintColorButton.setTitleColor(UIColor(asset: .globalTint), for: .highlighted)
 
+        neverMinimizeTabBarSwitch.isOn = UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize")
+
         updateButton()
 
         registerForTraitChanges([UITraitUserInterfaceStyle.self],
                                 action: #selector(updateButton))
+    }
+
+    @IBAction private func neverMinimizeTabBarValueChanged(_ sender: UISwitch) {
+        UserDefaults.standard.set(sender.isOn, forKey: "MainTabBarController.neverMinimize")
+        UserDefaults.standard.synchronize()
+        neverMinimizeTabBarTransmitter.broadcast(sender.isOn)
     }
 
     @objc
@@ -132,7 +143,7 @@ final class AppearanceViewController: UITableViewController {
         } else if section == 1 {
             return 3
         } else {
-            return UIDevice.current.userInterfaceIdiom == .phone || UIDevice.current.userInterfaceIdiom == .pad ? 1 : 0
+            return UIDevice.current.userInterfaceIdiom == .phone || UIDevice.current.userInterfaceIdiom == .pad ? 2 : 0
         }
     }
 

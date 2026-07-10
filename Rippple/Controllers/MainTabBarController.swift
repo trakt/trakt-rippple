@@ -149,7 +149,7 @@ final class MainTabBarController: UITabBarController {
 
         // tabBar.tintColor = .label
 
-        tabBarMinimizeBehavior = .onScrollDown
+        updateTabBarMinimizeBehavior(neverMinimize: UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize"))
 
         updateTabBar(animated: false)
 
@@ -165,6 +165,11 @@ final class MainTabBarController: UITabBarController {
             self.updateTabBar(animated: false)
         }.disposed(by: disposeBag)
 
+        neverMinimizeTabBarReceiver.listen { [weak self] neverMinimize in
+            guard let self = self else { return }
+            self.updateTabBarMinimizeBehavior(neverMinimize: neverMinimize)
+        }.disposed(by: disposeBag)
+
         updateWatchingItem()
         WatchingManager.shared.onWatchingItemChangedReceiver.hotOnly().listen { [weak self] _, _ in
             guard let self = self else { return }
@@ -172,6 +177,10 @@ final class MainTabBarController: UITabBarController {
         }.disposed(by: disposeBag)
 
         delegate = self
+    }
+
+    private func updateTabBarMinimizeBehavior(neverMinimize: Bool) {
+        tabBarMinimizeBehavior = neverMinimize ? .never : .onScrollDown
     }
 
     private func updateWatchingItem() {
