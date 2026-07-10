@@ -68,7 +68,7 @@ struct NotificationsTroubleshootView: View {
     }
 }
 
-final class NotificationsTroubleshootViewController: UIHostingController<NotificationsTroubleshootView> {
+final class NotificationsTroubleshootViewController: RipppleHostingController<NotificationsTroubleshootView> {
     init() {
         super.init(rootView: NotificationsTroubleshootView())
         title = "Troubleshooting"

@@ -132,7 +132,7 @@ final class ActivityPunchcardTableViewCell: UITableViewCell {
     private var activityCounts = [Date: Int]()
     private var referenceDate: Date = .now
     private var configuredWidth: CGFloat = 0
-    private var hostingController: UIHostingController<ActivityPunchcardView>!
+    private var hostingController: RipppleHostingController<ActivityPunchcardView>!
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -149,7 +149,7 @@ final class ActivityPunchcardTableViewCell: UITableViewCell {
                containerWidth: CGFloat) {
         self.activityCounts = activityCounts
         self.referenceDate = referenceDate
-        hostingController.rootView = makePunchcardView()
+        hostingController.setRootView(makePunchcardView())
 
         if abs(contentView.bounds.width - containerWidth) > 0.5 {
             contentView.bounds.size.width = containerWidth
@@ -159,7 +159,7 @@ final class ActivityPunchcardTableViewCell: UITableViewCell {
     }
 
     private func installPunchcardView() {
-        hostingController = UIHostingController(rootView: makePunchcardView())
+        hostingController = RipppleHostingController(rootView: makePunchcardView())
         hostingController.view.backgroundColor = .clear
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         punchcardPlaceholderView.addSubview(hostingController.view)

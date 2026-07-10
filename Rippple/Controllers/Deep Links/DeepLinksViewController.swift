@@ -9,7 +9,7 @@
 import SwiftUI
 import UIKit
 
-final class DeepLinksViewController: UIHostingController<DeepLinksView> {
+final class DeepLinksViewController: RipppleHostingController<DeepLinksView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: DeepLinksView())
     }

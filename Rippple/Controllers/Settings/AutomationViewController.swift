@@ -9,7 +9,7 @@
 import SwiftUI
 import UIKit
 
-final class AutomationViewController: UIHostingController<AutomationSettingsView> {
+final class AutomationViewController: RipppleHostingController<AutomationSettingsView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: AutomationSettingsView())
     }

@@ -9,7 +9,7 @@
 import SwiftUI
 import UIKit
 
-final class CountryWhereToWatchTableViewController: UIHostingController<WhereToWatchSettingsView> {
+final class CountryWhereToWatchTableViewController: RipppleHostingController<WhereToWatchSettingsView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: WhereToWatchSettingsView())
     }

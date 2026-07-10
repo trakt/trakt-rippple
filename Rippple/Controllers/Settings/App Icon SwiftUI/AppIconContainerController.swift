@@ -9,7 +9,7 @@
 import SwiftUI
 import UIKit
 
-final class AppIconContainerController: UIHostingController<AppIconChooserView> {
+final class AppIconContainerController: RipppleHostingController<AppIconChooserView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: AppIconChooserView())
     }

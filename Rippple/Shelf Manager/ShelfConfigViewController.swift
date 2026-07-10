@@ -9,7 +9,7 @@
 import SwiftUI
 import UIKit
 
-final class ShelfConfigViewController: UIHostingController<ShelfConfigView> {
+final class ShelfConfigViewController: RipppleHostingController<ShelfConfigView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: ShelfConfigView())
     }

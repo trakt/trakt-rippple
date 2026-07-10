@@ -158,7 +158,7 @@ final class GeneralSettingsViewController: UITableViewController {
             tableView.reloadData()
         } else if indexPath.section == 3 {
             let view = ImageCacheSettingsView()
-            let controller = UIHostingController(rootView: view)
+            let controller = RipppleHostingController(rootView: view)
             navigationController?.pushViewController(controller, animated: true)
         } else {
             if UserDefaults.standard.bool(forKey: "GeneralSettings.droppedshows") == true {

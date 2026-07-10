@@ -9,7 +9,7 @@
 import SwiftUI
 import UIKit
 
-final class SharingViewController: UIHostingController<SharingView> {
+final class SharingViewController: RipppleHostingController<SharingView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: SharingView())
     }

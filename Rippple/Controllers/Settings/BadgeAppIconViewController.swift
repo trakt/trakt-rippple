@@ -142,7 +142,7 @@ struct BadgeAppIconView: View {
 }
 
 /// Hosting controller to preserve the original type name and integration points
-final class BadgeAppIconViewController: UIHostingController<BadgeAppIconView> {
+final class BadgeAppIconViewController: RipppleHostingController<BadgeAppIconView> {
     init() {
         super.init(rootView: BadgeAppIconView())
     }

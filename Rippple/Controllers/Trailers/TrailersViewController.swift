@@ -19,7 +19,7 @@ final class TrailersViewController: UIViewController {
 
         guard let media = media else { return }
 
-        let hostingViewController = UIHostingController(rootView: TrailersView(mediaModel: media))
+        let hostingViewController = RipppleHostingController(rootView: TrailersView(mediaModel: media))
         addChild(hostingViewController)
         hostingViewController.view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(hostingViewController.view)

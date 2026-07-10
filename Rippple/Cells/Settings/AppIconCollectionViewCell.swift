@@ -12,7 +12,7 @@ import UIKit
 final class AppIconCollectionViewCell: UICollectionViewCell {
     var appIcon: AppIcon = .init(name: "Original", identifier: .original) {
         didSet {
-            let vc = UIHostingController(rootView: AppIconGeneratorView(appIconIdentifier: appIcon.identifier))
+            let vc = RipppleHostingController(rootView: AppIconGeneratorView(appIconIdentifier: appIcon.identifier))
 
             icon = vc.view
             guard let icon = icon else { return }

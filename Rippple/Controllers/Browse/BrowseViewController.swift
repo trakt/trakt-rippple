@@ -492,7 +492,7 @@ final class BrowseViewController: UITableViewController {
         guard let indexPath = tableView.indexPathForRow(at: location),
               case .header(_, _, let moduleType) = dataSource.itemIdentifier(for: indexPath) else { return }
 
-        let hosting = UIHostingController(rootView: ShelfRowQuickConfigView(row: moduleType))
+        let hosting = RipppleHostingController(rootView: ShelfRowQuickConfigView(row: moduleType))
         hosting.modalPresentationStyle = .formSheet
         present(hosting, animated: true, completion: nil)
     }
@@ -603,7 +603,7 @@ final class BrowseViewController: UITableViewController {
                                                      guard let self = self else { return }
                                                      if PurchaseManager.shared.purchased {
                                                          if self.menuBarButtonItem == nil {
-                                                             self.present(UIHostingController(rootView: ShelfConfigView()), animated: true)
+                                                             self.present(RipppleHostingController(rootView: ShelfConfigView()), animated: true)
                                                          } else {
                                                              self.performSegue(withIdentifier: "customizeShelf", sender: nil)
                                                          }

@@ -10,6 +10,7 @@ import AlamofireNetworkActivityIndicator
 import BackgroundTasks
 import NVActivityIndicatorView
 import Receiver
+import SwiftUI
 import UIKit
 
 // Push management
@@ -26,6 +27,47 @@ let (pushTokenReceiveAndUpdatedTransmitter, pushTokenReceiveAndUpdatedReceiver) 
 let (remoteNotificationsEndpointUpdatedTransmitter, remoteNotificationsEndpointUpdatedReceiver) = Receiver<String>.make(with: .warm(upTo: 1))
 let (testPushTransmitter, testPushReceiver) = Receiver<String>.make(with: .hot)
 let (commandTransmitter, commandReceiver) = Receiver<UIKeyCommand>.make(with: .hot)
+
+enum RipppleAppearance {
+    static let switchTintColor = UIColor(dynamicProvider: { _ in
+        UIColor(asset: .globalTint).darker(amount: 0.3)
+    })
+}
+
+private struct RipppleSwitchToggleStyle: ToggleStyle {
+    func makeBody(configuration: ToggleStyleConfiguration) -> some View {
+        Toggle(configuration)
+            .toggleStyle(.switch)
+            .tint(Color(uiColor: RipppleAppearance.switchTintColor))
+    }
+}
+
+struct RipppleHostedView<Content: View>: View {
+    let content: Content
+
+    var body: some View {
+        content.toggleStyle(RipppleSwitchToggleStyle())
+    }
+}
+
+@MainActor
+class RipppleHostingController<Content: View>: UIHostingController<RipppleHostedView<Content>> {
+    init(rootView: Content) {
+        super.init(rootView: RipppleHostedView(content: rootView))
+    }
+
+    init?(coder aDecoder: NSCoder, rootView: Content) {
+        super.init(coder: aDecoder, rootView: RipppleHostedView(content: rootView))
+    }
+
+    @objc dynamic required init?(coder aDecoder: NSCoder) {
+        return nil
+    }
+
+    func setRootView(_ rootView: Content) {
+        self.rootView = RipppleHostedView(content: rootView)
+    }
+}
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -173,9 +215,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let view = UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self])
         view.tintColor = UIColor(asset: .globalTint)
 
-        UISwitch.appearance().onTintColor = UIColor(dynamicProvider: { _ in
-            UIColor(asset: .globalTint).darker(amount: 0.3)
-        })
+        UISwitch.appearance().onTintColor = RipppleAppearance.switchTintColor
         UIProgressView.appearance().trackTintColor = UIColor(asset: .globalTint).withAlphaComponent(0.25)
         NVActivityIndicatorView.DEFAULT_COLOR = UIColor(asset: .globalTint)
 

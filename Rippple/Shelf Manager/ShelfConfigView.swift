@@ -280,7 +280,6 @@ struct ShelfRowConfigView: View {
                 }
                 if row.filter.canFilterWatched {
                     Toggle("Filter Watched", isOn: $ignoreWatched)
-                        .tint(.accentColor)
                 }
                 if row.filter.canSort {
                     Picker("Sort by", selection: $sortBy) {
@@ -454,7 +453,6 @@ struct ShelfRowQuickConfigView: View {
                     }
                     if row.filter.canFilterWatched {
                         Toggle("Filter Watched", isOn: $ignoreWatched)
-                            .tint(.accentColor)
                     }
                     if row.filter.canSort {
                         Picker("Sort by", selection: $sortBy) {

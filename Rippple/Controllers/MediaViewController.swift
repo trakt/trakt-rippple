@@ -1459,7 +1459,7 @@ extension MediaViewController: OpenInRowTableViewCellDelegate {
 
     func openInRowCellDidTapSettings(_ cell: OpenActionsTableViewCell) {
         let settingsView = OpenInSettingsView()
-        let controller = UIHostingController(rootView: settingsView)
+        let controller = RipppleHostingController(rootView: settingsView)
         present(controller, animated: true)
     }
 }

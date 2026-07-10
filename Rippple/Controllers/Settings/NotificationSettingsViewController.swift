@@ -17,8 +17,6 @@ struct NotificationSettingsView: View {
 
     @State private var values = NotificationSetting.currentValues()
 
-    private let tintColor = Color(UIColor(asset: .globalTint))
-
     var body: some View {
         Form {
             Section {
@@ -93,7 +91,6 @@ struct NotificationSettingsView: View {
                           settings: [.activityNewFollower])
         }
         .navigationTitle("Notifications")
-        .tint(tintColor)
         .onAppear {
             values = NotificationSetting.currentValues()
         }
@@ -103,7 +100,6 @@ struct NotificationSettingsView: View {
         Section {
             ForEach(settings) { setting in
                 Toggle(setting.title, isOn: binding(for: setting))
-                    .toggleStyle(.switch)
             }
         } header: {
             Text(title)
@@ -358,21 +354,21 @@ private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
     }
 }
 
-final class NotificationSettingsViewController: UIHostingController<NotificationSettingsView> {
+final class NotificationSettingsViewController: RipppleHostingController<NotificationSettingsView> {
     init() {
         super.init(rootView: NotificationSettingsView())
-        rootView = NotificationSettingsView(onTroubleshoot: { [weak self] in
+        setRootView(NotificationSettingsView(onTroubleshoot: { [weak self] in
             guard let self = self else { return }
             self.showTroubleshooting()
-        })
+        }))
     }
 
     @objc dynamic required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: NotificationSettingsView())
-        rootView = NotificationSettingsView(onTroubleshoot: { [weak self] in
+        setRootView(NotificationSettingsView(onTroubleshoot: { [weak self] in
             guard let self = self else { return }
             self.showTroubleshooting()
-        })
+        }))
     }
 
     override func viewDidDisappear(_ animated: Bool) {
