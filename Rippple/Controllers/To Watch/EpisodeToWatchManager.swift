@@ -25,9 +25,15 @@ struct ToWatchGroup: Codable {
 }
 
 final class EpisodeToWatchManager {
+    private static let fallbackRetryDelays: [TimeInterval] = [2.0, 4.0]
+
     private var debouncedForceRefresh: Debouncer!
     private var debouncedTransmit: Debouncer!
     private var debouncedRefreshProgress: Debouncer!
+
+    private let fallbackRetryLock = NSLock()
+    private var fallbackRetryGeneration = 0
+    private var fallbackRetryWorkItem: DispatchWorkItem?
 
     enum Status {
         case loading
@@ -217,6 +223,7 @@ final class EpisodeToWatchManager {
 
         onUserLoggedOutReceiver.listen { [weak self] _ in
             guard let self = self else { return }
+            self.startFallbackRetryChain()
             self.operationQueue.cancelAllOperations()
             self.timer?.invalidate()
             self.timer = nil
@@ -407,6 +414,7 @@ final class EpisodeToWatchManager {
             return
         }
 
+        let fallbackRetryGeneration = startFallbackRetryChain()
         status = .loading
 
         print("EpisodeToWatchManager.forceRefresh START")
@@ -428,7 +436,7 @@ final class EpisodeToWatchManager {
                 self.showsInList = updateShowsOperation.showsInList
                 self.mediaModels = updateShowsProgressOperation.mediaModels
                 self.futureMediaModels = updateShowsProgressOperation.futureMediaModels
-                self.fallbackRetryDetection()
+                self.fallbackRetryDetection(generation: fallbackRetryGeneration)
                 print("EpisodeToWatchManager.forceRefresh STOP")
             }
             self.operationQueue.addOperation(updateShowsProgressOperation)
@@ -438,6 +446,7 @@ final class EpisodeToWatchManager {
 
     private func refreshProgress() {
         if SessionManager.shared.isLoggedOut { return }
+        let fallbackRetryGeneration = startFallbackRetryChain()
         guard let shows = shows else { return }
 
         status = .loading
@@ -449,17 +458,27 @@ final class EpisodeToWatchManager {
             if updateShowsProgressOperation.isCancelled { return }
             self.mediaModels = updateShowsProgressOperation.mediaModels
             self.futureMediaModels = updateShowsProgressOperation.futureMediaModels
-            self.fallbackRetryDetection()
+            self.fallbackRetryDetection(generation: fallbackRetryGeneration)
             print("EpisodeToWatchManager.refreshProgress STOP")
         }
         operationQueue.addOperation(updateShowsProgressOperation)
     }
 
-    func refreshProgress(shows: [Show], retry: Double? = 2.0) {
+    func refreshProgress(shows: [Show]) {
+        let fallbackRetryGeneration = startFallbackRetryChain()
+        refreshProgress(shows: shows,
+                        fallbackRetryAttempt: 0,
+                        fallbackRetryGeneration: fallbackRetryGeneration)
+    }
+
+    private func refreshProgress(shows: [Show],
+                                 fallbackRetryAttempt: Int,
+                                 fallbackRetryGeneration: Int) {
         if SessionManager.shared.isLoggedOut { return }
         if mediaModels.isEmpty { return } // means no media model in cache so nothing to do
+        guard isCurrentFallbackRetryGeneration(fallbackRetryGeneration) else { return }
 
-        if retry! > 5.0 { // 2 retries max
+        if fallbackRetryAttempt == Self.fallbackRetryDelays.count {
             status = .loading
         }
 
@@ -468,16 +487,20 @@ final class EpisodeToWatchManager {
         let updateShowsProgressOperation = UpdateShowProgressOperation(shows: shows, mediaModels: mediaModels)
         updateShowsProgressOperation.completionBlock = {
             if updateShowsProgressOperation.isCancelled { return }
+            guard self.isCurrentFallbackRetryGeneration(fallbackRetryGeneration) else { return }
             self.mediaModels = updateShowsProgressOperation.mediaModels
-            self.fallbackRetryDetection(retry: retry)
+            self.fallbackRetryDetection(completedRetryCount: fallbackRetryAttempt,
+                                        generation: fallbackRetryGeneration)
             print("EpisodeToWatchManager.refreshProgress for some shows \(shows.count) STOP")
         }
         operationQueue.addOperation(updateShowsProgressOperation)
     }
 
-    private func fallbackRetryDetection(retry: Double? = 2.0) {
-        if retry! == 20.0 {
+    private func fallbackRetryDetection(completedRetryCount: Int = 0, generation: Int) {
+        guard isCurrentFallbackRetryGeneration(generation) else { return }
+        guard completedRetryCount < Self.fallbackRetryDelays.count else {
             print("Stop refreshing because it seems like we've watched it but trakt cache isn't going to fix itself")
+            clearFallbackRetryWorkItem(generation: generation)
             status = .content
             return
         }
@@ -493,11 +516,55 @@ final class EpisodeToWatchManager {
                 showsToRetry.append(show)
             }
         }
-        if !showsToRetry.isEmpty {
-            DispatchQueue.main.asyncAfter(deadline: .now() + retry!) { // this delay is there to let Trakt work the /progress magic and for us to pull the correct data (watched)
-                self.refreshProgress(shows: showsToRetry, retry: retry! * 2.0)
-            }
+        guard !showsToRetry.isEmpty else {
+            clearFallbackRetryWorkItem(generation: generation)
+            return
         }
+
+        let retryDelay = Self.fallbackRetryDelays[completedRetryCount]
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+            self.refreshProgress(shows: showsToRetry,
+                                 fallbackRetryAttempt: completedRetryCount + 1,
+                                 fallbackRetryGeneration: generation)
+        }
+
+        fallbackRetryLock.lock()
+        guard generation == fallbackRetryGeneration else {
+            fallbackRetryLock.unlock()
+            return
+        }
+        fallbackRetryWorkItem?.cancel()
+        fallbackRetryWorkItem = workItem
+        fallbackRetryLock.unlock()
+
+        // Give Trakt time to update progress before pulling the watched state again.
+        DispatchQueue.main.asyncAfter(deadline: .now() + retryDelay, execute: workItem)
+    }
+
+    @discardableResult
+    private func startFallbackRetryChain() -> Int {
+        fallbackRetryLock.lock()
+        fallbackRetryGeneration += 1
+        fallbackRetryWorkItem?.cancel()
+        fallbackRetryWorkItem = nil
+        let generation = fallbackRetryGeneration
+        fallbackRetryLock.unlock()
+        return generation
+    }
+
+    private func isCurrentFallbackRetryGeneration(_ generation: Int) -> Bool {
+        fallbackRetryLock.lock()
+        defer { fallbackRetryLock.unlock() }
+        return generation == fallbackRetryGeneration
+    }
+
+    private func clearFallbackRetryWorkItem(generation: Int) {
+        fallbackRetryLock.lock()
+        defer { fallbackRetryLock.unlock() }
+        guard generation == fallbackRetryGeneration else { return }
+        fallbackRetryWorkItem?.cancel()
+        fallbackRetryWorkItem = nil
     }
 }
 
@@ -1137,14 +1204,14 @@ private class UpdateShowProgressOperation: Operation, @unchecked Sendable {
 
         for show in shows {
             progressDispatchGroup.enter()
+            let progressDispatchGroup = progressDispatchGroup
             _Concurrency.Task {
-                if let showProgress = await show.mediaModel.progress() {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        if self.isCancelled { return }
-                        showProgressMap[show] = showProgress
-                        self.progressDispatchGroup.leave()
-                    }
+                let showProgress = await show.mediaModel.progress()
+                DispatchQueue.main.async { [weak self] in
+                    defer { progressDispatchGroup.leave() }
+                    guard let self = self else { return }
+                    guard !self.isCancelled, let showProgress = showProgress else { return }
+                    showProgressMap[show] = showProgress
                 }
             }
         }
