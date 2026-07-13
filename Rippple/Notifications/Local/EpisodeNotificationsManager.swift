@@ -118,6 +118,9 @@ final class EpisodeNotificationsManager {
     private var cachedCalendarItems: [ShowEpisodeCalendarItem]?
     private var lastCalendarFetchDate: Date?
 
+    private var toWatchShowIdentifiers: Set<Int64>?
+    private var watchlistedShowIdentifiers: Set<Int64>?
+
     private init() {
         groupEpisodes = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.groupEpisodes")
         reduceBasedOnProgress = UserDefaults.standard.bool(forKey: "EpisodeNotificationsManager.reduceBasedOnProgress")
@@ -137,8 +140,15 @@ final class EpisodeNotificationsManager {
     fileprivate let uuidPrefix = "episodeRelease"
 
     private func rebuildNotifications() {
+        guard let toWatchShowIdentifiers = toWatchShowIdentifiers,
+              let watchlistedShowIdentifiers = watchlistedShowIdentifiers else {
+            print("EpisodeNotificationsManager: waiting for notification sources before rebuilding.")
+            return
+        }
+
         rebuildNotificationsTask?.cancel()
-        scheduleNotifications()
+        scheduleNotifications(toWatchShowIdentifiers: toWatchShowIdentifiers,
+                              watchlistedShowIdentifiers: watchlistedShowIdentifiers)
     }
 
     @objc func dayChanged(_ notification: Notification) {
@@ -166,16 +176,20 @@ final class EpisodeNotificationsManager {
             self.rebuildNotificationsTask?.cancel()
             self.cachedCalendarItems = nil
             self.lastCalendarFetchDate = nil
+            self.toWatchShowIdentifiers = nil
+            self.watchlistedShowIdentifiers = nil
             onEpisodesNotificationsChangedTransmitter.broadcast([])
         }.disposed(by: disposeBag)
 
-        onShowsToWatchChangedReceiver.listen { [weak self] _ in
+        onShowsToWatchChangedReceiver.listen { [weak self] shows in
             guard let self = self else { return }
+            self.toWatchShowIdentifiers = Set(shows.compactMap { $0.identifiers.trakt })
             self.debouncedRebuildNotifications.call()
         }.disposed(by: disposeBag)
 
-        onShowsWatchlistedChangedReceiver.listen { [weak self] _ in
+        onShowsWatchlistedChangedReceiver.listen { [weak self] identifiers in
             guard let self = self else { return }
+            self.watchlistedShowIdentifiers = Set(identifiers)
             self.debouncedRebuildNotifications.call()
         }.disposed(by: disposeBag)
 
@@ -214,7 +228,8 @@ final class EpisodeNotificationsManager {
         return result
     }
 
-    private func scheduleNotifications() {
+    private func scheduleNotifications(toWatchShowIdentifiers: Set<Int64>,
+                                       watchlistedShowIdentifiers: Set<Int64>) {
         rebuildNotificationsTask = Task { [weak self] in
             guard let self = self else { return }
 
@@ -241,16 +256,19 @@ final class EpisodeNotificationsManager {
                     }
 
                     let event = EpisodeNotificationEvent(episode: showEpisodeCalendarItem.episode)
-                    guard let source = notificationSource(for: showEpisodeCalendarItem.show) else { continue }
-                    guard shouldScheduleNotification(for: event, source: source) else { continue }
+                    guard notificationSource(for: showEpisodeCalendarItem.show,
+                                             event: event,
+                                             toWatchShowIdentifiers: toWatchShowIdentifiers,
+                                             watchlistedShowIdentifiers: watchlistedShowIdentifiers) != nil else { continue }
 
                     if reduceBasedOnProgress && event.isStandardEpisode {
                         let isBehind = await self.isBehind(show: showEpisodeCalendarItem.show, showBehindStatus: &showBehindStatus)
                         try Task.checkCancellation()
                         if isBehind && shouldKeepStandardEpisodeInGroupedBulk(for: showEpisodeCalendarItem,
                                                                               in: showEpisodeCalendarItems,
-                                                                              source: source,
-                                                                              groupEpisodes: groupEpisodes) == false {
+                                                                              groupEpisodes: groupEpisodes,
+                                                                              toWatchShowIdentifiers: toWatchShowIdentifiers,
+                                                                              watchlistedShowIdentifiers: watchlistedShowIdentifiers) == false {
                             continue
                         }
                     }
@@ -291,27 +309,38 @@ final class EpisodeNotificationsManager {
                     requests = groupedRequests
                 }
 
-                // Clean then add
                 let notificationCenter = UNUserNotificationCenter.current()
-                let pendingNotifications = await notificationCenter.pendingNotificationRequests()
-                try Task.checkCancellation()
-                var identifiersToRemove = [String]()
-                for pendingNotification in pendingNotifications where requests.contains(where: { $0.identifier == pendingNotification.identifier }) == false && pendingNotification.isEpisodeNotification {
-                    print("Removing notification: \(pendingNotification.identifier) - \(pendingNotification.content.title) - \(pendingNotification.content.body)")
-                    identifiersToRemove.append(pendingNotification.identifier)
-                }
-
-                notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
-
+                var failedToAddRequest = false
                 for request in requests {
                     try Task.checkCancellation()
                     do {
                         try await notificationCenter.add(request)
                         print("Adding notification: \(request.identifier) - \(request.content.title) - \(request.content.body)")
                     } catch {
+                        failedToAddRequest = true
                         print("notificationCenter.add error: \(error)")
                     }
                 }
+
+                try Task.checkCancellation()
+                guard failedToAddRequest == false else {
+                    print("EpisodeNotificationsManager: preserving existing notifications because at least one replacement could not be scheduled.")
+                    let pendingNotifications = await notificationCenter.pendingNotificationRequests()
+                    onEpisodesNotificationsChangedTransmitter.broadcast(pendingNotifications.filter(\.isEpisodeNotification))
+                    return
+                }
+
+                let pendingNotifications = await notificationCenter.pendingNotificationRequests()
+                try Task.checkCancellation()
+                let requestedIdentifiers = Set(requests.map(\.identifier))
+                let notificationsToRemove = pendingNotifications.filter {
+                    $0.isEpisodeNotification && requestedIdentifiers.contains($0.identifier) == false
+                }
+                for notification in notificationsToRemove {
+                    print("Removing notification: \(notification.identifier) - \(notification.content.title) - \(notification.content.body)")
+                }
+                notificationCenter.removePendingNotificationRequests(withIdentifiers: notificationsToRemove.map(\.identifier))
+
                 onEpisodesNotificationsChangedTransmitter.broadcast(requests)
             } catch is CancellationError {
                 print("EpisodeNotificationsManager: scheduleNotififcations() cancelled for a new one.")
@@ -321,10 +350,17 @@ final class EpisodeNotificationsManager {
         }
     }
 
-    private func notificationSource(for show: Show) -> EpisodeNotificationSource? {
-        if show.isInToWatch {
+    private func notificationSource(for show: Show,
+                                    event: EpisodeNotificationEvent,
+                                    toWatchShowIdentifiers: Set<Int64>,
+                                    watchlistedShowIdentifiers: Set<Int64>) -> EpisodeNotificationSource? {
+        guard let showIdentifier = show.identifiers.trakt else { return nil }
+
+        if toWatchShowIdentifiers.contains(showIdentifier),
+           shouldScheduleNotification(for: event, source: .toWatch) {
             return .toWatch
-        } else if show.isWatchlisted {
+        } else if watchlistedShowIdentifiers.contains(showIdentifier),
+                  shouldScheduleNotification(for: event, source: .watchlist) {
             return .watchlist
         } else {
             return nil
@@ -350,8 +386,9 @@ final class EpisodeNotificationsManager {
 
     private func shouldKeepStandardEpisodeInGroupedBulk(for showEpisodeItem: ShowEpisodeCalendarItem,
                                                         in showEpisodeItems: [ShowEpisodeCalendarItem],
-                                                        source: EpisodeNotificationSource,
-                                                        groupEpisodes: Bool) -> Bool {
+                                                        groupEpisodes: Bool,
+                                                        toWatchShowIdentifiers: Set<Int64>,
+                                                        watchlistedShowIdentifiers: Set<Int64>) -> Bool {
         guard groupEpisodes else { return false }
         guard let showId = showEpisodeItem.show.identifiers.trakt else { return false }
 
@@ -365,7 +402,10 @@ final class EpisodeNotificationsManager {
             guard otherShowEpisodeItem.firstAired == releaseDate else { continue }
 
             let event = EpisodeNotificationEvent(episode: otherShowEpisodeItem.episode)
-            guard shouldScheduleNotification(for: event, source: source) else { continue }
+            guard notificationSource(for: otherShowEpisodeItem.show,
+                                     event: event,
+                                     toWatchShowIdentifiers: toWatchShowIdentifiers,
+                                     watchlistedShowIdentifiers: watchlistedShowIdentifiers) != nil else { continue }
 
             eligibleEpisodeCount += 1
             if event.isPremiereOrFinale {

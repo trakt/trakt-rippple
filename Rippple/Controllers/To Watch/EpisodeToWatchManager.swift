@@ -413,6 +413,14 @@ final class EpisodeToWatchManager {
 
         let updateShowsOperation = UpdateShowsOperation(pinnedShows: PinnedShowsManager.shared.pinnedShows)
         updateShowsOperation.completionBlock = {
+            guard updateShowsOperation.completedSuccessfully else {
+                DispatchQueue.main.async {
+                    self.status = .content
+                    print("EpisodeToWatchManager.forceRefresh preserving the last complete result because a source failed")
+                }
+                return
+            }
+
             let shows = updateShowsOperation.shows
             let updateShowsProgressOperation = UpdateShowsProgressOperation(shows: shows)
             updateShowsProgressOperation.completionBlock = {
@@ -550,7 +558,16 @@ extension EpisodeType {
 
 private class UpdateShowsOperation: Operation, @unchecked Sendable {
     private let showsDispatchGroup = DispatchGroup()
+    private let resultLock = NSLock()
     private var cancellables = [Cancellable?]()
+
+    private var sourceFetchFailed = false
+
+    fileprivate var completedSuccessfully: Bool {
+        resultLock.lock()
+        defer { resultLock.unlock() }
+        return isCancelled == false && sourceFetchFailed == false
+    }
 
     fileprivate var shows = Set<Show>()
     fileprivate var showsInList = [ToWatchGroup]()
@@ -559,6 +576,12 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
 
     init(pinnedShows: Set<Show>) {
         self.pinnedShows = pinnedShows
+    }
+
+    private func recordSourceFetchFailure() {
+        resultLock.lock()
+        sourceFetchFailed = true
+        resultLock.unlock()
     }
 
     override func cancel() {
@@ -701,6 +724,7 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
                     self.showsInList.append(ToWatchGroup(name: "Watchlisted", order: 2, shows: Set(shows)))
                 }
             case .failure(let error):
+                self.recordSourceFetchFailure()
                 print("fetchWatchlistedShows (towatch) request failure \(error)")
             }
         }
@@ -727,6 +751,7 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
                     self.showsInList.append(ToWatchGroup(name: "Favorites", order: 3, shows: Set(shows)))
                 }
             case .failure(let error):
+                self.recordSourceFetchFailure()
                 print("fetchRecommendedShows (towatch) request failure \(error)")
             }
         }
@@ -753,6 +778,7 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
                     self.showsInList.append(ToWatchGroup(name: "Collected", order: 4, shows: Set(shows)))
                 }
             case .failure(let error):
+                self.recordSourceFetchFailure()
                 print("fetchCollectedShows (towatch) request failure \(error)")
             }
         }
@@ -778,6 +804,7 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
                     self.showsInList.append(ToWatchGroup(name: list.name, order: order, shows: Set(shows)))
                 }
             case .failure(let error):
+                self.recordSourceFetchFailure()
                 print("fetchShowsforlist (towatch) request failure \(error)")
             }
         }
@@ -819,9 +846,11 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
                                                              shows: Set(shows)))
                     }
                 } catch {
+                    self.recordSourceFetchFailure()
                     print("fetchShows for Smart Search (towatch) request JSON mapping failed! \(error)")
                 }
             case .failure(let error):
+                self.recordSourceFetchFailure()
                 print("fetchShows for Smart Search (towatch) request failure \(error)")
             }
         }
