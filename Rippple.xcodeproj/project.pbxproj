@@ -614,6 +614,7 @@
 		09DCC25D2EF83A3300C3EA79 /* ImageBrowserViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageBrowserViewController.swift; sourceTree = "<group>"; };
 		09DCC25F2EFA889B00C3EA79 /* FullScreenImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullScreenImageViewController.swift; sourceTree = "<group>"; };
 		09E390162EB21BC800C39B30 /* InReviewBrowseRail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InReviewBrowseRail.swift; sourceTree = "<group>"; };
+		09EB07F330052C3F00BAD1D8 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 		09EFFF752E61E974009176CA /* Rippple Trakt.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Rippple Trakt.icon"; sourceTree = "<group>"; };
 		09F4C1942E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ToWatchSettingsTableViewCell.xib; sourceTree = "<group>"; };
 		0A0B0C0D0E0F101112131418 /* OpenActionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenActionManager.swift; sourceTree = "<group>"; };
@@ -1975,6 +1976,7 @@
 				09DA107C2F4DB84400DD80F5 /* TERMS.md */,
 				090676DB2F4EFBD60076ECA8 /* SECURITY.md */,
 				090676E32F5838390076ECA8 /* THIRD_PARTY_NOTICES.md */,
+				09EB07F330052C3F00BAD1D8 /* AGENTS.md */,
 				09EFFF752E61E974009176CA /* Rippple Trakt.icon */,
 				09DA107A2F4DB82D00DD80F5 /* docs */,
 				3A9119C61FADC7EB00457D28 /* Rippple */,
