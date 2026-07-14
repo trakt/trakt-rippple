@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct PushInformationModel: Codable {
+struct PushInformationModel: Codable, Equatable {
     let traktId: String
     let enpointARN: String
     let environement: String

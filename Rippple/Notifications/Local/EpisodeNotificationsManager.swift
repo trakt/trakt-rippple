@@ -615,7 +615,7 @@ private enum EpisodeNotificationDelivery: String {
         }
 
         let hour = Calendar.current.component(.hour, from: firstAired)
-        self = (0..<6).contains(hour) ? .postponed : .realtime
+        self = (0..<9).contains(hour) ? .postponed : .realtime
     }
 
     var bodyText: String {

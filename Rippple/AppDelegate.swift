@@ -72,6 +72,7 @@ class RipppleHostingController<Content: View>: UIHostingController<RipppleHosted
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     private let disposeBag = DisposeBag()
+    private var lastRegisteredPushInformation: PushInformationModel?
     private lazy var debouncedRegisterForPushNotifications = Debouncer(delay: 1.0) { [weak self] in
         guard SessionManager.shared.isLoggedIn else { return }
         guard let self = self else { return }
@@ -268,9 +269,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
             }.disposed(by: disposeBag)
 
-            onNotificationsSettingsChangedReceiver.listen { [weak self] _ in
+            onNotificationsSettingsChangedReceiver.listen { [weak self] update in
                 guard let self = self else { return }
-                self.debouncedUpdatePushInformation.call()
+                switch update {
+                case .changed:
+                    self.debouncedUpdatePushInformation.call()
+                case .forced:
+                    guard SessionManager.shared.isLoggedIn, let endpointARN = endpointARN else { return }
+                    self.updatePushInformation(endpointARN: endpointARN, force: true)
+                }
             }.disposed(by: disposeBag)
 
             // Placed here because they need remote push setup first
@@ -435,7 +442,9 @@ extension AppDelegate {
            let token = token,
            latestToken == token {
             updateEndpoint(endpointARN: endpointARN)
-            updatePushInformation(endpointARN: endpointARN)
+            updatePushInformation(endpointARN: endpointARN,
+                                  force: true,
+                                  deduplicateRegistration: true)
         } else {
             saveToken(newToken: latestToken)
         }
@@ -485,7 +494,9 @@ extension AppDelegate {
         }
     }
 
-    private func updatePushInformation(endpointARN: String) {
+    private func updatePushInformation(endpointARN: String,
+                                       force: Bool = false,
+                                       deduplicateRegistration: Bool = false) {
         guard let traktSlug = UserManager.shared.currentUser?.slug else { return }
 
         let pushInfo = PushInformationModel(traktId: traktSlug,
@@ -497,9 +508,14 @@ extension AppDelegate {
                                             commentNewMention: ActivityNotificationsManager.shared.commentNewMention,
                                             activityNewFollower: ActivityNotificationsManager.shared.activityNewFollower)
 
+        if deduplicateRegistration {
+            guard lastRegisteredPushInformation != pushInfo else { return }
+            lastRegisteredPushInformation = pushInfo
+        }
+
         Task {
             do {
-                let savedPushInformation = try await RemoteNotificationsManager.shared.savePushInformation(pushInfo)
+                let savedPushInformation = try await RemoteNotificationsManager.shared.savePushInformation(pushInfo, force: force)
                 await MainActor.run {
                     if savedPushInformation {
                         print("🎉 Push information was saved through remote notifications API.")

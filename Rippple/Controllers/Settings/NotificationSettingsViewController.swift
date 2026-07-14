@@ -10,10 +10,16 @@ import Receiver
 import SwiftUI
 import UIKit
 
-let (onNotificationsSettingsChangedTransmitter, onNotificationsSettingsChangedReceiver) = Receiver<NotificationSettingsViewController>.make(with: .hot)
+enum NotificationSettingsUpdate {
+    case changed
+    case forced
+}
+
+let (onNotificationsSettingsChangedTransmitter, onNotificationsSettingsChangedReceiver) = Receiver<NotificationSettingsUpdate>.make(with: .hot)
 
 struct NotificationSettingsView: View {
     var onTroubleshoot: () -> Void = {}
+    var onSettingChanged: () -> Void = {}
 
     @State private var values = NotificationSetting.currentValues()
 
@@ -57,7 +63,6 @@ struct NotificationSettingsView: View {
                           settings: [.favoritedMovie, .favoritedShow])
 
             toggleSection(title: "✨ Smart Episode Releases",
-                          footer: "Tune how local episode release notifications are grouped, filtered by show progress, and delivered when an episode airs overnight.",
                           settings: [.groupEpisodes, .reduceBasedOnProgress, .postponeNighttimeNotifications])
 
             toggleSection(title: "🔔 Watchlist",
@@ -96,15 +101,26 @@ struct NotificationSettingsView: View {
         }
     }
 
-    private func toggleSection(title: String, footer: String, settings: [NotificationSetting]) -> some View {
+    private func toggleSection(title: String, footer: String? = nil, settings: [NotificationSetting]) -> some View {
         Section {
             ForEach(settings) { setting in
-                Toggle(setting.title, isOn: binding(for: setting))
+                Toggle(isOn: binding(for: setting)) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(setting.title)
+                        if let subtitle = setting.subtitle {
+                            Text(subtitle)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
             }
         } header: {
             Text(title)
         } footer: {
-            Text(footer)
+            if let footer = footer {
+                Text(footer)
+            }
         }
     }
 
@@ -114,6 +130,7 @@ struct NotificationSettingsView: View {
         } set: { newValue in
             values[setting] = newValue
             setting.isOn = newValue
+            onSettingChanged()
         }
     }
 }
@@ -199,13 +216,26 @@ private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
         case .watchlistEpisodeRelease, .toWatchEpisodeRelease:
             return "Episode Released"
         case .commentNewLike:
-            return "New Like"
+            return "New Reaction"
         case .commentNewReply:
             return "New Reply"
         case .commentNewMention:
             return "New Mention"
         case .activityNewFollower:
             return "New Follower"
+        }
+    }
+
+    var subtitle: String? {
+        switch self {
+        case .groupEpisodes:
+            return "Group episodes from the same show that air at the same time into one notification."
+        case .reduceBasedOnProgress:
+            return "Only get regular episode notifications when you're caught up with the show."
+        case .postponeNighttimeNotifications:
+            return "Deliver at 9 AM for episodes airing between midnight and 9 AM."
+        default:
+            return nil
         }
     }
 
@@ -355,26 +385,71 @@ private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
 }
 
 final class NotificationSettingsViewController: RipppleHostingController<NotificationSettingsView> {
+    private let disposeBag = DisposeBag()
+    private lazy var uploadSettingsBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "checkmark"),
+                                                                   style: .plain,
+                                                                   target: self,
+                                                                   action: #selector(forceUploadSettings))
+    private var lastTransmittedSettings = NotificationSetting.currentValues()
+
+    private var hasPendingSettingsChanges: Bool {
+        NotificationSetting.currentValues() != lastTransmittedSettings
+    }
+
     init() {
         super.init(rootView: NotificationSettingsView())
-        setRootView(NotificationSettingsView(onTroubleshoot: { [weak self] in
-            guard let self = self else { return }
-            self.showTroubleshooting()
-        }))
+        configureRootView()
+        setupApplicationLifecycleListener()
     }
 
     @objc dynamic required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: NotificationSettingsView())
-        setRootView(NotificationSettingsView(onTroubleshoot: { [weak self] in
-            guard let self = self else { return }
-            self.showTroubleshooting()
-        }))
+        configureRootView()
+        setupApplicationLifecycleListener()
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        print("NotificationSettingsViewController should notify to update settings")
-        onNotificationsSettingsChangedTransmitter.broadcast(self)
+        transmitChangedSettingsIfNeeded()
+    }
+
+    private func configureRootView() {
+        setRootView(NotificationSettingsView(onTroubleshoot: { [weak self] in
+            guard let self = self else { return }
+            self.showTroubleshooting()
+        }, onSettingChanged: { [weak self] in
+            guard let self = self else { return }
+            self.updateUploadSettingsButton()
+        }))
+
+        navigationItem.rightBarButtonItem = uploadSettingsBarButtonItem
+        updateUploadSettingsButton()
+    }
+
+    private func setupApplicationLifecycleListener() {
+        applicationLifecycleReceiver.listen { [weak self] applicationLifecycle in
+            guard let self = self else { return }
+            guard case .didEnterBackground = applicationLifecycle else { return }
+            self.transmitChangedSettingsIfNeeded()
+        }.disposed(by: disposeBag)
+    }
+
+    private func transmitChangedSettingsIfNeeded() {
+        guard hasPendingSettingsChanges else { return }
+        lastTransmittedSettings = NotificationSetting.currentValues()
+        updateUploadSettingsButton()
+        onNotificationsSettingsChangedTransmitter.broadcast(.changed)
+    }
+
+    @objc private func forceUploadSettings() {
+        lastTransmittedSettings = NotificationSetting.currentValues()
+        updateUploadSettingsButton()
+        onNotificationsSettingsChangedTransmitter.broadcast(.forced)
+    }
+
+    private func updateUploadSettingsButton() {
+        uploadSettingsBarButtonItem.style = hasPendingSettingsChanges ? .prominent : .plain
+        uploadSettingsBarButtonItem.accessibilityLabel = hasPendingSettingsChanges ? "Upload Changed Notification Settings" : "Upload Notification Settings"
     }
 
     private func showTroubleshooting() {
