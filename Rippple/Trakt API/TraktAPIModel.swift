@@ -564,6 +564,10 @@ extension User {
     var slug: String {
         return identifiers.slug ?? _username.slugify()
     }
+
+    var url: URL? {
+        return URL(string: "https://app.trakt.tv/profile/\(slug)?share=true")
+    }
 }
 
 struct ListLimits: Codable {

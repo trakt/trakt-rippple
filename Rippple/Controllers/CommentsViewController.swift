@@ -299,7 +299,18 @@ final class CommentsViewController: UITableViewController {
             if user.isCurrentUser {
                 navigationItem.rightBarButtonItems = nil
             } else {
-                navigationItem.rightBarButtonItems = [moreActionsButtonItem]
+                let shareAction = UIAction(title: "Share Profile") { _ in
+                    guard let sharedURL = user.url else { return }
+                    UIApplication.shared.present(UIActivityViewController(activityItems: [sharedURL],
+                                                                          applicationActivities: nil))
+                }
+                let shareButtonItem = UIBarButtonItem(title: nil,
+                                                      image: UIImage(systemName: "square.and.arrow.up"),
+                                                      primaryAction: shareAction,
+                                                      menu: nil)
+                navigationItem.rightBarButtonItems = [moreActionsButtonItem,
+                                                      .fixedSpace(),
+                                                      shareButtonItem]
                 moreActionsButtonItem.primaryAction = nil
                 moreActionsButtonItem.menu = moreMenu()
             }
@@ -747,7 +758,7 @@ extension CommentsViewController {
                 }
                 return UIMenu(title: "", children: [unblock])
             } else {
-                var menuChildren = [UIMenuElement]()
+                var menuChildren: [UIMenuElement] = []
                 let block = UIAction(title: "Block User", attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
                     user.block()

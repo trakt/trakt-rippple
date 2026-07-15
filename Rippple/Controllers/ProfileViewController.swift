@@ -61,60 +61,39 @@ final class ProfileViewController: UIViewController {
 
         guard Thread.isMainThread else { return }
 
-        navigationItem.rightBarButtonItems = nil
-
-        // on iPhone in the main tab bar (one icon each side
-        if tabBarController != nil {
-            let settingsAction = UIAction(handler: { [weak self] _ in
-                guard let self = self else { return }
-                let settings = UIStoryboard(name: "Profile", bundle: nil).instantiateViewController(identifier: "Settings")
-                self.present(settings, animated: true, completion: nil)
-            })
-            navigationItem.leftBarButtonItem = UIBarButtonItem(title: nil,
-                                                               image: UIImage(systemName: "gearshape"),
-                                                               primaryAction: settingsAction,
-                                                               menu: nil)
-            let notificationsAction = UIAction(handler: { [weak self] _ in
-                guard let self = self else { return }
-                self.performSegue(withIdentifier: "notifications", sender: nil)
-            })
-            navigationItem.rightBarButtonItem = UIBarButtonItem(title: nil,
-                                                                image: NotificationCenterManager.shared.newNotificationReceived ? UIImage(systemName: "bell.badge") : UIImage(systemName: "bell"),
-                                                                primaryAction: notificationsAction,
-                                                                menu: nil)
-        } else if navigationController?.presentingViewController == nil {
-            // everywhere it's not presented as a modal (eg: ipad slide over)
+        if tabBarController != nil || navigationController?.presentingViewController == nil {
             navigationItem.leftBarButtonItem = nil
-            let notificationsAction = UIAction(handler: { [weak self] _ in
-                guard let self = self else { return }
-                self.performSegue(withIdentifier: "notifications", sender: nil)
-            })
-            navigationItem.rightBarButtonItems = nil
-            navigationItem.rightBarButtonItem = UIBarButtonItem(title: nil,
-                                                                image: NotificationCenterManager.shared.newNotificationReceived ? UIImage(systemName: "bell.badge") : UIImage(systemName: "bell"),
-                                                                primaryAction: notificationsAction,
-                                                                menu: nil)
-        } else {
-            // presented as a modal
-            let settingsAction = UIAction(handler: { [weak self] _ in
-                guard let self = self else { return }
-                let settings = UIStoryboard(name: "Profile", bundle: nil).instantiateViewController(identifier: "Settings")
-                self.present(settings, animated: true, completion: nil)
-            })
-            let notificationsAction = UIAction(handler: { [weak self] _ in
-                guard let self = self else { return }
-                self.performSegue(withIdentifier: "notifications", sender: nil)
-            })
-            navigationItem.rightBarButtonItems = [UIBarButtonItem(title: nil,
-                                                                  image: UIImage(systemName: "gearshape"),
-                                                                  primaryAction: settingsAction,
-                                                                  menu: nil),
-                                                  .fixedSpace(),
-                                                  UIBarButtonItem(title: nil,
-                                                                  image: NotificationCenterManager.shared.newNotificationReceived ? UIImage(systemName: "bell.badge") : UIImage(systemName: "bell"),
-                                                                  primaryAction: notificationsAction,
-                                                                  menu: nil)]
         }
+
+        let shareAction = UIAction(handler: { _ in
+            guard let sharedURL = UserManager.shared.currentUser?.url else { return }
+            UIApplication.shared.present(UIActivityViewController(activityItems: [sharedURL],
+                                                                  applicationActivities: nil))
+        })
+        let settingsAction = UIAction(handler: { [weak self] _ in
+            guard let self = self else { return }
+            let settings = UIStoryboard(name: "Profile", bundle: nil).instantiateViewController(identifier: "Settings")
+            self.present(settings, animated: true, completion: nil)
+        })
+        let notificationsAction = UIAction(handler: { [weak self] _ in
+            guard let self = self else { return }
+            self.performSegue(withIdentifier: "notifications", sender: nil)
+        })
+
+        navigationItem.rightBarButtonItems = [UIBarButtonItem(title: nil,
+                                                              image: UIImage(systemName: "gearshape"),
+                                                              primaryAction: settingsAction,
+                                                              menu: nil),
+                                              .fixedSpace(),
+                                              UIBarButtonItem(title: nil,
+                                                              image: NotificationCenterManager.shared.newNotificationReceived ? UIImage(systemName: "bell.badge") : UIImage(systemName: "bell"),
+                                                              primaryAction: notificationsAction,
+                                                              menu: nil),
+                                              .fixedSpace(),
+                                              UIBarButtonItem(title: nil,
+                                                              image: UIImage(systemName: "square.and.arrow.up"),
+                                                              primaryAction: shareAction,
+                                                              menu: nil)]
     }
 
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
