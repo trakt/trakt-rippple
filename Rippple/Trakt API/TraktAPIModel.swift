@@ -681,6 +681,7 @@ struct Comment: Codable, Equatable, Hashable {
     let body: String
     let containsSpoiler: Bool
     let isReview: Bool
+    let language: String?
     let parentIdentifier: Int64
     let createDate: Date
     let updateDate: Date
@@ -695,6 +696,7 @@ struct Comment: Codable, Equatable, Hashable {
         case body = "comment"
         case containsSpoiler = "spoiler"
         case isReview = "review"
+        case language
         case parentIdentifier = "parent_id"
         case createDate = "created_at"
         case updateDate = "updated_at"
@@ -709,6 +711,16 @@ struct Comment: Codable, Equatable, Hashable {
 extension Comment {
     var isReply: Bool {
         return parentIdentifier != 0
+    }
+
+    var localizedLanguageName: String? {
+        guard let language = language?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !language.isEmpty else { return nil }
+
+        let identifier = language.replacingOccurrences(of: "_", with: "-")
+        guard identifier.split(separator: "-").first?.lowercased() != "en" else { return nil }
+
+        return Locale(identifier: "en_US").localizedString(forIdentifier: identifier) ?? identifier
     }
 }
 
@@ -940,6 +952,7 @@ struct SocialComment: Codable, Equatable, Hashable {
     let body: String?
     let containsSpoiler: Bool
     let isReview: Bool
+    let language: String?
     let createDate: Date?
     let updateDate: Date?
 
@@ -948,6 +961,7 @@ struct SocialComment: Codable, Equatable, Hashable {
         case body = "comment"
         case containsSpoiler = "spoiler"
         case isReview = "review"
+        case language
         case createDate = "created_at"
         case updateDate = "updated_at"
     }

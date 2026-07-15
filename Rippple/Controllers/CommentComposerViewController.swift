@@ -16,6 +16,7 @@ private extension Comment {
         self.body = body
         self.containsSpoiler = containsSpoiler
         isReview = body.count > 200 ? true : false
+        language = nil
         parentIdentifier = 0
         createDate = Date()
         updateDate = Date()
@@ -31,6 +32,7 @@ private extension Comment {
         self.body = body
         self.containsSpoiler = containsSpoiler
         isReview = body.count > 200 ? true : false
+        language = comment.language
         parentIdentifier = comment.parentIdentifier
         createDate = comment.createDate
         updateDate = comment.updateDate

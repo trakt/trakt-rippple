@@ -182,6 +182,7 @@ struct SocialActivityUserSummary: Hashable {
                               body: socialComment.body ?? "",
                               containsSpoiler: socialComment.containsSpoiler,
                               isReview: socialComment.isReview,
+                              language: socialComment.language,
                               parentIdentifier: 0,
                               createDate: createDate,
                               updateDate: updateDate,

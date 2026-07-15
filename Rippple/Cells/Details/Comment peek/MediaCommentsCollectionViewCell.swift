@@ -12,7 +12,7 @@ import UIKit
 
 final class MediaCommentsCollectionViewCell: UICollectionViewCell {
     // Comment
-    @IBOutlet var ratingAndSpoilerLabel: UILabel!
+    @IBOutlet var ratingAndSpoilerLabel: CommentMetadataLabel!
     @IBOutlet var commentLabel: UILabel!
 
     @IBOutlet var wordCountLabel: UILabel!
@@ -109,11 +109,10 @@ final class MediaCommentsCollectionViewCell: UICollectionViewCell {
         var texts = [String]()
 
         defer {
-            ratingAndSpoilerLabel.text = texts.joined(separator: " · ")
-            ratingAndSpoilerLabel.isHidden = ratingAndSpoilerLabel.text == ""
+            ratingAndSpoilerLabel.configure(texts: texts,
+                                            comment: comment)
         }
-
-        if commentModel.comment.isFiltered {
+        if comment.isFiltered {
             texts.append("Blocked User")
             return
         }
