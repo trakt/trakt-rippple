@@ -2,7 +2,8 @@
 //  CalendarManager.swift
 //  Rippple
 //
-//  Created by Assistant on 10/10/2025.
+//  Created by Kevin Cador on 10/10/2025.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation

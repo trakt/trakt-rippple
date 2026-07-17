@@ -3,7 +3,7 @@
 //  ToWatchStoriesTableViewCell
 //
 //  Created by Kevin Cador on 20/07/2021.
-//  Copyright © 2021 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation

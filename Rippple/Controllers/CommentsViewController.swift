@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 15/11/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import NVActivityIndicatorView

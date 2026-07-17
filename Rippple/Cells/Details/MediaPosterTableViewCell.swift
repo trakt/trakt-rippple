@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 20/06/2020.
-//  Copyright © 2020 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import NVActivityIndicatorView

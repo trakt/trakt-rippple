@@ -2,7 +2,8 @@
 //  PinnedMoviesManager.swift
 //  Rippple
 //
-//  Created by Assistant on 18/11/2025.
+//  Created by Kevin Cador on 18/11/2025.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation

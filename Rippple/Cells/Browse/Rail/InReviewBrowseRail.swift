@@ -3,6 +3,7 @@
 //
 //
 //  Created by Kevin Cador on 29/10/2025.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import LRUCache

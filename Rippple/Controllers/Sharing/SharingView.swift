@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 30/07/2024.
-//  Copyright © 2024 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import SwiftUI
