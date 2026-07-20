@@ -144,6 +144,14 @@ enum CommentsSort: String {
     case replies
 }
 
+enum CommentMediaType: String {
+    case all
+    case movies
+    case shows
+    case seasons
+    case episodes
+}
+
 enum SearchType: String {
     case moviesAndShow = "movie,show"
     case movie
@@ -229,7 +237,7 @@ enum TraktAPIService {
     case revoke(token: String)
     case watching(slug: String = "me")
     case settings
-    case comments(type: TraktObjectType, pageInfo: PageInfo, sortBy: CommentsSort?, replies: IncludeReplies?)
+    case comments(type: TraktObjectType, pageInfo: PageInfo, sortBy: CommentsSort?, replies: IncludeReplies?, mediaType: CommentMediaType = .all)
     case commentCount(type: TraktObjectType)
 
     case history(slug: String = "me", type: HistoryMediaType?, id: Int64?, pageInfo: PageInfo, endDate: Date?)
@@ -517,7 +525,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/\(slug)/watching"
         case .settings:
             return "/users/settings"
-        case .comments(let type, _, let sort, _):
+        case .comments(let type, _, let sort, _, let mediaType):
             switch type {
             case .movie(let movieId):
                 if let sort = sort {
@@ -544,9 +552,9 @@ extension TraktAPIService: AuthorizedTargetType {
             case .comment(let commentId):
                 return "/comments/\(commentId)/replies"
             case .all:
-                return "/comments/recent/all/all"
+                return "/comments/recent/all/\(mediaType.rawValue)"
             case .trending:
-                return "/comments/trending"
+                return "/comments/trending/all/\(mediaType.rawValue)"
             }
         case .commentLikesCount(let id):
             return "/comments/\(id)/likes"
@@ -1262,7 +1270,7 @@ extension TraktAPIService: AuthorizedTargetType {
         case .settings:
             return .requestParameters(parameters: ["extended": "browsing"],
                                       encoding: URLEncoding.default)
-        case .comments(_, let pageInfo, _, let replies):
+        case .comments(_, let pageInfo, _, let replies, _):
             if let replies = replies {
                 return .requestParameters(parameters: ["extended": "full,reactions",
                                                        "page": "\(pageInfo.page)",
@@ -2006,7 +2014,7 @@ extension TraktAPIService: AuthorizedTargetType {
             default:
                 return false
             }
-        case .comments(type: let type, _, _, _):
+        case .comments(type: let type, _, _, _, _):
             switch type {
             case .user:
                 return true

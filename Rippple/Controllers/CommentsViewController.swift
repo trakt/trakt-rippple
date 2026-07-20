@@ -23,9 +23,13 @@ final class CommentsViewController: UITableViewController {
 
     var coordinator: CommentsCoordinator! {
         didSet {
-            coordinator.onCommentsChangedReceiver.listen { [weak self] comments in
-                guard let self = self else { return }
-                self.reloadData(with: comments)
+            let observedCoordinator = coordinator!
+            observedCoordinator.onCommentsChangedReceiver.listen { [weak self, weak observedCoordinator] comments in
+                DispatchQueue.main.async { [weak self, weak observedCoordinator] in
+                    guard let self = self, let observedCoordinator = observedCoordinator else { return }
+                    guard self.coordinator === observedCoordinator else { return }
+                    self.reloadData(with: comments)
+                }
             }.disposed(by: disposeBag)
 
             if coordinator.type.isPreview || coordinator.type.isReplies {

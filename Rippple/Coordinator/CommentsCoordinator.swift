@@ -28,19 +28,19 @@ final class CommentsCoordinator {
     var copy: CommentsCoordinator {
         switch type! {
         case .user(let user):
-            return CommentsCoordinator(type: .user(user))
+            return CommentsCoordinator(type: .user(user), mediaType: mediaType, forYouFilter: forYouFilter)
         case .replies(let commentModel, let openKeyboard):
-            return CommentsCoordinator(type: .replies(commentModel, openKeyboard))
+            return CommentsCoordinator(type: .replies(commentModel, openKeyboard), mediaType: mediaType, forYouFilter: forYouFilter)
         case .media(let mediaModel):
-            return CommentsCoordinator(type: .media(mediaModel))
+            return CommentsCoordinator(type: .media(mediaModel), mediaType: mediaType, forYouFilter: forYouFilter)
         case .feed:
-            return CommentsCoordinator(type: .feed)
+            return CommentsCoordinator(type: .feed, mediaType: mediaType, forYouFilter: forYouFilter)
         case .forYou:
-            return CommentsCoordinator(type: .forYou)
+            return CommentsCoordinator(type: .forYou, mediaType: mediaType, forYouFilter: forYouFilter)
         case .preview(let commentModel):
-            return CommentsCoordinator(type: .preview(commentModel))
+            return CommentsCoordinator(type: .preview(commentModel), mediaType: mediaType, forYouFilter: forYouFilter)
         case .trending:
-            return CommentsCoordinator(type: .trending)
+            return CommentsCoordinator(type: .trending, mediaType: mediaType, forYouFilter: forYouFilter)
         }
     }
 
@@ -121,6 +121,9 @@ final class CommentsCoordinator {
     }
 
     private let disposeBag = DisposeBag()
+
+    private(set) var mediaType = CommentMediaType.all
+    private(set) var forYouFilter = ForYouManager.Filter.all
 
     private var comments = [CommentModel]() {
         didSet {
@@ -237,13 +240,15 @@ final class CommentsCoordinator {
     /// request
     private var request: Cancellable?
 
-    convenience init(type: ListType) {
+    convenience init(type: ListType, mediaType: CommentMediaType = .all, forYouFilter: ForYouManager.Filter = .all) {
         self.init()
 
         if let rawValue = UserDefaults.standard.string(forKey: "CommentsCoordinator.sort"), let savedSort = CommentsSort(rawValue: rawValue) {
             sort = savedSort
         }
 
+        self.mediaType = mediaType
+        self.forYouFilter = forYouFilter
         self.type = type
         switch self.type! {
         case .user(let user):
@@ -386,19 +391,22 @@ extension CommentsCoordinator {
             return .comments(type: .all,
                              pageInfo: pageInfo,
                              sortBy: nil,
-                             replies: nil)
+                             replies: nil,
+                             mediaType: mediaType)
         case .forYou:
             return .comments(type: .all,
                              pageInfo: pageInfo,
                              sortBy: nil,
-                             replies: nil)
+                             replies: nil,
+                             mediaType: mediaType)
         case .preview:
             fatalError()
         case .trending:
             return .comments(type: .trending,
                              pageInfo: pageInfo,
                              sortBy: nil,
-                             replies: nil)
+                             replies: nil,
+                             mediaType: mediaType)
         }
     }
 }
@@ -503,7 +511,7 @@ extension CommentsCoordinator {
                             self.appendComments(comments: commentItems)
                         case .forYou:
                             let commentItems = try response.map([CommentItem].self, using: TraktAPIProvider.decoder).filter { $0.type != .list && $0.type != .officiallist && $0.type != .unknown }
-                            let filteredCommentItems = ForYouManager.shared.filterForYou(comments: commentItems)
+                            let filteredCommentItems = ForYouManager.shared.filterForYou(comments: commentItems, filter: self.forYouFilter)
                             self.appendComments(comments: filteredCommentItems)
                         case .preview:
                             fatalError()
