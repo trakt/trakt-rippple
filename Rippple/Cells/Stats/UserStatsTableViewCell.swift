@@ -64,6 +64,21 @@ final class UserStatsTableViewCell: UITableViewCell {
             self.cancelCancellable()
             self.cancellable = self.fetchStatsFor(type: .user(slug: self.user.slug))
         }.disposed(by: disposeBag)
+
+        onSyncWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self, self.user?.isCurrentUser == true else { return }
+            self.updateWatchedStats()
+        }.disposed(by: disposeBag)
+
+        onSyncWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self, self.user?.isCurrentUser == true else { return }
+            self.updateWatchedStats()
+        }.disposed(by: disposeBag)
+
+        onSyncWatchedEpisodesChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self, self.user?.isCurrentUser == true else { return }
+            self.updateWatchedStats()
+        }.disposed(by: disposeBag)
     }
 
     private func configureStatsColumnsPriorities() {
@@ -160,6 +175,10 @@ final class UserStatsTableViewCell: UITableViewCell {
         cancelCancellable()
         cancellable = fetchStatsFor(type: .user(slug: user.slug))
         fetchCommentCount(type: .user(slug: self.user.slug))
+
+        if user.isCurrentUser {
+            updateWatchedStats()
+        }
     }
 
     private func updatePlaysWith(plays: Int?) {
@@ -190,6 +209,17 @@ final class UserStatsTableViewCell: UITableViewCell {
         self.ratings.countFromCurrentValueTo(CGFloat(ratings ?? 0), withDuration: 0.7)
     }
 
+    private func updateWatchedStats() {
+        let manager = SyncWatchedManager.shared
+        let moviePlays = manager.movieWatchedItems.watchedDatesByTraktId.values.reduce(0) { $0 + $1.count }
+        let episodePlays = manager.episodeWatchedItems.watchedDatesByTraktId.values.reduce(0) { $0 + $1.count }
+
+        updatePlaysWith(plays: moviePlays + episodePlays)
+        updateMoviesPlaysWith(plays: manager.watchedMovies.count)
+        updateShowsPlaysWith(plays: manager.watchedShows.count)
+        updateEpisodesPlaysWith(plays: manager.watchedEpisodes.count)
+    }
+
     private func cancelCancellable() {
         if let cancellable = cancellable {
             cancellable.cancel()
@@ -209,12 +239,16 @@ final class UserStatsTableViewCell: UITableViewCell {
                     DispatchQueue.main.async {
                         if case .user(let slug) = type, self.user.slug != slug { return }
                         self.updateRatingsWith(ratings: stats.ratings)
-                        self.updatePlaysWith(plays: stats.plays)
                         self.updateMinutesWith(minutes: stats.minutes)
 
-                        self.updateMoviesPlaysWith(plays: stats.movies.plays)
-                        self.updateShowsPlaysWith(plays: stats.shows.watched)
-                        self.updateEpisodesPlaysWith(plays: stats.episodes.plays)
+                        if self.user.isCurrentUser {
+                            self.updateWatchedStats()
+                        } else {
+                            self.updatePlaysWith(plays: stats.plays)
+                            self.updateMoviesPlaysWith(plays: stats.movies.plays)
+                            self.updateShowsPlaysWith(plays: stats.shows.watched)
+                            self.updateEpisodesPlaysWith(plays: stats.episodes.plays)
+                        }
                     }
                 } catch {
                     print("fetchStatsFor request JSON mapping failed! \(error)")
