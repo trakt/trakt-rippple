@@ -142,7 +142,7 @@ final class BrowseConfigManager {
     { "module": "L1", "filter": { "section": "lists", "name": "2025 Golden Globes Nominees and Winners", "path": "/lists/30156306/items", "query": "" } }
     { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes Best of 2024", "path": "/users/lish408/lists/rotten-tomatoes-best-of-2024/items", "query": "" } }
     { "module": "L3", "filter": { "section": "lists", "name": "IMDb Top 250 Movies", "path": "/lists/2142753/items", "query": "" } }
-    { "module": "T1", "filter": { "section": "movies", "name": "Most Favorited Movies", "path": "/movies/recommended/monthly", "query": "" } }
+    { "module": "T1", "filter": { "section": "movies", "name": "Most Favorited Movies", "path": "/movies/favorited/monthly", "query": "" } }
     { "module": "L1", "filter": { "section": "lists", "name": "Marvel Cinematic Universe", "path": "/lists/1248149/items/shows,movies", "query": "" } }
     { "module": "L1", "filter": { "section": "lists", "name": "DC Extended Universe", "path": "/lists/1257909/items", "query": "" } }
     { "module": "L1", "filter": { "section": "lists", "name": "Disney Animated Feature Films", "path": "/lists/1406012/items", "query": "" } }
@@ -165,7 +165,7 @@ final class BrowseConfigManager {
     { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes 2024 Best TV Shows", "path": "/users/lish408/lists/rotten-tomatoes-the-best-tv-of-2024/items", "query": "" } }
     { "module": "L1", "filter": { "section": "lists", "name": "Rolling Stone's 100 Greatest TV Shows", "path": "/lists/2748259/items", "query": "" } }
     { "module": "L2", "filter": { "section": "lists", "name": "IMDb Top 250 TV Shows", "path": "/lists/2143363/items", "query": "" } }
-    { "module": "T1", "filter": { "section": "shows", "name": "Most Favorited TV Shows", "path": "/shows/recommended/monthly", "query": "" } }
+    { "module": "T1", "filter": { "section": "shows", "name": "Most Favorited TV Shows", "path": "/shows/favorited/monthly", "query": "" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Shows on Netflix", "path": "/shows/trending", "query": "watchnow=netflix" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Shows on Disney+", "path": "/shows/trending", "query": "watchnow=disney_plus" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Shows on Prime Video", "path": "/shows/trending", "query": "watchnow=amazon_prime_video" } }
