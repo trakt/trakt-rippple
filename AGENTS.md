@@ -32,7 +32,7 @@ This file applies to the whole repository. Keep changes simple, focused, and con
 
 - Shared domain state normally belongs in a focused `*Manager` singleton with `static let shared`, a private initializer, and an explicit `setup()` when lifecycle registration is needed.
 - Use Receiver for the existing broadcast/listen architecture. Name channels `on…Transmitter` and `on…Receiver`, retain a `DisposeBag`, and dispose every long-lived listener.
-- Capture `self` weakly in escaping closures that are owned by controllers or long-lived services. Prefer `guard let self = self else { return }` before multi-step work.
+- Capture `self` weakly in escaping closures that are owned by controllers or long-lived services. After `[weak self]`, always unwrap it with `guard let self = self else { return }`; when the guard has additional conditions, keep the full `self = self` binding before them. Do not use optional chaining or shorthand `guard let self` for this pattern.
 - Synchronize shared mutable state only when it is genuinely accessed concurrently. Prefer main-thread or queue confinement when that keeps the code simpler; use nearby `NSLock` and snapshot/update patterns only when a lock is really needed. Never hold a lock during network or UI work. Clear account-specific state on logout and broadcast only after state is consistent.
 
 ### Networking and models
@@ -53,6 +53,7 @@ This file applies to the whole repository. Keep changes simple, focused, and con
 
 - `.swiftformat` is authoritative. Use four-space indentation, no trailing commas, inline pattern bindings, and the configured parameter wrapping. Do not hand-format against the tool.
 - Prefer `let` over `var`, early `guard` exits over deep nesting, and `final` for classes not designed for inheritance.
+- Refer to a type explicitly by its concrete name; do not use `Self`, including from within that type's own implementation.
 - Default implementation details to `private`. Use `fileprivate` or wider access only when the existing feature boundary requires it.
 - Use descriptive project vocabulary and existing type suffixes such as `ViewController`, `Manager`, `Model`, `Cell`, `View`, and `Provider`.
 - Group protocol conformances and substantial helpers in extensions. Use `// MARK: - …` in longer files. Comment only non-obvious intent, invariants, workarounds, or public APIs.

@@ -15,6 +15,7 @@ let (onMoviesWatchlistedChangedTransmitter, onMoviesWatchlistedChangedReceiver) 
 let (onShowsWatchlistedChangedTransmitter, onShowsWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 let (onEpisodesWatchlistedChangedTransmitter, onEpisodesWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 let (onSeasonsWatchlistedChangedTransmitter, onSeasonsWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
+let (onWatchlistSearchableDataSourceChangedTransmitter, onWatchlistSearchableDataSourceChangedReceiver) = Receiver<ToWatchSearchableDataSource>.make(with: .warm(upTo: 1))
 
 final class WatchlistManager {
     private let disposeBag = DisposeBag()
@@ -129,7 +130,14 @@ final class WatchlistManager {
 
     static let shared = WatchlistManager()
 
-    fileprivate var watchlist = [MediaItem]()
+    fileprivate var watchlist = [MediaItem]() {
+        didSet {
+            onWatchlistSearchableDataSourceChangedTransmitter.broadcast(ToWatchSearchableDataSource(
+                shows: watchlist.compactMap { $0.show?.mediaModel }.removingDuplicates(),
+                movies: watchlist.compactMap { $0.movie?.mediaModel }.removingDuplicates()
+            ))
+        }
+    }
 
     fileprivate var watchlistedMovies = Set<Int64>() {
         didSet {

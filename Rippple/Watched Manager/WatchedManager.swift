@@ -20,6 +20,7 @@ extension TinyStorage {
 
 let (onWatchedMoviesChangedTransmitter, onWatchedMoviesChangedReceiver) = Receiver<Set<Int64>>.make(with: .warm(upTo: 1))
 let (onWatchedShowsChangedTransmitter, onWatchedShowsChangedReceiver) = Receiver<Set<Int64>>.make(with: .warm(upTo: 1))
+let (onWatchedSearchableDataSourceChangedTransmitter, onWatchedSearchableDataSourceChangedReceiver) = Receiver<ToWatchSearchableDataSource>.make(with: .warm(upTo: 1))
 
 final class WatchedManager {
     private let disposeBag = DisposeBag()
@@ -214,6 +215,13 @@ final class WatchedManager {
         return showsHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }
     }
 
+    private func transmitSearchableDataSource() {
+        onWatchedSearchableDataSourceChangedTransmitter.broadcast(ToWatchSearchableDataSource(
+            shows: watchedShowsMediaModels,
+            movies: watchedMoviesMediaModels
+        ))
+    }
+
     private var showsHistoryItems = [WatchedItem]() {
         didSet {
             watchedShows = Set(showsHistoryItems.compactMap { $0.show?.identifiers.trakt })
@@ -230,6 +238,7 @@ final class WatchedManager {
 
             TinyStorage.cache.store(showsHistoryItems, forKey: "WatchedManager.showsHistoryItems")
             onWatchedShowsChangedTransmitter.broadcast(watchedShows)
+            transmitSearchableDataSource()
         }
     }
 
@@ -238,6 +247,7 @@ final class WatchedManager {
             watchedMovies = Set(moviesHistoryItems.compactMap { $0.movie?.identifiers.trakt })
             TinyStorage.cache.store(moviesHistoryItems, forKey: "WatchedManager.moviesHistoryItems")
             onWatchedMoviesChangedTransmitter.broadcast(watchedMovies)
+            transmitSearchableDataSource()
         }
     }
 

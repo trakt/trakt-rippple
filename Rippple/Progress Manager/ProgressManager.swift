@@ -84,6 +84,14 @@ final class ProgressManager {
         cache.removeValue(forKey: key)
     }
 
+    func cachedProgress(for show: Show) -> ShowProgress? {
+        guard let showId = show.identifiers.trakt,
+              let cachedProgress = cache.value(forKey: showId) else { return nil }
+        print("ProgressCache - Using cached progress for \(show.title)")
+        onProgressCacheHitTransmitter.broadcast(cachedProgress)
+        return cachedProgress.showProgress
+    }
+
     func processAndCacheProgress(for show: Show,
                                  showId: Int64,
                                  progress: ShowProgress,

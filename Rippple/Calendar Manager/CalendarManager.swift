@@ -66,6 +66,7 @@ let (calendarDataUpdatedTransmitter, calendarDataUpdatedReceiver) = Receiver<Cal
 
 let (nextMoviesTransmitter, nextMoviesReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
 let (nextEpisodesTransmitter, nextEpisodesReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
+let (calendarSearchableDataSourceTransmitter, calendarSearchableDataSourceReceiver) = Receiver<ToWatchSearchableDataSource>.make(with: .warm(upTo: 1))
 
 final class CalendarManager {
     static let shared = CalendarManager()
@@ -78,11 +79,8 @@ final class CalendarManager {
 
     private var cachedData: CalendarData? {
         didSet {
-            guard let data = cachedData else { return }
-            print("Sending CalendarManager CachedData")
-            calendarDataUpdatedTransmitter.broadcast(data)
-            nextMoviesTransmitter.broadcast(data.nextMovies)
-            nextEpisodesTransmitter.broadcast(data.nextEpisodes)
+            transmitSearchableDataSource()
+            transmitCachedData()
         }
     }
 
@@ -155,6 +153,7 @@ final class CalendarManager {
 
         onShowsToWatchChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
+            self.transmitSearchableDataSource()
             self.debouncedReload.call()
         }.disposed(by: disposeBag)
 
@@ -197,13 +196,32 @@ final class CalendarManager {
 
         let refreshOnUpcomingChange: (Bool) -> Void = { [weak self] _ in
             guard let self = self else { return }
-            let cachedData = self.cachedData
-            self.cachedData = cachedData
+            self.transmitCachedData()
+            self.transmitSearchableDataSource()
         }
 
         movieUpcomingEnabledReceiver.listen(to: refreshOnUpcomingChange).disposed(by: disposeBag)
         episodeUpcomingEnabledReceiver.listen(to: refreshOnUpcomingChange).disposed(by: disposeBag)
         episodeToWatchBingeableOnlyReceiver.listen(to: refreshOnUpcomingChange).disposed(by: disposeBag)
+    }
+
+    private func transmitCachedData() {
+        guard let cachedData = cachedData else { return }
+        print("Sending CalendarManager CachedData")
+        calendarDataUpdatedTransmitter.broadcast(cachedData)
+        nextMoviesTransmitter.broadcast(cachedData.nextMovies)
+        nextEpisodesTransmitter.broadcast(cachedData.nextEpisodes)
+    }
+
+    private func transmitSearchableDataSource() {
+        guard let cachedData = cachedData else {
+            calendarSearchableDataSourceTransmitter.broadcast(.empty)
+            return
+        }
+        calendarSearchableDataSourceTransmitter.broadcast(ToWatchSearchableDataSource(
+            shows: cachedData.nextEpisodesWithBingeableFinales,
+            movies: cachedData.nextMovies
+        ))
     }
 
     private func loadCacheFromDisk() {

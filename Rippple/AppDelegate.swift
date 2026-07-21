@@ -234,6 +234,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         LikeManager.shared.startManaging()
         ReactionsManager.shared.startManaging()
 
+        ToWatchSearchManager.shared.setup()
         HiddenMediaManager.shared.setup()
 
         ProgressManager.shared.setup()

@@ -67,6 +67,7 @@
 		09F100022FCC100000000001 /* ListProgressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F100012FCC100000000001 /* ListProgressViewController.swift */; };
 		09F275D02E055A670059D7CD /* LRUCache in Frameworks */ = {isa = PBXBuildFile; productRef = 09F275CF2E055A670059D7CD /* LRUCache */; };
 		09F4C1952E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09F4C1942E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib */; };
+		09F8022A30A0000000000001 /* ToWatchSearchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F8022A30A0000000000002 /* ToWatchSearchManager.swift */; };
 		0A0B0C0D0E0F101112131417 /* OpenActionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0B0C0D0E0F101112131418 /* OpenActionManager.swift */; };
 		0A0B0C0D0E0F10111213141B /* OpenInSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0B0C0D0E0F10111213141C /* OpenInSettingsView.swift */; };
 		0A0B0C0D0E0F10111213141D /* OpenActionsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0B0C0D0E0F10111213141E /* OpenActionsTableViewCell.swift */; };
@@ -618,6 +619,7 @@
 		09EFFF752E61E974009176CA /* Rippple Trakt.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Rippple Trakt.icon"; sourceTree = "<group>"; };
 		09F100012FCC100000000001 /* ListProgressViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListProgressViewController.swift; sourceTree = "<group>"; };
 		09F4C1942E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ToWatchSettingsTableViewCell.xib; sourceTree = "<group>"; };
+		09F8022A30A0000000000002 /* ToWatchSearchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchSearchManager.swift; sourceTree = "<group>"; };
 		0A0B0C0D0E0F101112131418 /* OpenActionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenActionManager.swift; sourceTree = "<group>"; };
 		0A0B0C0D0E0F10111213141C /* OpenInSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenInSettingsView.swift; sourceTree = "<group>"; };
 		0A0B0C0D0E0F10111213141E /* OpenActionsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenActionsTableViewCell.swift; sourceTree = "<group>"; };
@@ -1755,6 +1757,7 @@
 		3A6B073623B4EB3E00869D01 /* To Watch */ = {
 			isa = PBXGroup;
 			children = (
+				09F8022A30A0000000000002 /* ToWatchSearchManager.swift */,
 				3A6B073423B4EB1300869D01 /* ToWatchViewController.swift */,
 				3A6B073723B4EB5200869D01 /* MoviesToWatchViewController.swift */,
 				3A6B073923B4EB6700869D01 /* EpisodesToWatchViewController.swift */,
@@ -3104,6 +3107,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3A7AB4D72BF38DEF00116149 /* PulseTableViewCell.swift in Sources */,
+				09F8022A30A0000000000001 /* ToWatchSearchManager.swift in Sources */,
 				3AA7522B2473011900723A87 /* MovieToWatchManager.swift in Sources */,
 				3AA0AAD32ABF381400D1B018 /* NotesManager.swift in Sources */,
 				3AB2464D20079A58008B3A58 /* FollowingStoryLikeViewController.swift in Sources */,
