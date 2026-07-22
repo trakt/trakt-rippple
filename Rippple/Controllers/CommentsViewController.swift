@@ -46,6 +46,7 @@ final class CommentsViewController: UITableViewController {
 
     private let disposeBag = DisposeBag()
     private var isListeningForFollowingChanges = false
+    private var remotePunchcardActivityCounts: [Date: Int]?
 
     @IBOutlet var loadingView: UIView!
     @IBOutlet var animationViewContainer: NVActivityIndicatorView!
@@ -215,7 +216,8 @@ final class CommentsViewController: UITableViewController {
             return cell
         case .punchcard:
             let cell = tableView.dequeueReusableCell(withIdentifier: ActivityPunchcardTableViewCell.reuseIdentifier) as! ActivityPunchcardTableViewCell
-            cell.setup(activityCounts: SyncWatchedManager.shared.activityCountsByDay(),
+            cell.setup(activityCounts: punchcardActivityCounts(),
+                       isLoading: punchcardIsLoading(),
                        containerWidth: tableView.bounds.width)
             return cell
         case .followAndFriends(let user):
@@ -282,6 +284,7 @@ final class CommentsViewController: UITableViewController {
         dataSource.defaultRowAnimation = .fade
 
         reloadData(with: [CommentModel]()) // load empty comment datasource to kick things out
+        fetchRemotePunchcard()
 
         if coordinator.sort == .newest {
             sortActionButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
@@ -557,6 +560,7 @@ final class CommentsViewController: UITableViewController {
                                           Wrapper.stats(user)], toSection: Section.header)
                 } else {
                     snapshot.appendItems([Wrapper.user(user),
+                                          Wrapper.punchcard,
                                           Wrapper.followAndFriends(user),
                                           Wrapper.lastWatched(user),
                                           Wrapper.spacer(5.001),
@@ -738,6 +742,56 @@ extension CommentsViewController {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                 guard let self = self else { return }
                 self.coordinator.reset()
+            }
+        }
+    }
+
+    private func punchcardActivityCounts() -> [Date: Int] {
+        guard case .user(let user) = coordinator.type! else { return [:] }
+        if user.isCurrentUser {
+            return SyncWatchedManager.shared.activityCountsByDay()
+        }
+        return remotePunchcardActivityCounts ?? [:]
+    }
+
+    private func punchcardIsLoading() -> Bool {
+        guard case .user(let user) = coordinator.type!,
+              !user.isCurrentUser else { return false }
+        return remotePunchcardActivityCounts == nil
+    }
+
+    private func fetchRemotePunchcard() {
+        guard case .user(let user) = coordinator.type!,
+              !user.isCurrentUser,
+              !user.isBlocked,
+              !user.isPrivate || user.isFollowing else { return }
+
+        let calendar = Calendar.current
+        let endDate = Date.now
+        let dayCount = ActivityPunchcardTableViewCell.visibleDayCount(for: tableView.bounds.width)
+        guard let firstDate = calendar.date(byAdding: .day,
+                                            value: -(dayCount - 1),
+                                            to: endDate) else { return }
+        let startDate = calendar.startOfDay(for: firstDate)
+
+        TraktAPIProvider.fetchActivityDates(slug: user.slug,
+                                            startDate: startDate,
+                                            endDate: endDate) { result in
+            var activityCounts = [Date: Int]()
+            switch result {
+            case .success(let activityDates):
+                for activityDate in activityDates {
+                    let day = calendar.startOfDay(for: activityDate)
+                    activityCounts[day, default: 0] += 1
+                }
+            case .failure(let error):
+                print("Activity punchcard request failure \(error)")
+            }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.remotePunchcardActivityCounts = activityCounts
+                self.refreshPunchcard()
             }
         }
     }

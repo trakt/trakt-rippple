@@ -27,6 +27,7 @@ private enum ActivityPunchcardMetrics {
 struct ActivityPunchcardView: View {
     let activityCounts: [Date: Int]
 
+    var isLoading = false
     var referenceDate: Date = .now
     var calendar: Calendar = .current
     var tint = UIColor(asset: .globalTint)
@@ -37,6 +38,7 @@ struct ActivityPunchcardView: View {
             let rowCount = ActivityPunchcardMetrics.dimensionCount(for: geometry.size.height)
             let punches = punches(count: columnCount * rowCount)
             let maximumCount = punches.map(\.activityCount).max() ?? 0
+            let isEmpty = maximumCount == 0
             let columns = Array(repeating: GridItem(.fixed(ActivityPunchcardMetrics.punchSize),
                                                     spacing: ActivityPunchcardMetrics.spacing),
                                 count: columnCount)
@@ -64,6 +66,16 @@ struct ActivityPunchcardView: View {
             .frame(width: ActivityPunchcardMetrics.gridLength(for: columnCount),
                    height: ActivityPunchcardMetrics.gridLength(for: rowCount))
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .opacity(isLoading ? 0.1 : isEmpty ? 0.2 : 1)
+            .animation(isLoading ? .easeInOut(duration: 1).repeatForever() : .default,
+                       value: isLoading)
+            .overlay {
+                if !isLoading, isEmpty {
+                    Text("No recent activity")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
     }
 
@@ -128,12 +140,20 @@ struct ActivityPunchcardView: View {
 
 final class ActivityPunchcardTableViewCell: UITableViewCell {
     static let reuseIdentifier = "activity punchcard"
+    private static let punchcardHorizontalInset: CGFloat = 40
+
+    static func visibleDayCount(for containerWidth: CGFloat) -> Int {
+        let width = max(containerWidth - punchcardHorizontalInset, 0)
+        return ActivityPunchcardMetrics.dimensionCount(for: width)
+            * ActivityPunchcardMetrics.rowCount
+    }
 
     @IBOutlet private var cardView: CardView!
     @IBOutlet private var punchcardPlaceholderView: UIView!
     @IBOutlet private var punchcardPlaceholderHeightConstraint: NSLayoutConstraint!
 
     private var activityCounts = [Date: Int]()
+    private var isLoading = false
     private var referenceDate: Date = .now
     private var configuredWidth: CGFloat = 0
     private var hostingController: RipppleHostingController<ActivityPunchcardView>!
@@ -149,9 +169,11 @@ final class ActivityPunchcardTableViewCell: UITableViewCell {
     }
 
     func setup(activityCounts: [Date: Int],
+               isLoading: Bool = false,
                referenceDate: Date = .now,
                containerWidth: CGFloat) {
         self.activityCounts = activityCounts
+        self.isLoading = isLoading
         self.referenceDate = referenceDate
         hostingController.setRootView(makePunchcardView())
 
@@ -178,6 +200,7 @@ final class ActivityPunchcardTableViewCell: UITableViewCell {
 
     private func makePunchcardView() -> ActivityPunchcardView {
         return ActivityPunchcardView(activityCounts: activityCounts,
+                                     isLoading: isLoading,
                                      referenceDate: referenceDate,
                                      tint: UIColor(asset: .globalTint))
     }

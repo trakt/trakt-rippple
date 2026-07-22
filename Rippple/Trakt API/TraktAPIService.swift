@@ -240,7 +240,7 @@ enum TraktAPIService {
     case comments(type: TraktObjectType, pageInfo: PageInfo, sortBy: CommentsSort?, replies: IncludeReplies?, mediaType: CommentMediaType = .all)
     case commentCount(type: TraktObjectType)
 
-    case history(slug: String = "me", type: HistoryMediaType?, id: Int64?, pageInfo: PageInfo, endDate: Date?)
+    case history(slug: String = "me", type: HistoryMediaType?, id: Int64?, pageInfo: PageInfo, startDate: Date? = nil, endDate: Date?, extended: Extended? = .full)
     case isWatched(type: HistoryMediaType, id: Int64)
     case addMovieToHistory(id: Int64, watchedAt: Date?)
     case addEpisodeToHistory(id: Int64, watchedAt: Date?)
@@ -577,7 +577,7 @@ extension TraktAPIService: AuthorizedTargetType {
             case .trending:
                 fatalError()
             }
-        case .history(let slug, let type, let id, _, _):
+        case .history(let slug, let type, let id, _, _, _, _):
             if let type = type, id == nil {
                 return "/users/\(slug)/history/\(type)"
             } else if let type = type, let id = id {
@@ -1288,33 +1288,35 @@ extension TraktAPIService: AuthorizedTargetType {
                                                    "page": "\(pageInfo.page)",
                                                    "limit": "\(pageInfo.limit)"],
                                       encoding: URLEncoding.default)
-        case .history(_, _, _, let pageInfo, let date):
-            if let date = date {
+        case .history(_, _, _, let pageInfo, let startDate, let endDate, let extended):
+            var parameters = ["page": "\(pageInfo.page)",
+                              "limit": "\(pageInfo.limit)"]
+            if let extended = extended {
+                parameters["extended"] = extended.rawValue
+            }
+
+            if startDate != nil || endDate != nil {
                 let formatter = DateFormatter()
                 formatter.locale = Locale(identifier: "en_US_POSIX")
                 formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
                 formatter.timeZone = TimeZone(secondsFromGMT: 0)
 
-                if date.timeIntervalSince1970 == 0 {
-                    return .requestParameters(parameters: ["extended": "full",
-                                                           "page": "\(pageInfo.page)",
-                                                           "limit": "\(pageInfo.limit)",
-                                                           "start_at": "\(formatter.string(from: date))",
-                                                           "end_at": "\(formatter.string(from: date))"],
-                                              encoding: URLEncoding.default)
+                if let endDate = endDate, endDate.timeIntervalSince1970 == 0 {
+                    let formattedDate = formatter.string(from: endDate)
+                    parameters["start_at"] = formattedDate
+                    parameters["end_at"] = formattedDate
                 } else {
-                    return .requestParameters(parameters: ["extended": "full",
-                                                           "page": "\(pageInfo.page)",
-                                                           "limit": "\(pageInfo.limit)",
-                                                           "end_at": "\(formatter.string(from: date))"],
-                                              encoding: URLEncoding.default)
+                    if let startDate = startDate {
+                        parameters["start_at"] = formatter.string(from: startDate)
+                    }
+                    if let endDate = endDate {
+                        parameters["end_at"] = formatter.string(from: endDate)
+                    }
                 }
-            } else {
-                return .requestParameters(parameters: ["extended": "full",
-                                                       "page": "\(pageInfo.page)",
-                                                       "limit": "\(pageInfo.limit)"],
-                                          encoding: URLEncoding.default)
             }
+
+            return .requestParameters(parameters: parameters,
+                                      encoding: URLEncoding.default)
         case .isWatched:
             return .requestParameters(parameters: ["page": "1", "limit": "1"],
                                       encoding: URLEncoding.default)
