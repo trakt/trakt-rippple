@@ -63,7 +63,7 @@ With **Trakt VIP** you get:
 
 | Section | What to provide |
 |--------|------------------|
-| **Trakt** | `clientId` and `secretId` from your [Trakt API application](https://trakt.tv/oauth/applications). Required for Trakt login and sync. |
+| **Trakt** | `clientId` and `secretId` from your [Trakt API application](https://app.trakt.tv/settings/apps/api). Required for Trakt login and sync. |
 | **TMDb** | `apiKey` from [The Movie Database](https://www.themoviedb.org/settings/api). Used for fetching images and “where to watch” data. |
 | **Remote notifications** | Optional maintainer infrastructure. Public forks can leave `RemoteNotificationsConfiguration.remoteNotificationsBaseURL`, `remoteNotificationsAPIKey`, and all `AWSConfiguration` values as `nil`; remote push is disabled while local notifications still work. |
 

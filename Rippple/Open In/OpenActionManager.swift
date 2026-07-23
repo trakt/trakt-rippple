@@ -248,7 +248,7 @@ enum BuiltInOpenAction: String, CaseIterable, Identifiable, Hashable {
     var subtitle: String {
         switch self {
         case .trakt:
-            return "trakt.tv"
+            return "app.trakt.tv"
         case .tmdb:
             return "themoviedb.org"
         case .imdb:

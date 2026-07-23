@@ -312,7 +312,7 @@ final class CustomListsViewController: UITableViewController {
         alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
 
         alertController.addAction(UIAlertAction(title: "Get Trakt VIP", style: .default, handler: { _ in
-            if let url = URL(string: "https://trakt.tv/vip/referral/b1f95ecff7339c031dd1a374150067b9"),
+            if let url = URL(string: "https://app.trakt.tv/vip"),
                UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }

@@ -14,7 +14,7 @@ Rippple is a passion project. It’s built by one person with early contribution
 
 [Trakt](https://app.trakt.tv) is a platform and community that helps you keep track of the TV shows and movies you watch. It helps you stay on top of trending and popular content thanks to community-driven lists, ratings and comments. You can link a media center for automatic scrobbling or manually check in when you’re watching something.
 
-Trakt provides a public API for [third-party apps](https://trakt.tv/apps) or scripts to interact with your own data and the community.
+Trakt provides a [public API](https://docs.trakt.tv) for third-party apps or scripts to interact with your own data and the community.
 
 ## Need more?
 
