@@ -208,7 +208,7 @@ final class UserTableViewCell: UITableViewCell {
         if let request = request {
             request.cancel()
         }
-        request = TraktAPIProvider.provider.request(.user(id: id.slugify()), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+        request = TraktAPIProvider.fetchUser(with: id, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
 
             switch result {

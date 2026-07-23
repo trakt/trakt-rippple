@@ -46,6 +46,7 @@
 		09B8990D2F2A568900DC202D /* TraktAPIProvider+Recommended.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */; };
 		09B8990F2F9F000100DC202D /* TraktAPIProvider+Watched.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990E2F9F000100DC202D /* TraktAPIProvider+Watched.swift */; };
 		09B899112FCC000100DC202D /* TraktAPIProvider+Social.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899102FCC000100DC202D /* TraktAPIProvider+Social.swift */; };
+		09B899252FD0000100DC202D /* TraktAPIProvider+User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899242FD0000100DC202D /* TraktAPIProvider+User.swift */; };
 		09B899132FCC010100DC202D /* SocialActivityTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899122FCC010100DC202D /* SocialActivityTableViewCell.swift */; };
 		09B899152FCC010100DC202D /* SocialActivityTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B899142FCC010100DC202D /* SocialActivityTableViewCell.xib */; };
 		09B899172FCC020100DC202D /* SocialActivitiesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899182FCC020100DC202D /* SocialActivitiesViewController.swift */; };
@@ -591,6 +592,7 @@
 		09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Recommended.swift"; sourceTree = "<group>"; };
 		09B8990E2F9F000100DC202D /* TraktAPIProvider+Watched.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Watched.swift"; sourceTree = "<group>"; };
 		09B899102FCC000100DC202D /* TraktAPIProvider+Social.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Social.swift"; sourceTree = "<group>"; };
+		09B899242FD0000100DC202D /* TraktAPIProvider+User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+User.swift"; sourceTree = "<group>"; };
 		09B899122FCC010100DC202D /* SocialActivityTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialActivityTableViewCell.swift; sourceTree = "<group>"; };
 		09B899142FCC010100DC202D /* SocialActivityTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SocialActivityTableViewCell.xib; sourceTree = "<group>"; };
 		09B899182FCC020100DC202D /* SocialActivitiesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialActivitiesViewController.swift; sourceTree = "<group>"; };
@@ -2185,6 +2187,7 @@
 				09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */,
 				09B8990E2F9F000100DC202D /* TraktAPIProvider+Watched.swift */,
 				09B899102FCC000100DC202D /* TraktAPIProvider+Social.swift */,
+				09B899242FD0000100DC202D /* TraktAPIProvider+User.swift */,
 				3A9119DB1FADDF3A00457D28 /* TraktAPIService.swift */,
 				3AD932A91FB9E885005289B5 /* TraktAPIService+Sample.swift */,
 				3AFD3F0F1FB734630003B966 /* TraktAPIModel.swift */,
@@ -3174,6 +3177,7 @@
 				09B8990D2F2A568900DC202D /* TraktAPIProvider+Recommended.swift in Sources */,
 				09B8990F2F9F000100DC202D /* TraktAPIProvider+Watched.swift in Sources */,
 				09B899112FCC000100DC202D /* TraktAPIProvider+Social.swift in Sources */,
+				09B899252FD0000100DC202D /* TraktAPIProvider+User.swift in Sources */,
 				3A70632C1FF29A3B00D3B2BB /* ProductManager.swift in Sources */,
 				3A211D1824C824F200930DD3 /* SplitViewController.swift in Sources */,
 				3A44BF451FD2D4920026AADE /* UIWindow+Extension.swift in Sources */,
