@@ -10,6 +10,7 @@ import Foundation
 import Moya
 
 enum TmdbAPIService {
+    /// For images
     case configuration
 
     case movieImages(Int64)
@@ -20,7 +21,7 @@ enum TmdbAPIService {
     case episode(Int64, Int, Int)
     case season(Int64, Int)
 
-    // Where to Watch via JustWatch
+    /// Where to Watch via JustWatch
     case movieProviders(Int64)
     case showProviders(Int64)
     case seasonProviders(Int64, Int)
@@ -28,17 +29,12 @@ enum TmdbAPIService {
     case providersForMovieInRegion(String)
     case providersForTVInRegion(String)
 
-    /// for search
+    /// For search
     case trending
-
     case search(String)
 
-    case combinedCredit(Int64)
-
-    case showKeywords(Int64)
+    /// For Stingers
     case movieKeywords(Int64)
-
-    case tvChanges(Int64, Date, Date)
 }
 
 // MARK: - TargetType Protocol Implementation
@@ -64,13 +60,7 @@ extension TmdbAPIService: TargetType {
             return .successCodes
         case .search:
             return .successCodes
-        case .combinedCredit:
-            return .successCodes
         case .movieKeywords:
-            return .successCodes
-        case .showKeywords:
-            return .successCodes
-        case .tvChanges:
             return .successCodes
         case .seasonProviders:
             return .successCodes
@@ -107,14 +97,8 @@ extension TmdbAPIService: TargetType {
             return "/trending/all/day"
         case .search:
             return "/search/multi"
-        case .combinedCredit(let tmdbId):
-            return "/person/\(tmdbId)/combined_credits"
-        case .showKeywords(let tmdbId):
-            return "/tv/\(tmdbId)/keywords"
         case .movieKeywords(let tmdbId):
             return "/movie/\(tmdbId)/keywords"
-        case .tvChanges(let tmdbId, _, _):
-            return "/tv/\(tmdbId)/changes"
         case .seasonProviders(let tmdbId, let seasonNumber):
             return "/tv/\(tmdbId)/season/\(seasonNumber)/watch/providers"
         case .providersForMovieInRegion:
@@ -128,7 +112,7 @@ extension TmdbAPIService: TargetType {
 
     var method: Moya.Method {
         switch self {
-        case .configuration, .movieImages, .tvImages, .people, .episode, .movieProviders, .showProviders, .trending, .search, .combinedCredit, .showKeywords, .movieKeywords, .tvChanges, .seasonProviders, .providersForMovieInRegion, .providersForTVInRegion, .season:
+        case .configuration, .movieImages, .tvImages, .people, .episode, .movieProviders, .showProviders, .trending, .search, .movieKeywords, .seasonProviders, .providersForMovieInRegion, .providersForTVInRegion, .season:
             return .get
         }
     }
@@ -166,22 +150,8 @@ extension TmdbAPIService: TargetType {
             return .requestParameters(parameters: ["api_key": TmdbAPIConfiguration.apiKey,
                                                    "query": query],
                                       encoding: URLEncoding.default)
-        case .combinedCredit:
-            return .requestParameters(parameters: ["api_key": TmdbAPIConfiguration.apiKey],
-                                      encoding: URLEncoding.default)
         case .movieKeywords:
             return .requestParameters(parameters: ["api_key": TmdbAPIConfiguration.apiKey],
-                                      encoding: URLEncoding.default)
-        case .showKeywords:
-            return .requestParameters(parameters: ["api_key": TmdbAPIConfiguration.apiKey],
-                                      encoding: URLEncoding.default)
-        case .tvChanges(_, let startDate, let endDate):
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            return .requestParameters(parameters: ["api_key": TmdbAPIConfiguration.apiKey,
-                                                   "end_date": dateFormatter.string(from: endDate),
-                                                   "start_date": dateFormatter.string(from: startDate),
-                                                   "page": 1],
                                       encoding: URLEncoding.default)
         case .seasonProviders:
             return .requestParameters(parameters: ["api_key": TmdbAPIConfiguration.apiKey],
