@@ -36,7 +36,7 @@ final class MediaTableViewCell: UITableViewCell {
 
     @IBOutlet var poster: PosterButton!
 
-    @IBOutlet var recommendedStatus: RecommendedImageView?
+    @IBOutlet var userFavoriteStatus: UserFavoritesImageView?
     @IBOutlet var watchlistedStatus: WatchlistImageView?
     @IBOutlet var watchedStatus: WatchedImageView?
     @IBOutlet var toWatchStatus: ToWatchImageView?
@@ -274,7 +274,7 @@ final class MediaTableViewCell: UITableViewCell {
         }.disposed(by: disposeBag)
 
         meta?.maximumContentSizeCategory = .extraExtraExtraLarge
-        recommendedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        userFavoriteStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
         watchlistedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
         watchedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
         toWatchStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
@@ -438,7 +438,7 @@ final class MediaTableViewCell: UITableViewCell {
 
             let media: MediaModel = .movie(movie)
 
-            recommendedStatus?.media = media
+            userFavoriteStatus?.media = media
             collectedStatus?.media = media
             watchlistedStatus?.media = media
             watchedStatus?.media = media
@@ -474,7 +474,7 @@ final class MediaTableViewCell: UITableViewCell {
         meta?.media = media
 
         if toWatchMode {
-            recommendedStatus?.isHiddenInStackView = true
+            userFavoriteStatus?.isHiddenInStackView = true
             collectedStatus?.isHiddenInStackView = true
             watchlistedStatus?.isHiddenInStackView = true
             watchedStatus?.isHiddenInStackView = true
@@ -487,7 +487,7 @@ final class MediaTableViewCell: UITableViewCell {
             whereToWatchImageView?.media = media
             listedStatus?.isHiddenInStackView = true
         } else {
-            recommendedStatus?.media = media
+            userFavoriteStatus?.media = media
             collectedStatus?.media = media
             watchlistedStatus?.media = media
             watchedStatus?.media = media
@@ -515,7 +515,7 @@ final class MediaTableViewCell: UITableViewCell {
             let media: MediaModel = .episode(episode, show)
             watchlistedStatus?.media = media
             watchedStatus?.media = media
-            recommendedStatus?.isHiddenInStackView = true
+            userFavoriteStatus?.isHiddenInStackView = true
             collectedStatus?.media = media
             toWatchStatus?.isHiddenInStackView = true
             commentedStatus?.media = media
@@ -548,7 +548,7 @@ final class MediaTableViewCell: UITableViewCell {
 
         watchlistedStatus?.media = media
         watchedStatus?.media = media
-        recommendedStatus?.isHiddenInStackView = true
+        userFavoriteStatus?.isHiddenInStackView = true
         collectedStatus?.media = media
         toWatchStatus?.isHiddenInStackView = true
         commentedStatus?.media = media
@@ -617,7 +617,7 @@ final class MediaTableViewCell: UITableViewCell {
                 }
             }
 
-            recommendedStatus?.isHiddenInStackView = true
+            userFavoriteStatus?.isHiddenInStackView = true
             collectedStatus?.isHiddenInStackView = true
             watchlistedStatus?.isHiddenInStackView = true
             watchedStatus?.isHiddenInStackView = true
@@ -704,7 +704,7 @@ final class MediaTableViewCell: UITableViewCell {
 
         meta?.media = media
 
-        recommendedStatus?.isHiddenInStackView = true
+        userFavoriteStatus?.isHiddenInStackView = true
         collectedStatus?.isHiddenInStackView = true
         watchlistedStatus?.media = media
         watchedStatus?.media = media
@@ -754,7 +754,7 @@ final class MediaTableViewCell: UITableViewCell {
 
         meta?.media = media
 
-        recommendedStatus?.media = media
+        userFavoriteStatus?.media = media
         watchlistedStatus?.media = media
         watchedStatus?.media = media
         toWatchStatus?.media = media

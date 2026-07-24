@@ -279,9 +279,9 @@
 		3A7B6DB9234641F50014A0D8 /* PeopleMediaTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A7B6DB32346419D0014A0D8 /* PeopleMediaTableViewCell.xib */; };
 		3A7CEBD324FEDC26001EB8D5 /* RipppleSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7CEBD224FEDC26001EB8D5 /* RipppleSegmentedControl.swift */; };
 		3A7FCCBE2C85D70600E056E7 /* ShelfConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7FCCBD2C85D70600E056E7 /* ShelfConfigViewController.swift */; };
-		3A7FD5952519EDF7001D428E /* RecommendedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7FD5942519EDF7001D428E /* RecommendedViewController.swift */; };
+		3A7FD5952519EDF7001D428E /* UserFavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7FD5942519EDF7001D428E /* UserFavoritesViewController.swift */; };
 		3A7FD5982519FE85001D428E /* StandardListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7FD5972519FE85001D428E /* StandardListTableViewCell.swift */; };
-		3A7FD59D251A038E001D428E /* RecommendedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7FD59C251A038E001D428E /* RecommendedManager.swift */; };
+		3A7FD59D251A038E001D428E /* UserFavoritesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7FD59C251A038E001D428E /* UserFavoritesManager.swift */; };
 		3A7FF65229F3107700E2E08E /* EmptyTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7FF65129F3107700E2E08E /* EmptyTableViewCell.swift */; };
 		3A7FF65429F3108300E2E08E /* EmptyTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A7FF65329F3108300E2E08E /* EmptyTableViewCell.xib */; };
 		3A819E292CB99997008373C7 /* StandardHistoryBrowseCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A819E282CB99997008373C7 /* StandardHistoryBrowseCollectionViewCell.xib */; };
@@ -845,9 +845,9 @@
 		3A7B6DB52346419D0014A0D8 /* MediaCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCollectionViewCell.swift; sourceTree = "<group>"; };
 		3A7CEBD224FEDC26001EB8D5 /* RipppleSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RipppleSegmentedControl.swift; sourceTree = "<group>"; };
 		3A7FCCBD2C85D70600E056E7 /* ShelfConfigViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShelfConfigViewController.swift; sourceTree = "<group>"; };
-		3A7FD5942519EDF7001D428E /* RecommendedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendedViewController.swift; sourceTree = "<group>"; };
+		3A7FD5942519EDF7001D428E /* UserFavoritesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserFavoritesViewController.swift; sourceTree = "<group>"; };
 		3A7FD5972519FE85001D428E /* StandardListTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardListTableViewCell.swift; sourceTree = "<group>"; };
-		3A7FD59C251A038E001D428E /* RecommendedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendedManager.swift; sourceTree = "<group>"; };
+		3A7FD59C251A038E001D428E /* UserFavoritesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserFavoritesManager.swift; sourceTree = "<group>"; };
 		3A7FF65129F3107700E2E08E /* EmptyTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyTableViewCell.swift; sourceTree = "<group>"; };
 		3A7FF65329F3108300E2E08E /* EmptyTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EmptyTableViewCell.xib; sourceTree = "<group>"; };
 		3A819E282CB99997008373C7 /* StandardHistoryBrowseCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = StandardHistoryBrowseCollectionViewCell.xib; sourceTree = "<group>"; };
@@ -1947,12 +1947,12 @@
 			path = "Segmented controls";
 			sourceTree = "<group>";
 		};
-		3A7FD59F251A039B001D428E /* Recommended */ = {
+		3A7FD59F251A039B001D428E /* User Favorites */ = {
 			isa = PBXGroup;
 			children = (
-				3A7FD59C251A038E001D428E /* RecommendedManager.swift */,
+				3A7FD59C251A038E001D428E /* UserFavoritesManager.swift */,
 			);
-			path = Recommended;
+			path = "User Favorites";
 			sourceTree = "<group>";
 		};
 		3A7FF65029F3104F00E2E08E /* Empty */ = {
@@ -2060,7 +2060,7 @@
 				3A38605325C546B800D9739E /* Country Manager */,
 				3A41DE8825AAF896008F133A /* Watched Manager */,
 				3A3A58A9252708800053BD1C /* Collection */,
-				3A7FD59F251A039B001D428E /* Recommended */,
+				3A7FD59F251A039B001D428E /* User Favorites */,
 				3A7CEBD124FEDC02001EB8D5 /* Segmented controls */,
 				3A74181B24EC250500D4DD0E /* Comments Manager */,
 				3A4B57A024BB538C005D36C7 /* Hidden Manager */,
@@ -2523,7 +2523,7 @@
 				3AD80E0B2129560800C70E7F /* SeasonsViewController.swift */,
 				3A3FE6CF21DD55FD00980245 /* MediaViewController.swift */,
 				3A5DEC232253823A0044C28E /* WatchlistViewController.swift */,
-				3A7FD5942519EDF7001D428E /* RecommendedViewController.swift */,
+				3A7FD5942519EDF7001D428E /* UserFavoritesViewController.swift */,
 				3A93BCBD2521E9030097EBC8 /* CollectionViewController.swift */,
 				3A2AAD292806CA570055FCD8 /* WatchedViewController.swift */,
 				3A5D8FA2292E0B4D001E6BA5 /* CollaborationsViewController.swift */,
@@ -3210,7 +3210,7 @@
 				3A27031E25C2019F000871A5 /* WhereToWatchTableViewCell.swift in Sources */,
 				3A1D48BD2B7F501300A32C64 /* CompletedShowsViewController.swift in Sources */,
 				090676DD2F4EFDE40076ECA8 /* KeychainStore.swift in Sources */,
-				3A7FD59D251A038E001D428E /* RecommendedManager.swift in Sources */,
+				3A7FD59D251A038E001D428E /* UserFavoritesManager.swift in Sources */,
 				3AD932AA1FB9E885005289B5 /* TraktAPIService+Sample.swift in Sources */,
 				3AA55F961FAEFBF70036F58B /* SessionManager.swift in Sources */,
 				3AD910422D6884E400E09D0D /* SeasonButtonCollectionViewCell.swift in Sources */,
@@ -3245,7 +3245,7 @@
 				3A2DF49722C75BB300D63877 /* CardView.swift in Sources */,
 				3A9F4F0025EA7BEC002C3767 /* RecommendedNotificationsManager.swift in Sources */,
 				3AD7D08C288722B7001C1205 /* IconWidget.intentdefinition in Sources */,
-				3A7FD5952519EDF7001D428E /* RecommendedViewController.swift in Sources */,
+				3A7FD5952519EDF7001D428E /* UserFavoritesViewController.swift in Sources */,
 				3AFD2B2D2A5460320021D5BC /* GenreBrowseCollectionViewCell.swift in Sources */,
 				3A3BC693271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift in Sources */,
 				3A26D34A2BD26A81002EF98E /* LoginBrowseViewController.swift in Sources */,

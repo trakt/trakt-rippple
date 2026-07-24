@@ -281,7 +281,7 @@ final class EpisodeToWatchManager {
             }
         }.disposed(by: disposeBag)
 
-        onRecommendedChangedReceiver.skip(count: 1).listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.skip(count: 1).listen { [weak self] _ in
             guard let self = self else { return }
             if EpisodeToWatchSettings.shared.recommended {
                 print("EpisodeToWatchManager.forceRefresh because recommended changed")

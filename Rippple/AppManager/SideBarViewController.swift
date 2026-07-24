@@ -800,7 +800,7 @@ extension SidebarViewController: UICollectionViewDropDelegate {
                     print("Recommendation successful \(response)")
 
                     DispatchQueue.main.async {
-                        RecommendedManager.shared.refresh()
+                        UserFavoritesManager.shared.refresh()
                         SwiftMessages.show(message: "⭐️ Added \(models.count) to Favorites")
                     }
 

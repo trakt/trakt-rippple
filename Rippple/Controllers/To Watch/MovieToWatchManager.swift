@@ -255,10 +255,10 @@ final class MovieToWatchManager {
             }
         }.disposed(by: disposeBag)
 
-        onRecommendedChangedReceiver.skip(count: 1).listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.skip(count: 1).listen { [weak self] _ in
             guard let self = self else { return }
             if MovieToWatchSettings.shared.recommended {
-                print("MovieToWatchManager.debouncedForceRefresh because onRecommendedChangedReceiver")
+                print("MovieToWatchManager.debouncedForceRefresh because onUserFavoritesChangedReceiver")
                 self.debouncedForceRefresh.call()
             }
         }.disposed(by: disposeBag)

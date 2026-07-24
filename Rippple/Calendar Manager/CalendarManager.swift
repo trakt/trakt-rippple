@@ -136,7 +136,7 @@ final class CalendarManager {
             self.debouncedReload.call()
         }.disposed(by: disposeBag)
 
-        onRecommendedChangedReceiver.hotOnly().listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedReload.call()
         }.disposed(by: disposeBag)

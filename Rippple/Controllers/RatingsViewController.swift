@@ -196,7 +196,7 @@ final class RatingsViewController: UITableViewController {
             cell.collectedStatus?.removeFromSuperview()
             cell.commentedStatus?.removeFromSuperview()
             cell.hiddenStatus?.removeFromSuperview()
-            cell.recommendedStatus?.removeFromSuperview()
+            cell.userFavoriteStatus?.removeFromSuperview()
             cell.whereToWatchImageView?.removeFromSuperview()
             cell.dimmedIfWatched = false
             if self.user.isCurrentUser {

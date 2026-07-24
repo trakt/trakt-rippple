@@ -103,7 +103,7 @@ final class MainTabBarController: UITabBarController {
                                     image: UIImage(systemName: "star"),
                                     identifier: Tab.recommended.rawValue,
                                     viewControllerProvider: { _ in
-                                        StyledNavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "RecommendedViewController"))
+                                        StyledNavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "UserFavoritesViewController"))
                                     })
         store[.collection] = UITab(title: "Library",
                                    image: UIImage(systemName: "book"),
@@ -763,8 +763,8 @@ extension MainTabBarController: UITabBarControllerDelegate {
                 if shouldScrollToTop(view: viewController.view) {
                     scrollToTop(view: viewController.view)
                 } else if let navigationController = viewController as? UINavigationController,
-                          let recommendedViewController = navigationController.topViewController as? RecommendedViewController {
-                    recommendedViewController.cycleFilter()
+                          let userFavoritesViewController = navigationController.topViewController as? UserFavoritesViewController {
+                    userFavoritesViewController.cycleFilter()
                 }
             } else if tab.identifier == Tab.collection.rawValue {
                 if shouldScrollToTop(view: viewController.view) {

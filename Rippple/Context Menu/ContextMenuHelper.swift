@@ -272,7 +272,7 @@ class ContextMenuHelper: NSObject {
             }
             watchActions.append(markWatched)
 
-            if movie.isRecommended {
+            if movie.isUserFavorite {
                 let removeRecommendation = UIAction(title: "Remove from Favorites", image: UIImage(systemName: "star.circle"), attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
                     self.removeFromRecommendations()
@@ -491,7 +491,7 @@ class ContextMenuHelper: NSObject {
                 listsActions.append(lists)
             }
 
-            if show.isRecommended {
+            if show.isUserFavorite {
                 let removeRecommendation = UIAction(title: "Remove from Favorites", image: UIImage(systemName: "star.circle"), attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
                     self.removeFromRecommendations()
@@ -1353,7 +1353,7 @@ class ContextMenuHelper: NSObject {
                 self.writeComment(media: self.media)
             }
 
-            if movie.isRecommended {
+            if movie.isUserFavorite {
                 let removeRecommendation = UIAction(title: "Remove from Favorites", image: UIImage(systemName: "star.circle"), attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
                     self.removeFromRecommendations()
@@ -1377,7 +1377,7 @@ class ContextMenuHelper: NSObject {
                 self.writeComment(media: self.media)
             }
 
-            if show.isRecommended {
+            if show.isUserFavorite {
                 let removeRecommendation = UIAction(title: "Remove from Favorites", image: UIImage(systemName: "star.circle"), attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
                     self.removeFromRecommendations()
@@ -1567,7 +1567,7 @@ class ContextMenuHelper: NSObject {
                     print("Favoriting successful \(response)")
 
                     DispatchQueue.main.async {
-                        RecommendedManager.shared.refresh()
+                        UserFavoritesManager.shared.refresh()
                         AppManager.shared.isUserInteractionEnabled = true
                         SwiftMessages.show(message: "⭐️ Added to Favorites")
                     }
@@ -1601,7 +1601,7 @@ class ContextMenuHelper: NSObject {
                     print("Removed from recommendations successful \(response)")
 
                     DispatchQueue.main.async {
-                        RecommendedManager.shared.refresh()
+                        UserFavoritesManager.shared.refresh()
                         AppManager.shared.isUserInteractionEnabled = true
                         SwiftMessages.show(message: "⭐️ Removed from Favorites")
                     }

@@ -132,7 +132,7 @@
                                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                                                         </preferredSymbolConfiguration>
                                                                     </imageView>
-                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iAF-E4-ayV" customClass="RecommendedImageView" customModule="Rippple" customModuleProvider="target">
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iAF-E4-ayV" customClass="UserFavoritesImageView" customModule="Rippple" customModuleProvider="target">
                                                                         <rect key="frame" x="126" y="-0.5" width="19" height="19"/>
                                                                         <color key="tintColor" systemColor="secondaryLabelColor"/>
                                                                         <imageReference key="image" image="star.circle" catalog="system" renderingMode="template"/>
@@ -317,7 +317,7 @@
                 <outlet property="progress" destination="bMi-9p-nUO" id="SFF-gp-tKg"/>
                 <outlet property="rateButton" destination="jR5-JU-OfX" id="74g-U8-4g5"/>
                 <outlet property="ratedStatus" destination="psG-zP-2as" id="agA-IV-EdO"/>
-                <outlet property="recommendedStatus" destination="iAF-E4-ayV" id="c3J-mS-q7u"/>
+                <outlet property="userFavoriteStatus" destination="iAF-E4-ayV" id="c3J-mS-q7u"/>
                 <outlet property="submeta" destination="DTX-9a-vbB" id="ss6-tx-vsE"/>
                 <outlet property="subtitle" destination="cRg-Le-J30" id="gBh-1v-ene"/>
                 <outlet property="title" destination="iyj-Q4-XJ0" id="BMz-Ku-H6b"/>

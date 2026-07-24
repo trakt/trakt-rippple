@@ -105,7 +105,7 @@
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                                 </preferredSymbolConfiguration>
                                             </imageView>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ERZ-uE-PNq" customClass="RecommendedImageView" customModule="Rippple" customModuleProvider="target">
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ERZ-uE-PNq" customClass="UserFavoritesImageView" customModule="Rippple" customModuleProvider="target">
                                                 <rect key="frame" x="129" y="-0.5" width="19.5" height="19.5"/>
                                                 <color key="tintColor" systemColor="labelColor"/>
                                                 <imageReference key="image" image="star.circle" catalog="system" renderingMode="template"/>
@@ -177,7 +177,7 @@
                 <outlet property="pinnedStatus" destination="S6d-TJ-ap5" id="d0d-iu-qH6"/>
                 <outlet property="pulseSymbol" destination="u0m-ek-Wz8" id="JF8-RO-cCK"/>
                 <outlet property="ratedStatus" destination="ccR-FK-f7N" id="37q-lF-hi1"/>
-                <outlet property="recommendedStatus" destination="ERZ-uE-PNq" id="qp9-7D-iYH"/>
+                <outlet property="userFavoriteStatus" destination="ERZ-uE-PNq" id="qp9-7D-iYH"/>
                 <outlet property="subtitle" destination="u9e-zL-Lf8" id="MqB-zn-KVx"/>
                 <outlet property="title" destination="cI2-IC-VQ7" id="06o-lH-k7V"/>
                 <outlet property="toWatchStatus" destination="E7p-Cd-WUH" id="orU-Gy-6me"/>

@@ -989,7 +989,7 @@ extension MediaModel {
                     print("Recommendation successful \(response)")
 
                     DispatchQueue.main.async {
-                        RecommendedManager.shared.refresh()
+                        UserFavoritesManager.shared.refresh()
                         AppManager.shared.isUserInteractionEnabled = true
                         SwiftMessages.show(message: "⭐️ Added to Favorites")
                     }
@@ -1023,7 +1023,7 @@ extension MediaModel {
                     print("Removed from recommendations successful \(response)")
 
                     DispatchQueue.main.async {
-                        RecommendedManager.shared.refresh()
+                        UserFavoritesManager.shared.refresh()
                         AppManager.shared.isUserInteractionEnabled = true
                         SwiftMessages.show(message: "⭐️ Removed from Favorites")
                     }

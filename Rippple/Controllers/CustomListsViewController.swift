@@ -487,8 +487,8 @@ final class CustomListsViewController: UITableViewController {
             watchlistViewController.user = user
         }
 
-        if let recommendedViewController = segue.destination as? RecommendedViewController {
-            recommendedViewController.user = user
+        if let userFavoritesViewController = segue.destination as? UserFavoritesViewController {
+            userFavoritesViewController.user = user
         }
 
         if let collectionViewController = segue.destination as? CollectionViewController {
@@ -803,7 +803,7 @@ extension CustomListsViewController: UITableViewDropDelegate {
                     print("Recommendation successful \(response)")
 
                     DispatchQueue.main.async {
-                        RecommendedManager.shared.refresh()
+                        UserFavoritesManager.shared.refresh()
                         SwiftMessages.show(message: "⭐️ Added \(models.count) to Favorites")
                     }
 

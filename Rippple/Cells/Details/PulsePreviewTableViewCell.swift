@@ -15,7 +15,7 @@ final class PulsePreviewTableViewCell: UITableViewCell {
     @IBOutlet var title: UILabel!
     @IBOutlet var subtitle: UILabel!
 
-    @IBOutlet var recommendedStatus: RecommendedImageView?
+    @IBOutlet var userFavoriteStatus: UserFavoritesImageView?
     @IBOutlet var watchlistedStatus: WatchlistImageView?
     @IBOutlet var watchedStatus: WatchedImageView?
     @IBOutlet var toWatchStatus: ToWatchImageView?
@@ -36,7 +36,7 @@ final class PulsePreviewTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        recommendedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
+        userFavoriteStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
         watchlistedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
         watchedStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
         toWatchStatus?.maximumContentSizeCategory = .extraExtraExtraLarge
@@ -57,7 +57,7 @@ final class PulsePreviewTableViewCell: UITableViewCell {
             switch media! {
             case .movie:
                 title.text = "Pulse"
-                recommendedStatus?.media = media
+                userFavoriteStatus?.media = media
                 collectedStatus?.media = media
                 watchlistedStatus?.media = media
                 watchedStatus?.media = media
@@ -70,7 +70,7 @@ final class PulsePreviewTableViewCell: UITableViewCell {
                 listedStatus?.media = media
             case .show:
                 title.text = "Pulse"
-                recommendedStatus?.media = media
+                userFavoriteStatus?.media = media
                 watchlistedStatus?.media = media
                 watchedStatus?.media = media
                 toWatchStatus?.media = media
@@ -85,7 +85,7 @@ final class PulsePreviewTableViewCell: UITableViewCell {
                 title.text = "Pulse"
                 watchlistedStatus?.media = media
                 watchedStatus?.media = media
-                recommendedStatus?.isHidden = true
+                userFavoriteStatus?.isHidden = true
                 collectedStatus?.media = media
                 toWatchStatus?.isHidden = true
                 commentedStatus?.media = media
@@ -96,7 +96,7 @@ final class PulsePreviewTableViewCell: UITableViewCell {
                 listedStatus?.media = media
             case .season:
                 title.text = "Pulse"
-                recommendedStatus?.isHidden = true
+                userFavoriteStatus?.isHidden = true
                 collectedStatus?.isHidden = true
                 watchlistedStatus?.media = media
                 watchedStatus?.isHidden = true

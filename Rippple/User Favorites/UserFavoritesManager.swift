@@ -1,5 +1,5 @@
 //
-//  RecommendedManager.swift
+//  UserFavoritesManager.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 22/09/2020.
@@ -10,9 +10,9 @@ import Foundation
 import Receiver
 import UIKit
 
-let (onRecommendedChangedTransmitter, onRecommendedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
+let (onUserFavoritesChangedTransmitter, onUserFavoritesChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 
-final class RecommendedManager {
+final class UserFavoritesManager {
     private let disposeBag = DisposeBag()
 
     private init() {}
@@ -21,10 +21,10 @@ final class RecommendedManager {
         applicationLifecycleReceiver.listen { applicationLifecycle in
             switch applicationLifecycle {
             case .didFinishLaunching:
-                self.refreshRecommended()
+                self.refreshUserFavorites()
             case .didBecomeActive(let time):
                 if time > 3600 {
-                    self.refreshRecommended()
+                    self.refreshUserFavorites()
                 }
             case .didEnterBackground:
                 break
@@ -32,37 +32,37 @@ final class RecommendedManager {
         }.disposed(by: disposeBag)
 
         onSettingsChangedReceiver.listen { _ in
-            self.refreshRecommended()
+            self.refreshUserFavorites()
         }.disposed(by: disposeBag)
 
         onUserLoggedOutReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.recommended.removeAll()
-            self.recommendedItems.removeAll()
+            self.userFavorites.removeAll()
+            self.userFavoriteItems.removeAll()
         }.disposed(by: disposeBag)
 
-        refreshRecommended()
+        refreshUserFavorites()
     }
 
     func refresh() {
-        refreshRecommended()
+        refreshUserFavorites()
     }
 
-    static let shared = RecommendedManager()
+    static let shared = UserFavoritesManager()
 
-    fileprivate var recommended = [Int64]() {
+    fileprivate var userFavorites = [Int64]() {
         didSet {
-            if recommended != oldValue {
-                onRecommendedChangedTransmitter.broadcast(recommended)
+            if userFavorites != oldValue {
+                onUserFavoritesChangedTransmitter.broadcast(userFavorites)
             }
         }
     }
 
-    fileprivate var recommendedItems = [WatchlistItem]()
+    fileprivate var userFavoriteItems = [WatchlistItem]()
 }
 
-private extension RecommendedManager {
-    private func refreshRecommended() {
+private extension UserFavoritesManager {
+    private func refreshUserFavorites() {
         if SessionManager.shared.isLoggedOut {
             return
         }
@@ -75,11 +75,11 @@ private extension RecommendedManager {
                 let ids = favorites.compactMap(\.traktId)
 
                 DispatchQueue.main.async {
-                    self.recommendedItems = favorites
-                    self.recommended = ids
+                    self.userFavoriteItems = favorites
+                    self.userFavorites = ids
                 }
             case .failure(let error):
-                print("refreshRecommended request failure \(error)")
+                print("refreshUserFavorites request failure \(error)")
             }
         }
     }
@@ -105,42 +105,42 @@ private extension WatchlistItem {
 }
 
 extension Movie {
-    var isRecommended: Bool {
+    var isUserFavorite: Bool {
         guard let traktId = identifiers.trakt else { return false }
-        return RecommendedManager.shared.recommended.contains(traktId)
+        return UserFavoritesManager.shared.userFavorites.contains(traktId)
     }
 }
 
 extension Show {
-    var isRecommended: Bool {
+    var isUserFavorite: Bool {
         guard let traktId = identifiers.trakt else { return false }
-        return RecommendedManager.shared.recommended.contains(traktId)
+        return UserFavoritesManager.shared.userFavorites.contains(traktId)
     }
 }
 
 extension MediaModel {
-    var recommendedMediaItem: WatchlistItem? {
+    var userFavoriteMediaItem: WatchlistItem? {
         switch self {
         case .movie(let movie):
-            return RecommendedManager.shared.recommendedItems.first(where: { $0.movie == movie })
+            return UserFavoritesManager.shared.userFavoriteItems.first(where: { $0.movie == movie })
         case .show(let show):
-            return RecommendedManager.shared.recommendedItems.first(where: { $0.show == show })
+            return UserFavoritesManager.shared.userFavoriteItems.first(where: { $0.show == show })
         default:
             return nil
         }
     }
 }
 
-final class RecommendedImageView: UIImageView {
+final class UserFavoritesImageView: UIImageView {
     private let disposeBag = DisposeBag()
 
     var media: MediaModel? {
         didSet {
             switch media {
             case .movie(let movie):
-                isHidden = !movie.isRecommended
+                isHidden = !movie.isUserFavorite
             case .show(let show):
-                isHidden = !show.isRecommended
+                isHidden = !show.isUserFavorite
             default:
                 isHidden = true
             }
@@ -151,14 +151,14 @@ final class RecommendedImageView: UIImageView {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        onRecommendedChangedReceiver.hotOnly().listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.hotOnly().listen { [weak self] _ in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch self.media {
                 case .movie(let movie):
-                    self.isHidden = !movie.isRecommended
+                    self.isHidden = !movie.isUserFavorite
                 case .show(let show):
-                    self.isHidden = !show.isRecommended
+                    self.isHidden = !show.isUserFavorite
                 default:
                     self.isHidden = true
                 }

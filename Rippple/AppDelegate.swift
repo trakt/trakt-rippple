@@ -301,7 +301,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         DroppedShowsManager.shared.setup()
         WatchedManager.shared.setup()
         SyncWatchedManager.shared.setup()
-        RecommendedManager.shared.setup()
+        UserFavoritesManager.shared.setup()
         CollectionManager.shared.setup()
         FollowManager.shared.setup()
         OwnCommentsManager.shared.setup()

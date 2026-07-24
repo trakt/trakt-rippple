@@ -861,7 +861,7 @@ extension WatchedViewController {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                         DispatchQueue.main.async {
-                            RecommendedManager.shared.refresh()
+                            UserFavoritesManager.shared.refresh()
                             SwiftMessages.show(message: "⭐️ Added to Favorites")
                             print("Recommendation successful \(response)")
                         }

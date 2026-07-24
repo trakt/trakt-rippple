@@ -44,7 +44,7 @@ final class ListReorderingViewController: UITableViewController {
             case .watchlist:
                 WatchlistManager.shared.refresh()
             case .favorites:
-                RecommendedManager.shared.refresh()
+                UserFavoritesManager.shared.refresh()
             }
         }
     }

@@ -317,7 +317,7 @@ final class BrowseViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
-        onRecommendedChangedReceiver.listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             if model.localizedStandardContains("/sync/favorites") {
                 DispatchQueue.main.async {
