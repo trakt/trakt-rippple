@@ -130,6 +130,10 @@ final class WatchlistManager {
 
     static let shared = WatchlistManager()
 
+    var isEmpty: Bool {
+        watchlist.isEmpty
+    }
+
     fileprivate var watchlist = [MediaItem]() {
         didSet {
             onWatchlistSearchableDataSourceChangedTransmitter.broadcast(ToWatchSearchableDataSource(
