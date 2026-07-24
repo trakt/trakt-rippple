@@ -6,6 +6,7 @@
 //  Copyright © Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
 final class PeopleTableViewCell: UITableViewCell {
@@ -15,7 +16,9 @@ final class PeopleTableViewCell: UITableViewCell {
 
     @IBOutlet var personNameLabel: UILabel!
     @IBOutlet var asLabel: UILabel!
-    @IBOutlet var additionalInfoLabel: UILabel!
+    @IBOutlet var additionalInfoLabel: RedactableLabel!
+
+    private let disposeBag = DisposeBag()
 
     var showsEpisodeCount = true {
         didSet {
@@ -32,6 +35,13 @@ final class PeopleTableViewCell: UITableViewCell {
         avatarContainer.layer.masksToBounds = true
         avatarContainer.layer.borderWidth = 1
         avatarContainer.layer.borderColor = UIColor.tertiarySystemFill.cgColor
+
+        actorEpisodeCountsReceiver.listen { [weak self] redactsEpisodeCounts in
+            guard let self = self else { return }
+            guard self.showsEpisodeCount,
+                  self.cast?.episodeCount != nil else { return }
+            self.additionalInfoLabel.isRedactedByDefault = redactsEpisodeCounts
+        }.disposed(by: disposeBag)
     }
 
     var person: Person? {
@@ -48,6 +58,7 @@ final class PeopleTableViewCell: UITableViewCell {
             if let person = person {
                 crew = nil
                 cast = nil
+                hideAdditionalInfo()
                 personNameLabel.text = person.name
                 avatarInitialLabel.text = person.name.initials
                 if let knownForDepartment = person.knownForDepartment, knownForDepartment.isEmpty == false {
@@ -70,6 +81,7 @@ final class PeopleTableViewCell: UITableViewCell {
                 }
                 return
             }
+            hideAdditionalInfo()
             if let cast = cast {
                 crew = nil
                 person = nil
@@ -89,6 +101,7 @@ final class PeopleTableViewCell: UITableViewCell {
             if let crew = crew {
                 cast = nil
                 person = nil
+                hideAdditionalInfo()
                 personNameLabel.text = crew.person!.name
                 avatarInitialLabel.text = crew.person!.name.initials
                 asLabel.text = "as \(crew.jobs.joined(separator: ", "))"
@@ -101,12 +114,17 @@ final class PeopleTableViewCell: UITableViewCell {
 
     private func updateAdditionalInfo(for cast: Cast) {
         guard showsEpisodeCount, let episodeCount = cast.episodeCount else {
-            additionalInfoLabel.text = nil
-            additionalInfoLabel.isHidden = true
+            hideAdditionalInfo()
             return
         }
 
-        additionalInfoLabel.isHidden = false
+        additionalInfoLabel.isRedactedByDefault = UserDefaults.standard.bool(forKey: "GeneralSettings.actorEpisodeCountSpoilers")
         additionalInfoLabel.text = episodeCount <= 1 ? "\(episodeCount) episode" : "\(episodeCount) episodes"
+        additionalInfoLabel.isHidden = false
+    }
+
+    private func hideAdditionalInfo() {
+        additionalInfoLabel.text = nil
+        additionalInfoLabel.isHidden = true
     }
 }

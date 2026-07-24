@@ -643,8 +643,8 @@ extension UILabel {
         textContainer.maximumNumberOfLines = numberOfLines
         textContainer.size = bounds.size
 
-        var glyphRange = NSRange()
-        layoutManager.characterRange(forGlyphRange: range, actualGlyphRange: &glyphRange)
+        let glyphRange = layoutManager.glyphRange(forCharacterRange: range,
+                                                  actualCharacterRange: nil)
         let frame = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer)
         return CGRect(x: frame.origin.x,
                       y: frame.origin.y,

@@ -97,6 +97,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UserDefaults.standard.register(defaults: ["MovieToWatchSettings.upcoming": true,
                                                   "EpisodeToWatchSettings.upcoming": true,
                                                   "GeneralSettings.dragging": true,
+                                                  "GeneralSettings.actorEpisodeCountSpoilers": true,
+                                                  "GeneralSettings.episodeImageSpoilers": true,
                                                   "Stinger.alert.type": true,
                                                   "GeneralSettings.comments": true,
                                                   "GeneralSettings.droppedshows": true,

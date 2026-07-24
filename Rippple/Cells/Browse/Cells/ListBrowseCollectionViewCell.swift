@@ -92,7 +92,7 @@ final class ListBrowseCollectionViewCell: UICollectionViewCell {
     let poster = PosterImageView()
 
     private let titleLabel = UILabel()
-    private let subtitleLabel = UILabel()
+    private let subtitleLabel = RedactableLabel()
     private let textStackView = UIStackView()
     private let actionButton = UIButton(type: .system)
     private let separatorView = UIView()
@@ -142,6 +142,7 @@ final class ListBrowseCollectionViewCell: UICollectionViewCell {
         poster.show = nil
         poster.season = nil
         titleLabel.text = nil
+        subtitleLabel.isRedactedByDefault = false
         subtitleLabel.text = nil
         actionButtonController.media = nil
         showsSeparator = true
@@ -225,6 +226,7 @@ final class ListBrowseCollectionViewCell: UICollectionViewCell {
     }
 
     private func updateContent() {
+        subtitleLabel.isRedactedByDefault = false
         switch media! {
         case .movie(let movie):
             poster.movie = movie
@@ -245,7 +247,11 @@ final class ListBrowseCollectionViewCell: UICollectionViewCell {
         case .showProgress(let show, let progress):
             poster.show = show
             titleLabel.text = show.title
-            subtitleLabel.text = showProgressMetadata(progress)
+            let metadata = showProgressMetadata(progress)
+            subtitleLabel.isRedactedByDefault =
+                metadata.episodeTitleRange != nil &&
+                UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == false
+            subtitleLabel.setText(metadata.text, redacting: metadata.episodeTitleRange)
         case .list:
             fatalError("This type is not handled")
         }
@@ -286,17 +292,9 @@ final class ListBrowseCollectionViewCell: UICollectionViewCell {
         season.title ?? "Season \(season.number)"
     }
 
-    private func showProgressMetadata(_ progress: ShowProgress) -> String {
+    private func showProgressMetadata(_ progress: ShowProgress) -> (text: String, episodeTitleRange: NSRange?) {
         var info = [String]()
-
-        if let episode = progress.nextEpisodeToWatch {
-            if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true,
-               let title = episode.title {
-                info.append("\(episode.localizedEpisodeNumber) · \(title)")
-            } else {
-                info.append(episode.localizedEpisodeNumber)
-            }
-        }
+        var episodeTitle: String?
 
         if progress.toRewatchCount > 0 {
             info.append("\(progress.toRewatchCount) to rewatch")
@@ -304,6 +302,19 @@ final class ListBrowseCollectionViewCell: UICollectionViewCell {
             info.append("\(progress.behind) behind")
         }
 
-        return info.joined(separator: " · ")
+        if let episode = progress.nextEpisodeToWatch {
+            if let title = episode.title {
+                episodeTitle = title
+                info.append("\(episode.localizedEpisodeNumber) · \(title)")
+            } else {
+                info.append(episode.localizedEpisodeNumber)
+            }
+        }
+
+        let text = info.joined(separator: " · ")
+        let episodeTitleRange = episodeTitle.map {
+            (text as NSString).range(of: $0, options: .backwards)
+        }
+        return (text, episodeTitleRange)
     }
 }

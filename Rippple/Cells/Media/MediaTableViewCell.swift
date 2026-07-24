@@ -27,9 +27,10 @@ final class MediaTableViewCell: UITableViewCell {
     }
 
     @IBOutlet var title: UILabel!
-    @IBOutlet var subtitle: UILabel!
+    @IBOutlet var subtitle: RedactableLabel!
     @IBOutlet var meta: CommentCountLabel?
     @IBOutlet var submeta: LinkEnabledLabel?
+    @IBOutlet var episodeTitleLabel: RedactableLabel?
 
     @IBOutlet var progress: ShowProgressBar?
 
@@ -71,6 +72,11 @@ final class MediaTableViewCell: UITableViewCell {
     var dimmedIfWatched = true
     var media: MediaModel! {
         didSet {
+            subtitle.isRedactedByDefault = false
+            episodeTitleLabel?.isRedactedByDefault = false
+            episodeTitleLabel?.text = nil
+            episodeTitleLabel?.isHiddenInStackView = true
+
             switch media! {
             case .movie(let movie):
                 cellContextMenu.media = media
@@ -304,8 +310,14 @@ final class MediaTableViewCell: UITableViewCell {
 
         onSyncWatchedEpisodesChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
-            if case .episode = self.media {
+            switch self.media {
+            case .episode:
                 self.updateSyncWatchedDimmingIfNeeded()
+                self.updateEpisodeTitleRedactionIfNeeded()
+            case .showProgress:
+                self.updateEpisodeTitleRedactionIfNeeded()
+            default:
+                break
             }
         }.disposed(by: disposeBag)
 
@@ -402,6 +414,10 @@ final class MediaTableViewCell: UITableViewCell {
         notesButton?.isUserInteractionEnabled = false
 
         submeta?.isHiddenInStackView = true
+        subtitle.isRedactedByDefault = false
+        episodeTitleLabel?.isRedactedByDefault = false
+        episodeTitleLabel?.text = nil
+        episodeTitleLabel?.isHiddenInStackView = true
         dimmedIfWatched = true
         menuButtonContainter?.isHiddenInStackView = false
     }
@@ -504,13 +520,7 @@ final class MediaTableViewCell: UITableViewCell {
             toWatchStatus?.isHiddenInStackView = true
             commentedStatus?.media = media
 
-            if episode.isWatched, let title = episode.title {
-                subtitle.text = episode.localizedEpisodeNumber + " · \(title)"
-            } else if let eventLabel = episodeEventLabel(for: episode) {
-                subtitle.text = episode.localizedEpisodeNumber + " · \(eventLabel)"
-            } else {
-                subtitle.text = episode.localizedEpisodeNumber
-            }
+            updateEpisodeSubtitle(for: episode, usesEventLabelFallback: true)
 
             submeta?.isHiddenInStackView = false
 
@@ -531,11 +541,7 @@ final class MediaTableViewCell: UITableViewCell {
             return
         }
 
-        if let title = episode.title {
-            subtitle.text = episode.localizedEpisodeNumber + " · \(title)"
-        } else {
-            subtitle.text = episode.localizedEpisodeNumber
-        }
+        updateEpisodeSubtitle(for: episode)
 
         let media: MediaModel = .episode(episode, show)
         meta?.media = media
@@ -591,11 +597,13 @@ final class MediaTableViewCell: UITableViewCell {
                 }
             }
 
-            if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = episode.title {
-                submeta?.isHiddenInStackView = false
-                submeta?.text = title
-            } else {
-                submeta?.isHiddenInStackView = true
+            submeta?.isHiddenInStackView = true
+            if let episodeTitle = episode.title {
+                episodeTitleLabel?.isRedactedByDefault =
+                    episode.isWatched == false &&
+                    UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == false
+                episodeTitleLabel?.text = episodeTitle
+                episodeTitleLabel?.isHiddenInStackView = false
             }
 
             if progress.toRewatchCount > 0 {
@@ -633,6 +641,54 @@ final class MediaTableViewCell: UITableViewCell {
             } else {
                 contentView.alpha = 1.0
             }
+        }
+    }
+
+    private func updateEpisodeSubtitle(for episode: Episode,
+                                       usesEventLabelFallback: Bool = false) {
+        if let episodeTitle = episode.title {
+            let episodeText = episode.localizedEpisodeNumber + " · \(episodeTitle)"
+            let episodeTitleRange = (episodeText as NSString).range(of: episodeTitle,
+                                                                    options: .backwards)
+            subtitle.isRedactedByDefault =
+                episode.isWatched == false &&
+                UserDefaults.standard.bool(forKey: "GeneralSettings.listsepisodetitle") == false
+            subtitle.setText(episodeText, redacting: episodeTitleRange)
+        } else if usesEventLabelFallback,
+                  let eventLabel = episodeEventLabel(for: episode) {
+            subtitle.isRedactedByDefault = false
+            subtitle.text = episode.localizedEpisodeNumber + " · \(eventLabel)"
+        } else {
+            subtitle.isRedactedByDefault = false
+            subtitle.text = episode.localizedEpisodeNumber
+        }
+    }
+
+    private func updateEpisodeTitleRedactionIfNeeded() {
+        let label: RedactableLabel
+        let episode: Episode
+        let alwaysShowsSetting: String
+
+        switch media {
+        case .episode(let currentEpisode, _):
+            label = subtitle
+            episode = currentEpisode
+            alwaysShowsSetting = "GeneralSettings.listsepisodetitle"
+        case .showProgress(_, let progress):
+            guard let episodeTitleLabel = episodeTitleLabel,
+                  let nextEpisodeToWatch = progress.nextEpisodeToWatch else { return }
+            label = episodeTitleLabel
+            episode = nextEpisodeToWatch
+            alwaysShowsSetting = "GeneralSettings.towatchepisodetitle"
+        default:
+            return
+        }
+
+        let isRedactedByDefault =
+            episode.isWatched == false &&
+            UserDefaults.standard.bool(forKey: alwaysShowsSetting) == false
+        if label.isRedactedByDefault != isRedactedByDefault {
+            label.isRedactedByDefault = isRedactedByDefault
         }
     }
 

@@ -128,6 +128,16 @@ class BrowseTableViewCell: UITableViewCell {
             self.collectionView?.dragInteractionEnabled = UserDefaults.standard.bool(forKey: "GeneralSettings.dragging")
         }.disposed(by: disposeBag)
 
+        toWatchTitlesReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.collectionView?.reloadData()
+        }.disposed(by: disposeBag)
+
+        episodeImagesReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.collectionView?.reloadData()
+        }.disposed(by: disposeBag)
+
         collectionView.register(UINib(nibName: "L1BrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "cell")
         collectionView.register(UINib(nibName: "C2BrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "C2")
         collectionView.register(UINib(nibName: "TopBrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "T1")

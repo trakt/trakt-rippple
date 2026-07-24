@@ -54,7 +54,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
 
     weak var delegate: MediaTitleTableViewCellDelegate?
 
-    @IBOutlet var genreLabel: UILabel!
+    @IBOutlet var genreLabel: RedactableLabel!
     @IBOutlet var certificationLabel: UILabel!
 
     @IBOutlet var certificationBorderView: UIView!
@@ -105,7 +105,12 @@ final class MediaTitleTableViewCell: UITableViewCell {
         debouncedUpdateQuickActions = Debouncer(delay: 0.5) { [weak self] in
             guard let self = self else { return }
             UIView.performWithoutAnimation {
+                self.mainActionButton.imageView?.removeAllSymbolEffects(animated: false)
+                self.secondaryActionButton.imageView?.removeAllSymbolEffects(animated: false)
                 self.updateQuickActions()
+                self.mainActionButton.updateConfiguration()
+                self.secondaryActionButton.updateConfiguration()
+                self.contentView.layoutIfNeeded()
             }
         }
 
@@ -140,6 +145,13 @@ final class MediaTitleTableViewCell: UITableViewCell {
             self.debouncedUpdateQuickActions.call()
         }.disposed(by: disposeBag)
 
+        onSyncWatchedEpisodesChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self else { return }
+            guard case .episode = self.media else { return }
+            self.updateEpisodeMetadataRedactionIfNeeded()
+            self.debouncedUpdateQuickActions.call()
+        }.disposed(by: disposeBag)
+
         RatingsManager.shared.onRatedItemsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedUpdateQuickActions.call()
@@ -152,8 +164,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
 
         onProgressCacheChangedReceiver.listen { [weak self] progress in
             guard let self = self else { return }
-            guard let media = self.media else { return }
-            if progress.show == media.show {
+            guard case .show(let show) = self.media else { return }
+            if progress.show == show {
                 self.debouncedUpdateQuickActions.call()
             }
         }.disposed(by: disposeBag)
@@ -216,6 +228,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
     var media: MediaModel? {
         didSet {
             if oldValue == media { return }
+            genreLabel.isRedactedByDefault = false
             switch media! {
             case .movie(let movie):
                 if let genres = movie.genres {
@@ -338,7 +351,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
         if let seasonTitle = season.title {
             markdown = "__\(show.title)__ - \(seasonTitle)"
         }
-        genreLabel.attributedText = markdownParser.parse(markdown)
+        genreLabel.isRedactedByDefault = false
+        genreLabel.setAttributedText(markdownParser.parse(markdown))
         genreLabel.numberOfLines = 0
         genreLabel.isHiddenInStackView = false
     }
@@ -355,44 +369,51 @@ final class MediaTitleTableViewCell: UITableViewCell {
         markdownParser.bold.font = .preferredFont(forTextStyle: .subheadline).bold()
         markdownParser.spoilerStrategy = .hideInlineSpoilers
 
-        // placeholder
-        var markdown = "__\(show.title)__ \(episode.localizedEpisodeNumber)"
-        genreLabel.attributedText = markdownParser.parse(markdown)
+        let metadataPrefix = "__\(show.title)__ \(episode.localizedEpisodeNumber)"
+        genreLabel.isRedactedByDefault = false
+        genreLabel.setAttributedText(markdownParser.parse(metadataPrefix))
 
-        markdown = ""
         if let episodeTitle = episode.title {
-            if UserDefaults.standard.bool(forKey: "GeneralSettings.detailepisodetitle") {
-                markdown = "__\(show.title)__ \(episode.localizedEpisodeNumber) - \(episodeTitle)"
-                genreLabel.attributedText = markdownParser.parse(markdown)
-            } else {
-                show.mediaModel.progress { [weak self] progress in
-                    guard let self = self else { return }
-                    if let progress = progress {
-                        for season in progress.seasons where season.number == episode.season {
-                            for episodeProgress in season.episodes where episodeProgress.number == episode.number {
-                                if episodeProgress.completed {
-                                    markdown = "__\(show.title)__ \(episode.localizedEpisodeNumber) - \(episodeTitle)"
-                                } else {
-                                    markdown = "__\(show.title)__ \(episode.localizedEpisodeNumber) - [spoiler]\(episodeTitle)[/spoiler]"
-                                }
-                            }
-                        }
-                    }
-                    if markdown == "" {
-                        markdown = "__\(show.title)__ \(episode.localizedEpisodeNumber) - [spoiler]\(episodeTitle)[/spoiler]"
-                    }
-                    DispatchQueue.main.async {
-                        self.genreLabel.attributedText = markdownParser.parse(markdown)
-                        self.invalidateIntrinsicContentSize()
-                    }
-                }
-            }
-        } else {
-            markdown = "__\(show.title)__ \(episode.localizedEpisodeNumber)"
-            genreLabel.attributedText = markdownParser.parse(markdown)
+            let markdown = "\(metadataPrefix) - \(episodeTitle)"
+            let attributedText = markdownParser.parse(markdown)
+            let episodeTitleRange = (attributedText.string as NSString).range(of: episodeTitle,
+                                                                              options: .backwards)
+            let redactsEpisodeTitle =
+                UserDefaults.standard.bool(forKey: "GeneralSettings.detailepisodetitle") == false &&
+                episode.isWatched == false
+            displayEpisodeMetadata(attributedText,
+                                   redacting: episodeTitleRange,
+                                   isRedactedByDefault: redactsEpisodeTitle)
         }
         genreLabel.numberOfLines = 0
         genreLabel.isHiddenInStackView = false
+    }
+
+    private func updateEpisodeMetadataRedactionIfNeeded() {
+        guard case .episode(let episode, _) = media,
+              let episodeTitle = episode.title,
+              let attributedText = genreLabel.attributedText else { return }
+
+        let episodeTitleRange = (attributedText.string as NSString).range(of: episodeTitle,
+                                                                          options: .backwards)
+        guard episodeTitleRange.location != NSNotFound else { return }
+
+        let isRedactedByDefault =
+            UserDefaults.standard.bool(forKey: "GeneralSettings.detailepisodetitle") == false &&
+            episode.isWatched == false
+        if genreLabel.isRedactedByDefault != isRedactedByDefault {
+            genreLabel.isRedactedByDefault = isRedactedByDefault
+        }
+    }
+
+    private func displayEpisodeMetadata(_ attributedText: NSAttributedString,
+                                        redacting episodeTitleRange: NSRange,
+                                        isRedactedByDefault: Bool) {
+        let hasEpisodeTitleRange = episodeTitleRange.location != NSNotFound
+        genreLabel.isRedactedByDefault = isRedactedByDefault && hasEpisodeTitleRange
+        genreLabel.setAttributedText(attributedText,
+                                     redacting: hasEpisodeTitleRange ? episodeTitleRange : nil)
+        invalidateIntrinsicContentSize()
     }
 
     override func layoutSubviews() {
@@ -402,7 +423,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
             button.removeFromSuperview()
         }
         placeShowButton()
-        placeEpisodeSpoilerButton()
     }
 
     private func placeShowButton() {
@@ -426,45 +446,6 @@ final class MediaTitleTableViewCell: UITableViewCell {
             }
         }
         genreLabel.isUserInteractionEnabled = true
-    }
-
-    private func placeEpisodeSpoilerButton() {
-        guard let media = media else { return }
-        guard let episode = media.episode else { return }
-        guard let attributedText = genreLabel.attributedText else { return }
-        guard let episodeTitle = episode.title else { return }
-
-        var subRange = attributedText.string.range(of: " - ")
-        for n in episodeTitle.split(separator: " ") {
-            guard let range = attributedText.string.range(of: n, range: (subRange?.upperBound ?? attributedText.string.startIndex)..<attributedText.string.endIndex) else { return }
-            subRange = range
-            if let frame = genreLabel.boundingRect(forCharacterRange: NSRange(range, in: attributedText.string)) {
-                let button = UIButton(frame: frame)
-                // button.backgroundColor = .blue.withAlphaComponent(0.3)
-                button.addTarget(self,
-                                 action: #selector(removeSpoilers),
-                                 for: .touchUpInside)
-                genreLabel.addSubview(button)
-            }
-        }
-        genreLabel.isUserInteractionEnabled = true
-    }
-
-    @objc func removeSpoilers() {
-        guard let media = media else { return }
-        guard let show = media.show else { return }
-        guard let episode = media.episode else { return }
-        guard let episodeTitle = episode.title else { return }
-
-        let markdownParser = SpoilerMarkdownParser(font: .preferredFont(forTextStyle: .subheadline),
-                                                   color: .label,
-                                                   automaticLinkDetectionEnabled: false)
-        markdownParser.bold.color = UIColor(asset: .globalTint)
-        markdownParser.bold.font = .preferredFont(forTextStyle: .subheadline).bold()
-        markdownParser.spoilerStrategy = .hideInlineSpoilers
-
-        let markdown = "__\(show.title)__ \(episode.localizedEpisodeNumber) - \(episodeTitle)"
-        genreLabel.attributedText = markdownParser.parse(markdown)
     }
 
     private func updateQuickActions() {
@@ -756,7 +737,7 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
                 }, for: .menuActionTriggered)
             }
-        case .episode(let episode, let show):
+        case .episode(let episode, _):
             if let watchingItem = WatchingManager.shared.watchingItem, let watchingModel = MediaModel(item: watchingItem), watchingModel == media {
                 mainActionButton.configuration?.title = "Cancel Check-in"
                 mainActionButton.configuration?.image = UIImage(systemName: "nosign")
@@ -781,73 +762,53 @@ final class MediaTitleTableViewCell: UITableViewCell {
                     self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
                 }, for: .menuActionTriggered)
                 secondaryActionButton.isHidden = false
-            } else {
-                show.mediaModel.progress { [weak self] progress in
-                    guard let self = self else { return }
-                    DispatchQueue.main.async { [self] in
-                        if let progress = progress {
-                            for season in progress.seasons where season.number == episode.season {
-                                for episodeProgress in season.episodes where episodeProgress.number == episode.number {
-                                    if episodeProgress.completed {
-                                        if let rating = media.userRating {
-                                            self.mainActionButton.configuration?.title = "Rated \(rating)"
-                                            self.mainActionButton.configuration?.image = UIImage(systemName: "heart.fill")
-                                        } else {
-                                            self.mainActionButton.configuration?.title = "Rate"
-                                            self.mainActionButton.configuration?.image = UIImage(systemName: "heart")
-                                        }
-                                        self.mainActionButton.showsMenuAsPrimaryAction = true
-                                        self.contextMenuHelper.media = media
-                                        self.mainActionButton.menu = self.contextMenuHelper.media.rateMenu
-                                        self.mainActionButton.addAction(UIAction { [weak self] _ in
-                                            guard let self = self else { return }
-                                            self.contextMenuHelper.media = self.media
-                                            self.mainActionButton.menu = self.contextMenuHelper.media.rateMenu
-                                            UISelectionFeedbackGenerator().selectionChanged()
-                                            self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                                        }, for: .menuActionTriggered)
-
-                                        self.secondaryActionButton.configuration?.title = "Share"
-                                        self.secondaryActionButton.configuration?.image = UIImage(systemName: "wave.3.right")
-                                        self.secondaryActionButton.showsMenuAsPrimaryAction = true
-                                        self.contextMenuHelper.media = media
-                                        self.secondaryActionButton.menu = self.contextMenuHelper.quickShareMenu
-                                        self.secondaryActionButton.addAction(UIAction { [weak self] _ in
-                                            guard let self = self else { return }
-                                            self.contextMenuHelper.media = self.media
-                                            self.secondaryActionButton.menu = self.contextMenuHelper.quickShareMenu
-                                            UISelectionFeedbackGenerator().selectionChanged()
-                                            self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                                        }, for: .menuActionTriggered)
-                                        self.secondaryActionButton.isHidden = false
-
-                                        self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
-                                        self.applyQuickActionButtonMultilineTitleStyle(self.secondaryActionButton)
-                                        self.invalidateIntrinsicContentSize()
-                                        return
-                                    }
-                                }
-                            }
-                        }
-                        self.mainActionButton.configuration?.title = "Track"
-                        self.mainActionButton.configuration?.image = UIImage(systemName: "play")
-                        self.mainActionButton.showsMenuAsPrimaryAction = true
-                        self.contextMenuHelper.media = media
-                        self.mainActionButton.menu = self.contextMenuHelper.quickTrackMenu
-                        self.mainActionButton.addAction(UIAction { [weak self] _ in
-                            guard let self = self else { return }
-                            self.contextMenuHelper.media = self.media
-                            self.mainActionButton.menu = self.contextMenuHelper.quickTrackMenu
-                            UISelectionFeedbackGenerator().selectionChanged()
-                            self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
-                        }, for: .menuActionTriggered)
-
-                        self.secondaryActionButton.isHidden = true
-                        self.applyQuickActionButtonMultilineTitleStyle(self.mainActionButton)
-                        self.applyQuickActionButtonMultilineTitleStyle(self.secondaryActionButton)
-                        self.invalidateIntrinsicContentSize()
-                    }
+            } else if episode.isWatched {
+                if let rating = media.userRating {
+                    mainActionButton.configuration?.title = "Rated \(rating)"
+                    mainActionButton.configuration?.image = UIImage(systemName: "heart.fill")
+                } else {
+                    mainActionButton.configuration?.title = "Rate"
+                    mainActionButton.configuration?.image = UIImage(systemName: "heart")
                 }
+                mainActionButton.showsMenuAsPrimaryAction = true
+                contextMenuHelper.media = media
+                mainActionButton.menu = contextMenuHelper.media.rateMenu
+                mainActionButton.addAction(UIAction { [weak self] _ in
+                    guard let self = self else { return }
+                    self.contextMenuHelper.media = self.media
+                    self.mainActionButton.menu = self.contextMenuHelper.media.rateMenu
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
+                }, for: .menuActionTriggered)
+
+                secondaryActionButton.configuration?.title = "Share"
+                secondaryActionButton.configuration?.image = UIImage(systemName: "wave.3.right")
+                secondaryActionButton.showsMenuAsPrimaryAction = true
+                contextMenuHelper.media = media
+                secondaryActionButton.menu = contextMenuHelper.quickShareMenu
+                secondaryActionButton.addAction(UIAction { [weak self] _ in
+                    guard let self = self else { return }
+                    self.contextMenuHelper.media = self.media
+                    self.secondaryActionButton.menu = self.contextMenuHelper.quickShareMenu
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    self.secondaryActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
+                }, for: .menuActionTriggered)
+                secondaryActionButton.isHidden = false
+            } else {
+                mainActionButton.configuration?.title = "Track"
+                mainActionButton.configuration?.image = UIImage(systemName: "play")
+                mainActionButton.showsMenuAsPrimaryAction = true
+                contextMenuHelper.media = media
+                mainActionButton.menu = contextMenuHelper.quickTrackMenu
+                mainActionButton.addAction(UIAction { [weak self] _ in
+                    guard let self = self else { return }
+                    self.contextMenuHelper.media = self.media
+                    self.mainActionButton.menu = self.contextMenuHelper.quickTrackMenu
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    self.mainActionButton.imageView?.addSymbolEffect(.bounce.down.byLayer, options: .speed(1.3))
+                }, for: .menuActionTriggered)
+
+                secondaryActionButton.isHidden = true
             }
         case .season:
             mainActionButton.configuration?.title = "Track"

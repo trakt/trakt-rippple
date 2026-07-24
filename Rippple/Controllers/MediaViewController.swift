@@ -513,7 +513,21 @@ final class MediaViewController: UITableViewController {
             var snapshot = self.dataSource.snapshot()
             for identifier in snapshot.itemIdentifiers {
                 switch identifier {
-                case .title, .backdrop:
+                case .title:
+                    snapshot.reloadItems([identifier])
+                default:
+                    continue
+                }
+            }
+            self.dataSource.apply(snapshot)
+        }.disposed(by: disposeBag)
+
+        episodeImagesReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            var snapshot = self.dataSource.snapshot()
+            for identifier in snapshot.itemIdentifiers {
+                switch identifier {
+                case .backdrop:
                     snapshot.reloadItems([identifier])
                 default:
                     continue

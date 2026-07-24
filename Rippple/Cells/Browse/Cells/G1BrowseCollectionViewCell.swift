@@ -12,7 +12,7 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
     @IBOutlet var backdrop: BackdropImageView!
 
     @IBOutlet var title: UILabel!
-    @IBOutlet var subtitle: UILabel!
+    @IBOutlet var subtitle: RedactableLabel!
     @IBOutlet var meta: UILabel!
     @IBOutlet var actionButton: UIButton!
 
@@ -34,6 +34,7 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
     var media: MediaModel! {
         didSet {
             actionButtonController.media = media
+            subtitle.isRedactedByDefault = false
             switch media! {
             case .movie(let movie):
                 backdrop.media = media
@@ -88,14 +89,20 @@ final class G1BrowseCollectionViewCell: UICollectionViewCell {
                     meta.isHidden = true
                 }
             case .showProgress(let show, let progress):
-                backdrop.showEpisodeSpoilers = UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle")
+                backdrop.showEpisodeSpoilers = UserDefaults.standard.bool(forKey: "GeneralSettings.episodeImageSpoilers") == false
                 title.text = show.title
+                subtitle.isHidden = false
 
                 if let episode = progress.nextEpisodeToWatch {
                     backdrop.media = episode.mediaModel(given: show)
 
-                    if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = episode.title {
-                        subtitle.text = "\(episode.localizedEpisodeNumber) - \(title)"
+                    if let episodeTitle = episode.title {
+                        let episodeText = "\(episode.localizedEpisodeNumber) - \(episodeTitle)"
+                        let episodeTitleRange = (episodeText as NSString).range(of: episodeTitle,
+                                                                                options: .backwards)
+                        subtitle.isRedactedByDefault =
+                            UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == false
+                        subtitle.setText(episodeText, redacting: episodeTitleRange)
                     } else {
                         subtitle.text = episode.localizedEpisodeNumber
                     }

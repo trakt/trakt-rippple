@@ -62,7 +62,7 @@
                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
-                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="999" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cRg-Le-J30">
+                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="999" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cRg-Le-J30" customClass="RedactableLabel" customModule="Rippple" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="28.5" width="313" height="18"/>
                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
@@ -71,6 +71,12 @@
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="999" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DTX-9a-vbB" customClass="LinkEnabledLabel" customModule="Rippple" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="49.5" width="313" height="16"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                                <nil key="textColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="999" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rED-aC-t01" customClass="RedactableLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="65.5" width="313" height="16"/>
                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                                 <nil key="textColor"/>
                                                                 <nil key="highlightedColor"/>
@@ -171,6 +177,7 @@
                                                         </subviews>
                                                         <constraints>
                                                             <constraint firstAttribute="trailing" secondItem="DTX-9a-vbB" secondAttribute="trailing" id="CFh-1Q-lBF"/>
+                                                            <constraint firstAttribute="trailing" secondItem="rED-aC-t01" secondAttribute="trailing" id="Ept-Ti-tle"/>
                                                             <constraint firstItem="Rm9-L3-eMe" firstAttribute="leading" secondItem="hdB-40-f68" secondAttribute="leading" id="UZQ-d1-KdQ"/>
                                                             <constraint firstAttribute="trailing" secondItem="iyj-Q4-XJ0" secondAttribute="trailing" id="WTS-C5-zUB"/>
                                                             <constraint firstItem="Rm9-L3-eMe" firstAttribute="top" secondItem="hdB-40-f68" secondAttribute="top" id="dh0-kh-yO1"/>
@@ -299,6 +306,7 @@
                 <outlet property="collectedStatus" destination="DZ3-cn-12m" id="Oi6-GY-OZh"/>
                 <outlet property="commentedStatus" destination="Frp-FB-3qV" id="e3D-aD-Ldu"/>
                 <outlet property="droppedStatus" destination="9ru-Ma-fH0" id="MT6-tZ-pvq"/>
+                <outlet property="episodeTitleLabel" destination="rED-aC-t01" id="Ept-ou-tlt"/>
                 <outlet property="hiddenStatus" destination="Qnc-e6-JM2" id="QRq-HE-nkh"/>
                 <outlet property="listedStatus" destination="PEb-78-zvF" id="sLl-j4-ZVx"/>
                 <outlet property="menuButtonContainter" destination="j5u-ZR-p6l" id="6cV-41-Etz"/>
