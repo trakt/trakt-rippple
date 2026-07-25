@@ -251,9 +251,6 @@
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                                 <color key="tintColor" name="Global Tint"/>
                                                 <state key="normal" title="Edit"/>
-                                                <connections>
-                                                    <action selector="edit:" destination="GoV-L5-Ki1" eventType="touchUpInside" id="vxV-fY-KBQ"/>
-                                                </connections>
                                             </button>
                                             <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7oV-bm-JDt" customClass="TitleOnlyButton" customModule="Rippple" customModuleProvider="target">
                                                 <rect key="frame" x="240" y="0.0" width="72" height="30"/>

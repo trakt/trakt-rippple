@@ -159,10 +159,7 @@
                                                     <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rb3-Ew-CGt" customClass="TitleOnlyButton" customModule="Rippple" customModuleProvider="target">
                                                         <rect key="frame" x="96" y="0.0" width="34" height="20"/>
                                                         <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
-                                                        <state key="normal" title="Block"/>
-                                                        <connections>
-                                                            <action selector="edit:" destination="GW1-BX-P8v" eventType="touchUpInside" id="Wpu-MK-QZs"/>
-                                                        </connections>
+                                                        <state key="normal" title="Report"/>
                                                     </button>
                                                 </subviews>
                                                 <edgeInsets key="layoutMargins" top="0.0" left="8" bottom="0.0" right="8"/>
@@ -175,9 +172,6 @@
                     </stackView>
                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="L5h-MZ-iUI">
                         <rect key="frame" x="23" y="37" width="317" height="91"/>
-                        <connections>
-                            <action selector="edit:" destination="GW1-BX-P8v" eventType="touchUpInside" id="FAX-QG-hJy"/>
-                        </connections>
                     </button>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hVc-lG-PMN" userLabel="Present Author">
                         <rect key="frame" x="11" y="131" width="57" height="20"/>
@@ -212,7 +206,7 @@
                 <outlet property="chatBubbleBackgroundImage" destination="lsy-Ix-Vvi" id="UOM-WH-mR8"/>
                 <outlet property="commentLabel" destination="d98-hb-7Rt" id="3E9-OO-wPf"/>
                 <outlet property="commentReactionButton" destination="m7K-Qk-yr6" id="1hz-eI-1G6"/>
-                <outlet property="editButton" destination="L5h-MZ-iUI" id="ZpW-jj-jH7"/>
+                <outlet property="editButton" destination="rb3-Ew-CGt" id="ZpW-jj-jH7"/>
                 <outlet property="likeButton" destination="V9x-7D-800" id="4aY-aH-uq5"/>
                 <outlet property="ratingAndSpoilerLabel" destination="xVx-dt-P4K" id="qxC-Nu-bN1"/>
                 <outlet property="replyCountButton" destination="0Sw-GM-dVG" id="zRW-Se-4Gi"/>

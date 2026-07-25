@@ -410,6 +410,7 @@
 		3AC160D6201F3459004A2A4F /* DeeplinkViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC160D5201F3459004A2A4F /* DeeplinkViewController.swift */; };
 		3AC160D8201F52AF004A2A4F /* DeeplinkLoadingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC160D7201F52AF004A2A4F /* DeeplinkLoadingViewController.swift */; };
 		3AC4599D1FBCD6E00016B111 /* CommentsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC4599C1FBCD6E00016B111 /* CommentsViewController.swift */; };
+		A1B2C3D4E5F60718293A4B5D /* ReportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* ReportViewController.swift */; };
 		3AC7C6F32AB225150092F871 /* NotificationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A77A85729FC1B410006177D /* NotificationModel.swift */; };
 		3AC8308C1FD7079400088486 /* LikeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC8308B1FD7079400088486 /* LikeManager.swift */; };
 		3AC8BEAA24E449B0000EB9A0 /* SearchTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AC8BEA824E4480B000EB9A0 /* SearchTableViewCell.xib */; };
@@ -970,6 +971,7 @@
 		3AC160D5201F3459004A2A4F /* DeeplinkViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewController.swift; sourceTree = "<group>"; };
 		3AC160D7201F52AF004A2A4F /* DeeplinkLoadingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkLoadingViewController.swift; sourceTree = "<group>"; };
 		3AC4599C1FBCD6E00016B111 /* CommentsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsViewController.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* ReportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportViewController.swift; sourceTree = "<group>"; };
 		3AC8308B1FD7079400088486 /* LikeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LikeManager.swift; sourceTree = "<group>"; };
 		3AC8BEA724E44808000EB9A0 /* SearchTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTableViewCell.swift; sourceTree = "<group>"; };
 		3AC8BEA824E4480B000EB9A0 /* SearchTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SearchTableViewCell.xib; sourceTree = "<group>"; };
@@ -2518,6 +2520,7 @@
 				3AD9329D1FB77932005289B5 /* ProfileViewController.swift */,
 				3AD932A51FB87F82005289B5 /* ActivityViewController.swift */,
 				3AC4599C1FBCD6E00016B111 /* CommentsViewController.swift */,
+				A1B2C3D4E5F60718293A4B5C /* ReportViewController.swift */,
 				3A54108E1FCC9E9400A66F18 /* CommentComposerViewController.swift */,
 				3A939B8D1FD28F7C00799552 /* PreviewViewController.swift */,
 				3AB2464C20079A58008B3A58 /* FollowingStoryLikeViewController.swift */,
@@ -3157,6 +3160,7 @@
 				3A1C9C6E2210355200A805D1 /* ActionTableViewCell.swift in Sources */,
 				3A6DB42D2D3BA54D007A7BA2 /* G1BrowseCollectionViewCell.swift in Sources */,
 				3AC4599D1FBCD6E00016B111 /* CommentsViewController.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5D /* ReportViewController.swift in Sources */,
 				3A67B73E23A400B2003C5E4D /* ListActionTableViewCell.swift in Sources */,
 				3A459EB220FA2D5300A1E99B /* ReactionsViewController.swift in Sources */,
 				3A609CDF2B8DF60500163A23 /* DroppedShowsViewController.swift in Sources */,

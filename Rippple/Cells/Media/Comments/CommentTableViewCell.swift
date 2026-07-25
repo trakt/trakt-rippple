@@ -17,6 +17,7 @@ import Translation
 
 protocol CommentTableViewCellDelegate: AnyObject {
     func cell(_ cell: CommentTableViewCell, action: CommentTableViewCell.Action)
+    func actionsMenu(for cell: CommentTableViewCell) -> UIMenu?
 }
 
 final class CommentTableViewCell: UITableViewCell {
@@ -26,7 +27,6 @@ final class CommentTableViewCell: UITableViewCell {
         case presentLikes
         case presentMediaDetails
         case share
-        case edit
         case reply
         case presentParentComment
     }
@@ -34,6 +34,7 @@ final class CommentTableViewCell: UITableViewCell {
     weak var delegate: CommentTableViewCellDelegate? {
         didSet {
             contextMenu.controller = delegate as? UIViewController
+            setupActionsMenu()
         }
     }
 
@@ -168,6 +169,7 @@ final class CommentTableViewCell: UITableViewCell {
                 setupUser()
                 setupActions()
             }
+            setupActionsMenu()
             UIView.performWithoutAnimation {
                 self.invalidateIntrinsicContentSize()
             }
@@ -388,13 +390,25 @@ final class CommentTableViewCell: UITableViewCell {
             likeButton?.isHidden = false
             replyButton?.isHidden = true // not available for replies
             editButton.isHidden = false
+            editButton.setTitle("Edit", for: .normal)
             shareButton?.isHidden = false // not available for replies
         } else {
             likeButton?.isHidden = false
             replyButton?.isHidden = false // not available for replies
-            editButton.isHidden = comment.isReply ? false : true
+            editButton.isHidden = !comment.isReply
+            editButton.setTitle("Report", for: .normal)
             shareButton?.isHidden = false // not available for replies
         }
+    }
+
+    private func setupActionsMenu() {
+        guard let commentModel = commentModel else { return }
+
+        let canShowActions = !commentModel.comment.isFiltered && !commentModel.comment.user.isBlocked
+        let showsInlineMenu = canShowActions && (commentModel.comment.isReply || commentModel.isOwnComment)
+
+        editButton.menu = showsInlineMenu ? delegate?.actionsMenu(for: self) : nil
+        editButton.showsMenuAsPrimaryAction = editButton.menu != nil
     }
 
     func hideMedia() {
@@ -422,11 +436,6 @@ final class CommentTableViewCell: UITableViewCell {
     @IBAction func share(_ sender: Any) {
         guard let delegate = delegate else { return }
         delegate.cell(self, action: .share)
-    }
-
-    @IBAction func edit(_ sender: Any) {
-        guard let delegate = delegate else { return }
-        delegate.cell(self, action: .edit)
     }
 
     @IBAction func reply(_ sender: Any) {

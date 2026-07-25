@@ -152,6 +152,21 @@ enum CommentMediaType: String {
     case episodes
 }
 
+enum ReportReason: String {
+    case spoilers
+    case language
+    case abusive
+    case spam
+    case bigotry
+    case political
+    case offTopic = "offtopic"
+    case support
+    case duplicate
+    case tooShort = "too_short"
+    case adult
+    case other
+}
+
 enum SearchType: String {
     case moviesAndShow = "movie,show"
     case movie
@@ -276,6 +291,9 @@ enum TraktAPIService {
 
     case deleteComment(id: Int64)
     case updateComment(id: Int64, body: String, spoilers: Bool)
+
+    case reportComment(id: Int64, reason: ReportReason, message: String?)
+    case reportUser(slug: String, reason: ReportReason, message: String?)
 
     case follow(slug: String)
     case unfollow(slug: String)
@@ -636,6 +654,10 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/comments/\(id)"
         case .updateComment(let id, _, _):
             return "/comments/\(id)"
+        case .reportComment(let id, _, _):
+            return "/comments/\(id)/report"
+        case .reportUser(let slug, _, _):
+            return "/users/\(slug)/report"
         case .follow(let id), .unfollow(let id):
             return "/users/\(id)/follow"
         case .following(let slug):
@@ -1058,6 +1080,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return .delete
         case .updateComment:
             return .put
+        case .reportComment, .reportUser:
+            return .post
         case .follow:
             return .post
         case .unfollow:
@@ -1351,6 +1375,14 @@ extension TraktAPIService: AuthorizedTargetType {
             return .requestPlain
         case .updateComment(_, let body, let spoilers):
             return .requestParameters(parameters: ["comment": body, "spoiler": spoilers],
+                                      encoding: JSONEncoding.default)
+        case .reportComment(_, let reason, let message),
+             .reportUser(_, let reason, let message):
+            var parameters: [String: Any] = ["reason": reason.rawValue]
+            if let message = message {
+                parameters["message"] = message
+            }
+            return .requestParameters(parameters: parameters,
                                       encoding: JSONEncoding.default)
         case .follow, .unfollow:
             return .requestPlain

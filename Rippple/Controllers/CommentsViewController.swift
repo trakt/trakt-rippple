@@ -324,6 +324,8 @@ final class CommentsViewController: UITableViewController {
         case .replies(let commentModel, _):
             title = "Comment and Replies"
             navigationItem.subtitle = commentModel.media.mediaTitle
+            moreActionsButtonItem.image = UIImage(systemName: "flag")
+            moreActionsButtonItem.accessibilityLabel = "Report"
             emptyLabel.text = "No replies yet.\nNew replies may appear with a delay due to caching."
             footnoteLabel.text = "New replies may appear with a delay due to caching."
             if commentModel.comment.isFiltered || commentModel.isOwnComment {
@@ -412,14 +414,16 @@ final class CommentsViewController: UITableViewController {
         }.disposed(by: disposeBag)
 
         onSyncWatchedMoviesChangedReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
             DispatchQueue.main.async {
-                self?.refreshPunchcard()
+                self.refreshPunchcard()
             }
         }.disposed(by: disposeBag)
 
         onSyncWatchedEpisodesChangedReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
             DispatchQueue.main.async {
-                self?.refreshPunchcard()
+                self.refreshPunchcard()
             }
         }.disposed(by: disposeBag)
 
@@ -808,13 +812,21 @@ extension CommentsViewController {
     private func moreMenu() -> UIMenu? {
         switch coordinator.type! {
         case .user(let user):
+            guard !user.isCurrentUser else { return nil }
+
+            let report = UIAction(title: "Report User",
+                                  image: UIImage(systemName: "flag")) { [weak self] _ in
+                guard let self = self else { return }
+                self.presentReport(.user(user))
+            }
+
             if user.isBlocked {
                 let unblock = UIAction(title: "Unblock User", attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
                     user.unblock()
                     self.moreActionsButtonItem.menu = self.moreMenu()
                 }
-                return UIMenu(title: "", children: [unblock])
+                return UIMenu(title: user.username, children: [unblock, report])
             } else {
                 var menuChildren: [UIMenuElement] = []
                 let block = UIAction(title: "Block User", attributes: .destructive) { [weak self] _ in
@@ -826,6 +838,7 @@ extension CommentsViewController {
                     self.moreActionsButtonItem.menu = self.moreMenu()
                 }
                 menuChildren.append(block)
+                menuChildren.append(report)
 
                 if FollowManager.shared.isPendingFollowing(user: user) {
                     let unfollow = UIAction(title: "Cancel Follow", attributes: .destructive) { [weak self] _ in
@@ -853,20 +866,47 @@ extension CommentsViewController {
                 return UIMenu(title: user.username, children: menuChildren)
             }
         case .replies(let commentModel, _):
-            let report = UIAction(title: "Block User", attributes: .destructive) { [weak self] _ in
+            guard !commentModel.isOwnComment else { return nil }
+
+            let comment = commentModel.comment
+            let block = UIAction(title: "Block User",
+                                 image: UIImage(systemName: "person.slash"),
+                                 attributes: .destructive) { [weak self] _ in
                 guard let self = self else { return }
-                commentModel.comment.filter()
+                comment.filter()
                 if let navigationController = self.navigationController {
                     navigationController.popViewController(animated: true)
                 }
                 self.moreActionsButtonItem.menu = self.moreMenu()
             }
-            return UIMenu(title: "", children: [report])
+            let reportUser = UIAction(title: "Report User",
+                                      image: UIImage(systemName: "flag")) { [weak self] _ in
+                guard let self = self else { return }
+                self.presentReport(.user(comment.user))
+            }
+            let reportComment = UIAction(title: "Report Comment",
+                                         image: UIImage(systemName: "exclamationmark.bubble")) { [weak self] _ in
+                guard let self = self else { return }
+                self.presentReport(.comment(comment))
+            }
+            return UIMenu(title: comment.user.username,
+                          children: [block, reportUser, reportComment])
         default:
             break
         }
 
         return nil
+    }
+
+    private func presentReport(_ target: ReportTarget) {
+        guard !target.user.isCurrentUser else { return }
+        guard UserManager.shared.currentUser != nil else {
+            onNeedsToShowLoginTransmitter.broadcast(true)
+            return
+        }
+
+        let reportViewController = ReportViewController(target: target)
+        present(reportViewController, animated: true)
     }
 
     private func sortMenu() -> UIMenu {
@@ -1268,83 +1308,90 @@ extension CommentsViewController: CommentTableViewCellDelegate {
         present(activityViewController, animated: true, completion: nil)
     }
 
-    private func edit(commentModel: CommentModel, from button: UIButton) {
-        let alertController = UIAlertController(title: nil,
-                                                message: nil,
-                                                preferredStyle: .actionSheet)
+    func actionsMenu(for cell: CommentTableViewCell) -> UIMenu? {
+        guard let commentModel = cell.commentModel else { return nil }
 
-        let cancel = UIAlertAction(title: "Cancel", style: .cancel)
-        alertController.addAction(cancel)
-
-        let edit = UIAlertAction(title: "Edit Comment", style: .default) { _ in
-            self.showComposer(for: commentModel.comment,
-                              media: commentModel.media)
-        }
-
-        let delete = UIAlertAction(title: "Delete Comment", style: .destructive) { _ in
-            let confirmationAlertController = UIAlertController(title: nil,
-                                                                message: "Are you sure you want to delete this comment?",
-                                                                preferredStyle: .alert)
-
-            let cancel = UIAlertAction(title: "Cancel", style: .cancel)
-            confirmationAlertController.addAction(cancel)
-
-            let delete = UIAlertAction(title: "Yes, Delete Comment", style: .destructive) { _ in
-                TraktAPIProvider.provider.request(.deleteComment(id: commentModel.comment.identifier),
-                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                    guard let self = self else { return }
-                    switch result {
-                    case .success(let moyaResponse):
-                        do {
-                            if moyaResponse.statusCode == 409 {
-                                DispatchQueue.main.async {
-                                    let alertController = UIAlertController(title: "Can't Delete",
-                                                                            message: "We cannot delete a comment that is older than 2 weeks or has at least one comment.",
-                                                                            preferredStyle: .alert)
-
-                                    let cancel = UIAlertAction(title: "Okay", style: .cancel)
-                                    alertController.addAction(cancel)
-                                    self.present(alertController, animated: true)
-                                }
-                            } else {
-                                _ = try moyaResponse.filterSuccessfulStatusCodes()
-
-                                DispatchQueue.main.async {
-                                    commentPostedTransmitter.broadcast(commentModel)
-                                    SwiftMessages.show(message: "🗑 Comment deleted")
-                                }
-                            }
-                        } catch {
-                            DispatchQueue.main.async {
-                                SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
-                            }
-                        }
-                    case .failure(let error):
-                        DispatchQueue.main.async {
-                            SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
-                        }
-                    }
-                }
+        if commentModel.isOwnComment {
+            let edit = UIAction(title: "Edit Comment",
+                                image: UIImage(systemName: "pencil")) { [weak self] _ in
+                guard let self = self else { return }
+                self.showComposer(for: commentModel.comment,
+                                  media: commentModel.media)
             }
-            confirmationAlertController.addAction(delete)
-
-            self.present(confirmationAlertController, animated: true)
+            let delete = UIAction(title: "Delete Comment",
+                                  image: UIImage(systemName: "trash"),
+                                  attributes: .destructive) { [weak self] _ in
+                guard let self = self else { return }
+                self.confirmDelete(commentModel)
+            }
+            return UIMenu(children: [edit, delete])
         }
 
-        let reportReply = UIAlertAction(title: "Block User", style: .default) { _ in
+        let blockUser = UIAction(title: "Block User",
+                                 image: UIImage(systemName: "person.slash"),
+                                 attributes: .destructive) { _ in
             commentModel.comment.filter()
         }
-
-        if commentModel.comment.isReply, !commentModel.isOwnComment {
-            alertController.addAction(reportReply)
-        } else {
-            alertController.addAction(edit)
-            alertController.addAction(delete)
+        let reportUser = UIAction(title: "Report User",
+                                  image: UIImage(systemName: "flag")) { [weak self] _ in
+            guard let self = self else { return }
+            self.presentReport(.user(commentModel.comment.user))
         }
+        let reportComment = UIAction(title: "Report Comment",
+                                     image: UIImage(systemName: "exclamationmark.bubble")) { [weak self] _ in
+            guard let self = self else { return }
+            self.presentReport(.comment(commentModel.comment))
+        }
+        return UIMenu(children: [blockUser, reportUser, reportComment])
+    }
 
-        alertController.popoverPresentationController?.sourceView = button
-
+    private func confirmDelete(_ commentModel: CommentModel) {
+        let alertController = UIAlertController(title: nil,
+                                                message: "Are you sure you want to delete this comment?",
+                                                preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alertController.addAction(UIAlertAction(title: "Yes, Delete Comment",
+                                                style: .destructive) { [weak self] _ in
+                guard let self = self else { return }
+                self.deleteComment(commentModel)
+            })
         present(alertController, animated: true)
+    }
+
+    private func deleteComment(_ commentModel: CommentModel) {
+        TraktAPIProvider.provider.request(.deleteComment(id: commentModel.comment.identifier),
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    if moyaResponse.statusCode == 409 {
+                        DispatchQueue.main.async {
+                            let alertController = UIAlertController(title: "Can't Delete",
+                                                                    message: "We cannot delete a comment that is older than 2 weeks or has at least one comment.",
+                                                                    preferredStyle: .alert)
+                            alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
+                            self.present(alertController, animated: true)
+                        }
+                    } else {
+                        _ = try moyaResponse.filterSuccessfulStatusCodes()
+
+                        DispatchQueue.main.async {
+                            commentPostedTransmitter.broadcast(commentModel)
+                            SwiftMessages.show(message: "🗑 Comment deleted")
+                        }
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
+                }
+            }
+        }
     }
 
     private func reply(commentModel: CommentModel) {
@@ -1375,8 +1422,6 @@ extension CommentsViewController: CommentTableViewCellDelegate {
             case .reply:
                 showComposer(for: commentReply(for: commentModel.comment),
                              media: commentModel.media)
-            case .edit:
-                edit(commentModel: commentModel, from: cell.editButton)
             case .presentLikes:
                 let comment = commentModel.comment
                 performSegue(withIdentifier: ViewControllerSegue.likes.rawValue,
@@ -1423,11 +1468,6 @@ extension CommentsViewController: CommentTableViewCellDelegate {
                 case .reply:
                     showComposer(for: commentReply(for: commentModel.comment),
                                  media: commentModel.media)
-                case .edit:
-                    edit(commentModel: CommentModel(media: commentModel.media,
-                                                    comment: commentModel.comment,
-                                                    spoilerStrategy: .showAllSpoilers),
-                         from: cell.editButton)
                 case .presentLikes:
                     performSegue(withIdentifier: ViewControllerSegue.likes.rawValue,
                                  sender: commentModel.comment)
@@ -1482,11 +1522,6 @@ extension CommentsViewController: CommentTableViewCellDelegate {
                 case .reply:
                     showComposer(for: commentReply(for: commentModel.comment),
                                  media: commentModel.media)
-                case .edit:
-                    edit(commentModel: CommentModel(media: commentModel.media,
-                                                    comment: commentModel.comment,
-                                                    spoilerStrategy: .showAllSpoilers),
-                         from: cell.editButton)
                 case .presentLikes:
                     performSegue(withIdentifier: ViewControllerSegue.likes.rawValue,
                                  sender: commentModel.comment)
