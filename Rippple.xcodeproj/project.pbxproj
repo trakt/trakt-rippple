@@ -367,6 +367,8 @@
 		3AAF0DBA21ECDA41006BB569 /* MediaTitleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAF0DB921ECDA41006BB569 /* MediaTitleTableViewCell.swift */; };
 		3AAF0DBE21EDC762006BB569 /* MediaCommentsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAF0DBD21EDC762006BB569 /* MediaCommentsTableViewCell.swift */; };
 		3AAF0DC021EDC76F006BB569 /* MediaCommentsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AAF0DBF21EDC76F006BB569 /* MediaCommentsTableViewCell.xib */; };
+		3AAF0DC221EDC78006BB569 /* RelatedMediaTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAF0DC121EDC78006BB569 /* RelatedMediaTableViewCell.swift */; };
+		3AAF0DC421EDC79006BB569 /* RelatedMediaTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AAF0DC321EDC79006BB569 /* RelatedMediaTableViewCell.xib */; };
 		3AAF3111296B1B3F00D400ED /* RecentSearchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAF3110296B1B3F00D400ED /* RecentSearchManager.swift */; };
 		3AB0EF2529BB9C0B008F0201 /* SpoilersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AB0EF2429BB9C0B008F0201 /* SpoilersViewController.swift */; };
 		3AB2464520066195008B3A58 /* RipppleMessage.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AB2464420065C53008B3A58 /* RipppleMessage.xib */; };
@@ -926,6 +928,8 @@
 		3AAF0DB921ECDA41006BB569 /* MediaTitleTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTitleTableViewCell.swift; sourceTree = "<group>"; };
 		3AAF0DBD21EDC762006BB569 /* MediaCommentsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCommentsTableViewCell.swift; sourceTree = "<group>"; };
 		3AAF0DBF21EDC76F006BB569 /* MediaCommentsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaCommentsTableViewCell.xib; sourceTree = "<group>"; };
+		3AAF0DC121EDC78006BB569 /* RelatedMediaTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelatedMediaTableViewCell.swift; sourceTree = "<group>"; };
+		3AAF0DC321EDC79006BB569 /* RelatedMediaTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RelatedMediaTableViewCell.xib; sourceTree = "<group>"; };
 		3AAF3110296B1B3F00D400ED /* RecentSearchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentSearchManager.swift; sourceTree = "<group>"; };
 		3AB0EF2429BB9C0B008F0201 /* SpoilersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpoilersViewController.swift; sourceTree = "<group>"; };
 		3AB2464420065C53008B3A58 /* RipppleMessage.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RipppleMessage.xib; sourceTree = "<group>"; };
@@ -2242,6 +2246,8 @@
 				3AAF0DB721EB3C5B006BB569 /* MediaTitleTableViewCell.xib */,
 				3AAF0DB021EA1F72006BB569 /* MediaOverviewTableViewCell.swift */,
 				3AAF0DB221EA1F88006BB569 /* MediaOverviewTableViewCell.xib */,
+				3AAF0DC121EDC78006BB569 /* RelatedMediaTableViewCell.swift */,
+				3AAF0DC321EDC79006BB569 /* RelatedMediaTableViewCell.xib */,
 				3ABBA49C24A7926F0063ACD7 /* PulsePreviewTableViewCell.swift */,
 				3ABBA49E24A792850063ACD7 /* PulsePreviewTableViewCell.xib */,
 				09B899162FCC010100DC202D /* Social Activity */,
@@ -2955,6 +2961,7 @@
 				3AFD2B272A543D750021D5BC /* BrowseHeaderTableViewCell.xib in Resources */,
 				3AE6FB321FC44F6800DDF282 /* UserTableViewCell.xib in Resources */,
 				3AAF0DC021EDC76F006BB569 /* MediaCommentsTableViewCell.xib in Resources */,
+				3AAF0DC421EDC79006BB569 /* RelatedMediaTableViewCell.xib in Resources */,
 				3A38B8312AC0929500624B11 /* Notes.storyboard in Resources */,
 				3A1D2E732591EDE900099144 /* ActivityHeaderTableViewCell.xib in Resources */,
 				3A50BA3B2A51932600973862 /* ToWatchBrowseCollectionViewCell.xib in Resources */,
@@ -3131,6 +3138,7 @@
 				3A7AB4D22BF3898E00116149 /* PulseViewController.swift in Sources */,
 				3A1B95102A3C7D260044972F /* BrowseTableViewCell.swift in Sources */,
 				3AAF0DBE21EDC762006BB569 /* MediaCommentsTableViewCell.swift in Sources */,
+				3AAF0DC221EDC78006BB569 /* RelatedMediaTableViewCell.swift in Sources */,
 				3A9119DC1FADDF3A00457D28 /* TraktAPIService.swift in Sources */,
 				3A939B921FD2A87900799552 /* Markdown+Strike.swift in Sources */,
 				3AF138D425D7054C00910ED8 /* RatingImageView.swift in Sources */,

@@ -287,6 +287,8 @@ enum TraktAPIService {
 
     case show(id: String, extended: Extended?)
     case movie(id: String, extended: Extended?)
+    case showRelatedSmart(id: String, pageInfo: PageInfo)
+    case movieRelatedSmart(id: String, pageInfo: PageInfo)
     case comment(id: Int64)
     case episode(id: String, season: Int, episode: Int)
     case user(id: String)
@@ -655,6 +657,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/me/friends"
         case .show(let id, _):
             return "/shows/\(id)"
+        case .showRelatedSmart(let id, _):
+            return "/shows/\(id)/related/smart"
         case .showSentiments(let id):
             return "/shows/\(id)/sentiments"
         case .movieSentiments(let id):
@@ -665,6 +669,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/episodes/\(id)/sentiments"
         case .movie(let id, _):
             return "/movies/\(id)"
+        case .movieRelatedSmart(let id, _):
+            return "/movies/\(id)/related/smart"
         case .comment(let id):
             return "/comments/\(id)"
         case .episode(let id, let season, let episode):
@@ -1060,11 +1066,11 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .commentLikesCount:
             return .head
-        case .show:
+        case .show, .showRelatedSmart:
             return .get
         case .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments:
             return .get
-        case .movie:
+        case .movie, .movieRelatedSmart:
             return .get
         case .comment:
             return .get
@@ -1367,6 +1373,12 @@ extension TraktAPIService: AuthorizedTargetType {
             } else {
                 return .requestPlain
             }
+        case .showRelatedSmart(_, let pageInfo):
+            return .requestParameters(parameters: ["extended": "full",
+                                                   "page": String(pageInfo.page),
+                                                   "limit": String(pageInfo.limit),
+                                                   "version": "2"],
+                                      encoding: URLEncoding.default)
         case .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments:
             return .requestPlain
         case .movie(_, let extended):
@@ -1376,6 +1388,12 @@ extension TraktAPIService: AuthorizedTargetType {
             } else {
                 return .requestPlain
             }
+        case .movieRelatedSmart(_, let pageInfo):
+            return .requestParameters(parameters: ["extended": "full",
+                                                   "page": String(pageInfo.page),
+                                                   "limit": String(pageInfo.limit),
+                                                   "version": "2"],
+                                      encoding: URLEncoding.default)
         case .comment:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)

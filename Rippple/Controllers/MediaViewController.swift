@@ -221,6 +221,13 @@ final class MediaViewController: UITableViewController {
             snapshot.appendItems([.collection(officialList)])
         }
 
+        switch media! {
+        case .movie, .show:
+            snapshot.appendItems([.spacer(24.006), .related])
+        case .episode, .season, .list, .showProgress:
+            break
+        }
+
         DispatchQueue.main.async {
             self.dataSource.apply(snapshot, animatingDifferences: false)
         }
@@ -248,6 +255,7 @@ final class MediaViewController: UITableViewController {
         case episode(MediaModel, CardType, EpisodeProgress?, Date?)
         case stats
         case whereToWatch
+        case related
         case link(String, String, URL)
         case collection(List)
         case notes
@@ -340,6 +348,11 @@ final class MediaViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "where to watch") as! WhereToWatchTableViewCell
             cell.media = self.media
             return cell
+        case .related:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "related") as! RelatedMediaTableViewCell
+            cell.delegate = self
+            cell.media = self.media
+            return cell
         case .link(let title, let imageName, let url):
             let cell = tableView.dequeueReusableCell(withIdentifier: "link") as! LinkTableViewCell
             cell.title.text = title
@@ -426,6 +439,7 @@ final class MediaViewController: UITableViewController {
         tableView.register(UINib(nibName: "CastTableViewCell", bundle: nil), forCellReuseIdentifier: "cast")
         tableView.register(UINib(nibName: "StatsTableViewCell", bundle: nil), forCellReuseIdentifier: "stats")
         tableView.register(UINib(nibName: "WhereToWatchTableViewCell", bundle: nil), forCellReuseIdentifier: "where to watch")
+        tableView.register(UINib(nibName: "RelatedMediaTableViewCell", bundle: nil), forCellReuseIdentifier: "related")
         tableView.register(UINib(nibName: "LinkTableViewCell", bundle: nil), forCellReuseIdentifier: "link")
         tableView.register(UINib(nibName: "CustomListTableViewCell", bundle: nil), forCellReuseIdentifier: "custom list")
         tableView.register(UINib(nibName: "PrivateNotesTableViewCell", bundle: nil), forCellReuseIdentifier: "notes")
@@ -1133,6 +1147,8 @@ extension MediaViewController {
             return UITableView.automaticDimension
         case .whereToWatch:
             return UITableView.automaticDimension
+        case .related:
+            return UITableView.automaticDimension
         case .link:
             return UITableView.automaticDimension
         case .openIn:
@@ -1353,6 +1369,17 @@ extension MediaViewController: CastTableViewCellDelegate {
             performSegue(withIdentifier: "people", sender: cast)
         case .showCrew(let crew):
             performSegue(withIdentifier: "people", sender: crew)
+        }
+    }
+}
+
+extension MediaViewController: RelatedMediaTableViewCellDelegate {
+    func cell(_ cell: RelatedMediaTableViewCell, action: RelatedMediaTableViewCell.Action) {
+        switch action {
+        case .showMedia(let media):
+            performSegue(withIdentifier: "media", sender: media)
+        case .getMoreWithVIP:
+            UIApplication.shared.switchToPurchase()
         }
     }
 }
