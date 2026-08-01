@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 18/03/2026.
-//  Copyright © 2026 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -455,8 +455,7 @@ struct OpenInItemEditView: View {
                     ForEach(OpenActionMediaType.allCases) { type in
                         Toggle(type.displayName,
                                isOn: Binding(get: { mediaTypes.contains(type) },
-                                             set: { if $0 { mediaTypes.insert(type) } else { mediaTypes.remove(type) } })).tint(Color(uiColor: UIColor(asset: .globalTint)))
-                            .toggleStyle(.switch)
+                                             set: { if $0 { mediaTypes.insert(type) } else { mediaTypes.remove(type) } }))
                     }
                 }
 

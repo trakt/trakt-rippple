@@ -40,7 +40,7 @@
                                                         <color key="tintColor" systemColor="secondaryLabelColor"/>
                                                         <imageReference key="image" image="pin" catalog="system" symbolScale="small" renderingMode="template"/>
                                                     </imageView>
-                                                    <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4Sd-Dq-p1s">
+                                                    <label contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4Sd-Dq-p1s" customClass="CommentMetadataLabel" customModule="Rippple" customModuleProvider="target">
                                                         <rect key="frame" x="20.5" y="0.0" width="33" height="20"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>

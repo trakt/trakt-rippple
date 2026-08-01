@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 08/10/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import UIKit
@@ -78,6 +78,8 @@ final class ActivityLabel: LinkEnabledLabel {
 }
 
 class LinkEnabledLabel: UILabel {
+    private static let tappableURLAttribute = NSAttributedString.Key("LinkEnabledLabel.tappableURL")
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         commonInit()
@@ -120,6 +122,10 @@ class LinkEnabledLabel: UILabel {
         }
     }
 
+    func addTappableURL(_ url: URL, to attributedString: NSMutableAttributedString, range: NSRange) {
+        attributedString.addAttribute(LinkEnabledLabel.tappableURLAttribute, value: url, range: range)
+    }
+
     private func url(at touches: Set<UITouch>) -> URL? {
         guard let attributedText = attributedText, attributedText.length > 0 else { return nil }
         guard let touchLocation = touches.sorted(by: { $0.timestamp < $1.timestamp }).last?.location(in: self) else { return nil }
@@ -135,8 +141,12 @@ class LinkEnabledLabel: UILabel {
         let characterRect = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer)
         guard characterRect.contains(touchLocation) else { return nil }
 
-        // Link styled by Apple
-        return textStorage.attribute(.link, at: characterIndex, effectiveRange: nil) as? URL
+        if let url = textStorage.attribute(.link, at: characterIndex, effectiveRange: nil) as? URL {
+            return url
+        }
+        return textStorage.attribute(LinkEnabledLabel.tappableURLAttribute,
+                                     at: characterIndex,
+                                     effectiveRange: nil) as? URL
     }
 
     private func preparedTextStorage() -> NSTextStorage? {

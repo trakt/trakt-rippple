@@ -3,15 +3,21 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 12/11/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Kingfisher
 import Receiver
 import UIKit
 
+#if !targetEnvironment(macCatalyst)
+import SwiftUI
+import Translation
+#endif
+
 protocol CommentTableViewCellDelegate: AnyObject {
     func cell(_ cell: CommentTableViewCell, action: CommentTableViewCell.Action)
+    func actionsMenu(for cell: CommentTableViewCell) -> UIMenu?
 }
 
 final class CommentTableViewCell: UITableViewCell {
@@ -21,7 +27,6 @@ final class CommentTableViewCell: UITableViewCell {
         case presentLikes
         case presentMediaDetails
         case share
-        case edit
         case reply
         case presentParentComment
     }
@@ -29,6 +34,7 @@ final class CommentTableViewCell: UITableViewCell {
     weak var delegate: CommentTableViewCellDelegate? {
         didSet {
             contextMenu.controller = delegate as? UIViewController
+            setupActionsMenu()
         }
     }
 
@@ -40,7 +46,7 @@ final class CommentTableViewCell: UITableViewCell {
     @IBOutlet var poster: PosterButton?
 
     // Comment
-    @IBOutlet var ratingAndSpoilerLabel: UILabel!
+    @IBOutlet var ratingAndSpoilerLabel: CommentMetadataLabel!
     @IBOutlet var commentLabel: LinkEnabledLabel!
     @IBOutlet var replyCountButton: ReplyCountButton!
     @IBOutlet var commentReactionButton: CommentReactionButton!
@@ -163,6 +169,7 @@ final class CommentTableViewCell: UITableViewCell {
                 setupUser()
                 setupActions()
             }
+            setupActionsMenu()
             UIView.performWithoutAnimation {
                 self.invalidateIntrinsicContentSize()
             }
@@ -291,11 +298,10 @@ final class CommentTableViewCell: UITableViewCell {
         var texts = [String]()
 
         defer {
-            ratingAndSpoilerLabel.text = texts.joined(separator: " · ")
-            ratingAndSpoilerLabel.isHidden = ratingAndSpoilerLabel.text == ""
+            ratingAndSpoilerLabel.configure(texts: texts,
+                                            comment: comment)
         }
-
-        if commentModel.comment.user.isBlocked {
+        if comment.isFiltered {
             texts.append("Blocked User")
             return
         }
@@ -384,13 +390,25 @@ final class CommentTableViewCell: UITableViewCell {
             likeButton?.isHidden = false
             replyButton?.isHidden = true // not available for replies
             editButton.isHidden = false
+            editButton.setTitle("Edit", for: .normal)
             shareButton?.isHidden = false // not available for replies
         } else {
             likeButton?.isHidden = false
             replyButton?.isHidden = false // not available for replies
-            editButton.isHidden = comment.isReply ? false : true
+            editButton.isHidden = !comment.isReply
+            editButton.setTitle("Report", for: .normal)
             shareButton?.isHidden = false // not available for replies
         }
+    }
+
+    private func setupActionsMenu() {
+        guard let commentModel = commentModel else { return }
+
+        let canShowActions = !commentModel.comment.isFiltered && !commentModel.comment.user.isBlocked
+        let showsInlineMenu = canShowActions && (commentModel.comment.isReply || commentModel.isOwnComment)
+
+        editButton.menu = showsInlineMenu ? delegate?.actionsMenu(for: self) : nil
+        editButton.showsMenuAsPrimaryAction = editButton.menu != nil
     }
 
     func hideMedia() {
@@ -418,11 +436,6 @@ final class CommentTableViewCell: UITableViewCell {
     @IBAction func share(_ sender: Any) {
         guard let delegate = delegate else { return }
         delegate.cell(self, action: .share)
-    }
-
-    @IBAction func edit(_ sender: Any) {
-        guard let delegate = delegate else { return }
-        delegate.cell(self, action: .edit)
     }
 
     @IBAction func reply(_ sender: Any) {
@@ -455,3 +468,129 @@ final class CommentTableViewCell: UITableViewCell {
         delegate.cell(self, action: .presentParentComment)
     }
 }
+
+// MARK: - Comment metadata
+
+final class CommentMetadataLabel: LinkEnabledLabel {
+    private static let translationURL = URL(string: "rippple://translate-comment")!
+
+    #if !targetEnvironment(macCatalyst)
+    private var translationHostingController: UIHostingController<CommentTranslationPresentationView>?
+    #endif
+
+    func configure(texts: [String], comment: Comment) {
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font as Any,
+            .foregroundColor: textColor as Any
+        ]
+        let fullString = NSMutableAttributedString(string: texts.joined(separator: " · "),
+                                                   attributes: attributes)
+
+        #if !targetEnvironment(macCatalyst)
+        didTapOnURL = { _ in }
+        #endif
+
+        if !comment.isFiltered, let language = comment.localizedLanguageName {
+            if fullString.length > 0 {
+                fullString.append(NSAttributedString(string: " · ", attributes: attributes))
+            }
+
+            #if targetEnvironment(macCatalyst)
+            fullString.append(NSAttributedString(string: language, attributes: attributes))
+            #else
+            let translationRangeStart = fullString.length
+            let symbolStyle = UIImage.SymbolConfiguration(font: font)
+            let translationAttachment = NSTextAttachment()
+            translationAttachment.image = UIImage(systemName: "translate")?
+                .withConfiguration(symbolStyle)
+                .withTintColor(textColor, renderingMode: .alwaysOriginal)
+            fullString.append(NSAttributedString(attachment: translationAttachment))
+            fullString.append(NSAttributedString(string: " \(language)", attributes: attributes))
+
+            let translationRange = NSRange(location: translationRangeStart,
+                                           length: fullString.length - translationRangeStart)
+            addTappableURL(CommentMetadataLabel.translationURL,
+                           to: fullString,
+                           range: translationRange)
+
+            let text = comment.body.htmlDecoded
+            didTapOnURL = { [weak self] _ in
+                self?.presentTranslation(text)
+            }
+            #endif
+        }
+
+        attributedText = fullString
+        isHidden = fullString.length == 0
+    }
+
+    #if !targetEnvironment(macCatalyst)
+    private func presentTranslation(_ text: String) {
+        guard !text.isEmpty else { return }
+        guard translationHostingController == nil else { return }
+        guard let viewController = containingViewController else { return }
+
+        let hostingController = UIHostingController(rootView: CommentTranslationPresentationView(text: text) { [weak self] in
+            self?.removeTranslationPresenter()
+        })
+        translationHostingController = hostingController
+
+        viewController.addChild(hostingController)
+        hostingController.view.backgroundColor = .clear
+        hostingController.view.isUserInteractionEnabled = false
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        insertSubview(hostingController.view, at: 0)
+        NSLayoutConstraint.activate([
+            hostingController.view.leadingAnchor.constraint(equalTo: leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: trailingAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: topAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
+        hostingController.didMove(toParent: viewController)
+    }
+
+    private var containingViewController: UIViewController? {
+        var responder: UIResponder? = self
+        while let nextResponder = responder?.next {
+            if let viewController = nextResponder as? UIViewController {
+                return viewController
+            }
+            responder = nextResponder
+        }
+        return nil
+    }
+
+    private func removeTranslationPresenter() {
+        guard let hostingController = translationHostingController else { return }
+        hostingController.willMove(toParent: nil)
+        hostingController.view.removeFromSuperview()
+        hostingController.removeFromParent()
+        translationHostingController = nil
+    }
+    #endif
+}
+
+#if !targetEnvironment(macCatalyst)
+private struct CommentTranslationPresentationView: View {
+    let text: String
+    let didDismiss: () -> Void
+
+    @State private var isPresented = false
+
+    var body: some View {
+        Color.clear
+            .translationPresentation(isPresented: $isPresented, text: text)
+            .onAppear {
+                DispatchQueue.main.async {
+                    isPresented = true
+                }
+            }
+            .onChange(of: isPresented) { wasPresented, isPresented in
+                guard wasPresented, !isPresented else { return }
+                DispatchQueue.main.async {
+                    didDismiss()
+                }
+            }
+    }
+}
+#endif

@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 18/03/2026.
-//  Copyright © 2026 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -248,7 +248,7 @@ enum BuiltInOpenAction: String, CaseIterable, Identifiable, Hashable {
     var subtitle: String {
         switch self {
         case .trakt:
-            return "trakt.tv"
+            return "app.trakt.tv"
         case .tmdb:
             return "themoviedb.org"
         case .imdb:

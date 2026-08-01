@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 16/04/2019.
-//  Copyright © 2019 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -15,6 +15,7 @@ let (onMoviesWatchlistedChangedTransmitter, onMoviesWatchlistedChangedReceiver) 
 let (onShowsWatchlistedChangedTransmitter, onShowsWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 let (onEpisodesWatchlistedChangedTransmitter, onEpisodesWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 let (onSeasonsWatchlistedChangedTransmitter, onSeasonsWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
+let (onWatchlistSearchableDataSourceChangedTransmitter, onWatchlistSearchableDataSourceChangedReceiver) = Receiver<ToWatchSearchableDataSource>.make(with: .warm(upTo: 1))
 
 final class WatchlistManager {
     private let disposeBag = DisposeBag()
@@ -37,6 +38,15 @@ final class WatchlistManager {
 
         onSettingsChangedReceiver.listen { _ in
             self.refreshWatchlist()
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.watchlist.removeAll()
+            self.watchlistedMovies.removeAll()
+            self.watchlistedShows.removeAll()
+            self.watchlistedSeasons.removeAll()
+            self.watchlistedEpisodes.removeAll()
         }.disposed(by: disposeBag)
 
         // refresh if checkin in in progress
@@ -120,7 +130,18 @@ final class WatchlistManager {
 
     static let shared = WatchlistManager()
 
-    fileprivate var watchlist = [MediaItem]()
+    var isEmpty: Bool {
+        watchlist.isEmpty
+    }
+
+    fileprivate var watchlist = [MediaItem]() {
+        didSet {
+            onWatchlistSearchableDataSourceChangedTransmitter.broadcast(ToWatchSearchableDataSource(
+                shows: watchlist.compactMap { $0.show?.mediaModel }.removingDuplicates(),
+                movies: watchlist.compactMap { $0.movie?.mediaModel }.removingDuplicates()
+            ))
+        }
+    }
 
     fileprivate var watchlistedMovies = Set<Int64>() {
         didSet {

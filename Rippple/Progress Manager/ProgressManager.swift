@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 01/08/2022.
-//  Copyright © 2022 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -28,6 +28,11 @@ final class ProgressManager {
     static let shared = ProgressManager()
 
     func setup() {
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.cache.removeAll()
+        }.disposed(by: disposeBag)
+
         onSettingsChangedReceiver.listen { [weak self] settings in
             guard let self = self else { return }
             if settings == nil {
@@ -77,6 +82,14 @@ final class ProgressManager {
         print("ProgressCache - RESET progress for \(show.title)")
         guard let key = show.identifiers.trakt else { return }
         cache.removeValue(forKey: key)
+    }
+
+    func cachedProgress(for show: Show) -> ShowProgress? {
+        guard let showId = show.identifiers.trakt,
+              let cachedProgress = cache.value(forKey: showId) else { return nil }
+        print("ProgressCache - Using cached progress for \(show.title)")
+        onProgressCacheHitTransmitter.broadcast(cachedProgress)
+        return cachedProgress.showProgress
     }
 
     func processAndCacheProgress(for show: Show,

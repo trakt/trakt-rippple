@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 08/10/2021.
-//  Copyright © 2021 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -158,7 +158,7 @@ final class GeneralSettingsViewController: UITableViewController {
             tableView.reloadData()
         } else if indexPath.section == 3 {
             let view = ImageCacheSettingsView()
-            let controller = UIHostingController(rootView: view)
+            let controller = RipppleHostingController(rootView: view)
             navigationController?.pushViewController(controller, animated: true)
         } else {
             if UserDefaults.standard.bool(forKey: "GeneralSettings.droppedshows") == true {

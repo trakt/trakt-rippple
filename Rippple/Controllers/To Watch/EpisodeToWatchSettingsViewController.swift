@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 30/12/2019.
-//  Copyright © 2019 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -567,7 +567,6 @@ struct EpisodeToWatchSettingsView: View {
             .sheet(isPresented: $isPresentingAddListPicker) {
                 AddListPickerView(viewModel: viewModel)
             }
-            .toggleStyle(.switch)
             .buttonStyle(.borderless)
     }
 
@@ -578,7 +577,6 @@ struct EpisodeToWatchSettingsView: View {
             Spacer()
             Toggle(title, isOn: value)
                 .labelsHidden()
-                .tint(Color(UIColor(asset: .globalTint)))
         }.contentShape(Rectangle())
     }
 
@@ -596,7 +594,6 @@ struct EpisodeToWatchSettingsView: View {
             Spacer()
             Toggle("", isOn: Binding(get: { viewModel.watchlist }, set: { viewModel.setWatchlist($0) }))
                 .labelsHidden()
-                .tint(Color(UIColor(asset: .globalTint)))
         }.contentShape(Rectangle())
     }
 
@@ -614,7 +611,6 @@ struct EpisodeToWatchSettingsView: View {
             Spacer()
             Toggle("", isOn: Binding(get: { item.enabled }, set: { viewModel.setOtherList(item, enabled: $0) }))
                 .labelsHidden()
-                .tint(Color(UIColor(asset: .globalTint)))
         }.contentShape(Rectangle())
     }
 
@@ -666,7 +662,6 @@ struct EpisodeToWatchSettingsView: View {
             Toggle("", isOn: Binding(get: { viewModel.reverse },
                                      set: { viewModel.setReverse($0) }))
                 .labelsHidden()
-                .tint(Color(UIColor(asset: .globalTint)))
         }
     }
 
@@ -678,7 +673,6 @@ struct EpisodeToWatchSettingsView: View {
             Toggle("", isOn: Binding(get: { viewModel.bingeableOnly },
                                      set: { viewModel.setBingeableOnly($0) }))
                 .labelsHidden()
-                .tint(Color(UIColor(asset: .globalTint)))
         }
     }
 
@@ -728,7 +722,6 @@ struct EpisodeToWatchSettingsView: View {
             Toggle("", isOn: Binding(get: { viewModel.upcomingEnabled },
                                      set: { viewModel.setUpcomingEnabled($0) }))
                 .labelsHidden()
-                .tint(Color(UIColor(asset: .globalTint)))
         }
     }
 }
@@ -913,7 +906,7 @@ struct AddListPickerView: View {
     }
 }
 
-final class EpisodeToWatchSettingsViewController: UIHostingController<EpisodeToWatchSettingsView> {
+final class EpisodeToWatchSettingsViewController: RipppleHostingController<EpisodeToWatchSettingsView> {
     private let viewModel = EpisodeToWatchSettingsViewModel()
 
     required init?(coder aDecoder: NSCoder) {
@@ -927,7 +920,7 @@ final class EpisodeToWatchSettingsViewController: UIHostingController<EpisodeToW
     }
 
     @IBAction func info(_ sender: Any) {
-        let controller = UIHostingController(rootView: EpisodeToWatchInfoView())
+        let controller = RipppleHostingController(rootView: EpisodeToWatchInfoView())
         controller.modalPresentationStyle = .formSheet
         present(controller, animated: true, completion: nil)
     }

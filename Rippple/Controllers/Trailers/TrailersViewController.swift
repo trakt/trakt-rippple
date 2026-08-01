@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 29/11/2024.
-//  Copyright © 2024 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import SwiftUI
@@ -19,7 +19,7 @@ final class TrailersViewController: UIViewController {
 
         guard let media = media else { return }
 
-        let hostingViewController = UIHostingController(rootView: TrailersView(mediaModel: media))
+        let hostingViewController = RipppleHostingController(rootView: TrailersView(mediaModel: media))
         addChild(hostingViewController)
         hostingViewController.view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(hostingViewController.view)

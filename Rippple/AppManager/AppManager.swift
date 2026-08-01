@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 19/02/2018.
-//  Copyright © 2018 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import AuthenticationServices
@@ -434,7 +434,7 @@ public extension UIApplication {
         alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
 
         alertController.addAction(UIAlertAction(title: "Get Trakt VIP", style: .default, handler: { _ in
-            if let url = URL(string: "https://trakt.tv/vip/referral/b1f95ecff7339c031dd1a374150067b9"),
+            if let url = URL(string: "https://app.trakt.tv/vip"),
                UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }
@@ -451,7 +451,7 @@ public extension UIApplication {
         alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
 
         alertController.addAction(UIAlertAction(title: "Get Trakt VIP", style: .default, handler: { _ in
-            if let url = URL(string: "https://trakt.tv/vip/referral/b1f95ecff7339c031dd1a374150067b9"),
+            if let url = URL(string: "https://app.trakt.tv/vip"),
                UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }
@@ -559,6 +559,13 @@ enum SwiftMessages {
     }
 
     static func show(message: String, style: Style? = .content) {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async {
+                show(message: message, style: style)
+            }
+            return
+        }
+
         if UserManager.shared.currentUser == nil {
             return
         }

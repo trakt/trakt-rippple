@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 06/02/2020.
-//  Copyright © 2020 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -523,7 +523,6 @@ struct MovieToWatchSettingsView: View {
             .sheet(isPresented: $isPresentingAddListPicker) {
                 MovieAddListPickerView(viewModel: viewModel)
             }
-            .toggleStyle(.switch)
             .buttonStyle(.borderless)
     }
 
@@ -534,7 +533,6 @@ struct MovieToWatchSettingsView: View {
             Spacer()
             Toggle(title, isOn: value)
                 .labelsHidden()
-                .tint(Color(UIColor(asset: .globalTint)))
         }.contentShape(Rectangle())
     }
 
@@ -552,7 +550,6 @@ struct MovieToWatchSettingsView: View {
             Spacer()
             Toggle("", isOn: Binding(get: { item.enabled }, set: { viewModel.setOtherList(item, enabled: $0) }))
                 .labelsHidden()
-                .tint(Color(UIColor(asset: .globalTint)))
         }.contentShape(Rectangle())
     }
 
@@ -604,7 +601,6 @@ struct MovieToWatchSettingsView: View {
             Toggle("", isOn: Binding(get: { viewModel.reverse },
                                      set: { viewModel.setReverse($0) }))
                 .labelsHidden()
-                .tint(Color(UIColor(asset: .globalTint)))
         }
     }
 
@@ -654,7 +650,6 @@ struct MovieToWatchSettingsView: View {
             Toggle("", isOn: Binding(get: { viewModel.upcomingEnabled },
                                      set: { viewModel.setUpcomingEnabled($0) }))
                 .labelsHidden()
-                .tint(Color(UIColor(asset: .globalTint)))
         }
     }
 }
@@ -839,7 +834,7 @@ struct MovieAddListPickerView: View {
     }
 }
 
-final class MovieToWatchSettingsViewController: UIHostingController<MovieToWatchSettingsView> {
+final class MovieToWatchSettingsViewController: RipppleHostingController<MovieToWatchSettingsView> {
     private let viewModel = MovieToWatchSettingsViewModel()
 
     required init?(coder aDecoder: NSCoder) {
@@ -853,7 +848,7 @@ final class MovieToWatchSettingsViewController: UIHostingController<MovieToWatch
     }
 
     @IBAction func info(_ sender: Any) {
-        let controller = UIHostingController(rootView: MovieToWatchInfoView())
+        let controller = RipppleHostingController(rootView: MovieToWatchInfoView())
         controller.modalPresentationStyle = .formSheet
         present(controller, animated: true, completion: nil)
     }

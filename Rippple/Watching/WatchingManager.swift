@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 05/11/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -69,6 +69,13 @@ final class WatchingManager {
 
         onSettingsChangedReceiver.listen { _ in
             self.refreshWatching()
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.refreshWatchingTimer?.invalidate()
+            self.watchingItem = nil
+            self.progress = 0
         }.disposed(by: disposeBag)
 
         refreshProgressTimer = Timer.scheduledTimer(withTimeInterval: 5.0,

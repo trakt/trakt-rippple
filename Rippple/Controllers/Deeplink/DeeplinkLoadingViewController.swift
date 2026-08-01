@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 29/01/2018.
-//  Copyright © 2018 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Moya
@@ -271,8 +271,8 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
             return
         case .user(let id):
             loadingLabel.text = "Looking for user..."
-            TraktAPIProvider.provider.request(TraktAPIService.user(id: id.slugify()),
-                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+            TraktAPIProvider.fetchUser(with: id,
+                                       callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
                 case .success(let moyaResponse):

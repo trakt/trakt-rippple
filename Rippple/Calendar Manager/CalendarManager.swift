@@ -2,7 +2,8 @@
 //  CalendarManager.swift
 //  Rippple
 //
-//  Created by Assistant on 10/10/2025.
+//  Created by Kevin Cador on 10/10/2025.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -65,6 +66,7 @@ let (calendarDataUpdatedTransmitter, calendarDataUpdatedReceiver) = Receiver<Cal
 
 let (nextMoviesTransmitter, nextMoviesReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
 let (nextEpisodesTransmitter, nextEpisodesReceiver) = Receiver<[MediaModel]>.make(with: .warm(upTo: 1))
+let (calendarSearchableDataSourceTransmitter, calendarSearchableDataSourceReceiver) = Receiver<ToWatchSearchableDataSource>.make(with: .warm(upTo: 1))
 
 final class CalendarManager {
     static let shared = CalendarManager()
@@ -77,11 +79,8 @@ final class CalendarManager {
 
     private var cachedData: CalendarData? {
         didSet {
-            guard let data = cachedData else { return }
-            print("Sending CalendarManager CachedData")
-            calendarDataUpdatedTransmitter.broadcast(data)
-            nextMoviesTransmitter.broadcast(data.nextMovies)
-            nextEpisodesTransmitter.broadcast(data.nextEpisodes)
+            transmitSearchableDataSource()
+            transmitCachedData()
         }
     }
 
@@ -110,6 +109,14 @@ final class CalendarManager {
             }
         }
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.cachedData = nil
+            self.storage.remove(key: self.storageKey)
+            nextMoviesTransmitter.broadcast([])
+            nextEpisodesTransmitter.broadcast([])
+        }.disposed(by: disposeBag)
+
         applicationLifecycleReceiver.hotOnly().listen { [weak self] applicationLifecycle in
             guard let self = self else { return }
             switch applicationLifecycle {
@@ -129,7 +136,7 @@ final class CalendarManager {
             self.debouncedReload.call()
         }.disposed(by: disposeBag)
 
-        onRecommendedChangedReceiver.hotOnly().listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedReload.call()
         }.disposed(by: disposeBag)
@@ -146,6 +153,7 @@ final class CalendarManager {
 
         onShowsToWatchChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
+            self.transmitSearchableDataSource()
             self.debouncedReload.call()
         }.disposed(by: disposeBag)
 
@@ -188,12 +196,32 @@ final class CalendarManager {
 
         let refreshOnUpcomingChange: (Bool) -> Void = { [weak self] _ in
             guard let self = self else { return }
-            let cachedData = self.cachedData
-            self.cachedData = cachedData
+            self.transmitCachedData()
+            self.transmitSearchableDataSource()
         }
 
         movieUpcomingEnabledReceiver.listen(to: refreshOnUpcomingChange).disposed(by: disposeBag)
         episodeUpcomingEnabledReceiver.listen(to: refreshOnUpcomingChange).disposed(by: disposeBag)
+        episodeToWatchBingeableOnlyReceiver.listen(to: refreshOnUpcomingChange).disposed(by: disposeBag)
+    }
+
+    private func transmitCachedData() {
+        guard let cachedData = cachedData else { return }
+        print("Sending CalendarManager CachedData")
+        calendarDataUpdatedTransmitter.broadcast(cachedData)
+        nextMoviesTransmitter.broadcast(cachedData.nextMovies)
+        nextEpisodesTransmitter.broadcast(cachedData.nextEpisodes)
+    }
+
+    private func transmitSearchableDataSource() {
+        guard let cachedData = cachedData else {
+            calendarSearchableDataSourceTransmitter.broadcast(.empty)
+            return
+        }
+        calendarSearchableDataSourceTransmitter.broadcast(ToWatchSearchableDataSource(
+            shows: cachedData.nextEpisodesWithBingeableFinales,
+            movies: cachedData.nextMovies
+        ))
     }
 
     private func loadCacheFromDisk() {
@@ -381,6 +409,37 @@ final class CalendarManager {
         saveCacheToDisk(data)
 
         return data
+    }
+}
+
+extension CalendarData {
+    var nextEpisodesWithBingeableFinales: [MediaModel] {
+        guard EpisodeToWatchSettings.shared.bingeableOnly else { return nextEpisodes }
+
+        let now = Date.now
+        let futureFinales = shows.filter { item in
+            item.firstAired >= now &&
+                item.episode.season != 0 &&
+                item.episode.isBingeableFinale &&
+                item.show.isInToWatch
+        }
+        let earliestFinalePerShow = Dictionary(grouping: futureFinales, by: \ShowEpisodeCalendarItem.show)
+            .values
+            .compactMap { items in
+                items.min(by: { $0.firstAired < $1.firstAired })
+            }
+            .sorted { lhs, rhs in
+                if lhs.firstAired != rhs.firstAired { return lhs.firstAired < rhs.firstAired }
+                return lhs.show.title < rhs.show.title
+            }
+
+        guard !earliestFinalePerShow.isEmpty else { return nextEpisodes }
+
+        let finaleModels = earliestFinalePerShow.map { item in
+            item.episode.mediaModel(given: item.show)
+        }
+
+        return (finaleModels + nextEpisodes).removingDuplicates()
     }
 }
 

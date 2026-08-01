@@ -53,7 +53,7 @@
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="P8W-7j-09T">
                                         <rect key="frame" x="25" y="-5" width="291" height="103"/>
                                         <subviews>
-                                            <label contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aad-bb-2t8">
+                                            <label contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aad-bb-2t8" customClass="CommentMetadataLabel" customModule="Rippple" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="0.0" width="291" height="16"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
@@ -144,9 +144,6 @@
                                                         <rect key="frame" x="8" y="0.0" width="30" height="20"/>
                                                         <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                         <state key="normal" title="Edit"/>
-                                                        <connections>
-                                                            <action selector="edit:" destination="3Ys-A7-pMI" eventType="touchUpInside" id="ezV-Wx-6bb"/>
-                                                        </connections>
                                                     </button>
                                                 </subviews>
                                                 <edgeInsets key="layoutMargins" top="0.0" left="8" bottom="0.0" right="8"/>
@@ -159,9 +156,6 @@
                     </stackView>
                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ryK-Nk-6c5">
                         <rect key="frame" x="23" y="37" width="317" height="131"/>
-                        <connections>
-                            <action selector="edit:" destination="3Ys-A7-pMI" eventType="touchUpInside" id="gWA-LV-XYT"/>
-                        </connections>
                     </button>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="epY-TL-4hF">
                         <rect key="frame" x="11" y="171" width="57" height="20"/>
@@ -196,7 +190,7 @@
                 <outlet property="chatBubbleBackgroundImage" destination="Q9n-Rt-OfA" id="UsU-Bp-Y9v"/>
                 <outlet property="commentLabel" destination="9tz-hj-r4z" id="LO8-ep-Yrq"/>
                 <outlet property="commentReactionButton" destination="Z2f-Dj-CJY" id="1lW-g9-WVo"/>
-                <outlet property="editButton" destination="ryK-Nk-6c5" id="jGK-Sn-1NA"/>
+                <outlet property="editButton" destination="58n-AD-qZ9" id="jGK-Sn-1NA"/>
                 <outlet property="ratingAndSpoilerLabel" destination="aad-bb-2t8" id="930-6E-SKR"/>
                 <outlet property="replyCountButton" destination="xIe-09-Dif" id="yNd-uO-S72"/>
                 <outlet property="replyMicImageView" destination="kft-f6-flq" id="cpa-jZ-SZv"/>

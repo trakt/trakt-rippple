@@ -3,11 +3,19 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 28/04/2026.
-//  Copyright © 2026 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
 import Moya
+
+private struct ActivityHistoryItem: Decodable {
+    let watchedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case watchedAt = "watched_at"
+    }
+}
 
 extension TraktAPIProvider {
     static func fetchSyncWatchedItems(type: SyncWatchedType,
@@ -97,6 +105,73 @@ extension TraktAPIProvider {
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
                         let items = try response.map([WatchedItem].self, using: TraktAPIProvider.decoder)
+                        let nextPage = response.response.flatMap { PageInfo(headers: $0.allHeaderFields)?.nextPage }
+                        continuation.resume(returning: (items, nextPage))
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    static func fetchActivityDates(slug: String,
+                                   startDate: Date,
+                                   endDate: Date,
+                                   completion: @escaping (Result<[Date], Error>) -> Void) {
+        _Concurrency.Task {
+            do {
+                let dates = try await fetchActivityDatesAsync(slug: slug,
+                                                              startDate: startDate,
+                                                              endDate: endDate)
+                completion(.success(dates))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+
+    private static func fetchActivityDatesAsync(slug: String,
+                                                startDate: Date,
+                                                endDate: Date) async throws -> [Date] {
+        var pageInfo = PageInfo.firstPage(with: 1000)
+        var activityDates = [Date]()
+
+        while true {
+            let (items, nextPage) = try await fetchActivityHistoryPage(slug: slug,
+                                                                       startDate: startDate,
+                                                                       endDate: endDate,
+                                                                       pageInfo: pageInfo)
+            activityDates.append(contentsOf: items.map(\.watchedAt))
+
+            guard let nextPage = nextPage, nextPage.page <= nextPage.pageCount else {
+                return activityDates
+            }
+
+            pageInfo = nextPage
+        }
+    }
+
+    private static func fetchActivityHistoryPage(slug: String,
+                                                 startDate: Date,
+                                                 endDate: Date,
+                                                 pageInfo: PageInfo) async throws -> ([ActivityHistoryItem], PageInfo?) {
+        return try await withCheckedThrowingContinuation { continuation in
+            TraktAPIProvider.provider.request(.history(slug: slug,
+                                                       type: nil,
+                                                       id: nil,
+                                                       pageInfo: pageInfo,
+                                                       startDate: startDate,
+                                                       endDate: endDate,
+                                                       extended: nil),
+                                              callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                switch result {
+                case .success(let moyaResponse):
+                    do {
+                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                        let items = try response.map([ActivityHistoryItem].self, using: TraktAPIProvider.decoder)
                         let nextPage = response.response.flatMap { PageInfo(headers: $0.allHeaderFields)?.nextPage }
                         continuation.resume(returning: (items, nextPage))
                     } catch {

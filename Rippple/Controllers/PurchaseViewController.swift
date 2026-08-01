@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 26/12/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Haring
@@ -64,7 +64,7 @@ final class PurchaseViewController: UIViewController {
             self.purchaseStackView?.arrangedSubviews[1].layoutIfNeeded()
             self.purchaseStackView?.arrangedSubviews[1].invalidateIntrinsicContentSize()
         }
-        let hostingController = UIHostingController(rootView: purchaseWhyView)
+        let hostingController = RipppleHostingController(rootView: purchaseWhyView)
         addChild(hostingController)
         purchaseStackView?.insertArrangedSubview(hostingController.view, at: 1)
         hostingController.didMove(toParent: self)
@@ -122,7 +122,7 @@ final class PurchaseViewController: UIViewController {
 
             present(alertController, animated: true)
         } else {
-            let hostingController = UIHostingController(rootView: PurchaseConfirmationView())
+            let hostingController = RipppleHostingController(rootView: PurchaseConfirmationView())
             present(hostingController, animated: true)
         }
     }

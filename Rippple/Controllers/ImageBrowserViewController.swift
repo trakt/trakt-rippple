@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 21/12/2025.
-//  Copyright © 2025 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Kingfisher
@@ -321,7 +321,7 @@ final class ImageBrowserViewController: UIViewController {
             snapshot.appendItems([.empty], toSection: .empty)
         } else {
             snapshot.appendSections([.content])
-            snapshot.appendItems(filteredImages.map { .content($0) }, toSection: .content)
+            snapshot.appendItems(filteredImages.removingDuplicates().map { .content($0) }, toSection: .content)
         }
 
         dataSource.apply(snapshot, animatingDifferences: animatingDifferences)

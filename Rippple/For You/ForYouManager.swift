@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 23/01/2018.
-//  Copyright © 2018 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -15,21 +15,29 @@ final class ForYouManager {
         case becauseYouFollowOnly
     }
 
-    var currentFilter = Filter.all
-
     private init() {}
 
     static let shared = ForYouManager()
 
-    func filterForYou(comments: [CommentItem]) -> [CommentItem] {
+    func filterForYou(comments: [CommentItem], filter: Filter) -> [CommentItem] {
         return comments.filter { item -> Bool in
-            if (currentFilter == .all || currentFilter == .becauseYouFollowOnly) && FollowManager.shared.followed(user: item.comment.user) {
+            if (filter == .all || filter == .becauseYouFollowOnly) && FollowManager.shared.followed(user: item.comment.user) {
                 return true
             }
 
-            if currentFilter == .all || currentFilter == .becauseYouWatchedOnly {
-                if item.movie?.isWatched == true { return true }
-                if item.episode?.isWatched == true { return true }
+            if filter == .all || filter == .becauseYouWatchedOnly {
+                switch item.type {
+                case .movie:
+                    if item.movie?.isWatched == true { return true }
+                case .show:
+                    if item.show?.isWatchedAtLeastOnce == true { return true }
+                case .season:
+                    if item.season?.isWatchedAtLeastOnce == true { return true }
+                case .episode:
+                    if item.episode?.isWatched == true { return true }
+                case .list, .officiallist, .unknown:
+                    break
+                }
             }
 
             return false

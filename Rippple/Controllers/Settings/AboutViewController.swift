@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 22/12/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import MessageUI
@@ -100,7 +100,7 @@ final class AboutViewController: UITableViewController {
 
         let history = UIAction(title: "Transactions History", image: UIImage(systemName: "list.bullet.rectangle.portrait")) { [weak self] _ in
             guard let self = self else { return }
-            let hosting = UIHostingController(rootView: TransactionsView())
+            let hosting = RipppleHostingController(rootView: TransactionsView())
             hosting.modalPresentationStyle = .formSheet
             self.present(hosting, animated: true)
         }
@@ -209,7 +209,7 @@ final class AboutViewController: UITableViewController {
                 tableView.deselectRow(at: indexPath, animated: true)
             } else if indexPath.row == SettingsSection.openIn.rawValue {
                 let view = OpenInSettingsView(presentationStyle: .pushed)
-                let controller = UIHostingController(rootView: view)
+                let controller = RipppleHostingController(rootView: view)
                 controller.title = "Open In"
                 navigationController?.pushViewController(controller, animated: true)
                 tableView.deselectRow(at: indexPath, animated: true)

@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 18/10/2021.
-//  Copyright © 2021 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -643,8 +643,8 @@ extension UILabel {
         textContainer.maximumNumberOfLines = numberOfLines
         textContainer.size = bounds.size
 
-        var glyphRange = NSRange()
-        layoutManager.characterRange(forGlyphRange: range, actualGlyphRange: &glyphRange)
+        let glyphRange = layoutManager.glyphRange(forCharacterRange: range,
+                                                  actualCharacterRange: nil)
         let frame = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer)
         return CGRect(x: frame.origin.x,
                       y: frame.origin.y,

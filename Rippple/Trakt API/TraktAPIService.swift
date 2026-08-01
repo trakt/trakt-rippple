@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 04/11/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -144,6 +144,29 @@ enum CommentsSort: String {
     case replies
 }
 
+enum CommentMediaType: String {
+    case all
+    case movies
+    case shows
+    case seasons
+    case episodes
+}
+
+enum ReportReason: String {
+    case spoilers
+    case language
+    case abusive
+    case spam
+    case bigotry
+    case political
+    case offTopic = "offtopic"
+    case support
+    case duplicate
+    case tooShort = "too_short"
+    case adult
+    case other
+}
+
 enum SearchType: String {
     case moviesAndShow = "movie,show"
     case movie
@@ -229,10 +252,10 @@ enum TraktAPIService {
     case revoke(token: String)
     case watching(slug: String = "me")
     case settings
-    case comments(type: TraktObjectType, pageInfo: PageInfo, sortBy: CommentsSort?, replies: IncludeReplies?)
+    case comments(type: TraktObjectType, pageInfo: PageInfo, sortBy: CommentsSort?, replies: IncludeReplies?, mediaType: CommentMediaType = .all)
     case commentCount(type: TraktObjectType)
 
-    case history(slug: String = "me", type: HistoryMediaType?, id: Int64?, pageInfo: PageInfo, endDate: Date?)
+    case history(slug: String = "me", type: HistoryMediaType?, id: Int64?, pageInfo: PageInfo, startDate: Date? = nil, endDate: Date?, extended: Extended? = .full)
     case isWatched(type: HistoryMediaType, id: Int64)
     case addMovieToHistory(id: Int64, watchedAt: Date?)
     case addEpisodeToHistory(id: Int64, watchedAt: Date?)
@@ -269,6 +292,9 @@ enum TraktAPIService {
     case deleteComment(id: Int64)
     case updateComment(id: Int64, body: String, spoilers: Bool)
 
+    case reportComment(id: Int64, reason: ReportReason, message: String?)
+    case reportUser(slug: String, reason: ReportReason, message: String?)
+
     case follow(slug: String)
     case unfollow(slug: String)
 
@@ -279,6 +305,8 @@ enum TraktAPIService {
 
     case show(id: String, extended: Extended?)
     case movie(id: String, extended: Extended?)
+    case showRelatedSmart(id: String, pageInfo: PageInfo)
+    case movieRelatedSmart(id: String, pageInfo: PageInfo)
     case comment(id: Int64)
     case episode(id: String, season: Int, episode: Int)
     case user(id: String)
@@ -517,7 +545,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/\(slug)/watching"
         case .settings:
             return "/users/settings"
-        case .comments(let type, _, let sort, _):
+        case .comments(let type, _, let sort, _, let mediaType):
             switch type {
             case .movie(let movieId):
                 if let sort = sort {
@@ -544,9 +572,9 @@ extension TraktAPIService: AuthorizedTargetType {
             case .comment(let commentId):
                 return "/comments/\(commentId)/replies"
             case .all:
-                return "/comments/recent/all/all"
+                return "/comments/recent/all/\(mediaType.rawValue)"
             case .trending:
-                return "/comments/trending"
+                return "/comments/trending/all/\(mediaType.rawValue)"
             }
         case .commentLikesCount(let id):
             return "/comments/\(id)/likes"
@@ -569,7 +597,7 @@ extension TraktAPIService: AuthorizedTargetType {
             case .trending:
                 fatalError()
             }
-        case .history(let slug, let type, let id, _, _):
+        case .history(let slug, let type, let id, _, _, _, _):
             if let type = type, id == nil {
                 return "/users/\(slug)/history/\(type)"
             } else if let type = type, let id = id {
@@ -626,6 +654,10 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/comments/\(id)"
         case .updateComment(let id, _, _):
             return "/comments/\(id)"
+        case .reportComment(let id, _, _):
+            return "/comments/\(id)/report"
+        case .reportUser(let slug, _, _):
+            return "/users/\(slug)/report"
         case .follow(let id), .unfollow(let id):
             return "/users/\(id)/follow"
         case .following(let slug):
@@ -647,6 +679,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/me/friends"
         case .show(let id, _):
             return "/shows/\(id)"
+        case .showRelatedSmart(let id, _):
+            return "/shows/\(id)/related/smart"
         case .showSentiments(let id):
             return "/shows/\(id)/sentiments"
         case .movieSentiments(let id):
@@ -657,6 +691,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/episodes/\(id)/sentiments"
         case .movie(let id, _):
             return "/movies/\(id)"
+        case .movieRelatedSmart(let id, _):
+            return "/movies/\(id)/related/smart"
         case .comment(let id):
             return "/comments/\(id)"
         case .episode(let id, let season, let episode):
@@ -1044,6 +1080,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return .delete
         case .updateComment:
             return .put
+        case .reportComment, .reportUser:
+            return .post
         case .follow:
             return .post
         case .unfollow:
@@ -1052,11 +1090,11 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .commentLikesCount:
             return .head
-        case .show:
+        case .show, .showRelatedSmart:
             return .get
         case .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments:
             return .get
-        case .movie:
+        case .movie, .movieRelatedSmart:
             return .get
         case .comment:
             return .get
@@ -1262,7 +1300,7 @@ extension TraktAPIService: AuthorizedTargetType {
         case .settings:
             return .requestParameters(parameters: ["extended": "browsing"],
                                       encoding: URLEncoding.default)
-        case .comments(_, let pageInfo, _, let replies):
+        case .comments(_, let pageInfo, _, let replies, _):
             if let replies = replies {
                 return .requestParameters(parameters: ["extended": "full,reactions",
                                                        "page": "\(pageInfo.page)",
@@ -1280,33 +1318,35 @@ extension TraktAPIService: AuthorizedTargetType {
                                                    "page": "\(pageInfo.page)",
                                                    "limit": "\(pageInfo.limit)"],
                                       encoding: URLEncoding.default)
-        case .history(_, _, _, let pageInfo, let date):
-            if let date = date {
+        case .history(_, _, _, let pageInfo, let startDate, let endDate, let extended):
+            var parameters = ["page": "\(pageInfo.page)",
+                              "limit": "\(pageInfo.limit)"]
+            if let extended = extended {
+                parameters["extended"] = extended.rawValue
+            }
+
+            if startDate != nil || endDate != nil {
                 let formatter = DateFormatter()
                 formatter.locale = Locale(identifier: "en_US_POSIX")
                 formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
                 formatter.timeZone = TimeZone(secondsFromGMT: 0)
 
-                if date.timeIntervalSince1970 == 0 {
-                    return .requestParameters(parameters: ["extended": "full",
-                                                           "page": "\(pageInfo.page)",
-                                                           "limit": "\(pageInfo.limit)",
-                                                           "start_at": "\(formatter.string(from: date))",
-                                                           "end_at": "\(formatter.string(from: date))"],
-                                              encoding: URLEncoding.default)
+                if let endDate = endDate, endDate.timeIntervalSince1970 == 0 {
+                    let formattedDate = formatter.string(from: endDate)
+                    parameters["start_at"] = formattedDate
+                    parameters["end_at"] = formattedDate
                 } else {
-                    return .requestParameters(parameters: ["extended": "full",
-                                                           "page": "\(pageInfo.page)",
-                                                           "limit": "\(pageInfo.limit)",
-                                                           "end_at": "\(formatter.string(from: date))"],
-                                              encoding: URLEncoding.default)
+                    if let startDate = startDate {
+                        parameters["start_at"] = formatter.string(from: startDate)
+                    }
+                    if let endDate = endDate {
+                        parameters["end_at"] = formatter.string(from: endDate)
+                    }
                 }
-            } else {
-                return .requestParameters(parameters: ["extended": "full",
-                                                       "page": "\(pageInfo.page)",
-                                                       "limit": "\(pageInfo.limit)"],
-                                          encoding: URLEncoding.default)
             }
+
+            return .requestParameters(parameters: parameters,
+                                      encoding: URLEncoding.default)
         case .isWatched:
             return .requestParameters(parameters: ["page": "1", "limit": "1"],
                                       encoding: URLEncoding.default)
@@ -1336,6 +1376,14 @@ extension TraktAPIService: AuthorizedTargetType {
         case .updateComment(_, let body, let spoilers):
             return .requestParameters(parameters: ["comment": body, "spoiler": spoilers],
                                       encoding: JSONEncoding.default)
+        case .reportComment(_, let reason, let message),
+             .reportUser(_, let reason, let message):
+            var parameters: [String: Any] = ["reason": reason.rawValue]
+            if let message = message {
+                parameters["message"] = message
+            }
+            return .requestParameters(parameters: parameters,
+                                      encoding: JSONEncoding.default)
         case .follow, .unfollow:
             return .requestPlain
         case .following:
@@ -1357,6 +1405,12 @@ extension TraktAPIService: AuthorizedTargetType {
             } else {
                 return .requestPlain
             }
+        case .showRelatedSmart(_, let pageInfo):
+            return .requestParameters(parameters: ["extended": "full",
+                                                   "page": String(pageInfo.page),
+                                                   "limit": String(pageInfo.limit),
+                                                   "version": "2"],
+                                      encoding: URLEncoding.default)
         case .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments:
             return .requestPlain
         case .movie(_, let extended):
@@ -1366,6 +1420,12 @@ extension TraktAPIService: AuthorizedTargetType {
             } else {
                 return .requestPlain
             }
+        case .movieRelatedSmart(_, let pageInfo):
+            return .requestParameters(parameters: ["extended": "full",
+                                                   "page": String(pageInfo.page),
+                                                   "limit": String(pageInfo.limit),
+                                                   "version": "2"],
+                                      encoding: URLEncoding.default)
         case .comment:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
@@ -2006,7 +2066,7 @@ extension TraktAPIService: AuthorizedTargetType {
             default:
                 return false
             }
-        case .comments(type: let type, _, _, _):
+        case .comments(type: let type, _, _, _, _):
             switch type {
             case .user:
                 return true

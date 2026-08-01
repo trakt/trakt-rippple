@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 11/06/2020.
-//  Copyright © 2020 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Combine
@@ -68,7 +68,7 @@ struct NotificationsTroubleshootView: View {
     }
 }
 
-final class NotificationsTroubleshootViewController: UIHostingController<NotificationsTroubleshootView> {
+final class NotificationsTroubleshootViewController: RipppleHostingController<NotificationsTroubleshootView> {
     init() {
         super.init(rootView: NotificationsTroubleshootView())
         title = "Troubleshooting"

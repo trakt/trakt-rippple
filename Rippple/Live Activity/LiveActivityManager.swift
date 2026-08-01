@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 28/07/2022.
-//  Copyright © 2022 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import BackgroundTasks
@@ -70,6 +70,16 @@ final class LiveActivityManager {
                 if progress >= 1.0 {
                     await self.stopActivity()
                 }
+            }
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.poster")
+            UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.thumb")
+            UserDefaults(suiteName: "group.tv.trakt.rippple")!.synchronize()
+            Task {
+                await self.stopActivity()
             }
         }.disposed(by: disposeBag)
     }

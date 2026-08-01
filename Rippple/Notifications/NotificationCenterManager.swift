@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 22/04/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -60,6 +60,15 @@ final class NotificationCenterManager: NSObject {
     func setup() {
         UNUserNotificationCenter.current().delegate = self
         getNotifications()
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.notifications = []
+            let defaults = UserDefaults(suiteName: "group.tv.trakt.rippple.notificationservice")!
+            defaults.removeObject(forKey: "NotificationCenterManager.notifications")
+            defaults.set(false, forKey: "NotificationCenterManager.notificationsReceived")
+            defaults.synchronize()
+        }.disposed(by: disposeBag)
 
         applicationLifecycleReceiver.listen { [weak self] applicationLifecycle in
             guard let self = self else { return }

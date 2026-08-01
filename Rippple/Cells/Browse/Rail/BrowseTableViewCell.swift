@@ -3,13 +3,38 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 16/06/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
+import LRUCache
 import Receiver
 import UIKit
 
 class BrowseTableViewCell: UITableViewCell {
+    private struct CacheKey: Hashable {
+        let section: String
+        let path: String
+        let query: String
+        let limit: Int?
+
+        init(filter: SavedFilter) {
+            let filter = filter.normalized
+            section = filter.section
+            path = filter.path
+            query = filter.query
+            limit = filter.limit
+        }
+    }
+
+    private struct CacheEntry {
+        let items: [MediaModel]
+        let notes: [String?]?
+        let expirationDate: Date
+    }
+
+    private static let cacheLifetime: TimeInterval = 2 * 60
+    private static let cache = LRUCache<CacheKey, CacheEntry>(countLimit: 20)
+
     @IBOutlet var collectionView: UICollectionView!
 
     @IBOutlet var pageControl: UIPageControl?
@@ -103,6 +128,16 @@ class BrowseTableViewCell: UITableViewCell {
             self.collectionView?.dragInteractionEnabled = UserDefaults.standard.bool(forKey: "GeneralSettings.dragging")
         }.disposed(by: disposeBag)
 
+        toWatchTitlesReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.collectionView?.reloadData()
+        }.disposed(by: disposeBag)
+
+        episodeImagesReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.collectionView?.reloadData()
+        }.disposed(by: disposeBag)
+
         collectionView.register(UINib(nibName: "L1BrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "cell")
         collectionView.register(UINib(nibName: "C2BrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "C2")
         collectionView.register(UINib(nibName: "TopBrowseCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "T1")
@@ -124,13 +159,13 @@ class BrowseTableViewCell: UITableViewCell {
         onLastWatchedEpisodeActivitiesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             if self.reuseIdentifier != "History" { return }
-            self.fetchItems()
+            self.fetchItems(ignoringCache: true)
         }.disposed(by: disposeBag)
 
         onLastWatchedMovieActivitiesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             if self.reuseIdentifier != "History" { return }
-            self.fetchItems()
+            self.fetchItems(ignoringCache: true)
         }.disposed(by: disposeBag)
 
         applicationLifecycleReceiver.listen { [weak self] applicationLifecycle in
@@ -140,7 +175,7 @@ class BrowseTableViewCell: UITableViewCell {
                 break
             case .didBecomeActive(let time):
                 if time > 60 * 60 * 1 {
-                    self.fetchItems()
+                    self.fetchItems(ignoringCache: true)
                 }
             case .didEnterBackground:
                 break
@@ -192,25 +227,26 @@ class BrowseTableViewCell: UITableViewCell {
         onSyncWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if self.savedFilter?.path != "/users/me/watched/movies" { return }
-            self.fetchItems()
+            self.fetchItems(ignoringCache: true)
         }.disposed(by: disposeBag)
 
         onSyncWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if self.savedFilter?.path != "/users/me/watched/shows" { return }
-            self.fetchItems()
+            self.fetchItems(ignoringCache: true)
         }.disposed(by: disposeBag)
     }
 
-    private func fetchItems() {
+    private func fetchItems(ignoringCache: Bool = false) {
+        task = nil
         notes = nil
 
+        guard let filter = savedFilter else { return }
+
         if reuseIdentifier == "History" {
-            fetchHistory()
+            fetchHistory(filter: filter, ignoringCache: ignoringCache)
             return
         }
-
-        guard let filter = savedFilter else { return }
 
         if filter.section == "episodes_to_watch" {
             items = EpisodeToWatchManager.shared.filteredMediaModels
@@ -244,24 +280,46 @@ class BrowseTableViewCell: UITableViewCell {
             items = PinnedMoviesManager.shared.pinnedMovies.compactMap { $0.mediaModel }
             return
         }
+
+        let cacheKey = CacheKey(filter: filter)
+        if ignoringCache {
+            Self.cache.removeValue(forKey: cacheKey)
+        } else if let cachedEntry = Self.cachedEntry(forKey: cacheKey) {
+            notes = cachedEntry.notes
+            items = cachedEntry.items
+            return
+        }
+
         task = Task {
-            var items: [MediaModel]?
+            let entry: CacheEntry
             if filter.path.localizedStandardContains("27798283") || filter.path.localizedStandardContains("27798281") || filter.path.localizedStandardContains("27798291") || filter.path.localizedStandardContains("27798288") || filter.path.localizedStandardContains("27798292") {
                 let mediaItems = try await self.fetch(filter: filter)
-                items = mediaItems.compactMap { MediaModel(item: $0) }
-                if Task.isCancelled { return }
-                self.notes = mediaItems.map { $0.notes }
-                self.items = items
+                entry = CacheEntry(items: mediaItems.compactMap { MediaModel(item: $0) },
+                                   notes: mediaItems.map { $0.notes },
+                                   expirationDate: Date().addingTimeInterval(Self.cacheLifetime))
             } else {
-                items = try await self.fetch(filter: filter).compactMap { MediaModel(item: $0) }
-                if Task.isCancelled { return }
-                self.notes = nil
-                self.items = items
+                let items = try await self.fetch(filter: filter).compactMap { MediaModel(item: $0) }
+                entry = CacheEntry(items: items,
+                                   notes: nil,
+                                   expirationDate: Date().addingTimeInterval(Self.cacheLifetime))
             }
+            if Task.isCancelled { return }
+
+            Self.cache.setValue(entry, forKey: cacheKey, cost: entry.items.count)
+            self.notes = entry.notes
+            self.items = entry.items
         }
     }
 
-    private func fetchHistory() {
+    private func fetchHistory(filter: SavedFilter, ignoringCache: Bool) {
+        let cacheKey = CacheKey(filter: filter)
+        if ignoringCache {
+            Self.cache.removeValue(forKey: cacheKey)
+        } else if let cachedEntry = Self.cachedEntry(forKey: cacheKey) {
+            items = cachedEntry.items
+            return
+        }
+
         TraktAPIProvider.provider.request(.history(slug: "me",
                                                    type: nil,
                                                    id: nil,
@@ -275,9 +333,14 @@ class BrowseTableViewCell: UITableViewCell {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let fetchedActivities = try response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
+                    let items = fetchedActivities.compactMap { MediaModel(item: $0) }
+                    let entry = CacheEntry(items: items,
+                                           notes: nil,
+                                           expirationDate: Date().addingTimeInterval(Self.cacheLifetime))
+                    Self.cache.setValue(entry, forKey: cacheKey, cost: items.count)
 
                     DispatchQueue.main.async {
-                        self.items = fetchedActivities.compactMap { MediaModel(item: $0) }
+                        self.items = items
                     }
                 } catch {
                     print("Error Fetching History \(error)")
@@ -286,6 +349,23 @@ class BrowseTableViewCell: UITableViewCell {
                 print("Error Fetching History \(error)")
             }
         }
+    }
+
+    private static func cachedEntry(forKey key: CacheKey) -> CacheEntry? {
+        guard let entry = cache.value(forKey: key) else { return nil }
+        guard entry.expirationDate > Date() else {
+            cache.removeValue(forKey: key)
+            return nil
+        }
+        return entry
+    }
+
+    static func removeCachedItems(for filter: SavedFilter) {
+        cache.removeValue(forKey: CacheKey(filter: filter))
+    }
+
+    static func removeAllCachedItems() {
+        cache.removeAll()
     }
 
     private func fetch(filter: SavedFilter) async throws -> [MediaItem] {

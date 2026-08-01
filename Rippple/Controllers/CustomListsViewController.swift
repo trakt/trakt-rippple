@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 10/12/2019.
-//  Copyright © 2019 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import NVActivityIndicatorView
@@ -312,7 +312,7 @@ final class CustomListsViewController: UITableViewController {
         alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
 
         alertController.addAction(UIAlertAction(title: "Get Trakt VIP", style: .default, handler: { _ in
-            if let url = URL(string: "https://trakt.tv/vip/referral/b1f95ecff7339c031dd1a374150067b9"),
+            if let url = URL(string: "https://app.trakt.tv/vip"),
                UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }
@@ -487,8 +487,8 @@ final class CustomListsViewController: UITableViewController {
             watchlistViewController.user = user
         }
 
-        if let recommendedViewController = segue.destination as? RecommendedViewController {
-            recommendedViewController.user = user
+        if let userFavoritesViewController = segue.destination as? UserFavoritesViewController {
+            userFavoritesViewController.user = user
         }
 
         if let collectionViewController = segue.destination as? CollectionViewController {
@@ -803,7 +803,7 @@ extension CustomListsViewController: UITableViewDropDelegate {
                     print("Recommendation successful \(response)")
 
                     DispatchQueue.main.async {
-                        RecommendedManager.shared.refresh()
+                        UserFavoritesManager.shared.refresh()
                         SwiftMessages.show(message: "⭐️ Added \(models.count) to Favorites")
                     }
 

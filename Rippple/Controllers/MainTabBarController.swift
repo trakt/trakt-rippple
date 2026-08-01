@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 06/12/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -103,7 +103,7 @@ final class MainTabBarController: UITabBarController {
                                     image: UIImage(systemName: "star"),
                                     identifier: Tab.recommended.rawValue,
                                     viewControllerProvider: { _ in
-                                        StyledNavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "RecommendedViewController"))
+                                        StyledNavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "UserFavoritesViewController"))
                                     })
         store[.collection] = UITab(title: "Library",
                                    image: UIImage(systemName: "book"),
@@ -149,7 +149,7 @@ final class MainTabBarController: UITabBarController {
 
         // tabBar.tintColor = .label
 
-        tabBarMinimizeBehavior = .onScrollDown
+        updateTabBarMinimizeBehavior(neverMinimize: UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize"))
 
         updateTabBar(animated: false)
 
@@ -165,6 +165,11 @@ final class MainTabBarController: UITabBarController {
             self.updateTabBar(animated: false)
         }.disposed(by: disposeBag)
 
+        neverMinimizeTabBarReceiver.listen { [weak self] neverMinimize in
+            guard let self = self else { return }
+            self.updateTabBarMinimizeBehavior(neverMinimize: neverMinimize)
+        }.disposed(by: disposeBag)
+
         updateWatchingItem()
         WatchingManager.shared.onWatchingItemChangedReceiver.hotOnly().listen { [weak self] _, _ in
             guard let self = self else { return }
@@ -172,6 +177,10 @@ final class MainTabBarController: UITabBarController {
         }.disposed(by: disposeBag)
 
         delegate = self
+    }
+
+    private func updateTabBarMinimizeBehavior(neverMinimize: Bool) {
+        tabBarMinimizeBehavior = neverMinimize ? .never : .onScrollDown
     }
 
     private func updateWatchingItem() {
@@ -754,8 +763,8 @@ extension MainTabBarController: UITabBarControllerDelegate {
                 if shouldScrollToTop(view: viewController.view) {
                     scrollToTop(view: viewController.view)
                 } else if let navigationController = viewController as? UINavigationController,
-                          let recommendedViewController = navigationController.topViewController as? RecommendedViewController {
-                    recommendedViewController.cycleFilter()
+                          let userFavoritesViewController = navigationController.topViewController as? UserFavoritesViewController {
+                    userFavoritesViewController.cycleFilter()
                 }
             } else if tab.identifier == Tab.collection.rawValue {
                 if shouldScrollToTop(view: viewController.view) {

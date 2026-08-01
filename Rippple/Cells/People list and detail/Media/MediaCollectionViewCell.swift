@@ -3,19 +3,22 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 21/09/2019.
-//  Copyright © 2019 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
 final class MediaCollectionViewCell: UICollectionViewCell {
     @IBOutlet var posterImageView: PosterImageView!
     @IBOutlet var mediaTitleLabel: UILabel!
-    @IBOutlet var additionalInfoLabel: UILabel!
+    @IBOutlet var additionalInfoLabel: RedactableLabel!
 
     var isRecentlyWatched = false
 
     private let dateComponentsFormatter = DateComponentsFormatter()
+    private let disposeBag = DisposeBag()
+    private var isDisplayingActorEpisodeCount = false
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -34,10 +37,17 @@ final class MediaCollectionViewCell: UICollectionViewCell {
         dateComponentsFormatter.allowedUnits = [.second, .minute, .hour, .day, .month, .year]
         dateComponentsFormatter.maximumUnitCount = 1
         dateComponentsFormatter.unitsStyle = .short
+
+        actorEpisodeCountsReceiver.listen { [weak self] redactsEpisodeCounts in
+            guard let self = self else { return }
+            guard self.isDisplayingActorEpisodeCount else { return }
+            self.additionalInfoLabel.isRedactedByDefault = redactsEpisodeCounts
+        }.disposed(by: disposeBag)
     }
 
     var cast: Cast? {
         didSet {
+            clearAdditionalInfo()
             if let cast = cast {
                 crew = nil
                 mediaItem = nil
@@ -72,8 +82,7 @@ final class MediaCollectionViewCell: UICollectionViewCell {
                             additionalInfoLabel.text = "\(dateComponentsFormatter.string(from: lastWatchedDate, to: Date.now) ?? "X") ago"
                         }
                     } else if let episodeCount = cast.episodeCount {
-                        additionalInfoLabel.isHidden = false
-                        additionalInfoLabel.text = episodeCount <= 1 ? "\(episodeCount) episode" : "\(episodeCount) episodes"
+                        displayActorEpisodeCount(episodeCount)
                     }
                 }
             }
@@ -85,6 +94,7 @@ final class MediaCollectionViewCell: UICollectionViewCell {
             if let crew = crew {
                 cast = nil
                 mediaItem = nil
+                clearAdditionalInfo()
 
                 mediaTitleLabel.isHidden = false
                 additionalInfoLabel.isHidden = false
@@ -110,6 +120,7 @@ final class MediaCollectionViewCell: UICollectionViewCell {
             if let mediaItem = mediaItem {
                 cast = nil
                 crew = nil
+                clearAdditionalInfo()
 
                 additionalInfoLabel.isHidden = true
                 mediaTitleLabel.isHidden = true
@@ -121,5 +132,19 @@ final class MediaCollectionViewCell: UICollectionViewCell {
                 }
             }
         }
+    }
+
+    private func clearAdditionalInfo() {
+        isDisplayingActorEpisodeCount = false
+        additionalInfoLabel.isRedactedByDefault = false
+        additionalInfoLabel.text = nil
+        additionalInfoLabel.isHidden = true
+    }
+
+    private func displayActorEpisodeCount(_ episodeCount: Int) {
+        isDisplayingActorEpisodeCount = true
+        additionalInfoLabel.isRedactedByDefault = UserDefaults.standard.bool(forKey: "GeneralSettings.actorEpisodeCountSpoilers")
+        additionalInfoLabel.text = episodeCount <= 1 ? "\(episodeCount) episode" : "\(episodeCount) episodes"
+        additionalInfoLabel.isHidden = false
     }
 }

@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 31/07/2022.
-//  Copyright © 2022 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -55,7 +55,16 @@ final class ListsManager {
                 self.refreshLists()
             } else {
                 self.lists.removeAll()
+                UserDefaults.standard.removeObject(forKey: "ListsManager.lists")
+                UserDefaults.standard.synchronize()
             }
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.lists.removeAll()
+            UserDefaults.standard.removeObject(forKey: "ListsManager.lists")
+            UserDefaults.standard.synchronize()
         }.disposed(by: disposeBag)
 
         onListChangedReceiver.listen { [weak self] lists in

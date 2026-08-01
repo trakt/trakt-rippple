@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 05/12/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -31,6 +31,11 @@ final class LikeManager {
 
         onSettingsChangedReceiver.listen { _ in
             self.refreshListLikes()
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.listLikes.removeAll()
         }.disposed(by: disposeBag)
     }
 

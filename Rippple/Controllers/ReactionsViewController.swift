@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 14/07/2018.
-//  Copyright © 2018 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Moya

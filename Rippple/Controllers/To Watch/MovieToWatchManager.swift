@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 07/05/2020.
-//  Copyright © 2020 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -202,6 +202,26 @@ final class MovieToWatchManager {
             self.mediaModels = mediaModels
         }
 
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.operationQueue.cancelAllOperations()
+            self.timer?.invalidate()
+            self.timer = nil
+            self.status = .content
+            self.moviesInList = nil
+            self.movies = nil
+            self.mediaModels = []
+            self.releaseInfoCache = [:]
+            self.futureMediaModels = []
+            TinyStorage.cache.remove(key: "MovieToWatchManager.moviesInList")
+            TinyStorage.cache.remove(key: "MovieToWatchManager.movies")
+            TinyStorage.cache.remove(key: "MovieToWatchManager.mediaModels")
+            TinyStorage.cache.remove(key: "MovieToWatchManager.releaseInfoCache")
+            TinyStorage.cache.remove(key: "MovieToWatchManager.futureMediaModels")
+            onAllMoviesToWatchChangedTransmitter.broadcast([])
+            self.debouncedTransmit.fireNow()
+        }.disposed(by: disposeBag)
+
         onSettingsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             print("MovieToWatchManager.forceRefresh because settings changes")
@@ -235,10 +255,10 @@ final class MovieToWatchManager {
             }
         }.disposed(by: disposeBag)
 
-        onRecommendedChangedReceiver.skip(count: 1).listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.skip(count: 1).listen { [weak self] _ in
             guard let self = self else { return }
             if MovieToWatchSettings.shared.recommended {
-                print("MovieToWatchManager.debouncedForceRefresh because onRecommendedChangedReceiver")
+                print("MovieToWatchManager.debouncedForceRefresh because onUserFavoritesChangedReceiver")
                 self.debouncedForceRefresh.call()
             }
         }.disposed(by: disposeBag)

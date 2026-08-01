@@ -3,7 +3,7 @@
 //  SingleWidget
 //
 //  Created by Kevin Cador on 10/07/2022.
-//  Copyright © 2022 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import SwiftUI

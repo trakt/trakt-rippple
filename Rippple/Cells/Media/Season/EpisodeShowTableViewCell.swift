@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 20/10/2020.
-//  Copyright © 2020 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -12,7 +12,7 @@ import Receiver
 import UIKit
 
 final class EpisodeShowTableViewCell: UITableViewCell {
-    @IBOutlet var title: UILabel!
+    @IBOutlet var title: RedactableLabel!
     @IBOutlet var subtitle: UILabel!
     @IBOutlet var additionalInfo: UILabel!
     @IBOutlet var watched: UIView!
@@ -101,38 +101,6 @@ final class EpisodeShowTableViewCell: UITableViewCell {
     }
 
     private func setupEpisode(episode: Episode, show: Show) {
-        if let episodeTitle = episode.title, progress?.completed == true || UserDefaults.standard.bool(forKey: "GeneralSettings.listsepisodetitle") {
-            title.text = episode.localizedEpisodeNumber + " · \(episodeTitle)"
-        } else if let episodeType = episode.episodeType {
-            switch episodeType {
-            case .standard:
-                title.text = episode.localizedEpisodeNumber
-            case .seriesPremiere:
-                title.text = episode.localizedEpisodeNumber + " · Series Premiere"
-            case .seasonPremiere:
-                title.text = episode.localizedEpisodeNumber + " · Season Premiere"
-            case .midSeasonFinale:
-                title.text = episode.localizedEpisodeNumber + " · Mid Season Finale"
-            case .midSeasonPremiere:
-                title.text = episode.localizedEpisodeNumber + " · Mid Season Premiere"
-            case .seasonFinale:
-                title.text = episode.localizedEpisodeNumber + " · Season Finale"
-            case .seriesFinale:
-                title.text = episode.localizedEpisodeNumber + " · Series Finale"
-            case .unknown:
-                title.text = episode.localizedEpisodeNumber
-            }
-        } else {
-            title.text = episode.localizedEpisodeNumber
-        }
-
-        if let firstAired = episode.firstAired {
-            let relativeDate = CalendarRelativeDateFormatter.string(for: firstAired, uppercaseFirstLetter: true)
-            subtitle.text = "\(relativeDate) on \(fullDateFormatter.string(from: firstAired))"
-        } else {
-            subtitle.text = "Airing unknown"
-        }
-
         if let firstAired = episode.firstAired {
             if firstAired < Date() {
                 title.textColor = .label
@@ -144,6 +112,15 @@ final class EpisodeShowTableViewCell: UITableViewCell {
         } else {
             title.textColor = .tertiaryLabel
             subtitle.textColor = .tertiaryLabel
+        }
+
+        updateTitle(for: episode, isWatched: progress?.completed == true)
+
+        if let firstAired = episode.firstAired {
+            let relativeDate = CalendarRelativeDateFormatter.string(for: firstAired, uppercaseFirstLetter: true)
+            subtitle.text = "\(relativeDate) on \(fullDateFormatter.string(from: firstAired))"
+        } else {
+            subtitle.text = "Airing unknown"
         }
 
         watched.backgroundColor = UIColor(asset: .globalTint)
@@ -180,7 +157,9 @@ final class EpisodeShowTableViewCell: UITableViewCell {
                     let items = try? response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
                     if items?.isEmpty == false {
                         DispatchQueue.main.async {
+                            guard self.media == MediaModel.episode(episode, show) else { return }
                             self.watched.alpha = 1.0
+                            self.updateTitle(for: episode, isWatched: true)
                         }
                     }
                 case .failure:
@@ -220,6 +199,41 @@ final class EpisodeShowTableViewCell: UITableViewCell {
             } else {
                 watched.alpha = 0.0
             }
+        }
+    }
+
+    private func updateTitle(for episode: Episode, isWatched: Bool) {
+        if let episodeTitle = episode.title {
+            let episodeText = episode.localizedEpisodeNumber + " · \(episodeTitle)"
+            let episodeTitleRange = (episodeText as NSString).range(of: episodeTitle,
+                                                                    options: .backwards)
+            title.isRedactedByDefault =
+                isWatched == false &&
+                UserDefaults.standard.bool(forKey: "GeneralSettings.listsepisodetitle") == false
+            title.setText(episodeText, redacting: episodeTitleRange)
+        } else if let episodeType = episode.episodeType {
+            title.isRedactedByDefault = false
+            switch episodeType {
+            case .standard:
+                title.text = episode.localizedEpisodeNumber
+            case .seriesPremiere:
+                title.text = episode.localizedEpisodeNumber + " · Series Premiere"
+            case .seasonPremiere:
+                title.text = episode.localizedEpisodeNumber + " · Season Premiere"
+            case .midSeasonFinale:
+                title.text = episode.localizedEpisodeNumber + " · Mid Season Finale"
+            case .midSeasonPremiere:
+                title.text = episode.localizedEpisodeNumber + " · Mid Season Premiere"
+            case .seasonFinale:
+                title.text = episode.localizedEpisodeNumber + " · Season Finale"
+            case .seriesFinale:
+                title.text = episode.localizedEpisodeNumber + " · Series Finale"
+            case .unknown:
+                title.text = episode.localizedEpisodeNumber
+            }
+        } else {
+            title.isRedactedByDefault = false
+            title.text = episode.localizedEpisodeNumber
         }
     }
 }

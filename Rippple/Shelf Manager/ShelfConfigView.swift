@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 02/09/2024.
-//  Copyright © 2024 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -280,7 +280,6 @@ struct ShelfRowConfigView: View {
                 }
                 if row.filter.canFilterWatched {
                     Toggle("Filter Watched", isOn: $ignoreWatched)
-                        .tint(.accentColor)
                 }
                 if row.filter.canSort {
                     Picker("Sort by", selection: $sortBy) {
@@ -454,7 +453,6 @@ struct ShelfRowQuickConfigView: View {
                     }
                     if row.filter.canFilterWatched {
                         Toggle("Filter Watched", isOn: $ignoreWatched)
-                            .tint(.accentColor)
                     }
                     if row.filter.canSort {
                         Picker("Sort by", selection: $sortBy) {

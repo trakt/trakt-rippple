@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 11/01/2018.
-//  Copyright © 2018 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -30,6 +30,12 @@ final class FollowManager {
 
         onSettingsChangedReceiver.listen { _ in
             self.refreshFollowing()
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.following.removeAll()
+            self.pendingFollowing.removeAll()
         }.disposed(by: disposeBag)
 
         refreshFollowing()

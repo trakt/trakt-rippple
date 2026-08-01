@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 11/01/2025.
-//  Copyright © 2025 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -113,7 +113,7 @@ struct PurchaseConfirmationView: View {
                             showOverlay = false
                         }
                     } else if chosenOption == .traktVIP {
-                        openURL(URL(string: "https://trakt.tv/vip/referral/b1f95ecff7339c031dd1a374150067b9")!)
+                        openURL(URL(string: "https://app.trakt.tv/vip")!)
                         showOverlay = false
                         didOpenVIPLink = true
                     }

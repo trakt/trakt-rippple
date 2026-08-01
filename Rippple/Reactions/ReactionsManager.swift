@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 24/07/2025.
-//  Copyright © 2025 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -43,6 +43,11 @@ final class ReactionsManager {
 
         onSettingsChangedReceiver.listen { _ in
             self.refreshUserCommentsReactions()
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.userReactions.removeAll()
         }.disposed(by: disposeBag)
     }
 

@@ -3,6 +3,7 @@
 //  Trailers
 //
 //  Created by Kevin Cador on 30/05/2024.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import SwiftUI

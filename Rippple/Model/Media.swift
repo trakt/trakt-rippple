@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 23/11/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -989,7 +989,7 @@ extension MediaModel {
                     print("Recommendation successful \(response)")
 
                     DispatchQueue.main.async {
-                        RecommendedManager.shared.refresh()
+                        UserFavoritesManager.shared.refresh()
                         AppManager.shared.isUserInteractionEnabled = true
                         SwiftMessages.show(message: "⭐️ Added to Favorites")
                     }
@@ -1023,7 +1023,7 @@ extension MediaModel {
                     print("Removed from recommendations successful \(response)")
 
                     DispatchQueue.main.async {
-                        RecommendedManager.shared.refresh()
+                        UserFavoritesManager.shared.refresh()
                         AppManager.shared.isUserInteractionEnabled = true
                         SwiftMessages.show(message: "⭐️ Removed from Favorites")
                     }

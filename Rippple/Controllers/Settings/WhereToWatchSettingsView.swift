@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 25/04/2024.
-//  Copyright © 2024 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import SwiftUI
@@ -28,8 +28,6 @@ struct WhereToWatchSettingsView: View {
                 }.pickerStyle(.menu)
                 if selectedMode != "Disabled" {
                     Toggle("Display in Lists", isOn: $displayInLists)
-                        .tint(Color(UIColor(asset: .globalTint)))
-                        .toggleStyle(.switch)
                     Picker("Country", selection: $country) {
                         ForEach(Country.allCases) { country in
                             Text(country.localizedCountry).tag(country)

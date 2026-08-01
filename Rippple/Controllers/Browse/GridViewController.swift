@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 21/06/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Moya
@@ -161,7 +161,7 @@ final class GridViewController: UICollectionViewController {
             }
         }.disposed(by: disposeBag)
 
-        onRecommendedChangedReceiver.hotOnly().listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if self.savedFilter.path == "/sync/favorites" {
                 DispatchQueue.main.async {

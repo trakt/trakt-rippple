@@ -77,6 +77,7 @@
                         <outlet property="moviesContainerView" destination="PYP-kp-ntZ" id="Glo-8c-XKi"/>
                         <segue destination="z2o-iu-FdD" kind="presentation" identifier="episodes settings" id="fV1-CW-pjC"/>
                         <segue destination="9po-Ci-ZDx" kind="presentation" identifier="movies settings" id="fYL-AI-DHS"/>
+                        <segue destination="Ar2-el-Dtq" kind="show" identifier="results" id="C8P-Ws-j1Q"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8oX-Gz-kRg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -3134,10 +3135,10 @@ Try with other terms. Maybe another spelling?</string>
             </objects>
             <point key="canvasLocation" x="2133" y="1752"/>
         </scene>
-        <!--Recommended-->
+        <!--User Favorites-->
         <scene sceneID="Ybu-Mg-0PD">
             <objects>
-                <tableViewController storyboardIdentifier="RecommendedViewController" id="kr0-2P-0i5" customClass="RecommendedViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="UserFavoritesViewController" id="kr0-2P-0i5" customClass="UserFavoritesViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="122" estimatedRowHeight="122" sectionHeaderHeight="28" sectionFooterHeight="28" id="fc9-NM-hb0" customClass="CustomTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

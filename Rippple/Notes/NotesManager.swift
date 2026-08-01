@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 23/09/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -60,6 +60,14 @@ final class NotesManager {
         onSettingsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedRefresh.call()
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.refreshing = false
+            self.notes.removeAll()
+            UserDefaults.standard.removeObject(forKey: "NotesManager.notes")
+            UserDefaults.standard.synchronize()
         }.disposed(by: disposeBag)
 
         debouncedRefresh.call()

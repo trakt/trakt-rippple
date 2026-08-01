@@ -1,9 +1,9 @@
 //
-//  RecommendedViewController.swift
+//  UserFavoritesViewController.swift
 //  Rippple
 //
 //  Created by Kevin Cador on 22/09/2020.
-//  Copyright © 2020 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Moya
@@ -11,7 +11,7 @@ import NVActivityIndicatorView
 import Receiver
 import UIKit
 
-final class RecommendedViewController: UITableViewController {
+final class UserFavoritesViewController: UITableViewController {
     var user: User!
 
     required init?(coder aDecoder: NSCoder) {
@@ -335,7 +335,7 @@ final class RecommendedViewController: UITableViewController {
         animationViewContainer.tintColor = UIColor(asset: .globalTint)
         animationViewContainer.startAnimating()
 
-        onRecommendedChangedReceiver.listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.fetch()
         }.disposed(by: disposeBag)
@@ -408,7 +408,7 @@ final class RecommendedViewController: UITableViewController {
     }
 
     @objc func refresh(_ sender: Any) {
-        RecommendedManager.shared.refresh()
+        UserFavoritesManager.shared.refresh()
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.loading])
         dataSource.apply(snapshot, animatingDifferences: false)
@@ -558,7 +558,7 @@ final class RecommendedViewController: UITableViewController {
     }
 }
 
-extension RecommendedViewController {
+extension UserFavoritesViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         switch item {
@@ -706,7 +706,7 @@ extension RecommendedViewController {
     }
 }
 
-extension RecommendedViewController: MediaTableViewCellDelegate {
+extension UserFavoritesViewController: MediaTableViewCellDelegate {
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
@@ -723,7 +723,7 @@ extension RecommendedViewController: MediaTableViewCellDelegate {
     }
 }
 
-extension RecommendedViewController: UISearchResultsUpdating {
+extension UserFavoritesViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         searchQuery = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         updateDatasource()

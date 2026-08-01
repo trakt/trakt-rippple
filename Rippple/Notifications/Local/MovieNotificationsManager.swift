@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 23/05/2020.
-//  Copyright © 2020 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -112,6 +112,12 @@ final class MovieNotificationsManager {
             guard let self = self else { return }
             self.debouncedRebuildNotifications.call()
         }
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.movieCalendarItems = nil
+            onMoviesNotificationsChangedTransmitter.broadcast([])
+        }.disposed(by: disposeBag)
 
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(dayChanged),

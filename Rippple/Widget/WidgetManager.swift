@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 12/07/2022.
-//  Copyright © 2022 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -37,6 +37,28 @@ final class WidgetManager {
         onSettingsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.updateLastWatched()
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { _ in
+            let defaults = UserDefaults(suiteName: "group.tv.trakt.rippple")!
+            let widgetKeys = [
+                WidgetType.lastWatched.rawValue,
+                WidgetType.lastWatchedMovie.rawValue,
+                WidgetType.lastWatchedShow.rawValue,
+                WidgetType.showsToWatch.rawValue,
+                WidgetType.moviesToWatch.rawValue,
+                WidgetType.showsComing.rawValue,
+                WidgetType.moviesComing.rawValue,
+                WidgetType.recommendedMovie.rawValue,
+                WidgetType.trendingMovie.rawValue,
+                WidgetType.recommendedShow.rawValue,
+                WidgetType.trendingShow.rawValue
+            ]
+            for key in widgetKeys {
+                defaults.removeObject(forKey: key)
+            }
+            defaults.synchronize()
+            WidgetCenter.shared.reloadAllTimelines()
         }.disposed(by: disposeBag)
 
         onWatchedMoviesChangedReceiver.listen { [weak self] _ in

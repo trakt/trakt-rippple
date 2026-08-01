@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 13/03/2025.
-//  Copyright © 2025 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import SwiftUI
@@ -104,9 +104,7 @@ struct AutomationSettingsView: View {
                     Text(title)
                         .font(.headline)
                         .fixedSize(horizontal: false, vertical: true)
-                }.tint(Color(UIColor(asset: .globalTint)))
-                    .toggleStyle(.switch)
-                    .padding(.horizontal, 2)
+                }.padding(.horizontal, 2)
                     .padding(.bottom, 8)
 
                 content()

@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 13/06/2026.
-//  Copyright © 2026 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -182,6 +182,7 @@ struct SocialActivityUserSummary: Hashable {
                               body: socialComment.body ?? "",
                               containsSpoiler: socialComment.containsSpoiler,
                               isReview: socialComment.isReview,
+                              language: socialComment.language,
                               parentIdentifier: 0,
                               createDate: createDate,
                               updateDate: updateDate,

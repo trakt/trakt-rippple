@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 15/11/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import NVActivityIndicatorView
@@ -23,9 +23,13 @@ final class CommentsViewController: UITableViewController {
 
     var coordinator: CommentsCoordinator! {
         didSet {
-            coordinator.onCommentsChangedReceiver.listen { [weak self] comments in
-                guard let self = self else { return }
-                self.reloadData(with: comments)
+            let observedCoordinator = coordinator!
+            observedCoordinator.onCommentsChangedReceiver.listen { [weak self, weak observedCoordinator] comments in
+                DispatchQueue.main.async { [weak self, weak observedCoordinator] in
+                    guard let self = self, let observedCoordinator = observedCoordinator else { return }
+                    guard self.coordinator === observedCoordinator else { return }
+                    self.reloadData(with: comments)
+                }
             }.disposed(by: disposeBag)
 
             if coordinator.type.isPreview || coordinator.type.isReplies {
@@ -42,6 +46,7 @@ final class CommentsViewController: UITableViewController {
 
     private let disposeBag = DisposeBag()
     private var isListeningForFollowingChanges = false
+    private var remotePunchcardActivityCounts: [Date: Int]?
 
     @IBOutlet var loadingView: UIView!
     @IBOutlet var animationViewContainer: NVActivityIndicatorView!
@@ -88,6 +93,7 @@ final class CommentsViewController: UITableViewController {
         case rating(MediaModel)
         case user(User)
         case stats(User)
+        case punchcard
         case followAndFriends(User)
         case link(CardType, String, String)
         case lastWatched(User)
@@ -208,6 +214,12 @@ final class CommentsViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "stats") as! UserStatsTableViewCell
             cell.user = user
             return cell
+        case .punchcard:
+            let cell = tableView.dequeueReusableCell(withIdentifier: ActivityPunchcardTableViewCell.reuseIdentifier) as! ActivityPunchcardTableViewCell
+            cell.setup(activityCounts: punchcardActivityCounts(),
+                       isLoading: punchcardIsLoading(),
+                       containerWidth: tableView.bounds.width)
+            return cell
         case .followAndFriends(let user):
             let cell = tableView.dequeueReusableCell(withIdentifier: "follow and friends") as! FollowersAndFriendsTableViewCell
             cell.user = user
@@ -258,6 +270,8 @@ final class CommentsViewController: UITableViewController {
         tableView.register(UINib(nibName: "OwnReplyTableViewCell", bundle: nil), forCellReuseIdentifier: "own reply")
         tableView.register(UINib(nibName: "RatingsTableViewCell", bundle: nil), forCellReuseIdentifier: "ratings")
         tableView.register(UINib(nibName: "UserStatsTableViewCell", bundle: nil), forCellReuseIdentifier: "stats")
+        tableView.register(UINib(nibName: "ActivityPunchcardTableViewCell", bundle: nil),
+                           forCellReuseIdentifier: ActivityPunchcardTableViewCell.reuseIdentifier)
         tableView.register(UINib(nibName: "FollowersAndFriendsTableViewCell", bundle: nil), forCellReuseIdentifier: "follow and friends")
         tableView.register(UINib(nibName: "StandardListTableViewCell", bundle: nil), forCellReuseIdentifier: "standard list")
         tableView.register(UINib(nibName: "LastWatchedTableViewCell", bundle: nil), forCellReuseIdentifier: "last watched")
@@ -270,6 +284,7 @@ final class CommentsViewController: UITableViewController {
         dataSource.defaultRowAnimation = .fade
 
         reloadData(with: [CommentModel]()) // load empty comment datasource to kick things out
+        fetchRemotePunchcard()
 
         if coordinator.sort == .newest {
             sortActionButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
@@ -291,13 +306,26 @@ final class CommentsViewController: UITableViewController {
             if user.isCurrentUser {
                 navigationItem.rightBarButtonItems = nil
             } else {
-                navigationItem.rightBarButtonItems = [moreActionsButtonItem]
+                let shareAction = UIAction(title: "Share Profile") { _ in
+                    guard let sharedURL = user.url else { return }
+                    UIApplication.shared.present(UIActivityViewController(activityItems: [sharedURL],
+                                                                          applicationActivities: nil))
+                }
+                let shareButtonItem = UIBarButtonItem(title: nil,
+                                                      image: UIImage(systemName: "square.and.arrow.up"),
+                                                      primaryAction: shareAction,
+                                                      menu: nil)
+                navigationItem.rightBarButtonItems = [moreActionsButtonItem,
+                                                      .fixedSpace(),
+                                                      shareButtonItem]
                 moreActionsButtonItem.primaryAction = nil
                 moreActionsButtonItem.menu = moreMenu()
             }
         case .replies(let commentModel, _):
             title = "Comment and Replies"
             navigationItem.subtitle = commentModel.media.mediaTitle
+            moreActionsButtonItem.image = UIImage(systemName: "flag")
+            moreActionsButtonItem.accessibilityLabel = "Report"
             emptyLabel.text = "No replies yet.\nNew replies may appear with a delay due to caching."
             footnoteLabel.text = "New replies may appear with a delay due to caching."
             if commentModel.comment.isFiltered || commentModel.isOwnComment {
@@ -385,6 +413,20 @@ final class CommentsViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
+        onSyncWatchedMoviesChangedReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.refreshPunchcard()
+            }
+        }.disposed(by: disposeBag)
+
+        onSyncWatchedEpisodesChangedReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.refreshPunchcard()
+            }
+        }.disposed(by: disposeBag)
+
         footnoteLabel.maximumContentSizeCategory = .large
         errorLabel.maximumContentSizeCategory = .large
     }
@@ -420,6 +462,7 @@ final class CommentsViewController: UITableViewController {
                            body: "",
                            containsSpoiler: false,
                            isReview: false,
+                           language: nil,
                            parentIdentifier: comment.identifier,
                            createDate: Date(),
                            updateDate: Date(),
@@ -433,6 +476,7 @@ final class CommentsViewController: UITableViewController {
                            body: comment.user.username,
                            containsSpoiler: false,
                            isReview: false,
+                           language: nil,
                            parentIdentifier: comment.identifier,
                            createDate: Date(),
                            updateDate: Date(),
@@ -508,6 +552,7 @@ final class CommentsViewController: UITableViewController {
                     snapshot.appendItems([Wrapper.user(user)], toSection: Section.header)
                 } else if user.isCurrentUser {
                     snapshot.appendItems([Wrapper.user(user),
+                                          Wrapper.punchcard,
                                           Wrapper.followAndFriends(user),
                                           Wrapper.lastWatched(user),
                                           Wrapper.spacer(5.001),
@@ -519,6 +564,7 @@ final class CommentsViewController: UITableViewController {
                                           Wrapper.stats(user)], toSection: Section.header)
                 } else {
                     snapshot.appendItems([Wrapper.user(user),
+                                          Wrapper.punchcard,
                                           Wrapper.followAndFriends(user),
                                           Wrapper.lastWatched(user),
                                           Wrapper.spacer(5.001),
@@ -704,20 +750,85 @@ extension CommentsViewController {
         }
     }
 
+    private func punchcardActivityCounts() -> [Date: Int] {
+        guard case .user(let user) = coordinator.type! else { return [:] }
+        if user.isCurrentUser {
+            return SyncWatchedManager.shared.activityCountsByDay()
+        }
+        return remotePunchcardActivityCounts ?? [:]
+    }
+
+    private func punchcardIsLoading() -> Bool {
+        guard case .user(let user) = coordinator.type!,
+              !user.isCurrentUser else { return false }
+        return remotePunchcardActivityCounts == nil
+    }
+
+    private func fetchRemotePunchcard() {
+        guard case .user(let user) = coordinator.type!,
+              !user.isCurrentUser,
+              !user.isBlocked,
+              !user.isPrivate || user.isFollowing else { return }
+
+        let calendar = Calendar.current
+        let endDate = Date.now
+        let dayCount = ActivityPunchcardTableViewCell.visibleDayCount(for: tableView.bounds.width)
+        guard let firstDate = calendar.date(byAdding: .day,
+                                            value: -(dayCount - 1),
+                                            to: endDate) else { return }
+        let startDate = calendar.startOfDay(for: firstDate)
+
+        TraktAPIProvider.fetchActivityDates(slug: user.slug,
+                                            startDate: startDate,
+                                            endDate: endDate) { result in
+            var activityCounts = [Date: Int]()
+            switch result {
+            case .success(let activityDates):
+                for activityDate in activityDates {
+                    let day = calendar.startOfDay(for: activityDate)
+                    activityCounts[day, default: 0] += 1
+                }
+            case .failure(let error):
+                print("Activity punchcard request failure \(error)")
+            }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.remotePunchcardActivityCounts = activityCounts
+                self.refreshPunchcard()
+            }
+        }
+    }
+
+    private func refreshPunchcard() {
+        var snapshot = dataSource.snapshot()
+        guard snapshot.itemIdentifiers.contains(.punchcard) else { return }
+        snapshot.reconfigureItems([.punchcard])
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
     @IBAction func unwindFromCommentComposer(segue: UIStoryboardSegue) {}
 
     private func moreMenu() -> UIMenu? {
         switch coordinator.type! {
         case .user(let user):
+            guard !user.isCurrentUser else { return nil }
+
+            let report = UIAction(title: "Report User",
+                                  image: UIImage(systemName: "flag")) { [weak self] _ in
+                guard let self = self else { return }
+                self.presentReport(.user(user))
+            }
+
             if user.isBlocked {
                 let unblock = UIAction(title: "Unblock User", attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
                     user.unblock()
                     self.moreActionsButtonItem.menu = self.moreMenu()
                 }
-                return UIMenu(title: "", children: [unblock])
+                return UIMenu(title: user.username, children: [unblock, report])
             } else {
-                var menuChildren = [UIMenuElement]()
+                var menuChildren: [UIMenuElement] = []
                 let block = UIAction(title: "Block User", attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
                     user.block()
@@ -727,6 +838,7 @@ extension CommentsViewController {
                     self.moreActionsButtonItem.menu = self.moreMenu()
                 }
                 menuChildren.append(block)
+                menuChildren.append(report)
 
                 if FollowManager.shared.isPendingFollowing(user: user) {
                     let unfollow = UIAction(title: "Cancel Follow", attributes: .destructive) { [weak self] _ in
@@ -754,20 +866,47 @@ extension CommentsViewController {
                 return UIMenu(title: user.username, children: menuChildren)
             }
         case .replies(let commentModel, _):
-            let report = UIAction(title: "Block User", attributes: .destructive) { [weak self] _ in
+            guard !commentModel.isOwnComment else { return nil }
+
+            let comment = commentModel.comment
+            let block = UIAction(title: "Block User",
+                                 image: UIImage(systemName: "person.slash"),
+                                 attributes: .destructive) { [weak self] _ in
                 guard let self = self else { return }
-                commentModel.comment.filter()
+                comment.filter()
                 if let navigationController = self.navigationController {
                     navigationController.popViewController(animated: true)
                 }
                 self.moreActionsButtonItem.menu = self.moreMenu()
             }
-            return UIMenu(title: "", children: [report])
+            let reportUser = UIAction(title: "Report User",
+                                      image: UIImage(systemName: "flag")) { [weak self] _ in
+                guard let self = self else { return }
+                self.presentReport(.user(comment.user))
+            }
+            let reportComment = UIAction(title: "Report Comment",
+                                         image: UIImage(systemName: "exclamationmark.bubble")) { [weak self] _ in
+                guard let self = self else { return }
+                self.presentReport(.comment(comment))
+            }
+            return UIMenu(title: comment.user.username,
+                          children: [block, reportUser, reportComment])
         default:
             break
         }
 
         return nil
+    }
+
+    private func presentReport(_ target: ReportTarget) {
+        guard !target.user.isCurrentUser else { return }
+        guard UserManager.shared.currentUser != nil else {
+            onNeedsToShowLoginTransmitter.broadcast(true)
+            return
+        }
+
+        let reportViewController = ReportViewController(target: target)
+        present(reportViewController, animated: true)
     }
 
     private func sortMenu() -> UIMenu {
@@ -833,6 +972,8 @@ extension CommentsViewController {
             case .user:
                 return 275
             case .stats:
+                return UITableView.automaticDimension
+            case .punchcard:
                 return UITableView.automaticDimension
             case .followAndFriends:
                 return UITableView.automaticDimension
@@ -1009,6 +1150,8 @@ extension CommentsViewController {
             return
         case .stats:
             return
+        case .punchcard:
+            return
         case .followAndFriends:
             return
         case .link(_, _, let segueIdentifier):
@@ -1165,83 +1308,90 @@ extension CommentsViewController: CommentTableViewCellDelegate {
         present(activityViewController, animated: true, completion: nil)
     }
 
-    private func edit(commentModel: CommentModel, from button: UIButton) {
-        let alertController = UIAlertController(title: nil,
-                                                message: nil,
-                                                preferredStyle: .actionSheet)
+    func actionsMenu(for cell: CommentTableViewCell) -> UIMenu? {
+        guard let commentModel = cell.commentModel else { return nil }
 
-        let cancel = UIAlertAction(title: "Cancel", style: .cancel)
-        alertController.addAction(cancel)
-
-        let edit = UIAlertAction(title: "Edit Comment", style: .default) { _ in
-            self.showComposer(for: commentModel.comment,
-                              media: commentModel.media)
-        }
-
-        let delete = UIAlertAction(title: "Delete Comment", style: .destructive) { _ in
-            let confirmationAlertController = UIAlertController(title: nil,
-                                                                message: "Are you sure you want to delete this comment?",
-                                                                preferredStyle: .alert)
-
-            let cancel = UIAlertAction(title: "Cancel", style: .cancel)
-            confirmationAlertController.addAction(cancel)
-
-            let delete = UIAlertAction(title: "Yes, Delete Comment", style: .destructive) { _ in
-                TraktAPIProvider.provider.request(.deleteComment(id: commentModel.comment.identifier),
-                                                  callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                    guard let self = self else { return }
-                    switch result {
-                    case .success(let moyaResponse):
-                        do {
-                            if moyaResponse.statusCode == 409 {
-                                DispatchQueue.main.async {
-                                    let alertController = UIAlertController(title: "Can't Delete",
-                                                                            message: "We cannot delete a comment that is older than 2 weeks or has at least one comment.",
-                                                                            preferredStyle: .alert)
-
-                                    let cancel = UIAlertAction(title: "Okay", style: .cancel)
-                                    alertController.addAction(cancel)
-                                    self.present(alertController, animated: true)
-                                }
-                            } else {
-                                _ = try moyaResponse.filterSuccessfulStatusCodes()
-
-                                DispatchQueue.main.async {
-                                    commentPostedTransmitter.broadcast(commentModel)
-                                    SwiftMessages.show(message: "🗑 Comment deleted")
-                                }
-                            }
-                        } catch {
-                            DispatchQueue.main.async {
-                                SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
-                            }
-                        }
-                    case .failure(let error):
-                        DispatchQueue.main.async {
-                            SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
-                        }
-                    }
-                }
+        if commentModel.isOwnComment {
+            let edit = UIAction(title: "Edit Comment",
+                                image: UIImage(systemName: "pencil")) { [weak self] _ in
+                guard let self = self else { return }
+                self.showComposer(for: commentModel.comment,
+                                  media: commentModel.media)
             }
-            confirmationAlertController.addAction(delete)
-
-            self.present(confirmationAlertController, animated: true)
+            let delete = UIAction(title: "Delete Comment",
+                                  image: UIImage(systemName: "trash"),
+                                  attributes: .destructive) { [weak self] _ in
+                guard let self = self else { return }
+                self.confirmDelete(commentModel)
+            }
+            return UIMenu(children: [edit, delete])
         }
 
-        let reportReply = UIAlertAction(title: "Block User", style: .default) { _ in
+        let blockUser = UIAction(title: "Block User",
+                                 image: UIImage(systemName: "person.slash"),
+                                 attributes: .destructive) { _ in
             commentModel.comment.filter()
         }
-
-        if commentModel.comment.isReply, !commentModel.isOwnComment {
-            alertController.addAction(reportReply)
-        } else {
-            alertController.addAction(edit)
-            alertController.addAction(delete)
+        let reportUser = UIAction(title: "Report User",
+                                  image: UIImage(systemName: "flag")) { [weak self] _ in
+            guard let self = self else { return }
+            self.presentReport(.user(commentModel.comment.user))
         }
+        let reportComment = UIAction(title: "Report Comment",
+                                     image: UIImage(systemName: "exclamationmark.bubble")) { [weak self] _ in
+            guard let self = self else { return }
+            self.presentReport(.comment(commentModel.comment))
+        }
+        return UIMenu(children: [blockUser, reportUser, reportComment])
+    }
 
-        alertController.popoverPresentationController?.sourceView = button
-
+    private func confirmDelete(_ commentModel: CommentModel) {
+        let alertController = UIAlertController(title: nil,
+                                                message: "Are you sure you want to delete this comment?",
+                                                preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alertController.addAction(UIAlertAction(title: "Yes, Delete Comment",
+                                                style: .destructive) { [weak self] _ in
+                guard let self = self else { return }
+                self.deleteComment(commentModel)
+            })
         present(alertController, animated: true)
+    }
+
+    private func deleteComment(_ commentModel: CommentModel) {
+        TraktAPIProvider.provider.request(.deleteComment(id: commentModel.comment.identifier),
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    if moyaResponse.statusCode == 409 {
+                        DispatchQueue.main.async {
+                            let alertController = UIAlertController(title: "Can't Delete",
+                                                                    message: "We cannot delete a comment that is older than 2 weeks or has at least one comment.",
+                                                                    preferredStyle: .alert)
+                            alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
+                            self.present(alertController, animated: true)
+                        }
+                    } else {
+                        _ = try moyaResponse.filterSuccessfulStatusCodes()
+
+                        DispatchQueue.main.async {
+                            commentPostedTransmitter.broadcast(commentModel)
+                            SwiftMessages.show(message: "🗑 Comment deleted")
+                        }
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
+                }
+            }
+        }
     }
 
     private func reply(commentModel: CommentModel) {
@@ -1272,8 +1422,6 @@ extension CommentsViewController: CommentTableViewCellDelegate {
             case .reply:
                 showComposer(for: commentReply(for: commentModel.comment),
                              media: commentModel.media)
-            case .edit:
-                edit(commentModel: commentModel, from: cell.editButton)
             case .presentLikes:
                 let comment = commentModel.comment
                 performSegue(withIdentifier: ViewControllerSegue.likes.rawValue,
@@ -1320,11 +1468,6 @@ extension CommentsViewController: CommentTableViewCellDelegate {
                 case .reply:
                     showComposer(for: commentReply(for: commentModel.comment),
                                  media: commentModel.media)
-                case .edit:
-                    edit(commentModel: CommentModel(media: commentModel.media,
-                                                    comment: commentModel.comment,
-                                                    spoilerStrategy: .showAllSpoilers),
-                         from: cell.editButton)
                 case .presentLikes:
                     performSegue(withIdentifier: ViewControllerSegue.likes.rawValue,
                                  sender: commentModel.comment)
@@ -1379,11 +1522,6 @@ extension CommentsViewController: CommentTableViewCellDelegate {
                 case .reply:
                     showComposer(for: commentReply(for: commentModel.comment),
                                  media: commentModel.media)
-                case .edit:
-                    edit(commentModel: CommentModel(media: commentModel.media,
-                                                    comment: commentModel.comment,
-                                                    spoilerStrategy: .showAllSpoilers),
-                         from: cell.editButton)
                 case .presentLikes:
                     performSegue(withIdentifier: ViewControllerSegue.likes.rawValue,
                                  sender: commentModel.comment)

@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 07/02/2018.
-//  Copyright © 2018 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -46,6 +46,11 @@ final class FilterManager {
             DispatchQueue.main.async {
                 self.blockedUsers = blockedUsers
             }
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.blockedUsers = nil
         }.disposed(by: disposeBag)
     }
 

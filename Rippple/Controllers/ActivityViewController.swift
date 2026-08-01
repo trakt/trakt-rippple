@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 12/11/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Moya
@@ -916,7 +916,7 @@ extension ActivityViewController {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                         DispatchQueue.main.async {
-                            RecommendedManager.shared.refresh()
+                            UserFavoritesManager.shared.refresh()
                             SwiftMessages.show(message: "⭐️ Added to Favorites")
                             print("Recommendation successful \(response)")
                         }
@@ -938,7 +938,7 @@ extension ActivityViewController {
         recommend.image = UIImage(systemName: "star.circle.fill")
 
         if let movie = historyItem.movie {
-            if movie.isRecommended == false {
+            if movie.isUserFavorite == false {
                 let configuration = UISwipeActionsConfiguration(actions: [share, comment, recommend])
                 configuration.performsFirstActionWithFullSwipe = true
 

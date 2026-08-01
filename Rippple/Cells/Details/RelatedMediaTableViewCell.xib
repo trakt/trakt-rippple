@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24743"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="related" rowHeight="230" id="rel-table-cell" customClass="RelatedMediaTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="380" height="230"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="rel-table-cell" id="rel-content-view">
+                <rect key="frame" x="0.0" y="0.0" width="380" height="230"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rel-card-view" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="356" height="222"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You may also like" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rel-title-label">
+                                <rect key="frame" x="13" y="10" width="135" height="20.5"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rel-more-button" customClass="TitleOnlyButton" customModule="Rippple" customModuleProvider="target">
+                                <rect key="frame" x="313" y="7" width="31" height="27"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                <state key="normal" title="Retry"/>
+                                <connections>
+                                    <action selector="performMoreAction:" destination="rel-table-cell" eventType="touchUpInside" id="rel-more-action"/>
+                                </connections>
+                            </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rel-content-area">
+                                <rect key="frame" x="0.0" y="38.5" width="356" height="177.5"/>
+                                <subviews>
+                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceHorizontal="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" dataMode="none" prefetchingEnabled="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rel-collection-view">
+                                        <rect key="frame" x="0.0" y="0.0" width="356" height="177.5"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="6" minimumInteritemSpacing="6" id="rel-flow-layout">
+                                            <size key="itemSize" width="108" height="163"/>
+                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                            <inset key="sectionInset" minX="17" minY="0.0" maxX="14" maxY="0.0"/>
+                                        </collectionViewFlowLayout>
+                                        <connections>
+                                            <outlet property="dataSource" destination="rel-table-cell" id="rel-data-source"/>
+                                            <outlet property="delegate" destination="rel-table-cell" id="rel-delegate"/>
+                                        </connections>
+                                    </collectionView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rel-status-view">
+                                        <rect key="frame" x="0.0" y="0.0" width="356" height="177.5"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="rel-status-stack">
+                                                <rect key="frame" x="101" y="80" width="154.5" height="18"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loading suggestions..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rel-status-label">
+                                                        <rect key="frame" x="0.0" y="0.0" width="154.5" height="18"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="rel-status-stack" firstAttribute="centerX" secondItem="rel-status-view" secondAttribute="centerX" id="rel-status-center-x"/>
+                                            <constraint firstItem="rel-status-stack" firstAttribute="centerY" secondItem="rel-status-view" secondAttribute="centerY" id="rel-status-center-y"/>
+                                            <constraint firstItem="rel-status-stack" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="rel-status-view" secondAttribute="leading" constant="14" id="rel-status-leading"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="rel-status-stack" secondAttribute="trailing" constant="14" id="rel-status-trailing"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="rel-collection-view" secondAttribute="bottom" id="rel-collection-bottom"/>
+                                    <constraint firstItem="rel-collection-view" firstAttribute="leading" secondItem="rel-content-area" secondAttribute="leading" id="rel-collection-leading"/>
+                                    <constraint firstItem="rel-collection-view" firstAttribute="top" secondItem="rel-content-area" secondAttribute="top" id="rel-collection-top"/>
+                                    <constraint firstAttribute="trailing" secondItem="rel-collection-view" secondAttribute="trailing" id="rel-collection-trailing"/>
+                                    <constraint firstAttribute="height" constant="177.5" id="rel-content-height"/>
+                                    <constraint firstAttribute="bottom" secondItem="rel-status-view" secondAttribute="bottom" id="rel-status-bottom"/>
+                                    <constraint firstItem="rel-status-view" firstAttribute="leading" secondItem="rel-content-area" secondAttribute="leading" id="rel-status-leading-edge"/>
+                                    <constraint firstItem="rel-status-view" firstAttribute="top" secondItem="rel-content-area" secondAttribute="top" id="rel-status-top"/>
+                                    <constraint firstAttribute="trailing" secondItem="rel-status-view" secondAttribute="trailing" id="rel-status-trailing-edge"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="rel-more-button" firstAttribute="centerY" secondItem="rel-title-label" secondAttribute="centerY" id="rel-button-center-y"/>
+                            <constraint firstAttribute="trailing" secondItem="rel-more-button" secondAttribute="trailing" constant="12" id="rel-button-trailing"/>
+                            <constraint firstAttribute="bottom" secondItem="rel-content-area" secondAttribute="bottom" constant="6" id="rel-content-bottom"/>
+                            <constraint firstItem="rel-content-area" firstAttribute="leading" secondItem="rel-card-view" secondAttribute="leading" id="rel-content-leading"/>
+                            <constraint firstItem="rel-content-area" firstAttribute="top" secondItem="rel-title-label" secondAttribute="bottom" constant="8" id="rel-content-top"/>
+                            <constraint firstAttribute="trailing" secondItem="rel-content-area" secondAttribute="trailing" id="rel-content-trailing"/>
+                            <constraint firstItem="rel-more-button" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="rel-title-label" secondAttribute="trailing" constant="2" id="rel-header-spacing"/>
+                            <constraint firstItem="rel-title-label" firstAttribute="leading" secondItem="rel-card-view" secondAttribute="leading" constant="13" id="rel-title-leading"/>
+                            <constraint firstItem="rel-title-label" firstAttribute="top" secondItem="rel-card-view" secondAttribute="top" constant="10" id="rel-title-top"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                <constraints>
+                    <constraint firstAttribute="bottom" secondItem="rel-card-view" secondAttribute="bottom" constant="4" id="rel-card-bottom"/>
+                    <constraint firstItem="rel-card-view" firstAttribute="leading" secondItem="rel-content-view" secondAttribute="leading" constant="12" id="rel-card-leading"/>
+                    <constraint firstItem="rel-card-view" firstAttribute="top" secondItem="rel-content-view" secondAttribute="top" constant="4" id="rel-card-top"/>
+                    <constraint firstAttribute="trailing" secondItem="rel-card-view" secondAttribute="trailing" constant="12" id="rel-card-trailing"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="collectionView" destination="rel-collection-view" id="rel-collection-outlet"/>
+                <outlet property="moreButton" destination="rel-more-button" id="rel-more-outlet"/>
+                <outlet property="statusLabel" destination="rel-status-label" id="rel-status-label-outlet"/>
+                <outlet property="statusView" destination="rel-status-view" id="rel-status-view-outlet"/>
+                <outlet property="titleLabel" destination="rel-title-label" id="rel-title-outlet"/>
+            </connections>
+            <point key="canvasLocation" x="70" y="79"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

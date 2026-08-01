@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 05/04/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 // Nice to have
@@ -670,7 +670,7 @@ final class CalendarSettingsViewController: UIViewController {
     @IBOutlet var hideRecentlyWatchedMoviesSwitch: UISwitch!
     @IBOutlet var hideRecentlyWatchedShowsSwitch: UISwitch!
 
-    private var settingsHostingController: UIHostingController<CalendarSettingsSwiftUIView>?
+    private var settingsHostingController: RipppleHostingController<CalendarSettingsSwiftUIView>?
 
     @IBAction func switchChanged(_ sender: UISwitch) {
         if sender == myShowsSwitch {
@@ -819,7 +819,7 @@ final class CalendarSettingsViewController: UIViewController {
 
         let settingsView = makeSettingsView()
 
-        let hostingController = UIHostingController(rootView: settingsView)
+        let hostingController = RipppleHostingController(rootView: settingsView)
         settingsHostingController = hostingController
         hostingController.view.backgroundColor = .systemBackground
         hostingController.view.frame = view.bounds
@@ -848,7 +848,7 @@ final class CalendarSettingsViewController: UIViewController {
     }
 
     private func refreshSettingsView() {
-        settingsHostingController?.rootView = makeSettingsView()
+        settingsHostingController?.setRootView(makeSettingsView())
     }
 
     private func binding(for keyPath: ReferenceWritableKeyPath<CalendarSettingsViewController, Bool>) -> Binding<Bool> {
@@ -948,8 +948,7 @@ private struct CalendarSettingsToggleRow: View {
                     .font(.headline)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
-            }.tint(Color(uiColor: UIColor(asset: .globalTint)))
-                .toggleStyle(.switch)
+            }
 
             Text(subtitle)
                 .font(.body)

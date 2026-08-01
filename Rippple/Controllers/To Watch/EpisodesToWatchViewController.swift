@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 26/12/2019.
-//  Copyright © 2019 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -26,7 +26,13 @@ final class EpisodesToWatchViewController: UITableViewController {
 
     private let contextMenu = ContextMenuHelper()
 
+    private var models = [MediaModel]()
     private var upcomingModels = [MediaModel]()
+    private var searchQuery = ""
+    private var searchResults = [MediaModel]()
+    private var searchIsResolvingProgress = false
+    private var searchGeneration = 0
+    private var searchTask: _Concurrency.Task<Void, Never>?
 
     enum Section: Hashable {
         case stories
@@ -62,7 +68,7 @@ final class EpisodesToWatchViewController: UITableViewController {
         switch wrapper {
         case .content(let media, _):
             let cell = tableView.dequeueReusableCell(withIdentifier: "media") as! MediaTableViewCell
-            cell.dimmedIfWatched = false
+            cell.dimmedIfWatched = self.searchQuery.isEmpty == false && media.showProgressShow == nil
             cell.media = media
             cell.delegate = self
             return cell
@@ -108,19 +114,146 @@ final class EpisodesToWatchViewController: UITableViewController {
         }
     }
 
-    private func updateUpcomingSnapshot(with models: [MediaModel]) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            var snapshot = self.dataSource.snapshot()
+    private func updateSnapshot(animatingDifferences: Bool) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
 
-            snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.stories))
-            if UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.upcoming") == false || models.isEmpty {
-                // Do nothing
-            } else {
-                snapshot.appendItems([Wrapper.anticipatedHeader(UpcomingLabelManager.shared.label, "See more"),
-                                      Wrapper.stories(models)], toSection: Section.stories)
+        if searchQuery.isEmpty == false {
+            snapshot.appendSections([Section.content(nil, nil)])
+            snapshot.appendItems(searchResults.map { .content($0, nil) }, toSection: Section.content(nil, nil))
+            applySearchSnapshot(snapshot, animated: animatingDifferences)
+            return
+        }
+
+        contentUnavailableConfiguration = nil
+        snapshot.appendSections([Section.stories, Section.header, Section.content(nil, nil), Section.footer])
+
+        if UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.upcoming"), upcomingModels.isEmpty == false {
+            snapshot.appendItems([Wrapper.anticipatedHeader(UpcomingLabelManager.shared.label, "See more"),
+                                  Wrapper.stories(upcomingModels)], toSection: Section.stories)
+        }
+
+        if models.isEmpty {
+            snapshot.appendItems([.footer], toSection: Section.footer)
+        } else if let allShowsInList = EpisodeToWatchManager.shared.showsInList,
+                  EpisodeToWatchGroupMode.currentValue() == .byLists {
+            for showsInList in allShowsInList.sorted(by: { $0.order < $1.order }) {
+                let section = Section.content(showsInList.name, showsInList.order)
+                let items = models.filter { showsInList.shows.contains($0.show!) }
+                if items.isEmpty { continue }
+                snapshot.insertSections([section], beforeSection: Section.footer)
+                snapshot.appendItems([Wrapper.subheader(showsInList.name, "\(episodeCount(in: items)) behind")], toSection: section)
+                snapshot.appendItems(items.removingDuplicates().map { .content($0, showsInList.name) }.removingDuplicates(),
+                                     toSection: section)
             }
+            snapshot.appendItems([.footer], toSection: Section.footer)
+        } else {
+            if let allShowsInList = EpisodeToWatchManager.shared.showsInList,
+               let pinned = allShowsInList.first(where: { $0.name == "Pinned" && $0.order == 0 }) {
+                let section = Section.content(pinned.name, pinned.order)
+                let items = models.filter { pinned.shows.contains($0.show!) }
+                if items.isEmpty == false {
+                    snapshot.insertSections([section], afterSection: Section.header)
+                    snapshot.appendItems([Wrapper.subheader(pinned.name, "\(episodeCount(in: items)) behind")], toSection: section)
+                    snapshot.appendItems(items.removingDuplicates().map { .content($0, pinned.name) }.removingDuplicates(),
+                                         toSection: section)
+                    snapshot.appendItems([Wrapper.subheader("Up Next", "\(episodeCount(in: models)) behind")], toSection: section)
+                }
+            }
+            snapshot.appendItems(models.map { .content($0, nil) }.removingDuplicates(), toSection: Section.content(nil, nil))
+            snapshot.appendItems([.footer], toSection: Section.footer)
+        }
+
+        dataSource.apply(snapshot, animatingDifferences: animatingDifferences)
+    }
+
+    private func applySearchSnapshot(_ snapshot: NSDiffableDataSourceSnapshot<Section, Wrapper>, animated: Bool) {
+        let updates = {
             self.dataSource.apply(snapshot, animatingDifferences: false)
+            self.updateSearchEmptyState()
+        }
+        guard animated else {
+            updates()
+            return
+        }
+
+        UIView.transition(with: tableView,
+                          duration: 0.2,
+                          options: [.transitionCrossDissolve, .beginFromCurrentState, .allowUserInteraction],
+                          animations: updates)
+    }
+
+    private func episodeCount(in models: [MediaModel]) -> Int {
+        return models.reduce(into: 0) { count, model in
+            guard case .showProgress(_, let progress) = model else { return }
+            if progress.toRewatchCount > 0 {
+                count += progress.toRewatchCount
+            } else {
+                count += max(1, progress.behind)
+            }
+        }
+    }
+
+    private func updateSearchEmptyState() {
+        if searchIsResolvingProgress, searchResults.isEmpty {
+            var configuration = UIContentUnavailableConfiguration.loading()
+            configuration.text = "Loading..."
+            contentUnavailableConfiguration = configuration
+            return
+        }
+
+        guard searchQuery.isEmpty == false,
+              searchIsResolvingProgress == false,
+              searchResults.isEmpty else {
+            contentUnavailableConfiguration = nil
+            return
+        }
+
+        let query = searchQuery
+        var configuration = UIContentUnavailableConfiguration.search()
+        configuration.text = "No matches found"
+        configuration.secondaryText = "There are no local matches for “\(query)”."
+        configuration.button = .plain()
+        configuration.button.title = "Continue Search Online"
+        configuration.buttonProperties.primaryAction = UIAction { [weak self] _ in
+            guard let self = self else { return }
+            (self.parent as? ToWatchViewController)?.continueSearch(for: query)
+        }
+        contentUnavailableConfiguration = configuration
+    }
+
+    private func beginSearch(for query: String, animatingDifferences: Bool) {
+        searchGeneration += 1
+        let generation = searchGeneration
+        searchTask?.cancel()
+        searchTask = nil
+
+        guard query.isEmpty == false else {
+            searchResults = []
+            searchIsResolvingProgress = false
+            DispatchQueue.main.asyncDeduped(target: self, after: 0) {}
+            updateSnapshot(animatingDifferences: animatingDifferences)
+            return
+        }
+
+        DispatchQueue.main.asyncDeduped(target: self, after: 0.25) { [weak self] in
+            guard let self = self,
+                  self.searchGeneration == generation,
+                  self.searchQuery == query else { return }
+            self.searchResults = []
+            self.searchIsResolvingProgress = true
+            self.updateSnapshot(animatingDifferences: false)
+            self.searchTask = _Concurrency.Task(priority: .userInitiated) { [weak self] in
+                let results = await ToWatchSearchManager.shared.searchShows(for: query, limit: 10)
+
+                guard let self = self,
+                      _Concurrency.Task.isCancelled == false,
+                      self.searchGeneration == generation,
+                      self.searchQuery == query else { return }
+                self.searchResults = results
+                self.searchIsResolvingProgress = false
+                self.searchTask = nil
+                self.updateSnapshot(animatingDifferences: true)
+            }
         }
     }
 
@@ -128,6 +261,7 @@ final class EpisodesToWatchViewController: UITableViewController {
         super.viewDidLoad()
 
         tableView.allowsFocus = false
+        tableView.keyboardDismissMode = .onDrag
         tableView.separatorStyle = .none
         tableView.register(UINib(nibName: "MediaTableViewCell", bundle: nil), forCellReuseIdentifier: "media")
         tableView.register(UINib(nibName: "ToWatchCalendarTableViewCell", bundle: nil), forCellReuseIdentifier: "calendar")
@@ -142,117 +276,34 @@ final class EpisodesToWatchViewController: UITableViewController {
         snapshot.appendSections([Section.stories, Section.header, Section.content(nil, nil), Section.footer])
         dataSource.apply(snapshot, animatingDifferences: false)
 
-        nextEpisodesReceiver.listen { [weak self] futureModels in
-            guard let self else { return }
-            self.upcomingModels = futureModels
-            self.updateUpcomingSnapshot(with: futureModels)
+        calendarDataUpdatedReceiver.listen { [weak self] calendarData in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.upcomingModels = calendarData.nextEpisodesWithBingeableFinales
+                if self.searchQuery.isEmpty {
+                    self.updateSnapshot(animatingDifferences: false)
+                }
+            }
         }.disposed(by: disposeBag)
 
         upcomingLabelUpdatedReceiver.listen { [weak self] _ in
-            guard let self else { return }
-            self.updateUpcomingSnapshot(with: self.upcomingModels)
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                if self.searchQuery.isEmpty {
+                    self.updateSnapshot(animatingDifferences: false)
+                }
+            }
         }.disposed(by: disposeBag)
 
         var animate = false
         onEpisodeToWatchChangedReceiver.listen { [weak self] models in
             guard let self = self else { return }
             DispatchQueue.main.async {
-                var snapshot = self.dataSource.snapshot()
-
-                if models.isEmpty {
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.content(nil, nil)))
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.footer))
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.header))
-                    for identifiers in snapshot.sectionIdentifiers {
-                        switch identifiers {
-                        case .content(let name, _) where name != nil:
-                            snapshot.deleteSections([identifiers])
-                        default:
-                            continue
-                        }
-                    }
-                    snapshot.appendItems([.footer], toSection: Section.footer)
-                } else {
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.content(nil, nil)))
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.footer))
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.header))
-                    for identifiers in snapshot.sectionIdentifiers {
-                        switch identifiers {
-                        case .content(let name, _) where name != nil:
-                            snapshot.deleteSections([identifiers])
-                        default:
-                            continue
-                        }
-                    }
-                    if let allShowsInList = EpisodeToWatchManager.shared.showsInList, EpisodeToWatchGroupMode.currentValue() == .byLists {
-                        for showsInList in allShowsInList.sorted(by: { $0.order < $1.order }) {
-                            let section = Section.content(showsInList.name, showsInList.order)
-                            let items = models.filter { showsInList.shows.contains($0.show!) }
-                            if items.isEmpty { continue }
-                            var episodeCount = 0
-                            for model in items {
-                                switch model {
-                                case .showProgress(_, let progress):
-                                    if progress.toRewatchCount > 0 {
-                                        episodeCount += progress.toRewatchCount
-                                    } else {
-                                        episodeCount += max(1, progress.behind)
-                                    }
-                                default:
-                                    break
-                                }
-                            }
-                            snapshot.insertSections([section], beforeSection: Section.footer)
-                            snapshot.appendItems([Wrapper.subheader(showsInList.name, "\(episodeCount) behind")], toSection: section)
-                            snapshot.appendItems(items.removingDuplicates().map { .content($0, showsInList.name) }.removingDuplicates(),
-                                                 toSection: section)
-                        }
-                    } else {
-                        if let allShowsInList = EpisodeToWatchManager.shared.showsInList {
-                            if let pinned = allShowsInList.first(where: { $0.name == "Pinned" && $0.order == 0 }) {
-                                let section = Section.content(pinned.name, pinned.order)
-                                let items = models.filter { pinned.shows.contains($0.show!) }
-                                if !items.isEmpty {
-                                    var episodeCount = 0
-                                    for model in items {
-                                        switch model {
-                                        case .showProgress(_, let progress):
-                                            if progress.toRewatchCount > 0 {
-                                                episodeCount += progress.toRewatchCount
-                                            } else {
-                                                episodeCount += max(1, progress.behind)
-                                            }
-                                        default:
-                                            break
-                                        }
-                                    }
-                                    snapshot.insertSections([section], afterSection: Section.header)
-                                    snapshot.appendItems([Wrapper.subheader(pinned.name, "\(episodeCount) behind")], toSection: section)
-                                    snapshot.appendItems(items.removingDuplicates().map { .content($0, pinned.name) }.removingDuplicates(),
-                                                         toSection: section)
-                                    episodeCount = 0
-                                    for model in models {
-                                        switch model {
-                                        case .showProgress(_, let progress):
-                                            if progress.toRewatchCount > 0 {
-                                                episodeCount += progress.toRewatchCount
-                                            } else {
-                                                episodeCount += max(1, progress.behind)
-                                            }
-                                        default:
-                                            break
-                                        }
-                                    }
-                                    snapshot.appendItems([Wrapper.subheader("Up Next", "\(episodeCount) behind")], toSection: section)
-                                }
-                            }
-                        }
-                        snapshot.appendItems(models.map { .content($0, nil) }.removingDuplicates(), toSection: Section.content(nil, nil))
-                    }
-                    snapshot.appendItems([.footer], toSection: Section.footer)
+                self.models = models
+                if self.searchQuery.isEmpty {
+                    self.updateSnapshot(animatingDifferences: animate)
+                    animate = true
                 }
-                self.dataSource.apply(snapshot, animatingDifferences: animate)
-                animate = true
             }
         }.disposed(by: disposeBag)
 
@@ -308,6 +359,10 @@ final class EpisodesToWatchViewController: UITableViewController {
         EpisodeToWatchManager.shared.forcedUserRefresh()
     }
 
+    deinit {
+        searchTask?.cancel()
+    }
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let commentsViewController = segue.destination as? CommentsViewController,
            let media = sender as? MediaModel {
@@ -334,14 +389,16 @@ extension EpisodesToWatchViewController {
         guard let wrapper = dataSource.itemIdentifier(for: indexPath) else { return }
         switch wrapper {
         case .content(let media, _):
-            guard let show = media.showProgressShow else { return }
-
-            guard let episode = media.showProgressEpisode else {
-                performSegue(withIdentifier: ViewControllerSegue.seasons.rawValue, sender: show)
-                return
+            if let show = media.showProgressShow {
+                guard let episode = media.showProgressEpisode else {
+                    performSegue(withIdentifier: ViewControllerSegue.seasons.rawValue, sender: show)
+                    return
+                }
+                performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
+                             sender: MediaModel.episode(episode, show))
+            } else {
+                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: media)
             }
-            performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
-                         sender: MediaModel.episode(episode, show))
         case .subheader(let title, _):
             if title == "Pinned" {
                 performSegue(withIdentifier: ViewControllerSegue.pinned.rawValue, sender: nil)
@@ -527,8 +584,9 @@ extension EpisodesToWatchViewController: MediaTableViewCellDelegate {
 
         switch wrapper {
         case .content(let media, _):
-            if action == .details {
-                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel.show(media.showProgressShow!))
+            if action == .details,
+               let show = media.show {
+                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel.show(show))
             }
         default:
             break
@@ -539,5 +597,13 @@ extension EpisodesToWatchViewController: MediaTableViewCellDelegate {
 extension EpisodesToWatchViewController: ActivityHeaderTableViewCellDelegate {
     func action(for cell: ActivityHeaderTableViewCell) {
         performSegue(withIdentifier: "calendar", sender: nil)
+    }
+}
+
+extension EpisodesToWatchViewController: ToWatchSearchable {
+    func updateSearchQuery(_ query: String) {
+        guard query != searchQuery else { return }
+        searchQuery = query
+        beginSearch(for: query, animatingDifferences: true)
     }
 }

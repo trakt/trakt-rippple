@@ -120,7 +120,7 @@
                                                         <color key="tintColor" systemColor="secondaryLabelColor"/>
                                                         <imageReference key="image" image="pin" catalog="system" symbolScale="small" renderingMode="template"/>
                                                     </imageView>
-                                                    <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UsD-b5-lKO">
+                                                    <label contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UsD-b5-lKO" customClass="CommentMetadataLabel" customModule="Rippple" customModuleProvider="target">
                                                         <rect key="frame" x="20.5" y="0.0" width="33" height="20"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
@@ -251,9 +251,6 @@
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                                 <color key="tintColor" name="Global Tint"/>
                                                 <state key="normal" title="Edit"/>
-                                                <connections>
-                                                    <action selector="edit:" destination="GoV-L5-Ki1" eventType="touchUpInside" id="vxV-fY-KBQ"/>
-                                                </connections>
                                             </button>
                                             <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7oV-bm-JDt" customClass="TitleOnlyButton" customModule="Rippple" customModuleProvider="target">
                                                 <rect key="frame" x="240" y="0.0" width="72" height="30"/>

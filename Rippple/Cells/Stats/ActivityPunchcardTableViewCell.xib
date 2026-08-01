@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="activity punchcard" rowHeight="105" id="lzi-pC-Cell" customClass="ActivityPunchcardTableViewCell" customModule="Rippple" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="393" height="105"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="lzi-pC-Cell" id="lzi-pC-Content">
+                <rect key="frame" x="0.0" y="0.0" width="393" height="105"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lzi-pC-Card" customClass="CardView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="12" y="4" width="369" height="97"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lzi-pC-Placeholder" userLabel="SwiftUI Punchcard Placeholder">
+                                <rect key="frame" x="8" y="8" width="353" height="81"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="81" id="lzi-pC-Height"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="lzi-pC-Placeholder" firstAttribute="top" secondItem="lzi-pC-Card" secondAttribute="top" constant="8" id="lzi-pC-InnerTop"/>
+                            <constraint firstItem="lzi-pC-Placeholder" firstAttribute="leading" secondItem="lzi-pC-Card" secondAttribute="leading" constant="8" id="lzi-pC-InnerLeading"/>
+                            <constraint firstAttribute="trailing" secondItem="lzi-pC-Placeholder" secondAttribute="trailing" constant="8" id="lzi-pC-InnerTrailing"/>
+                            <constraint firstAttribute="bottom" secondItem="lzi-pC-Placeholder" secondAttribute="bottom" constant="8" id="lzi-pC-InnerBottom"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                <constraints>
+                    <constraint firstItem="lzi-pC-Card" firstAttribute="top" secondItem="lzi-pC-Content" secondAttribute="top" constant="4" id="lzi-pC-OuterTop"/>
+                    <constraint firstItem="lzi-pC-Card" firstAttribute="leading" secondItem="lzi-pC-Content" secondAttribute="leading" constant="12" id="lzi-pC-OuterLeading"/>
+                    <constraint firstAttribute="trailing" secondItem="lzi-pC-Card" secondAttribute="trailing" constant="12" id="lzi-pC-OuterTrailing"/>
+                    <constraint firstAttribute="bottom" secondItem="lzi-pC-Card" secondAttribute="bottom" constant="4" id="lzi-pC-OuterBottom"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="cardView" destination="lzi-pC-Card" id="lzi-pC-CardOutlet"/>
+                <outlet property="punchcardPlaceholderHeightConstraint" destination="lzi-pC-Height" id="lzi-pC-HeightOutlet"/>
+                <outlet property="punchcardPlaceholderView" destination="lzi-pC-Placeholder" id="lzi-pC-PlaceholderOutlet"/>
+            </connections>
+            <point key="canvasLocation" x="115" y="110"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

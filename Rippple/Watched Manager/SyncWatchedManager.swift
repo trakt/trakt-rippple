@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 14/06/2026.
-//  Copyright © 2026 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -133,6 +133,23 @@ final class SyncWatchedManager {
     func lastWatchedAt(for type: SyncWatchedType, traktId: Int64) -> Date? {
         return watchedDates(for: type, traktId: traktId).max()
     }
+
+    func activityCountsByDay(calendar: Calendar = .current) -> [Date: Int] {
+        var counts = [Date: Int]()
+
+        // Show dates are made from their episode dates, so including them would
+        // count every episode play twice.
+        for items in [movieWatchedItems, episodeWatchedItems] {
+            for watchedDates in items.watchedDatesByTraktId.values {
+                for watchedDate in watchedDates {
+                    let day = calendar.startOfDay(for: watchedDate)
+                    counts[day, default: 0] += 1
+                }
+            }
+        }
+
+        return counts
+    }
 }
 
 private extension SyncWatchedManager {
@@ -151,6 +168,18 @@ private extension SyncWatchedManager {
     }
 
     func setupListeners() {
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.lastShowsAndEpisodesCheck = .now
+            self.lastMoviesCheck = .now
+            self.movieWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
+            self.showWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
+            self.episodeWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
+            TinyStorage.cache.remove(key: CacheKey.movies)
+            TinyStorage.cache.remove(key: CacheKey.shows)
+            TinyStorage.cache.remove(key: CacheKey.episodes)
+        }.disposed(by: disposeBag)
+
         onLastWatchedEpisodeActivitiesChangedReceiver.listen { [weak self] lastActivities in
             guard let self = self else { return }
             if self.lastShowsAndEpisodesCheck < lastActivities.watchedAt {
@@ -196,11 +225,15 @@ private extension SyncWatchedManager {
                 self.movieWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
                 self.showWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
                 self.episodeWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:])
+                TinyStorage.cache.remove(key: CacheKey.movies)
+                TinyStorage.cache.remove(key: CacheKey.shows)
+                TinyStorage.cache.remove(key: CacheKey.episodes)
             }
         }.disposed(by: disposeBag)
 
         onRewatchingShowsChangedReceiver.listen { [weak self] _ in
-            self?.refreshWatchedShows()
+            guard let self = self else { return }
+            self.refreshWatchedShows()
         }.disposed(by: disposeBag)
     }
 

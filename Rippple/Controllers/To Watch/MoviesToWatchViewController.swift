@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 26/12/2019.
-//  Copyright © 2019 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -21,7 +21,13 @@ final class MoviesToWatchViewController: UITableViewController {
 
     private let contextMenu = ContextMenuHelper()
 
+    private var models = [MediaModel]()
     private var upcomingModels = [MediaModel]()
+    private var searchQuery = ""
+    private var searchResults = [MediaModel]()
+    private var searchIsLoading = false
+    private var searchGeneration = 0
+    private var searchTask: _Concurrency.Task<Void, Never>?
 
     enum Section: Hashable {
         case stories
@@ -57,10 +63,14 @@ final class MoviesToWatchViewController: UITableViewController {
         switch wrapper {
         case .content(let media, _):
             let cell = tableView.dequeueReusableCell(withIdentifier: "media") as! MediaTableViewCell
-            cell.dimmedIfWatched = false
-            cell.toWatchMode = true // set this before setting the media!!
+            let isSearchResult = self.searchQuery.isEmpty == false
+            cell.dimmedIfWatched = isSearchResult
+            cell.toWatchMode = isSearchResult == false // set this before setting the media!!
+            cell.note = nil
             cell.media = media
-            cell.note = media.movie.flatMap { MovieToWatchManager.shared.releaseLabel(for: $0) }
+            if isSearchResult == false {
+                cell.note = media.movie.flatMap { MovieToWatchManager.shared.releaseLabel(for: $0) }
+            }
             cell.notesButton?.isUserInteractionEnabled = false
             cell.notesButton?.toolTip = nil
             cell.delegate = self
@@ -101,19 +111,135 @@ final class MoviesToWatchViewController: UITableViewController {
         }
     }
 
-    private func updateUpcomingSnapshot(with models: [MediaModel]) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            var snapshot = self.dataSource.snapshot()
+    private func updateSnapshot(animatingDifferences: Bool) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
 
-            snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.stories))
-            if UserDefaults.standard.bool(forKey: "MovieToWatchSettings.upcoming") == false || models.isEmpty {
-                // Do nothing
-            } else {
-                snapshot.appendItems([Wrapper.anticipatedHeader(UpcomingLabelManager.shared.label, "See more"),
-                                      Wrapper.stories(models)], toSection: Section.stories)
+        if searchQuery.isEmpty == false {
+            snapshot.appendSections([Section.content(nil, nil)])
+            snapshot.appendItems(searchResults.map { .content($0, nil) }, toSection: Section.content(nil, nil))
+            applySearchSnapshot(snapshot, animated: animatingDifferences)
+            return
+        }
+
+        contentUnavailableConfiguration = nil
+        snapshot.appendSections([Section.stories, Section.header, Section.content(nil, nil), Section.footer])
+
+        if UserDefaults.standard.bool(forKey: "MovieToWatchSettings.upcoming"), upcomingModels.isEmpty == false {
+            snapshot.appendItems([Wrapper.anticipatedHeader(UpcomingLabelManager.shared.label, "See more"),
+                                  Wrapper.stories(upcomingModels)], toSection: Section.stories)
+        }
+
+        if models.isEmpty {
+            snapshot.appendItems([.footer], toSection: Section.footer)
+        } else if let allMoviesInList = MovieToWatchManager.shared.moviesInList,
+                  MovieToWatchGroupMode.currentValue() == .byLists {
+            for moviesInList in allMoviesInList.sorted(by: { $0.order < $1.order }) {
+                let section = Section.content(moviesInList.name, moviesInList.order)
+                let items = models.filter { moviesInList.shows.contains($0.movie!) }
+                if items.isEmpty { continue }
+                snapshot.insertSections([section], beforeSection: Section.footer)
+                snapshot.appendItems([Wrapper.subheader(moviesInList.name, items.count > 1 ? "\(items.count) movies" : "\(items.count) movie")], toSection: section)
+                snapshot.appendItems(items.removingDuplicates().map { .content($0, moviesInList.name) }.removingDuplicates(),
+                                     toSection: section)
             }
+            snapshot.appendItems([.footer], toSection: Section.footer)
+        } else {
+            if let moviesInList = MovieToWatchManager.shared.moviesInList,
+               let pinned = moviesInList.first(where: { $0.name == "Pinned" && $0.order == 0 }) {
+                let section = Section.content(pinned.name, pinned.order)
+                let items = models.filter { pinned.shows.contains($0.movie!) }
+                if items.isEmpty == false {
+                    snapshot.insertSections([section], afterSection: Section.header)
+                    snapshot.appendItems([Wrapper.subheader(pinned.name, items.count > 1 ? "\(items.count) movies" : "\(items.count) movie")], toSection: section)
+                    snapshot.appendItems(items.removingDuplicates().map { .content($0, pinned.name) }.removingDuplicates(),
+                                         toSection: section)
+                    snapshot.appendItems([Wrapper.subheader("To Watch", models.count > 1 ? "\(models.count) movies" : "\(models.count) movie")], toSection: section)
+                }
+            }
+            snapshot.appendItems(models.map { .content($0, nil) }.removingDuplicates(), toSection: Section.content(nil, nil))
+            snapshot.appendItems([.footer], toSection: Section.footer)
+        }
+
+        dataSource.apply(snapshot, animatingDifferences: animatingDifferences)
+    }
+
+    private func applySearchSnapshot(_ snapshot: NSDiffableDataSourceSnapshot<Section, Wrapper>, animated: Bool) {
+        let updates = {
             self.dataSource.apply(snapshot, animatingDifferences: false)
+            self.updateSearchEmptyState()
+        }
+        guard animated else {
+            updates()
+            return
+        }
+
+        UIView.transition(with: tableView,
+                          duration: 0.2,
+                          options: [.transitionCrossDissolve, .beginFromCurrentState, .allowUserInteraction],
+                          animations: updates)
+    }
+
+    private func updateSearchEmptyState() {
+        if searchIsLoading, searchResults.isEmpty {
+            var configuration = UIContentUnavailableConfiguration.loading()
+            configuration.text = "Loading..."
+            contentUnavailableConfiguration = configuration
+            return
+        }
+
+        guard searchQuery.isEmpty == false,
+              searchIsLoading == false,
+              searchResults.isEmpty else {
+            contentUnavailableConfiguration = nil
+            return
+        }
+
+        let query = searchQuery
+        var configuration = UIContentUnavailableConfiguration.search()
+        configuration.text = "No matches found"
+        configuration.secondaryText = "There are no local matches for “\(query)”."
+        configuration.button = .plain()
+        configuration.button.title = "Continue Search Online"
+        configuration.buttonProperties.primaryAction = UIAction { [weak self] _ in
+            guard let self = self else { return }
+            (self.parent as? ToWatchViewController)?.continueSearch(for: query)
+        }
+        contentUnavailableConfiguration = configuration
+    }
+
+    private func beginSearch(for query: String, animatingDifferences: Bool) {
+        searchGeneration += 1
+        let generation = searchGeneration
+        searchTask?.cancel()
+        searchTask = nil
+
+        guard query.isEmpty == false else {
+            searchResults = []
+            searchIsLoading = false
+            DispatchQueue.main.asyncDeduped(target: self, after: 0) {}
+            updateSnapshot(animatingDifferences: animatingDifferences)
+            return
+        }
+
+        DispatchQueue.main.asyncDeduped(target: self, after: 0.25) { [weak self] in
+            guard let self = self,
+                  self.searchGeneration == generation,
+                  self.searchQuery == query else { return }
+            self.searchResults = []
+            self.searchIsLoading = true
+            self.updateSnapshot(animatingDifferences: false)
+            self.searchTask = _Concurrency.Task(priority: .userInitiated) { [weak self] in
+                let results = await ToWatchSearchManager.shared.searchMovies(for: query, limit: 20)
+
+                guard let self = self,
+                      _Concurrency.Task.isCancelled == false,
+                      self.searchGeneration == generation,
+                      self.searchQuery == query else { return }
+                self.searchResults = results
+                self.searchIsLoading = false
+                self.searchTask = nil
+                self.updateSnapshot(animatingDifferences: true)
+            }
         }
     }
 
@@ -121,6 +247,7 @@ final class MoviesToWatchViewController: UITableViewController {
         super.viewDidLoad()
 
         tableView.allowsFocus = false
+        tableView.keyboardDismissMode = .onDrag
         tableView.register(UINib(nibName: "MediaTableViewCell", bundle: nil), forCellReuseIdentifier: "media")
         tableView.register(UINib(nibName: "ToWatchStoriesTableViewCell", bundle: nil), forCellReuseIdentifier: "stories")
         tableView.register(UINib(nibName: "ToWatchFooterTableViewCell", bundle: nil), forCellReuseIdentifier: "footer")
@@ -134,78 +261,34 @@ final class MoviesToWatchViewController: UITableViewController {
         snapshot.appendSections([Section.stories, Section.header, Section.content(nil, nil), Section.footer])
         dataSource.apply(snapshot, animatingDifferences: false)
 
-        nextMoviesReceiver.listen { [weak self] futureModels in
-            guard let self else { return }
-            self.upcomingModels = futureModels
-            self.updateUpcomingSnapshot(with: futureModels)
+        nextMoviesReceiver.listen { [weak self] movies in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.upcomingModels = movies
+                if self.searchQuery.isEmpty {
+                    self.updateSnapshot(animatingDifferences: false)
+                }
+            }
         }.disposed(by: disposeBag)
 
         upcomingLabelUpdatedReceiver.listen { [weak self] _ in
-            guard let self else { return }
-            self.updateUpcomingSnapshot(with: self.upcomingModels)
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                if self.searchQuery.isEmpty {
+                    self.updateSnapshot(animatingDifferences: false)
+                }
+            }
         }.disposed(by: disposeBag)
 
         var animate = false
         onMovieToWatchChangedReceiver.listen { [weak self] models in
             guard let self = self else { return }
             DispatchQueue.main.async {
-                var snapshot = self.dataSource.snapshot()
-
-                if models.isEmpty {
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.content(nil, nil)))
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.footer))
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.header))
-                    for identifiers in snapshot.sectionIdentifiers {
-                        switch identifiers {
-                        case .content(let name, _) where name != nil:
-                            snapshot.deleteSections([identifiers])
-                        default:
-                            continue
-                        }
-                    }
-                    snapshot.appendItems([.footer], toSection: Section.footer)
-                } else {
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.content(nil, nil)))
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.footer))
-                    snapshot.deleteItems(snapshot.itemIdentifiers(inSection: Section.header))
-                    for identifiers in snapshot.sectionIdentifiers {
-                        switch identifiers {
-                        case .content(let name, _) where name != nil:
-                            snapshot.deleteSections([identifiers])
-                        default:
-                            continue
-                        }
-                    }
-                    if let allMoviesInList = MovieToWatchManager.shared.moviesInList, MovieToWatchGroupMode.currentValue() == .byLists {
-                        for moviesInList in allMoviesInList.sorted(by: { $0.order < $1.order }) {
-                            let section = Section.content(moviesInList.name, moviesInList.order)
-                            let items = models.filter { moviesInList.shows.contains($0.movie!) }
-                            if items.isEmpty { continue }
-                            snapshot.insertSections([section], beforeSection: Section.footer)
-                            snapshot.appendItems([Wrapper.subheader(moviesInList.name, items.count > 1 ? "\(items.count) movies" : "\(items.count) movie")], toSection: section)
-                            snapshot.appendItems(items.removingDuplicates().map { .content($0, moviesInList.name) }.removingDuplicates(),
-                                                 toSection: section)
-                        }
-                    } else {
-                        if let moviesInList = MovieToWatchManager.shared.moviesInList {
-                            if let pinned = moviesInList.first(where: { $0.name == "Pinned" && $0.order == 0 }) {
-                                let section = Section.content(pinned.name, pinned.order)
-                                let items = models.filter { pinned.shows.contains($0.movie!) }
-                                if !items.isEmpty {
-                                    snapshot.insertSections([section], afterSection: Section.header)
-                                    snapshot.appendItems([Wrapper.subheader(pinned.name, items.count > 1 ? "\(items.count) movies" : "\(items.count) movie")], toSection: section)
-                                    snapshot.appendItems(items.removingDuplicates().map { .content($0, pinned.name) }.removingDuplicates(),
-                                                         toSection: section)
-                                    snapshot.appendItems([Wrapper.subheader("To Watch", models.count > 1 ? "\(models.count) movies" : "\(models.count) movie")], toSection: section)
-                                }
-                            }
-                        }
-                        snapshot.appendItems(models.map { .content($0, nil) }.removingDuplicates(), toSection: Section.content(nil, nil))
-                    }
-                    snapshot.appendItems([.footer], toSection: Section.footer)
+                self.models = models
+                if self.searchQuery.isEmpty {
+                    self.updateSnapshot(animatingDifferences: animate)
+                    animate = true
                 }
-                self.dataSource.apply(snapshot, animatingDifferences: animate)
-                animate = true
             }
         }.disposed(by: disposeBag)
 
@@ -245,6 +328,10 @@ final class MoviesToWatchViewController: UITableViewController {
 
     @objc func refresh(_ sender: Any) {
         MovieToWatchManager.shared.forcedUserRefresh()
+    }
+
+    deinit {
+        searchTask?.cancel()
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -383,5 +470,13 @@ extension MoviesToWatchViewController: MediaTableViewCellDelegate {
 extension MoviesToWatchViewController: ActivityHeaderTableViewCellDelegate {
     func action(for cell: ActivityHeaderTableViewCell) {
         performSegue(withIdentifier: "calendar", sender: nil)
+    }
+}
+
+extension MoviesToWatchViewController: ToWatchSearchable {
+    func updateSearchQuery(_ query: String) {
+        guard query != searchQuery else { return }
+        searchQuery = query
+        beginSearch(for: query, animatingDifferences: true)
     }
 }

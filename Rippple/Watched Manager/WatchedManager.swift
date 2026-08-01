@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 10/01/2021.
-//  Copyright © 2021 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -20,6 +20,7 @@ extension TinyStorage {
 
 let (onWatchedMoviesChangedTransmitter, onWatchedMoviesChangedReceiver) = Receiver<Set<Int64>>.make(with: .warm(upTo: 1))
 let (onWatchedShowsChangedTransmitter, onWatchedShowsChangedReceiver) = Receiver<Set<Int64>>.make(with: .warm(upTo: 1))
+let (onWatchedSearchableDataSourceChangedTransmitter, onWatchedSearchableDataSourceChangedReceiver) = Receiver<ToWatchSearchableDataSource>.make(with: .warm(upTo: 1))
 
 final class WatchedManager {
     private let disposeBag = DisposeBag()
@@ -60,6 +61,23 @@ final class WatchedManager {
             let episodeIds = episodeHistoryItems.map { $0.episode!.identifiers.trakt! }
             watchedEpisodes = episodeIds
         }
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.lastShowsAndEpisodesCheck = .now
+            self.lastMoviesCheck = .now
+            self.showsHistoryItems.removeAll()
+            self.moviesHistoryItems.removeAll()
+            self.episodeHistoryItems.removeAll()
+            self.watchedEpisodes.removeAll()
+            self.watchedShows.removeAll()
+            self.watchedMovies.removeAll()
+            TinyStorage.cache.remove(key: "WatchedManager.showsHistoryItems")
+            TinyStorage.cache.remove(key: "WatchedManager.moviesHistoryItems")
+            TinyStorage.cache.remove(key: "WatchedManager.episodeHistoryItems")
+            onWatchedShowsChangedTransmitter.broadcast([])
+            onWatchedMoviesChangedTransmitter.broadcast([])
+        }.disposed(by: disposeBag)
 
         onLastWatchedEpisodeActivitiesChangedReceiver.listen { lastActivities in
             if self.lastShowsAndEpisodesCheck < lastActivities.watchedAt {
@@ -116,6 +134,11 @@ final class WatchedManager {
                 self.watchedEpisodes.removeAll()
                 self.watchedShows.removeAll()
                 self.watchedMovies.removeAll()
+                TinyStorage.cache.remove(key: "WatchedManager.showsHistoryItems")
+                TinyStorage.cache.remove(key: "WatchedManager.moviesHistoryItems")
+                TinyStorage.cache.remove(key: "WatchedManager.episodeHistoryItems")
+                onWatchedShowsChangedTransmitter.broadcast([])
+                onWatchedMoviesChangedTransmitter.broadcast([])
             }
         }.disposed(by: disposeBag)
 
@@ -192,6 +215,13 @@ final class WatchedManager {
         return showsHistoryItems.sorted { $0.lastWatchedAt > $1.lastWatchedAt }
     }
 
+    private func transmitSearchableDataSource() {
+        onWatchedSearchableDataSourceChangedTransmitter.broadcast(ToWatchSearchableDataSource(
+            shows: watchedShowsMediaModels,
+            movies: watchedMoviesMediaModels
+        ))
+    }
+
     private var showsHistoryItems = [WatchedItem]() {
         didSet {
             watchedShows = Set(showsHistoryItems.compactMap { $0.show?.identifiers.trakt })
@@ -208,6 +238,7 @@ final class WatchedManager {
 
             TinyStorage.cache.store(showsHistoryItems, forKey: "WatchedManager.showsHistoryItems")
             onWatchedShowsChangedTransmitter.broadcast(watchedShows)
+            transmitSearchableDataSource()
         }
     }
 
@@ -216,6 +247,7 @@ final class WatchedManager {
             watchedMovies = Set(moviesHistoryItems.compactMap { $0.movie?.identifiers.trakt })
             TinyStorage.cache.store(moviesHistoryItems, forKey: "WatchedManager.moviesHistoryItems")
             onWatchedMoviesChangedTransmitter.broadcast(watchedMovies)
+            transmitSearchableDataSource()
         }
     }
 

@@ -3,12 +3,13 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 31/12/2018.
-//  Copyright © 2018 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
 @preconcurrency import Kingfisher
 import Moya
+import Receiver
 import UIKit
 import Vision
 
@@ -142,6 +143,8 @@ struct SepiaFilter: CIImageProcessor {
 }
 
 final class ImagesManager {
+    private let disposeBag = DisposeBag()
+
     struct CacheStats {
         let memoryExpirationDescription: String
         let diskExpirationDescription: String
@@ -192,6 +195,7 @@ final class ImagesManager {
         case logo
     }
 
+    private let configurationLock = NSLock()
     private var baseURL: URL = .init(string: "https://image.tmdb.org/t/p/")!
 
     private var posterSizes: [String] = ["w92", "w154", "w185", "w342", "w500", "w780", "original"]
@@ -314,10 +318,15 @@ final class ImagesManager {
     }
 
     func imageURL(for providerLogoURL: String) -> URL? {
+        let baseURL = withConfigurationLock { self.baseURL }
         return URL(string: "\(baseURL)original/\(providerLogoURL)")
     }
 
     func imageURL(with filePath: String, with size: CGSize, for type: ImageType) -> URL? {
+        let (baseURL, posterSizes, backdropSizes, profileSizes) = withConfigurationLock {
+            (self.baseURL, self.posterSizes, self.backdropSizes, self.profileSizes)
+        }
+
         switch type {
         case .poster:
             for posterSize in posterSizes where posterSize.hasPrefix("w") {
@@ -365,6 +374,12 @@ final class ImagesManager {
             }
             return URL(string: "\(baseURL)w500/\(filePath)")
         }
+    }
+
+    private func withConfigurationLock<T>(_ work: () -> T) -> T {
+        configurationLock.lock()
+        defer { configurationLock.unlock() }
+        return work()
     }
 
     fileprivate func cachedShowPoster(with identifiers: Identifiers, for size: CGSize) -> URL? {
@@ -494,6 +509,20 @@ final class ImagesManager {
     }
 
     func setup() {
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.movieCache.removeAllObjects()
+            self.showCache.removeAllObjects()
+            self.seasonCache.removeAllObjects()
+            self.movieBackdropCache.removeAllObjects()
+            self.showBackdropCache.removeAllObjects()
+            self.movieLogoCache.removeAllObjects()
+            self.showLogoCache.removeAllObjects()
+            self.episodeStillsCache.removeAllObjects()
+            self.peopleCache.removeAllObjects()
+            ImageCache.default.clearMemoryCache()
+        }.disposed(by: disposeBag)
+
         TmdbAPIProvider.provider.request(TmdbAPIService.configuration, callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             guard let self = self else { return }
 
@@ -504,13 +533,15 @@ final class ImagesManager {
 
                     let configuration = try response.map(Configuration.self, using: TmdbAPIProvider.decoder)
 
-                    if let baseURL = URL(string: configuration.images.baseURL) {
-                        self.baseURL = baseURL
-                    }
+                    self.withConfigurationLock {
+                        if let baseURL = URL(string: configuration.images.baseURL) {
+                            self.baseURL = baseURL
+                        }
 
-                    self.posterSizes = configuration.images.posterSizes
-                    self.backdropSizes = configuration.images.backdropSizes
-                    self.profileSizes = configuration.images.profileSizes
+                        self.posterSizes = configuration.images.posterSizes
+                        self.backdropSizes = configuration.images.backdropSizes
+                        self.profileSizes = configuration.images.profileSizes
+                    }
 
                 } catch {
                     print("TmdbAPIService.configuration Error: \(error)")
@@ -1613,31 +1644,42 @@ final class BackdropImageView: UIImageView {
     var completion: ((Bool) -> Void)?
     var overrideBackgroundColor: UIColor?
 
-    var showEpisodeSpoilers = true
+    var showEpisodeSpoilers = true {
+        didSet {
+            guard showEpisodeSpoilers != oldValue,
+                  media?.episode != nil else { return }
+            loadCurrentBackdrop()
+        }
+    }
 
     var media: MediaModel? {
         didSet {
             if media == oldValue { return }
-            if media != nil {
-                switch media! {
-                case .movie:
-                    loadMovieBackdrop()
-                case .show:
-                    loadShowBackdrop()
-                case .episode:
-                    if showEpisodeSpoilers == true {
-                        loadEpisodeBackdrop()
-                    } else {
-                        loadShowBackdrop()
-                    }
-                case .season:
-                    break
-                case .list:
-                    break
-                case .showProgress:
-                    break
-                }
+            loadCurrentBackdrop()
+        }
+    }
+
+    private func loadCurrentBackdrop() {
+        kf.cancelDownloadTask()
+        guard let media = media else { return }
+
+        switch media {
+        case .movie:
+            loadMovieBackdrop()
+        case .show:
+            loadShowBackdrop()
+        case .episode:
+            if showEpisodeSpoilers {
+                loadEpisodeBackdrop()
+            } else {
+                loadShowBackdrop()
             }
+        case .season:
+            break
+        case .list:
+            break
+        case .showProgress:
+            break
         }
     }
 
@@ -1783,7 +1825,7 @@ final class BackdropImageView: UIImageView {
                                                                   for: size) {
             setBackdropImage(with: imageURL) { [weak self] in
                 guard let self = self else { return false }
-                return show == self.media?.show
+                return self.isCurrentShowBackdrop(for: show)
             }
             return
         }
@@ -1800,7 +1842,7 @@ final class BackdropImageView: UIImageView {
 
                     if images.backdrops.isEmpty {
                         DispatchQueue.main.async {
-                            if show != self.media?.show { return }
+                            guard self.isCurrentShowBackdrop(for: show) else { return }
                             self.image = nil
                             if let completion = self.completion { completion(false) }
                         }
@@ -1817,17 +1859,17 @@ final class BackdropImageView: UIImageView {
                     ImagesManager.shared.storeShowBackdrop(with: imagePath, for: show.identifiers)
 
                     DispatchQueue.main.async {
-                        if show != self.media?.show { return }
+                        guard self.isCurrentShowBackdrop(for: show) else { return }
                         self.setBackdropImage(with: imageURL) { [weak self] in
                             guard let self = self else { return false }
-                            return show == self.media?.show
+                            return self.isCurrentShowBackdrop(for: show)
                         }
                     }
 
                 } catch {
                     print("Tv posters Error: \(error)")
                     DispatchQueue.main.async {
-                        if show != self.media?.show { return }
+                        guard self.isCurrentShowBackdrop(for: show) else { return }
                         self.image = nil
                         if let completion = self.completion { completion(false) }
                     }
@@ -1835,12 +1877,17 @@ final class BackdropImageView: UIImageView {
             case .failure(let error):
                 print("Tv posters Failure: \(error)")
                 DispatchQueue.main.async {
-                    if show != self.media?.show { return }
+                    guard self.isCurrentShowBackdrop(for: show) else { return }
                     self.image = nil
                     if let completion = self.completion { completion(false) }
                 }
             }
         }
+    }
+
+    private func isCurrentShowBackdrop(for show: Show) -> Bool {
+        guard show == media?.show else { return false }
+        return media?.episode == nil || showEpisodeSpoilers == false
     }
 
     private func loadEpisodeBackdrop() {
@@ -1860,7 +1907,7 @@ final class BackdropImageView: UIImageView {
             setBackdropImage(with: imageURL,
                              defaultTransitionDuration: 0.6) { [weak self] in
                 guard let self = self else { return false }
-                return episode == self.media?.episode
+                return self.isCurrentEpisodeBackdrop(for: episode)
             }
             return
         }
@@ -1877,7 +1924,7 @@ final class BackdropImageView: UIImageView {
 
                     if images.stills.isEmpty {
                         DispatchQueue.main.async {
-                            if episode != self.media?.episode { return }
+                            guard self.isCurrentEpisodeBackdrop(for: episode) else { return }
                             self.image = nil
                             if let completion = self.completion { completion(false) }
                         }
@@ -1890,18 +1937,18 @@ final class BackdropImageView: UIImageView {
                     ImagesManager.shared.storeEpisodeImage(with: imagePath, for: episode.identifiers)
 
                     DispatchQueue.main.async {
-                        if episode != self.media?.episode { return }
+                        guard self.isCurrentEpisodeBackdrop(for: episode) else { return }
                         self.setBackdropImage(with: imageURL,
                                               defaultTransitionDuration: 0.6) { [weak self] in
                             guard let self = self else { return false }
-                            return episode == self.media?.episode
+                            return self.isCurrentEpisodeBackdrop(for: episode)
                         }
                     }
 
                 } catch {
                     print("Tv posters Error: \(error)")
                     DispatchQueue.main.async {
-                        if episode != self.media?.episode { return }
+                        guard self.isCurrentEpisodeBackdrop(for: episode) else { return }
                         self.image = nil
                         if let completion = self.completion { completion(false) }
                     }
@@ -1909,12 +1956,16 @@ final class BackdropImageView: UIImageView {
             case .failure(let error):
                 print("Tv posters Failure: \(error)")
                 DispatchQueue.main.async {
-                    if episode != self.media?.episode { return }
+                    guard self.isCurrentEpisodeBackdrop(for: episode) else { return }
                     self.image = nil
                     if let completion = self.completion { completion(false) }
                 }
             }
         }
+    }
+
+    private func isCurrentEpisodeBackdrop(for episode: Episode) -> Bool {
+        return showEpisodeSpoilers && episode == media?.episode
     }
 }
 

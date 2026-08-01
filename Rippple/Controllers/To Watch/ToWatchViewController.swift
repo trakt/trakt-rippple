@@ -3,17 +3,23 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 26/12/2019.
-//  Copyright © 2019 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
 import UIKit
 
 final class ToWatchViewController: UIViewController {
+    private enum ViewControllerSegue: String {
+        case results
+    }
+
     @IBOutlet var moviesContainerView: UIView!
     @IBOutlet var episodesContainerView: UIView!
 
     private let disposeBag = DisposeBag()
+
+    private let searchController = UISearchController(searchResultsController: nil)
 
     enum ToWatchType: Int {
         case movies
@@ -56,6 +62,7 @@ final class ToWatchViewController: UIViewController {
                 navigationController?.view.setNeedsLayout()
 
                 updateBarButtonItems()
+                updateSearchTarget()
             }
         }
     }
@@ -70,6 +77,16 @@ final class ToWatchViewController: UIViewController {
         }
 
         updateBarButtonItems()
+
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.hidesNavigationBarDuringPresentation = false
+        searchController.searchBar.tintColor = UIColor(asset: .globalTint)
+
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = true
+        definesPresentationContext = true
+        updateSearchTarget()
 
         onMovieToWatchStatusChangedReceiver.listen { [weak self] status in
             guard let self = self else { return }
@@ -123,6 +140,44 @@ final class ToWatchViewController: UIViewController {
                                                               })]
     }
 
+    private func updateSearchTarget() {
+        guard isViewLoaded else { return }
+
+        searchController.searchBar.placeholder = "Quick Search"
+
+        let query = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let moviesSearchController = children.first(where: { $0 is MoviesToWatchViewController }) as? ToWatchSearchable
+        let episodesSearchController = children.first(where: { $0 is EpisodesToWatchViewController }) as? ToWatchSearchable
+        moviesSearchController?.updateSearchQuery(currentType == .movies ? query : "")
+        episodesSearchController?.updateSearchQuery(currentType == .episodes ? query : "")
+    }
+
+    private var activeSearchController: ToWatchSearchable? {
+        switch currentType {
+        case .movies:
+            return children.first(where: { $0 is MoviesToWatchViewController }) as? ToWatchSearchable
+        case .episodes:
+            return children.first(where: { $0 is EpisodesToWatchViewController }) as? ToWatchSearchable
+        }
+    }
+
+    func continueSearch(for query: String) {
+        let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard query.isEmpty == false else { return }
+
+        searchController.searchBar.resignFirstResponder()
+        performSegue(withIdentifier: ViewControllerSegue.results.rawValue, sender: query)
+    }
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard segue.identifier == ViewControllerSegue.results.rawValue,
+              let searchResultsViewController = segue.destination as? SearchResultsViewController,
+              let query = sender as? String else { return }
+
+        searchResultsViewController.title = query.capitalized
+        searchResultsViewController.service = TraktAPIService.search(type: .moviesAndShow, query: query)
+    }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
@@ -140,4 +195,15 @@ final class ToWatchViewController: UIViewController {
             navigationItem.leftBarButtonItem = nil
         }
     }
+}
+
+extension ToWatchViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        let query = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        activeSearchController?.updateSearchQuery(query)
+    }
+}
+
+protocol ToWatchSearchable: AnyObject {
+    func updateSearchQuery(_ query: String)
 }

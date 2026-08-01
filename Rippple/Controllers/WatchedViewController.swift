@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 13/04/2022.
-//  Copyright © 2022 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Moya
@@ -861,7 +861,7 @@ extension WatchedViewController {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                         DispatchQueue.main.async {
-                            RecommendedManager.shared.refresh()
+                            UserFavoritesManager.shared.refresh()
                             SwiftMessages.show(message: "⭐️ Added to Favorites")
                             print("Recommendation successful \(response)")
                         }

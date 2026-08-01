@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 27/11/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -16,6 +16,7 @@ private extension Comment {
         self.body = body
         self.containsSpoiler = containsSpoiler
         isReview = body.count > 200 ? true : false
+        language = nil
         parentIdentifier = 0
         createDate = Date()
         updateDate = Date()
@@ -31,6 +32,7 @@ private extension Comment {
         self.body = body
         self.containsSpoiler = containsSpoiler
         isReview = body.count > 200 ? true : false
+        language = comment.language
         parentIdentifier = comment.parentIdentifier
         createDate = comment.createDate
         updateDate = comment.updateDate

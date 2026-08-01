@@ -3,90 +3,198 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 10/03/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
+import SwiftUI
 import UIKit
 
 let (episodeDetailTitlesTransmitter, episodeDetailTitlesReceiver) = Receiver<Bool>.make(with: .hot)
 let (episodeListTitlesTransmitter, episodeListTitlesReceiver) = Receiver<Bool>.make(with: .hot)
 let (toWatchTitlesTransmitter, toWatchTitlesReceiver) = Receiver<Bool>.make(with: .hot)
+let (episodeImagesTransmitter, episodeImagesReceiver) = Receiver<Bool>.make(with: .hot)
+let (actorEpisodeCountsTransmitter, actorEpisodeCountsReceiver) = Receiver<Bool>.make(with: .hot)
 
-final class SpoilersViewController: UITableViewController {
-    private let disposeBag = DisposeBag()
+private struct SpoilerSampleLabel: UIViewRepresentable {
+    private let text = String(localized: "Wow! What an ending! Who would have thought that Darth Vader is Luke Skywalker's father?")
 
-    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        return "Spoiler Alert! Display episodes titles and images at your own risk."
+    func makeUIView(context: Context) -> RedactableLabel {
+        let label = RedactableLabel()
+        label.font = .preferredFont(forTextStyle: .body)
+        label.adjustsFontForContentSizeCategory = true
+        label.textColor = .label
+        label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
+        label.setContentCompressionResistancePriority(.required, for: .vertical)
+        configure(label)
+        return label
     }
 
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "Episode Spoilers"
+    func updateUIView(_ label: RedactableLabel, context: Context) {
+        guard label.text != text else { return }
+        label.setText(text, redacting: redactedRange)
     }
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
+    func sizeThatFits(_ proposal: ProposedViewSize,
+                      uiView: RedactableLabel,
+                      context: Context) -> CGSize? {
+        guard let width = proposal.width else { return nil }
+        uiView.preferredMaxLayoutWidth = width
+        let size = uiView.sizeThatFits(CGSize(width: width,
+                                              height: .greatestFiniteMagnitude))
+        return CGSize(width: width, height: ceil(size.height))
     }
 
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+    private func configure(_ label: RedactableLabel) {
+        label.isRedactedByDefault = true
+        label.setText(text, redacting: redactedRange)
+    }
 
-        if indexPath.row == 0 {
-            cell.textLabel?.text = "Title and Image in Detail Page"
-            if UserDefaults.standard.bool(forKey: "GeneralSettings.detailepisodetitle") == true {
-                cell.detailTextLabel?.text = "Always Displayed"
-            } else {
-                cell.detailTextLabel?.text = "Hidden if Not Watched"
+    private var redactedRange: NSRange {
+        return NSRange(location: 0, length: (text as NSString).length)
+    }
+}
+
+struct SpoilersView: View {
+    @AppStorage("GeneralSettings.detailepisodetitle") private var alwaysShowsEpisodeTitlesInDetails = false
+    @AppStorage("GeneralSettings.listsepisodetitle") private var alwaysShowsEpisodeTitlesInLists = false
+    @AppStorage("GeneralSettings.towatchepisodetitle") private var alwaysShowsToWatchEpisodeTitles = false
+    @AppStorage("GeneralSettings.episodeImageSpoilers") private var redactsEpisodeImages = true
+    @AppStorage("GeneralSettings.actorEpisodeCountSpoilers") private var redactsActorEpisodeCounts = true
+
+    var body: some View {
+        Form {
+            Section("Try It") {
+                VStack(alignment: .leading, spacing: 8) {
+                    SpoilerSampleLabel()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text("Tap the hidden plot twist to reveal it. Tap it again to hide it.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text("⚠️ This quote comes from [*The Simpsons* S03E12](ripl://tmdb/shows/456/seasons/3/episodes/12), where Homer loudly spoils [***The Empire Strikes Back***](ripl://tmdb/movies/1891) for everyone waiting in line as he exits the theater.")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }.padding(.vertical, 3)
             }
-        } else if indexPath.row == 1 {
-            cell.textLabel?.text = "Titles in Lists"
-            if UserDefaults.standard.bool(forKey: "GeneralSettings.listsepisodetitle") == true {
-                cell.detailTextLabel?.text = "Always Displayed"
-            } else {
-                cell.detailTextLabel?.text = "Always Hidden"
+
+            Section("Episode Titles") {
+                spoilerToggle(title: "Episode details",
+                              description: "Episode titles stay protected until an episode is watched.",
+                              isOn: protectsEpisodeTitlesInDetails)
+
+                spoilerToggle(title: "Lists",
+                              description: "Episode titles stay protected in season and episode lists until they are watched.",
+                              isOn: protectsEpisodeTitlesInLists)
+
+                spoilerToggle(title: "To Watch and Up Next",
+                              description: "Episode titles stay protected in To Watch and Up Next until they are watched.",
+                              isOn: protectsToWatchEpisodeTitles)
             }
-        } else {
-            cell.textLabel?.text = "Titles and Images in To Watch/Up Next"
-            if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true {
-                cell.detailTextLabel?.text = "Always Displayed"
-            } else {
-                cell.detailTextLabel?.text = "Always Hidden"
+
+            Section("Episode Images") {
+                spoilerToggle(title: "Episode images",
+                              description: "Show artwork replaces episode images until an episode is watched.",
+                              isOn: protectsEpisodeImages)
+            }
+
+            Section("Cast & Crew") {
+                spoilerToggle(title: "Actor episode counts",
+                              description: "Actor episode counts stay protected.",
+                              isOn: protectsActorEpisodeCounts)
             }
         }
-
-        return cell
+        .navigationTitle("Spoilers")
+        .listSectionSpacing(.compact)
     }
 
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        if indexPath.row == 0 {
-            let currentValue = UserDefaults.standard.bool(forKey: "GeneralSettings.detailepisodetitle")
-            UserDefaults.standard.setValue(!currentValue, forKey: "GeneralSettings.detailepisodetitle")
-            UserDefaults.standard.synchronize()
-            episodeDetailTitlesTransmitter.broadcast(!currentValue)
-        } else if indexPath.row == 1 {
-            let currentValue = UserDefaults.standard.bool(forKey: "GeneralSettings.listsepisodetitle")
-            UserDefaults.standard.setValue(!currentValue, forKey: "GeneralSettings.listsepisodetitle")
-            UserDefaults.standard.synchronize()
-            episodeListTitlesTransmitter.broadcast(!currentValue)
-        } else {
-            let currentValue = UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle")
-            UserDefaults.standard.setValue(!currentValue, forKey: "GeneralSettings.towatchepisodetitle")
-            UserDefaults.standard.synchronize()
-            toWatchTitlesTransmitter.broadcast(!currentValue)
+    private var protectsEpisodeTitlesInDetails: Binding<Bool> {
+        return Binding(
+            get: {
+                alwaysShowsEpisodeTitlesInDetails == false
+            },
+            set: { isProtected in
+                let alwaysShowsSpoilers = isProtected == false
+                alwaysShowsEpisodeTitlesInDetails = alwaysShowsSpoilers
+                episodeDetailTitlesTransmitter.broadcast(alwaysShowsSpoilers)
+            }
+        )
+    }
+
+    private var protectsEpisodeTitlesInLists: Binding<Bool> {
+        return Binding(
+            get: {
+                alwaysShowsEpisodeTitlesInLists == false
+            },
+            set: { isProtected in
+                let alwaysShowsSpoilers = isProtected == false
+                alwaysShowsEpisodeTitlesInLists = alwaysShowsSpoilers
+                episodeListTitlesTransmitter.broadcast(alwaysShowsSpoilers)
+            }
+        )
+    }
+
+    private var protectsToWatchEpisodeTitles: Binding<Bool> {
+        return Binding(
+            get: {
+                alwaysShowsToWatchEpisodeTitles == false
+            },
+            set: { isProtected in
+                let alwaysShowsSpoilers = isProtected == false
+                alwaysShowsToWatchEpisodeTitles = alwaysShowsSpoilers
+                toWatchTitlesTransmitter.broadcast(alwaysShowsSpoilers)
+            }
+        )
+    }
+
+    private var protectsEpisodeImages: Binding<Bool> {
+        return Binding(
+            get: {
+                redactsEpisodeImages
+            },
+            set: { isProtected in
+                redactsEpisodeImages = isProtected
+                episodeImagesTransmitter.broadcast(isProtected)
+            }
+        )
+    }
+
+    private var protectsActorEpisodeCounts: Binding<Bool> {
+        return Binding(
+            get: {
+                redactsActorEpisodeCounts
+            },
+            set: { isProtected in
+                redactsActorEpisodeCounts = isProtected
+                actorEpisodeCountsTransmitter.broadcast(isProtected)
+            }
+        )
+    }
+
+    private func spoilerToggle(title: LocalizedStringKey,
+                               description: LocalizedStringKey,
+                               isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .multilineTextAlignment(.leading)
+            .padding(.vertical, 3)
         }
-        tableView.reloadData()
     }
+}
 
-    #if targetEnvironment(macCatalyst)
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 54.0
+final class SpoilersViewController: RipppleHostingController<SpoilersView> {
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder, rootView: SpoilersView())
     }
-    #endif
-
-    #if targetEnvironment(macCatalyst)
-    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 44
-    }
-    #endif
 }

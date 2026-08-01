@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 16/07/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -13,6 +13,7 @@ let (onBrowseConfigChangedTransmitter, onBrowseConfigChangedReceiver) = Receiver
 
 final class BrowseConfigManager {
     private let disposeBag = DisposeBag()
+    private var lastTransmittedConfig: String?
 
     private init() {
         PurchaseManager.shared.onPurchasedChangedReceiver.hotOnly().listen { [weak self] _ in
@@ -34,6 +35,26 @@ final class BrowseConfigManager {
         }.disposed(by: disposeBag)
 
         loadCurrent()
+
+        onEpisodeToWatchChangedReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.transmitCurrent()
+        }.disposed(by: disposeBag)
+
+        onWatchlistSearchableDataSourceChangedReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.transmitCurrent()
+        }.disposed(by: disposeBag)
+
+        onSyncWatchedMoviesChangedReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.transmitCurrent()
+        }.disposed(by: disposeBag)
+
+        onSyncWatchedEpisodesChangedReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.transmitCurrent()
+        }.disposed(by: disposeBag)
     }
 
     private func loadCurrent() {
@@ -79,12 +100,34 @@ final class BrowseConfigManager {
         didSet {
             UserDefaults.standard.set(currentConfig, forKey: "BrowseConfigManager.currentConfig")
             UserDefaults.standard.synchronize()
-            if UserManager.shared.currentUser == nil {
-                onBrowseConfigChangedTransmitter.broadcast(freeConfig)
-            } else {
-                onBrowseConfigChangedTransmitter.broadcast(currentConfig)
-            }
+            transmitCurrent()
         }
+    }
+
+    private func transmitCurrent() {
+        guard let currentConfig = currentConfig else { return }
+        let decoder = JSONDecoder()
+        let episodesToWatchIsEmpty = EpisodeToWatchManager.shared.filteredMediaModels.isEmpty
+        let watchlistIsEmpty = WatchlistManager.shared.isEmpty
+        let watchedMoviesIsEmpty = SyncWatchedManager.shared.watchedMovies.isEmpty
+        let watchedEpisodesIsEmpty = SyncWatchedManager.shared.watchedEpisodes.isEmpty
+        let historyIsEmpty = watchedMoviesIsEmpty && watchedEpisodesIsEmpty
+        let config = (UserManager.shared.currentUser == nil ? freeConfig : currentConfig)
+            .components(separatedBy: .newlines).filter { line in
+                guard let data = line.data(using: .utf8),
+                      let module = try? decoder.decode(BrowseViewController.ModuleType.self, from: data) else {
+                    return true
+                }
+                return (episodesToWatchIsEmpty == false || module.filter.section != "episodes_to_watch") &&
+                    (watchlistIsEmpty == false || module.filter.path != "/sync/watchlist") &&
+                    (historyIsEmpty == false || module.filter.section != "History") &&
+                    (watchedEpisodesIsEmpty == false || module.filter.path != "/recommendations/shows") &&
+                    (watchedMoviesIsEmpty == false || module.filter.path != "/recommendations/movies")
+            }
+            .joined(separator: "\n")
+        guard config != lastTransmittedConfig else { return }
+        lastTransmittedConfig = config
+        onBrowseConfigChangedTransmitter.broadcast(config)
     }
 
     private var shelfProxy = ""
@@ -142,7 +185,7 @@ final class BrowseConfigManager {
     { "module": "L1", "filter": { "section": "lists", "name": "2025 Golden Globes Nominees and Winners", "path": "/lists/30156306/items", "query": "" } }
     { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes Best of 2024", "path": "/users/lish408/lists/rotten-tomatoes-best-of-2024/items", "query": "" } }
     { "module": "L3", "filter": { "section": "lists", "name": "IMDb Top 250 Movies", "path": "/lists/2142753/items", "query": "" } }
-    { "module": "T1", "filter": { "section": "movies", "name": "Most Favorited Movies", "path": "/movies/recommended/monthly", "query": "" } }
+    { "module": "T1", "filter": { "section": "movies", "name": "Most Favorited Movies", "path": "/movies/favorited/monthly", "query": "" } }
     { "module": "L1", "filter": { "section": "lists", "name": "Marvel Cinematic Universe", "path": "/lists/1248149/items/shows,movies", "query": "" } }
     { "module": "L1", "filter": { "section": "lists", "name": "DC Extended Universe", "path": "/lists/1257909/items", "query": "" } }
     { "module": "L1", "filter": { "section": "lists", "name": "Disney Animated Feature Films", "path": "/lists/1406012/items", "query": "" } }
@@ -165,7 +208,7 @@ final class BrowseConfigManager {
     { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes 2024 Best TV Shows", "path": "/users/lish408/lists/rotten-tomatoes-the-best-tv-of-2024/items", "query": "" } }
     { "module": "L1", "filter": { "section": "lists", "name": "Rolling Stone's 100 Greatest TV Shows", "path": "/lists/2748259/items", "query": "" } }
     { "module": "L2", "filter": { "section": "lists", "name": "IMDb Top 250 TV Shows", "path": "/lists/2143363/items", "query": "" } }
-    { "module": "T1", "filter": { "section": "shows", "name": "Most Favorited TV Shows", "path": "/shows/recommended/monthly", "query": "" } }
+    { "module": "T1", "filter": { "section": "shows", "name": "Most Favorited TV Shows", "path": "/shows/favorited/monthly", "query": "" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Shows on Netflix", "path": "/shows/trending", "query": "watchnow=netflix" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Shows on Disney+", "path": "/shows/trending", "query": "watchnow=disney_plus" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Shows on Prime Video", "path": "/shows/trending", "query": "watchnow=amazon_prime_video" } }

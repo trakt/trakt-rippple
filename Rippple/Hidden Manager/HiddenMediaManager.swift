@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 12/07/2020.
-//  Copyright © 2020 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -49,6 +49,28 @@ final class HiddenMediaManager {
         if let array = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "HiddenMediaManager.rewatchingShowsMediaList") {
             rewatchingShowsMediaList = array
         }
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.lastShowsCheck = .now
+            self.showsHiddenFromProgressSet.removeAll()
+            self.seasonsHiddenFromProgressSet.removeAll()
+            self.rewatchingShowsSet.removeAll()
+
+            self.showsHiddenFromProgressMediaList = []
+            self.showsHiddenFromCalendarMediaList = []
+            self.moviesHiddenFromCalendarMediaList = []
+            self.usersHiddenFromCommentsList = []
+            self.showsDroppedList = []
+            self.rewatchingShowsMediaList = []
+
+            TinyStorage.cache.remove(key: "HiddenMediaManager.hiddenMediaList")
+            TinyStorage.cache.remove(key: "HiddenMediaManager.showsHiddenFromCalendarMediaList")
+            TinyStorage.cache.remove(key: "HiddenMediaManager.moviesHiddenFromCalendarMediaList")
+            TinyStorage.cache.remove(key: "HiddenMediaManager.usersHiddenFromCommentsList")
+            TinyStorage.cache.remove(key: "HiddenMediaManager.showsDroppedList")
+            TinyStorage.cache.remove(key: "HiddenMediaManager.rewatchingShowsMediaList")
+        }.disposed(by: disposeBag)
 
         onLastDroppedShowActivitiesChangedReceiver.listen { _ in
             self.refreshDroppedShows()

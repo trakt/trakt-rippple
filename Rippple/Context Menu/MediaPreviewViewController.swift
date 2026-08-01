@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 13/07/2019.
-//  Copyright © 2019 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import NVActivityIndicatorView
@@ -91,13 +91,15 @@ final class EpisodePreviewViewController: UIViewController {
 
     private var showSpoilers = false {
         didSet {
-            if showSpoilers {
-                frontPreviewBackdropImageView.media = media
-                frontBackdropImageView.media = media
-            }
-            DispatchQueue.main.async {
-                self.frontBackdropImageView.isHidden = !self.showSpoilers
-                self.frontPreviewBackdropImageView.isHidden = !self.showSpoilers
+            let showSpoilers = showSpoilers
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.showSpoilers == showSpoilers else { return }
+                if showSpoilers {
+                    self.frontPreviewBackdropImageView.media = self.media
+                    self.frontBackdropImageView.media = self.media
+                }
+                self.frontBackdropImageView.isHidden = !showSpoilers
+                self.frontPreviewBackdropImageView.isHidden = !showSpoilers
             }
         }
     }
@@ -130,7 +132,7 @@ final class EpisodePreviewViewController: UIViewController {
             showSpoilers = false
             backPreviewBackdropImageView.media = MediaModel.show(show)
             backBackdropImageView.media = MediaModel.show(show)
-            if UserDefaults.standard.bool(forKey: "GeneralSettings.detailepisodetitle") {
+            if UserDefaults.standard.bool(forKey: "GeneralSettings.episodeImageSpoilers") == false {
                 showSpoilers = true
             } else {
                 media.progress { [weak self] progress in

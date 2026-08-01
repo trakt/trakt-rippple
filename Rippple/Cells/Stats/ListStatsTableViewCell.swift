@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 29/06/2022.
-//  Copyright © 2022 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -112,7 +112,7 @@ final class ListStatsTableViewCell: UITableViewCell {
             self.update()
         }.disposed(by: disposeBag)
 
-        onRecommendedChangedReceiver.listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.update()
         }.disposed(by: disposeBag)
@@ -209,7 +209,7 @@ final class ListStatsTableViewCell: UITableViewCell {
                     itemsCount += 1
                     if movie.isWatched { watchedMoviesCount += 1 }
                     if movie.isWatchlisted { watchlistedCount += 1 }
-                    if movie.isRecommended { recommendedCount += 1 }
+                    if movie.isUserFavorite { recommendedCount += 1 }
                     if movie.isInCollection { collectedCount += 1 }
                     if media.userRating != nil { ratedCount += 1 }
                     if movie.ownCommentItem != nil { commentedCount += 1 }
@@ -217,7 +217,7 @@ final class ListStatsTableViewCell: UITableViewCell {
                     itemsCount += 1
                     if show.isWatchedAtLeastOnce { watchedShowsCount += 1 }
                     if show.isWatchlisted { watchlistedCount += 1 }
-                    if show.isRecommended { recommendedCount += 1 }
+                    if show.isUserFavorite { recommendedCount += 1 }
                     if show.isInCollection { collectedCount += 1 }
                     if media.userRating != nil { ratedCount += 1 }
                     if show.ownCommentItem != nil { commentedCount += 1 }

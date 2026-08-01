@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 06/01/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -52,6 +52,13 @@ final class SavedFiltersManager {
         onSettingsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.refresh()
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.savedFilters = [SavedFilter]()
+            UserDefaults.standard.removeObject(forKey: "SavedFiltersManager.savedFilters")
+            UserDefaults.standard.synchronize()
         }.disposed(by: disposeBag)
 
         refresh()

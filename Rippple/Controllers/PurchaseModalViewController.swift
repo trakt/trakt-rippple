@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 09/09/2022.
-//  Copyright © 2022 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import UIKit

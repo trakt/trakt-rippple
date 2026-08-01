@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 31/01/2022.
-//  Copyright © 2022 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Moya
@@ -196,7 +196,7 @@ final class RatingsViewController: UITableViewController {
             cell.collectedStatus?.removeFromSuperview()
             cell.commentedStatus?.removeFromSuperview()
             cell.hiddenStatus?.removeFromSuperview()
-            cell.recommendedStatus?.removeFromSuperview()
+            cell.userFavoriteStatus?.removeFromSuperview()
             cell.whereToWatchImageView?.removeFromSuperview()
             cell.dimmedIfWatched = false
             if self.user.isCurrentUser {
@@ -466,7 +466,9 @@ final class RatingsViewController: UITableViewController {
         snapshot.appendSections(["stats"])
         snapshot.appendItems([Wrapper.stats(ratingsStats(for: rated))], toSection: "stats")
 
-        let visibleRatedItems = rated.filter { filteredRatings.contains($0.rating) }
+        let visibleRatedItems = rated
+            .filter { filteredRatings.contains($0.rating) }
+            .removingDuplicates()
 
         switch groupingMode {
         case .date:

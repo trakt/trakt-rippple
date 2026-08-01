@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 02/01/2019.
-//  Copyright © 2019 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Moya
@@ -221,6 +221,13 @@ final class MediaViewController: UITableViewController {
             snapshot.appendItems([.collection(officialList)])
         }
 
+        switch media! {
+        case .movie, .show:
+            snapshot.appendItems([.spacer(24.006), .related])
+        case .episode, .season, .list, .showProgress:
+            break
+        }
+
         DispatchQueue.main.async {
             self.dataSource.apply(snapshot, animatingDifferences: false)
         }
@@ -248,6 +255,7 @@ final class MediaViewController: UITableViewController {
         case episode(MediaModel, CardType, EpisodeProgress?, Date?)
         case stats
         case whereToWatch
+        case related
         case link(String, String, URL)
         case collection(List)
         case notes
@@ -340,6 +348,11 @@ final class MediaViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "where to watch") as! WhereToWatchTableViewCell
             cell.media = self.media
             return cell
+        case .related:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "related") as! RelatedMediaTableViewCell
+            cell.delegate = self
+            cell.media = self.media
+            return cell
         case .link(let title, let imageName, let url):
             let cell = tableView.dequeueReusableCell(withIdentifier: "link") as! LinkTableViewCell
             cell.title.text = title
@@ -426,6 +439,7 @@ final class MediaViewController: UITableViewController {
         tableView.register(UINib(nibName: "CastTableViewCell", bundle: nil), forCellReuseIdentifier: "cast")
         tableView.register(UINib(nibName: "StatsTableViewCell", bundle: nil), forCellReuseIdentifier: "stats")
         tableView.register(UINib(nibName: "WhereToWatchTableViewCell", bundle: nil), forCellReuseIdentifier: "where to watch")
+        tableView.register(UINib(nibName: "RelatedMediaTableViewCell", bundle: nil), forCellReuseIdentifier: "related")
         tableView.register(UINib(nibName: "LinkTableViewCell", bundle: nil), forCellReuseIdentifier: "link")
         tableView.register(UINib(nibName: "CustomListTableViewCell", bundle: nil), forCellReuseIdentifier: "custom list")
         tableView.register(UINib(nibName: "PrivateNotesTableViewCell", bundle: nil), forCellReuseIdentifier: "notes")
@@ -513,7 +527,21 @@ final class MediaViewController: UITableViewController {
             var snapshot = self.dataSource.snapshot()
             for identifier in snapshot.itemIdentifiers {
                 switch identifier {
-                case .title, .backdrop:
+                case .title:
+                    snapshot.reloadItems([identifier])
+                default:
+                    continue
+                }
+            }
+            self.dataSource.apply(snapshot)
+        }.disposed(by: disposeBag)
+
+        episodeImagesReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            var snapshot = self.dataSource.snapshot()
+            for identifier in snapshot.itemIdentifiers {
+                switch identifier {
+                case .backdrop:
                     snapshot.reloadItems([identifier])
                 default:
                     continue
@@ -1119,6 +1147,8 @@ extension MediaViewController {
             return UITableView.automaticDimension
         case .whereToWatch:
             return UITableView.automaticDimension
+        case .related:
+            return UITableView.automaticDimension
         case .link:
             return UITableView.automaticDimension
         case .openIn:
@@ -1343,6 +1373,17 @@ extension MediaViewController: CastTableViewCellDelegate {
     }
 }
 
+extension MediaViewController: RelatedMediaTableViewCellDelegate {
+    func cell(_ cell: RelatedMediaTableViewCell, action: RelatedMediaTableViewCell.Action) {
+        switch action {
+        case .showMedia(let media):
+            performSegue(withIdentifier: "media", sender: media)
+        case .getMoreWithVIP:
+            UIApplication.shared.switchToPurchase()
+        }
+    }
+}
+
 extension MediaViewController: MediaTitleTableViewCellDelegate {
     func cell(_ cell: MediaTitleTableViewCell, action: MediaTitleTableViewCell.Action) {
         switch action {
@@ -1459,7 +1500,7 @@ extension MediaViewController: OpenInRowTableViewCellDelegate {
 
     func openInRowCellDidTapSettings(_ cell: OpenActionsTableViewCell) {
         let settingsView = OpenInSettingsView()
-        let controller = UIHostingController(rootView: settingsView)
+        let controller = RipppleHostingController(rootView: settingsView)
         present(controller, animated: true)
     }
 }

@@ -3,13 +3,13 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 05/02/2021.
-//  Copyright © 2021 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import SwiftUI
 import UIKit
 
-final class CountryWhereToWatchTableViewController: UIHostingController<WhereToWatchSettingsView> {
+final class CountryWhereToWatchTableViewController: RipppleHostingController<WhereToWatchSettingsView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: WhereToWatchSettingsView())
     }

@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 21/06/2026.
-//  Copyright © 2026 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -112,6 +112,12 @@ final class StreamingMovieNotificationsManager {
             guard let self = self else { return }
             self.debouncedRebuildNotifications.call()
         }
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.movieCalendarItems = nil
+            onStreamingMoviesNotificationsChangedTransmitter.broadcast([])
+        }.disposed(by: disposeBag)
 
         fetchCalendar()
     }

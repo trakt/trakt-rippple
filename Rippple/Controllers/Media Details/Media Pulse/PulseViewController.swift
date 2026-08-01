@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 14/05/2024.
-//  Copyright © 2024 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -640,7 +640,7 @@ final class PulseViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
-        onRecommendedChangedReceiver.listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.listen { [weak self] _ in
             guard let self else { return }
             DispatchQueue.main.async {
                 self.refresh()
@@ -1035,8 +1035,8 @@ final class PulseViewController: UITableViewController {
                 activityItems.append(item)
             }
 
-            if let recommendedMediaItem = media.recommendedMediaItem {
-                let recommendedAt = recommendedMediaItem.listedAt
+            if let userFavoriteMediaItem = media.userFavoriteMediaItem {
+                let favoritedAt = userFavoriteMediaItem.listedAt
                 let dateFormatter: DateFormatter = {
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateStyle = .medium
@@ -1045,13 +1045,13 @@ final class PulseViewController: UITableViewController {
                 }()
 
                 let item = ActivityItem(activity: "Favorited",
-                                        title: "\(dateFormatter.string(from: recommendedAt))",
-                                        notes: recommendedMediaItem.notes ?? "",
+                                        title: "\(dateFormatter.string(from: favoritedAt))",
+                                        notes: userFavoriteMediaItem.notes ?? "",
                                         meta: "",
-                                        date: recommendedAt,
+                                        date: favoritedAt,
                                         systemImageName: "star.fill",
-                                        actions: buildFavoriteActivityActions(for: recommendedMediaItem),
-                                        identifier: "favorited-\(recommendedMediaItem.id)")
+                                        actions: buildFavoriteActivityActions(for: userFavoriteMediaItem),
+                                        identifier: "favorited-\(userFavoriteMediaItem.id)")
                 activityItems.append(item)
             }
 

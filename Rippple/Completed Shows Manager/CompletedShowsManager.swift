@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 22/02/2024.
-//  Copyright © 2024 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -45,6 +45,16 @@ final class CompletedShowsManager {
                 completedShows = array
             }
         }
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.withStateLock {
+                self.completedShows.removeAll()
+                self.completedShowSet.removeAll()
+            }
+            TinyStorage.cache.remove(key: "CompletedShowsManager.completedShows")
+            self.debouncedTransmit.fireNow()
+        }.disposed(by: disposeBag)
 
         onShowsHiddenFromProgressMediaChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }

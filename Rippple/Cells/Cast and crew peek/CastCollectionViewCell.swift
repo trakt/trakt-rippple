@@ -3,9 +3,10 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 21/09/2019.
-//  Copyright © 2019 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
+import Receiver
 import UIKit
 
 final class CastCollectionViewCell: UICollectionViewCell {
@@ -15,7 +16,9 @@ final class CastCollectionViewCell: UICollectionViewCell {
 
     @IBOutlet var personNameLabel: UILabel!
     @IBOutlet var asLabel: UILabel!
-    @IBOutlet var additionalInfoLabel: UILabel!
+    @IBOutlet var additionalInfoLabel: RedactableLabel!
+
+    private let disposeBag = DisposeBag()
 
     var showsEpisodeCount = true {
         didSet {
@@ -33,6 +36,13 @@ final class CastCollectionViewCell: UICollectionViewCell {
 
         minimumContentSizeCategory = .extraSmall
         maximumContentSizeCategory = .large
+
+        actorEpisodeCountsReceiver.listen { [weak self] redactsEpisodeCounts in
+            guard let self = self else { return }
+            guard self.showsEpisodeCount,
+                  self.cast?.episodeCount != nil else { return }
+            self.additionalInfoLabel.isRedactedByDefault = redactsEpisodeCounts
+        }.disposed(by: disposeBag)
     }
 
     var cast: Cast? {
@@ -41,6 +51,7 @@ final class CastCollectionViewCell: UICollectionViewCell {
                 updateAdditionalInfo()
                 return
             }
+            hideAdditionalInfo()
             if let cast = cast {
                 crew = nil
                 personNameLabel.text = cast.person!.name
@@ -61,20 +72,24 @@ final class CastCollectionViewCell: UICollectionViewCell {
                 avatarInitialLabel.text = crew.person!.name.initials
                 asLabel.text = crew.jobs.joined(separator: ", ")
                 avatarImageView.person = crew.person
-                additionalInfoLabel.text = nil
-                additionalInfoLabel.isHidden = true
+                hideAdditionalInfo()
             }
         }
     }
 
     private func updateAdditionalInfo() {
         guard showsEpisodeCount, let episodeCount = cast?.episodeCount else {
-            additionalInfoLabel.text = nil
-            additionalInfoLabel.isHidden = true
+            hideAdditionalInfo()
             return
         }
 
-        additionalInfoLabel.isHidden = false
+        additionalInfoLabel.isRedactedByDefault = UserDefaults.standard.bool(forKey: "GeneralSettings.actorEpisodeCountSpoilers")
         additionalInfoLabel.text = episodeCount <= 1 ? "\(episodeCount) episode" : "\(episodeCount) episodes"
+        additionalInfoLabel.isHidden = false
+    }
+
+    private func hideAdditionalInfo() {
+        additionalInfoLabel.text = nil
+        additionalInfoLabel.isHidden = true
     }
 }

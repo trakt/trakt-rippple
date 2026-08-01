@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 29/01/2018.
-//  Copyright © 2018 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -188,7 +188,7 @@ final class DeeplinkParser {
         case "whatsnew":
             return DeeplinkType.whatsNew
         case "search":
-            return DeeplinkType.search(query: pathComponents.first)
+            return DeeplinkType.search(query: pathComponents.isEmpty ? nil : pathComponents.joined(separator: "/"))
         case "ripppleapp.writeas.com", "writeas.com", "write.as":
             return .browseThisWeek
         case "towatch":

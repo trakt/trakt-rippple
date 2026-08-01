@@ -3,12 +3,21 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 04/07/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
+import LRUCache
 import UIKit
 
 class GenresBrowseTableViewCell: UITableViewCell {
+    private struct CacheEntry {
+        let items: [Genre]
+        let expirationDate: Date
+    }
+
+    private static let cacheLifetime: TimeInterval = 2 * 60
+    private static let cache = LRUCache<String, CacheEntry>(countLimit: 3)
+
     @IBOutlet var collectionView: UICollectionView!
 
     weak var presentingViewController: UIViewController?
@@ -21,7 +30,17 @@ class GenresBrowseTableViewCell: UITableViewCell {
 
     var service: TraktAPIService? {
         didSet {
-            TraktAPIProvider.provider.request(service ?? .movieGenres, callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
+            let service = service ?? .movieGenres
+            let cacheKey = service.path
+            if let entry = Self.cache.value(forKey: cacheKey) {
+                if entry.expirationDate > Date() {
+                    items = entry.items
+                    return
+                }
+                Self.cache.removeValue(forKey: cacheKey)
+            }
+
+            TraktAPIProvider.provider.request(service, callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
 
                 switch result {
@@ -30,6 +49,9 @@ class GenresBrowseTableViewCell: UITableViewCell {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                         let genres = try response.map([Genre].self, using: TraktAPIProvider.decoder).filter { $0.slug != "none" }
+                        let entry = CacheEntry(items: genres,
+                                               expirationDate: Date().addingTimeInterval(Self.cacheLifetime))
+                        Self.cache.setValue(entry, forKey: cacheKey, cost: genres.count)
 
                         DispatchQueue.main.async {
                             self.items = genres
@@ -42,6 +64,10 @@ class GenresBrowseTableViewCell: UITableViewCell {
                 }
             }
         }
+    }
+
+    static func removeAllCachedItems() {
+        cache.removeAll()
     }
 
     override func awakeFromNib() {

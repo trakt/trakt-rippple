@@ -3,7 +3,7 @@
 //  ToWatchStoriesTableViewCell
 //
 //  Created by Kevin Cador on 20/07/2021.
-//  Copyright © 2021 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -14,6 +14,7 @@ final class ToWatchStoriesTableViewCell: UITableViewCell {
     @IBOutlet var collectionView: UICollectionView!
 
     private enum Section: Hashable {
+        case finales
         case inToWatch
         case others
     }
@@ -66,10 +67,13 @@ final class ToWatchStoriesTableViewCell: UITableViewCell {
 
     var mediaModels = [MediaModel]() {
         didSet {
-            let grouped = mediaModels.reduce(into: (inToWatch: [MediaModel](), others: [MediaModel]())) { acc, item in
+            let bingeableOnly = EpisodeToWatchSettings.shared.bingeableOnly
+            let grouped = mediaModels.reduce(into: (finales: [MediaModel](), inToWatch: [MediaModel](), others: [MediaModel]())) { acc, item in
                 switch item {
                 case .show(let show):
                     if show.isInToWatch { acc.inToWatch.append(item) } else { acc.others.append(item) }
+                case .episode(let episode, let show) where bingeableOnly && episode.isBingeableFinale && show.isInToWatch:
+                    acc.finales.append(item)
                 case .episode(_, let show):
                     if show.isInToWatch { acc.inToWatch.append(item) } else { acc.others.append(item) }
                 case .season(_, let show):
@@ -85,6 +89,10 @@ final class ToWatchStoriesTableViewCell: UITableViewCell {
 
             var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
 
+            if !grouped.finales.isEmpty {
+                snapshot.appendSections([.finales])
+                snapshot.appendItems(grouped.finales.map { Item(media: $0) }, toSection: .finales)
+            }
             if !grouped.inToWatch.isEmpty {
                 snapshot.appendSections([.inToWatch])
                 snapshot.appendItems(grouped.inToWatch.map { Item(media: $0) }, toSection: .inToWatch)

@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 02/07/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import UIKit
@@ -11,7 +11,7 @@ import UIKit
 final class ToWatchBrowseCollectionViewCell: UICollectionViewCell {
     @IBOutlet var backdrop: BackdropImageView!
     @IBOutlet var label: UILabel?
-    @IBOutlet var sublabel: UILabel?
+    @IBOutlet var sublabel: RedactableLabel?
     @IBOutlet var pinned: UIImageView?
     @IBOutlet var actionButton: UIButton!
 
@@ -34,17 +34,23 @@ final class ToWatchBrowseCollectionViewCell: UICollectionViewCell {
             actionButtonController.media = media
             switch media! {
             case .showProgress(let show, let progress):
+                sublabel?.isRedactedByDefault = false
                 label?.text = show.title
                 pinned?.isHidden = !show.isPinned
-                backdrop.showEpisodeSpoilers = UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle")
+                backdrop.showEpisodeSpoilers = UserDefaults.standard.bool(forKey: "GeneralSettings.episodeImageSpoilers") == false
                 if let episode = progress.nextEpisodeToWatch {
                     backdrop.media = episode.mediaModel(given: show)
                 } else {
                     backdrop.media = show.mediaModel
                 }
                 if let nextEpisodeToWatch = progress.nextEpisodeToWatch {
-                    if UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == true, let title = nextEpisodeToWatch.title {
-                        sublabel?.text = "\(nextEpisodeToWatch.localizedEpisodeNumber) - \(title)"
+                    if let episodeTitle = nextEpisodeToWatch.title {
+                        let episodeText = "\(nextEpisodeToWatch.localizedEpisodeNumber) - \(episodeTitle)"
+                        let episodeTitleRange = (episodeText as NSString).range(of: episodeTitle,
+                                                                                options: .backwards)
+                        sublabel?.isRedactedByDefault =
+                            UserDefaults.standard.bool(forKey: "GeneralSettings.towatchepisodetitle") == false
+                        sublabel?.setText(episodeText, redacting: episodeTitleRange)
                     } else {
                         sublabel?.text = nextEpisodeToWatch.localizedEpisodeNumber
                     }

@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 01/11/2018.
-//  Copyright © 2018 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation
@@ -32,6 +32,11 @@ final class RatingsManager {
             } else {
                 self.rated.removeAll()
             }
+        }.disposed(by: disposeBag)
+
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.rated.removeAll()
         }.disposed(by: disposeBag)
 
         refreshRatings {}

@@ -2,7 +2,8 @@
 //  UpcomingLabelManager.swift
 //  Rippple
 //
-//  Created by Assistant on 01/29/2026.
+//  Created by Kevin Cador on 01/29/2026.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Foundation

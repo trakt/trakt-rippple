@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 16/06/2023.
-//  Copyright © 2023 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import NVActivityIndicatorView
@@ -173,6 +173,7 @@ final class BrowseViewController: UITableViewController {
                 return cell
             } else if let cell = tableView.dequeueReusableCell(withIdentifier: identifier) as? CommentsBrowseTableViewCell {
                 cell.presentingViewController = self
+                cell.loadItems()
                 return cell
             } else if let cell = tableView.dequeueReusableCell(withIdentifier: identifier) as? ServicesBrowseTableViewCell {
                 cell.presentingViewController = self
@@ -280,6 +281,12 @@ final class BrowseViewController: UITableViewController {
             self.model = BrowseConfigManager.shared.shelfConfiguration(for: shelf)
         }.disposed(by: disposeBag)
 
+        onUserLoggedOutReceiver.listen { _ in
+            BrowseTableViewCell.removeAllCachedItems()
+            CommentsBrowseTableViewCell.removeAllCachedItems()
+            InReviewBrowseCache.removeAll()
+        }.disposed(by: disposeBag)
+
         configureSearchButton()
 
         PurchaseManager.shared.onPurchasedChangedReceiver.skipRepeats().listen { [weak self] _ in
@@ -298,6 +305,7 @@ final class BrowseViewController: UITableViewController {
                         switch s {
                         case .content(_, let filter, _):
                             if filter.path == "/sync/watchlist" {
+                                BrowseTableViewCell.removeCachedItems(for: filter)
                                 snapshot.reloadItems([s])
                             }
                         default:
@@ -309,7 +317,7 @@ final class BrowseViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
-        onRecommendedChangedReceiver.listen { [weak self] _ in
+        onUserFavoritesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             if model.localizedStandardContains("/sync/favorites") {
                 DispatchQueue.main.async {
@@ -318,6 +326,7 @@ final class BrowseViewController: UITableViewController {
                         switch s {
                         case .content(_, let filter, _):
                             if filter.path == "/sync/favorites" {
+                                BrowseTableViewCell.removeCachedItems(for: filter)
                                 snapshot.reloadItems([s])
                             }
                         default:
@@ -338,6 +347,7 @@ final class BrowseViewController: UITableViewController {
                         switch s {
                         case .content(_, let filter, _):
                             if filter.path.localizedStandardContains("/lists/\(list.identifiers.trakt!)") {
+                                BrowseTableViewCell.removeCachedItems(for: filter)
                                 snapshot.reloadItems([s])
                             }
                         default:
@@ -358,6 +368,7 @@ final class BrowseViewController: UITableViewController {
                         switch s {
                         case .content(_, let filter, _):
                             if filter.path == "/users/me/collection/movies" {
+                                BrowseTableViewCell.removeCachedItems(for: filter)
                                 snapshot.reloadItems([s])
                             }
                         default:
@@ -378,6 +389,7 @@ final class BrowseViewController: UITableViewController {
                         switch s {
                         case .content(_, let filter, _):
                             if filter.path == "/users/me/collection/shows" {
+                                BrowseTableViewCell.removeCachedItems(for: filter)
                                 snapshot.reloadItems([s])
                             }
                         default:
@@ -480,12 +492,16 @@ final class BrowseViewController: UITableViewController {
         guard let indexPath = tableView.indexPathForRow(at: location),
               case .header(_, _, let moduleType) = dataSource.itemIdentifier(for: indexPath) else { return }
 
-        let hosting = UIHostingController(rootView: ShelfRowQuickConfigView(row: moduleType))
+        let hosting = RipppleHostingController(rootView: ShelfRowQuickConfigView(row: moduleType))
         hosting.modalPresentationStyle = .formSheet
         present(hosting, animated: true, completion: nil)
     }
 
     @objc func refresh(_ sender: Any) {
+        BrowseTableViewCell.removeAllCachedItems()
+        CommentsBrowseTableViewCell.removeAllCachedItems()
+        GenresBrowseTableViewCell.removeAllCachedItems()
+        InReviewBrowseCache.removeAll()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
             guard let self = self else { return }
             self.dataSource.applySnapshotUsingReloadData(self.dataSource.snapshot()) {
@@ -587,7 +603,7 @@ final class BrowseViewController: UITableViewController {
                                                      guard let self = self else { return }
                                                      if PurchaseManager.shared.purchased {
                                                          if self.menuBarButtonItem == nil {
-                                                             self.present(UIHostingController(rootView: ShelfConfigView()), animated: true)
+                                                             self.present(RipppleHostingController(rootView: ShelfConfigView()), animated: true)
                                                          } else {
                                                              self.performSegue(withIdentifier: "customizeShelf", sender: nil)
                                                          }

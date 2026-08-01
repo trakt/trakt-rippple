@@ -3,13 +3,14 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 04/11/2017.
-//  Copyright © 2017 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import AlamofireNetworkActivityIndicator
 import BackgroundTasks
 import NVActivityIndicatorView
 import Receiver
+import SwiftUI
 import UIKit
 
 // Push management
@@ -27,9 +28,51 @@ let (remoteNotificationsEndpointUpdatedTransmitter, remoteNotificationsEndpointU
 let (testPushTransmitter, testPushReceiver) = Receiver<String>.make(with: .hot)
 let (commandTransmitter, commandReceiver) = Receiver<UIKeyCommand>.make(with: .hot)
 
+enum RipppleAppearance {
+    static let switchTintColor = UIColor(dynamicProvider: { _ in
+        UIColor(asset: .globalTint).darker(amount: 0.3)
+    })
+}
+
+private struct RipppleSwitchToggleStyle: ToggleStyle {
+    func makeBody(configuration: ToggleStyleConfiguration) -> some View {
+        Toggle(configuration)
+            .toggleStyle(.switch)
+            .tint(Color(uiColor: RipppleAppearance.switchTintColor))
+    }
+}
+
+struct RipppleHostedView<Content: View>: View {
+    let content: Content
+
+    var body: some View {
+        content.toggleStyle(RipppleSwitchToggleStyle())
+    }
+}
+
+@MainActor
+class RipppleHostingController<Content: View>: UIHostingController<RipppleHostedView<Content>> {
+    init(rootView: Content) {
+        super.init(rootView: RipppleHostedView(content: rootView))
+    }
+
+    init?(coder aDecoder: NSCoder, rootView: Content) {
+        super.init(coder: aDecoder, rootView: RipppleHostedView(content: rootView))
+    }
+
+    @objc dynamic required init?(coder aDecoder: NSCoder) {
+        return nil
+    }
+
+    func setRootView(_ rootView: Content) {
+        self.rootView = RipppleHostedView(content: rootView)
+    }
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     private let disposeBag = DisposeBag()
+    private var lastRegisteredPushInformation: PushInformationModel?
     private lazy var debouncedRegisterForPushNotifications = Debouncer(delay: 1.0) { [weak self] in
         guard SessionManager.shared.isLoggedIn else { return }
         guard let self = self else { return }
@@ -54,6 +97,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UserDefaults.standard.register(defaults: ["MovieToWatchSettings.upcoming": true,
                                                   "EpisodeToWatchSettings.upcoming": true,
                                                   "GeneralSettings.dragging": true,
+                                                  "GeneralSettings.actorEpisodeCountSpoilers": true,
+                                                  "GeneralSettings.episodeImageSpoilers": true,
                                                   "Stinger.alert.type": true,
                                                   "GeneralSettings.comments": true,
                                                   "GeneralSettings.droppedshows": true,
@@ -173,9 +218,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let view = UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self])
         view.tintColor = UIColor(asset: .globalTint)
 
-        UISwitch.appearance().onTintColor = UIColor(dynamicProvider: { _ in
-            UIColor(asset: .globalTint).darker(amount: 0.3)
-        })
+        UISwitch.appearance().onTintColor = RipppleAppearance.switchTintColor
         UIProgressView.appearance().trackTintColor = UIColor(asset: .globalTint).withAlphaComponent(0.25)
         NVActivityIndicatorView.DEFAULT_COLOR = UIColor(asset: .globalTint)
 
@@ -193,6 +236,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         LikeManager.shared.startManaging()
         ReactionsManager.shared.startManaging()
 
+        ToWatchSearchManager.shared.setup()
         HiddenMediaManager.shared.setup()
 
         ProgressManager.shared.setup()
@@ -228,9 +272,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
             }.disposed(by: disposeBag)
 
-            onNotificationsSettingsChangedReceiver.listen { [weak self] _ in
+            onNotificationsSettingsChangedReceiver.listen { [weak self] update in
                 guard let self = self else { return }
-                self.debouncedUpdatePushInformation.call()
+                switch update {
+                case .changed:
+                    self.debouncedUpdatePushInformation.call()
+                case .forced:
+                    guard SessionManager.shared.isLoggedIn, let endpointARN = endpointARN else { return }
+                    self.updatePushInformation(endpointARN: endpointARN, force: true)
+                }
             }.disposed(by: disposeBag)
 
             // Placed here because they need remote push setup first
@@ -251,7 +301,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         DroppedShowsManager.shared.setup()
         WatchedManager.shared.setup()
         SyncWatchedManager.shared.setup()
-        RecommendedManager.shared.setup()
+        UserFavoritesManager.shared.setup()
         CollectionManager.shared.setup()
         FollowManager.shared.setup()
         OwnCommentsManager.shared.setup()
@@ -395,7 +445,9 @@ extension AppDelegate {
            let token = token,
            latestToken == token {
             updateEndpoint(endpointARN: endpointARN)
-            updatePushInformation(endpointARN: endpointARN)
+            updatePushInformation(endpointARN: endpointARN,
+                                  force: true,
+                                  deduplicateRegistration: true)
         } else {
             saveToken(newToken: latestToken)
         }
@@ -445,7 +497,9 @@ extension AppDelegate {
         }
     }
 
-    private func updatePushInformation(endpointARN: String) {
+    private func updatePushInformation(endpointARN: String,
+                                       force: Bool = false,
+                                       deduplicateRegistration: Bool = false) {
         guard let traktSlug = UserManager.shared.currentUser?.slug else { return }
 
         let pushInfo = PushInformationModel(traktId: traktSlug,
@@ -457,9 +511,14 @@ extension AppDelegate {
                                             commentNewMention: ActivityNotificationsManager.shared.commentNewMention,
                                             activityNewFollower: ActivityNotificationsManager.shared.activityNewFollower)
 
+        if deduplicateRegistration {
+            guard lastRegisteredPushInformation != pushInfo else { return }
+            lastRegisteredPushInformation = pushInfo
+        }
+
         Task {
             do {
-                let savedPushInformation = try await RemoteNotificationsManager.shared.savePushInformation(pushInfo)
+                let savedPushInformation = try await RemoteNotificationsManager.shared.savePushInformation(pushInfo, force: force)
                 await MainActor.run {
                     if savedPushInformation {
                         print("🎉 Push information was saved through remote notifications API.")

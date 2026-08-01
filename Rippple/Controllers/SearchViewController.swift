@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 15/06/2018.
-//  Copyright © 2018 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Moya
@@ -29,6 +29,23 @@ final class SearchViewController: UITableViewController {
         didSet {
             updateDatasource()
         }
+    }
+
+    private var isExplicitUserSearch: Bool {
+        return searchQuery.hasPrefix("@")
+    }
+
+    private var userSearchQuery: String {
+        guard isExplicitUserSearch else { return searchQuery }
+
+        return String(searchQuery.dropFirst())
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { $0.isEmpty == false }
+            .joined(separator: "-")
+    }
+
+    private var canSearchUser: Bool {
+        return isExplicitUserSearch || NSPredicate(format: "SELF MATCHES %@", "^[A-Za-z0-9]+([-.!_]{1}[A-Za-z0-9]+)*").evaluate(with: userSearchQuery.lowercased())
     }
 
     private var shouldOpenKeyboard = false
@@ -292,24 +309,69 @@ final class SearchViewController: UITableViewController {
                          path: recentSearchPath(for: service))
     }
 
-    private func applyRecentSearch(_ recentSearch: RecentSearch) {
+    private func recentSearchQuery(for recentSearch: RecentSearch) -> String {
         let query = recentSearch.searchFieldQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        if recentSearch.name.hasPrefix("@"), query.hasPrefix("@") == false {
+            return "@\(query)"
+        }
+        return query
+    }
+
+    private func recentSearchDomain(for recentSearch: RecentSearch) -> String {
+        if recentSearch.name.hasPrefix("@") {
+            return " in Users"
+        }
+
+        switch recentSearch.path {
+        case "/search/\(SearchType.movie.rawValue)":
+            return " in Movies"
+        case "/search/\(SearchType.show.rawValue)":
+            return " in TV"
+        case "/search/\(SearchType.person.rawValue)":
+            return " in People"
+        case "/search/\(SearchType.list.rawValue)":
+            return " in Lists"
+        default:
+            return " in Movies & TV"
+        }
+    }
+
+    private func recentSearchType(for recentSearch: RecentSearch) -> SearchType {
+        switch recentSearch.path {
+        case "/search/\(SearchType.movie.rawValue)":
+            return .movie
+        case "/search/\(SearchType.show.rawValue)":
+            return .show
+        case "/search/\(SearchType.person.rawValue)":
+            return .person
+        case "/search/\(SearchType.list.rawValue)":
+            return .list
+        default:
+            return .moviesAndShow
+        }
+    }
+
+    private func applyRecentSearch(_ recentSearch: RecentSearch) {
+        let query = recentSearchQuery(for: recentSearch)
         guard query.isEmpty == false else { return }
 
-        searchController.isActive = true
-        searchController.searchBar.searchTextField.text = query
-        suggestions.removeAll()
-        searchQuery = query
+        searchController.searchBar.resignFirstResponder()
         RecentSearchManager.shared.recentSearches.insert(recentSearch, at: 0)
-        fetchSuggestions()
 
-        DispatchQueue.main.async {
-            self.searchController.searchBar.becomeFirstResponder()
-            self.tableView.scrollRectToVisible(CGRect(x: 0,
-                                                      y: 0,
-                                                      width: 1,
-                                                      height: 1),
-                                               animated: true)
+        if recentSearch.name.hasPrefix("@") {
+            fetchUser(with: String(query.dropFirst()).lowercased())
+            return
+        }
+
+        let searchType = recentSearchType(for: recentSearch)
+        let service = TraktAPIService.search(type: searchType, query: query)
+        switch searchType {
+        case .person:
+            performSegue(withIdentifier: "people", sender: service)
+        case .list:
+            performSegue(withIdentifier: "lists", sender: service)
+        case .movie, .show, .moviesAndShow:
+            performSegue(withIdentifier: "results", sender: service)
         }
     }
 
@@ -341,12 +403,42 @@ final class SearchViewController: UITableViewController {
 
         if searchController.isActive, searchQuery.isEmpty == false {
             snapshot.appendSections([.search])
-            snapshot.appendItems([.search(CellConfig(identifier: "Movies & TV with \"\(searchQuery)\"",
-                                                     cardType: .top,
-                                                     title: "Movies & TV with \"\(searchQuery)\"",
-                                                     subtitle: nil,
-                                                     query: searchQuery,
-                                                     segue: "results"), .search(type: .moviesAndShow, query: searchQuery))])
+            if isExplicitUserSearch {
+                snapshot.appendItems([.user(CellConfig(identifier: "Go to user @\(userSearchQuery.lowercased())",
+                                                       cardType: .alone,
+                                                       title: "Go to user @\(userSearchQuery.lowercased())",
+                                                       subtitle: nil,
+                                                       query: userSearchQuery,
+                                                       segue: ""))])
+
+                DispatchQueue.main.async {
+                    self.dataSource.applySnapshotUsingReloadData(snapshot)
+                }
+                return
+            }
+
+            if canSearchUser == false, searchQuery.rangeOfCharacter(from: .whitespacesAndNewlines) != nil {
+                snapshot.appendItems([.search(CellConfig(identifier: "Movies with \"\(searchQuery)\"",
+                                                         cardType: .top,
+                                                         title: "Movies with \"\(searchQuery)\"",
+                                                         subtitle: nil,
+                                                         query: searchQuery,
+                                                         segue: "results"), .search(type: .movie, query: searchQuery))])
+
+                snapshot.appendItems([.search(CellConfig(identifier: "TV Shows with \"\(searchQuery)\"",
+                                                         cardType: .middle,
+                                                         title: "TV Shows with \"\(searchQuery)\"",
+                                                         subtitle: nil,
+                                                         query: searchQuery,
+                                                         segue: "results"), .search(type: .show, query: searchQuery))])
+            } else {
+                snapshot.appendItems([.search(CellConfig(identifier: "Movies & TV with \"\(searchQuery)\"",
+                                                         cardType: .top,
+                                                         title: "Movies & TV with \"\(searchQuery)\"",
+                                                         subtitle: nil,
+                                                         query: searchQuery,
+                                                         segue: "results"), .search(type: .moviesAndShow, query: searchQuery))])
+            }
 
             snapshot.appendItems([.search(CellConfig(identifier: "People with \"\(searchQuery)\"",
                                                      cardType: .middle,
@@ -355,7 +447,7 @@ final class SearchViewController: UITableViewController {
                                                      query: searchQuery,
                                                      segue: "people"), .search(type: .person, query: searchQuery))])
 
-            if NSPredicate(format: "SELF MATCHES %@", "^[A-Za-z0-9]+([-.!_]{1}[A-Za-z0-9]+)*").evaluate(with: searchQuery.lowercased()) {
+            if canSearchUser {
                 snapshot.appendItems([.search(CellConfig(identifier: "Lists with \"\(searchQuery)\"",
                                                          cardType: .middle,
                                                          title: "Lists with \"\(searchQuery)\"",
@@ -363,11 +455,11 @@ final class SearchViewController: UITableViewController {
                                                          query: searchQuery,
                                                          segue: "lists"), .search(type: .list, query: searchQuery))])
 
-                snapshot.appendItems([.user(CellConfig(identifier: "Go to user @\(searchQuery.lowercased())",
+                snapshot.appendItems([.user(CellConfig(identifier: "Go to user @\(userSearchQuery.lowercased())",
                                                        cardType: .bottom,
-                                                       title: "Go to user @\(searchQuery.lowercased())",
+                                                       title: "Go to user @\(userSearchQuery.lowercased())",
                                                        subtitle: nil,
-                                                       query: searchQuery,
+                                                       query: userSearchQuery,
                                                        segue: ""))])
             } else {
                 snapshot.appendItems([.search(CellConfig(identifier: "Lists with \"\(searchQuery)\"",
@@ -418,8 +510,8 @@ final class SearchViewController: UITableViewController {
                 snapshot.appendSections([.recents])
                 snapshot.appendItems(recentSearches.removingDuplicates().map { .recentSearch(CellConfig(identifier: UUID().uuidString,
                                                                                                         cardType: cardType(for: $0, in: recentSearches),
-                                                                                                        title: $0.name,
-                                                                                                        subtitle: nil,
+                                                                                                        title: recentSearchQuery(for: $0),
+                                                                                                        subtitle: recentSearchDomain(for: $0),
                                                                                                         query: nil,
                                                                                                         segue: "results"), $0) })
             }
@@ -879,9 +971,13 @@ final class SearchViewController: UITableViewController {
             searchController.searchBar.resignFirstResponder()
             saveRecentSearch(config: config, service: service)
             performSegue(withIdentifier: config.segue, sender: service)
-        case .user:
+        case .user(let config):
+            let username = (config.query ?? userSearchQuery).lowercased()
+            guard username.isEmpty == false else {
+                tableView.deselectRow(at: indexPath, animated: true)
+                return
+            }
             searchController.searchBar.resignFirstResponder()
-            let username = searchQuery.lowercased()
             saveRecentSearch(title: "@\(username)", query: username)
             fetchUser(with: username)
             return // don't deselectRow to show loading indicator
@@ -1142,11 +1238,18 @@ final class SearchViewController: UITableViewController {
         }
 
         if let service = sender as? TraktAPIService {
+            let serviceQuery: String?
+            if case .search(_, let query) = service {
+                serviceQuery = query
+            } else {
+                serviceQuery = nil
+            }
+
             if let destination = segue.destination as? SearchResultsViewController {
-                destination.title = searchQuery.capitalized
+                destination.title = serviceQuery?.capitalized ?? searchQuery.capitalized
                 destination.service = service
             } else if let destination = segue.destination as? PeopleSearchResultsViewController {
-                destination.title = searchQuery.capitalized
+                destination.title = serviceQuery?.capitalized ?? searchQuery.capitalized
                 destination.service = service
             } else if let destination = segue.destination as? ListSearchResultsViewController {
                 switch service {
@@ -1159,7 +1262,7 @@ final class SearchViewController: UITableViewController {
                         destination.title = "Popular Lists"
                     }
                 default:
-                    destination.title = searchQuery
+                    destination.title = serviceQuery ?? searchQuery
                 }
                 destination.service = service
             }
@@ -1210,7 +1313,7 @@ extension SearchViewController {
         if let request = request {
             request.cancel()
         }
-        request = TraktAPIProvider.provider.request(.user(id: id.slugify()), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+        request = TraktAPIProvider.fetchUser(with: id, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
 
             defer {
@@ -1274,7 +1377,7 @@ extension SearchViewController {
 extension SearchViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         searchQuery = (searchController.searchBar.text ?? "").capitalized.trimmingCharacters(in: .whitespacesAndNewlines)
-        if searchQuery.isEmpty {
+        if searchQuery.isEmpty || isExplicitUserSearch {
             suggestions.removeAll()
         } else {
             if suggestions.isEmpty {

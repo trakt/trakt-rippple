@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 15/05/2021.
-//  Copyright © 2021 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import Receiver
@@ -142,7 +142,7 @@ struct BadgeAppIconView: View {
 }
 
 /// Hosting controller to preserve the original type name and integration points
-final class BadgeAppIconViewController: UIHostingController<BadgeAppIconView> {
+final class BadgeAppIconViewController: RipppleHostingController<BadgeAppIconView> {
     init() {
         super.init(rootView: BadgeAppIconView())
     }

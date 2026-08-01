@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 25/04/2026.
-//  Copyright © 2026 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import UIKit
@@ -45,6 +45,14 @@ final class CommentsTabViewController: UIViewController {
             UserDefaults.standard.set(currentFilter.rawValue, forKey: "ForYouViewController.currentFilter")
             UserDefaults.standard.synchronize()
             applyFilter()
+        }
+    }
+
+    private var currentMediaType = CommentMediaType(rawValue: UserDefaults.standard.string(forKey: "CommentsTabViewController.currentMediaType") ?? "") ?? .all {
+        didSet {
+            UserDefaults.standard.set(currentMediaType.rawValue, forKey: "CommentsTabViewController.currentMediaType")
+            UserDefaults.standard.synchronize()
+            applyFeedType(reset: true)
         }
     }
 
@@ -106,8 +114,11 @@ final class CommentsTabViewController: UIViewController {
     }
 
     private func configureBarButtonItems() {
+        orderBarButtonItem.accessibilityLabel = "Filter Comments"
+        orderBarButtonItem.accessibilityHint = "Choose a feed and media type"
         orderBarButtonItem.primaryAction = nil
         orderBarButtonItem.menu = orderMenu()
+        filterBarButtonItem.accessibilityLabel = "Filter For You Comments"
         filterBarButtonItem.primaryAction = nil
         filterBarButtonItem.menu = forYouFilterMenu()
         updateRightBarButtonItems(animated: false)
@@ -116,18 +127,17 @@ final class CommentsTabViewController: UIViewController {
     private func applyFeedType(reset: Bool) {
         switch feedType {
         case .all:
-            commentsViewController?.coordinator = CommentsCoordinator(type: .feed)
-            navigationItem.title = "Comments"
-            navigationItem.subtitle = "Latest"
+            commentsViewController?.coordinator = CommentsCoordinator(type: .feed, mediaType: currentMediaType)
         case .trending:
-            commentsViewController?.coordinator = CommentsCoordinator(type: .trending)
-            navigationItem.title = "Comments"
-            navigationItem.subtitle = "Trending"
+            commentsViewController?.coordinator = CommentsCoordinator(type: .trending, mediaType: currentMediaType)
         case .forYou:
-            commentsViewController?.coordinator = CommentsCoordinator(type: .forYou)
+            commentsViewController?.coordinator = CommentsCoordinator(type: .forYou,
+                                                                      mediaType: currentMediaType,
+                                                                      forYouFilter: forYouFilter)
             applyFilter()
         }
 
+        updateNavigationTitle()
         orderBarButtonItem.menu = orderMenu()
         filterBarButtonItem.menu = forYouFilterMenu()
         updateRightBarButtonItems(animated: reset)
@@ -138,20 +148,7 @@ final class CommentsTabViewController: UIViewController {
     }
 
     private func applyFilter() {
-        ForYouManager.shared.currentFilter = forYouFilter
-
-        switch currentFilter {
-        case .all:
-            navigationItem.title = "Comments"
-            navigationItem.subtitle = "For You"
-        case .becauseYouWatchedOnly:
-            navigationItem.title = "Comments"
-            navigationItem.subtitle = "Because You Watched"
-        case .becauseYouFollowOnly:
-            navigationItem.title = "Comments"
-            navigationItem.subtitle = "Because You Follow"
-        }
-
+        updateNavigationTitle()
         filterBarButtonItem.menu = forYouFilterMenu()
     }
 
@@ -159,7 +156,7 @@ final class CommentsTabViewController: UIViewController {
         let shouldReset = feedType == .forYou
         currentFilter = filter
         if shouldReset {
-            commentsViewController?.coordinator.reset()
+            applyFeedType(reset: true)
         } else {
             feedType = .forYou
         }
@@ -173,6 +170,40 @@ final class CommentsTabViewController: UIViewController {
             return .becauseYouWatchedOnly
         case .becauseYouFollowOnly:
             return .becauseYouFollowOnly
+        }
+    }
+
+    private func updateNavigationTitle() {
+        navigationItem.title = "Comments"
+
+        let feedSubtitle: String
+        switch feedType {
+        case .all:
+            feedSubtitle = "Latest"
+        case .trending:
+            feedSubtitle = "Trending"
+        case .forYou:
+            switch currentFilter {
+            case .all:
+                feedSubtitle = "For You"
+            case .becauseYouWatchedOnly:
+                feedSubtitle = "Because You Watched"
+            case .becauseYouFollowOnly:
+                feedSubtitle = "Because You Follow"
+            }
+        }
+
+        switch currentMediaType {
+        case .all:
+            navigationItem.subtitle = feedSubtitle
+        case .movies:
+            navigationItem.subtitle = "\(feedSubtitle) · Movies"
+        case .shows:
+            navigationItem.subtitle = "\(feedSubtitle) · Shows"
+        case .seasons:
+            navigationItem.subtitle = "\(feedSubtitle) · Seasons"
+        case .episodes:
+            navigationItem.subtitle = "\(feedSubtitle) · Episodes"
         }
     }
 
@@ -204,7 +235,45 @@ final class CommentsTabViewController: UIViewController {
             self.feedType = .forYou
         }
 
-        return UIMenu(children: [latest, trending, forYou])
+        let feeds = UIMenu(options: .displayInline, children: [latest, trending, forYou])
+
+        return UIMenu(children: [feeds, mediaTypeMenu()])
+    }
+
+    private func mediaTypeMenu() -> UIMenu {
+        let all = UIAction(title: "Everything",
+                           state: currentMediaType == .all ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentMediaType = .all
+        }
+
+        let movies = UIAction(title: "Movies",
+                              state: currentMediaType == .movies ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentMediaType = .movies
+        }
+
+        let shows = UIAction(title: "Shows",
+                             state: currentMediaType == .shows ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentMediaType = .shows
+        }
+
+        let seasons = UIAction(title: "Seasons",
+                               state: currentMediaType == .seasons ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentMediaType = .seasons
+        }
+
+        let episodes = UIAction(title: "Episodes",
+                                state: currentMediaType == .episodes ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentMediaType = .episodes
+        }
+
+        return UIMenu(title: "What do you want to see?",
+                      options: .displayInline,
+                      children: [all, movies, shows, seasons, episodes])
     }
 
     private func forYouFilterMenu() -> UIMenu {

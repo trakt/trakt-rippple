@@ -3,7 +3,7 @@
 //  Rippple
 //
 //  Created by Kevin Cador on 22/06/2020.
-//  Copyright © 2020 Trakt. All rights reserved.
+//  Copyright © Trakt. All rights reserved.
 //
 
 import NVActivityIndicatorView
@@ -15,55 +15,49 @@ final class MediaBackdropTableViewCell: UITableViewCell {
 
     var media: MediaModel! {
         didSet {
-            if media == oldValue { return }
-            DispatchQueue.main.async {
-                switch self.media! {
+            let media = media!
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.media == media else { return }
+                switch media {
                 case .movie:
-                    self.backPreviewBackdropImageView.media = self.media
-                    self.backBackdropImageView.media = self.media
+                    self.backPreviewBackdropImageView.media = media
+                    self.backBackdropImageView.media = media
                 case .show:
-                    self.backPreviewBackdropImageView.media = self.media
-                    self.backBackdropImageView.media = self.media
-                case .episode(let episode, let show):
-                    if UserDefaults.standard.bool(forKey: "GeneralSettings.detailepisodetitle") {
-                        self.backPreviewBackdropImageView.showEpisodeSpoilers = true
-                        self.backPreviewBackdropImageView.media = self.media
-                        self.backBackdropImageView.showEpisodeSpoilers = true
-                        self.backBackdropImageView.media = self.media
-                    } else {
-                        self.backPreviewBackdropImageView.showEpisodeSpoilers = false
-                        self.backPreviewBackdropImageView.media = show.mediaModel
-                        self.media.progress { [weak self] progress in
-                            guard let self = self else { return }
-                            if let progress = progress {
-                                for season in progress.seasons where season.number == episode.season {
-                                    for episodeProgress in season.episodes where episodeProgress.number == episode.number {
-                                        DispatchQueue.main.async {
-                                            if episodeProgress.completed {
-                                                DispatchQueue.main.async {
-                                                    self.backBackdropImageView.showEpisodeSpoilers = true
-                                                    self.backBackdropImageView.media = self.media
-                                                }
-                                            } else {
-                                                DispatchQueue.main.async {
-                                                    self.backBackdropImageView.showEpisodeSpoilers = false
-                                                    self.backBackdropImageView.media = show.mediaModel
-                                                }
-                                            }
-                                        }
-                                        return
-                                    }
+                    self.backPreviewBackdropImageView.media = media
+                    self.backBackdropImageView.media = media
+                case .episode(let episode, _):
+                    let redactsEpisodeImages =
+                        UserDefaults.standard.bool(forKey: "GeneralSettings.episodeImageSpoilers")
+                    self.backPreviewBackdropImageView.showEpisodeSpoilers = redactsEpisodeImages == false
+                    self.backPreviewBackdropImageView.media = media
+                    self.backBackdropImageView.showEpisodeSpoilers = redactsEpisodeImages == false
+                    self.backBackdropImageView.media = media
+
+                    guard redactsEpisodeImages else { return }
+                    media.progress { [weak self] progress in
+                        guard let self = self else { return }
+
+                        var episodeIsWatched = false
+                        if let progress = progress {
+                            for season in progress.seasons where season.number == episode.season {
+                                for episodeProgress in season.episodes where episodeProgress.number == episode.number {
+                                    episodeIsWatched = episodeProgress.completed
                                 }
                             }
-                            DispatchQueue.main.async {
-                                self.backBackdropImageView.showEpisodeSpoilers = false
-                                self.backBackdropImageView.media = show.mediaModel
-                            }
+                        }
+
+                        DispatchQueue.main.async {
+                            guard self.media == media else { return }
+                            let showsEpisodeImage =
+                                UserDefaults.standard.bool(forKey: "GeneralSettings.episodeImageSpoilers") == false ||
+                                episodeIsWatched
+                            self.backBackdropImageView.showEpisodeSpoilers = showsEpisodeImage
+                            self.backBackdropImageView.media = media
                         }
                     }
                 case .season:
-                    self.backPreviewBackdropImageView.media = self.media
-                    self.backBackdropImageView.media = self.media
+                    self.backPreviewBackdropImageView.media = media
+                    self.backBackdropImageView.media = media
                 case .list:
                     fatalError()
                 case .showProgress:
