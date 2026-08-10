@@ -25,11 +25,11 @@ struct NotificationsTroubleshootView: View {
                 TroubleshootStatusRow(title: "Token Registration",
                                       status: viewModel.tokenRegistrationStatus)
                 TroubleshootStatusRow(title: "Push API",
-                                      status: viewModel.pushAPIStatus)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        viewModel.retryRemoteNotificationsPush()
-                    }
+                                      status: viewModel.pushAPIStatus,
+                                      waitingSystemImageName: "arrow.clockwise.circle",
+                                      actionAccessibilityLabel: "Repair mismatched server push data") {
+                    viewModel.repairServerPushDataIfNeeded()
+                }
                 TroubleshootStatusRow(title: "Test Notification",
                                       status: viewModel.testNotificationStatus,
                                       waitingSystemImageName: "paperplane",
@@ -38,10 +38,20 @@ struct NotificationsTroubleshootView: View {
                 }
             }
 
-            Section("Data") {
+            Section("Push Identifiers") {
                 ForEach(viewModel.remoteNotificationsDebugItems) { item in
                     RemoteNotificationsDebugItemCell(item: item)
                 }
+            }
+
+            Section {
+                ForEach(viewModel.pushDataDebugItems) { item in
+                    PushDataDebugItemCell(item: item)
+                }
+            } header: {
+                Text("Push Data")
+            } footer: {
+                Text("Compares this device's registration values with the values currently stored by the push API. Tap Push API to repair mismatches.")
             }
 
             Section {
@@ -87,16 +97,17 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
     @Published private(set) var pushAPIStatus: TroubleshootStatus = .waiting
     @Published private(set) var testNotificationStatus: TroubleshootStatus = .waiting
     @Published private(set) var remoteNotificationsDebugItems = [RemoteNotificationsDebugItem]()
+    @Published private(set) var pushDataDebugItems = [PushDataDebugItem]()
     @Published private(set) var scheduledNotifications = [ScheduledNotification]()
 
     private let disposeBag = DisposeBag()
     private let testNotificationIdentifier = "TestNotification"
-    private var remoteNotificationsPushStatus: RemoteNotificationsPushStatus = .waiting
     private var remoteNotificationsPushInProgress = false
     private var remoteNotificationsPushCompleted = false
     private var shouldSendTestNotificationAfterRemotePush = false
     private var isVisible = false
     private var didRunInitialChecks = false
+    private var serverPushInformation: PushInformationModel?
     private var testNotificationTimer: Timer?
 
     private lazy var scheduledNotificationDateFormatter: DateFormatter = {
@@ -109,6 +120,7 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
     init() {
         setupReceivers()
         refreshRemoteNotificationsDebugItems()
+        refreshPushDataDebugItems()
         refreshScheduledNotifications()
     }
 
@@ -121,21 +133,16 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
         refreshAppSettingsStatus()
         refreshNotificationSettings()
         refreshRemoteNotificationsDebugItems()
+        refreshPushDataDebugItems()
         refreshScheduledNotifications()
 
         guard didRunInitialChecks == false else { return }
         didRunInitialChecks = true
-        forcePushRemoteNotificationsDataIfNeeded()
+        refreshServerPushData()
     }
 
     func viewDisappeared() {
         isVisible = false
-    }
-
-    func retryRemoteNotificationsPush() {
-        guard case .failure = remoteNotificationsPushStatus else { return }
-        remoteNotificationsPushCompleted = false
-        forcePushRemoteNotificationsData()
     }
 
     func sendTestNotification() {
@@ -144,6 +151,10 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
         shouldSendTestNotificationAfterRemotePush = false
         testNotificationStatus = .running
         scheduleTestNotificationAfterRemotePushFinishes()
+    }
+
+    func repairServerPushDataIfNeeded() {
+        refreshServerPushData(repairMismatch: true)
     }
 
     private func setupReceivers() {
@@ -161,7 +172,9 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
 
         remoteNotificationsEndpointUpdatedReceiver.hotOnly().listen { [weak self] _ in
             DispatchQueue.main.async {
-                self?.forcePushRemoteNotificationsDataIfNeeded()
+                guard let self = self else { return }
+                self.refreshRemoteNotificationsDebugItems()
+                self.refreshPushDataDebugItems()
             }
         }.disposed(by: disposeBag)
 
@@ -178,7 +191,7 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
             break
         case .didBecomeActive:
             guard isVisible else { return }
-            tokenRegistrationStatus = .waiting
+            refreshTokenRegistrationStatus()
             refreshNotificationSettings()
         case .didEnterBackground:
             break
@@ -232,7 +245,7 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
             tokenRegistrationStatus = .blocked
         case .authorized, .provisional, .ephemeral:
             deviceSettingsStatus = .success
-            UIApplication.shared.registerForRemoteNotifications()
+            refreshTokenRegistrationStatus()
         @unknown default:
             deviceSettingsStatus = .warning
         }
@@ -241,15 +254,11 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
     private func pushTokenDidUpdate(with error: Error?) {
         tokenRegistrationStatus = error == nil ? .success : .failure
         refreshRemoteNotificationsDebugItems()
-
-        if error == nil {
-            forcePushRemoteNotificationsDataIfNeeded()
-        }
     }
 
-    private func forcePushRemoteNotificationsDataIfNeeded() {
-        guard isVisible else { return }
-        forcePushRemoteNotificationsData()
+    private func refreshTokenRegistrationStatus() {
+        let token = UserDefaults.standard.string(forKey: "Rippple.pushToken")
+        tokenRegistrationStatus = token?.isEmpty == false ? .success : .waiting
     }
 
     private func forcePushRemoteNotificationsData() {
@@ -284,14 +293,7 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
         }
 
         let customUserData = endpointCustomUserData()
-        let pushInformation = PushInformationModel(traktId: traktSlug,
-                                                   enpointARN: endpointARN,
-                                                   environement: endpointEnvironment(),
-                                                   premium: PurchaseManager.shared.purchased ? "VIP" : "non-VIP",
-                                                   commentNewLikes: ActivityNotificationsManager.shared.commentNewLikes,
-                                                   commentNewReply: ActivityNotificationsManager.shared.commentNewReply,
-                                                   commentNewMention: ActivityNotificationsManager.shared.commentNewMention,
-                                                   activityNewFollower: ActivityNotificationsManager.shared.activityNewFollower)
+        let pushInformation = currentPushInformation(endpointARN: endpointARN, traktSlug: traktSlug)
         let topicStates = remoteNotificationTopicStates()
 
         remoteNotificationsPushInProgress = true
@@ -323,6 +325,7 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
                 await MainActor.run { [self] in
                     self?.finishRemoteNotificationsPush(with: .success(message),
                                                         completed: true)
+                    self?.refreshServerPushData()
                 }
             } catch {
                 await MainActor.run { [self] in
@@ -343,7 +346,6 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
     }
 
     private func updateRemoteNotificationsPushStatus(_ status: RemoteNotificationsPushStatus) {
-        remoteNotificationsPushStatus = status
         pushAPIStatus = status.troubleshootStatus
         refreshRemoteNotificationsDebugItems()
     }
@@ -423,22 +425,6 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
     private func refreshRemoteNotificationsDebugItems() {
         let endpoint = UserDefaults.standard.string(forKey: "Rippple.endpointArnForSNS")
         let token = UserDefaults.standard.string(forKey: "Rippple.pushToken")
-        let topics = remoteNotificationTopicStates().map { $0.topic }
-        let cacheStatus = RemoteNotificationsManager.shared.cacheStatus(endpointARN: endpoint, topics: topics)
-        let topicSubscriptions = cacheStatus.subscriptions
-            .filter { $0.topic != .test }
-        let topicSubscriptionsDebugText: String
-        if topicSubscriptions.isEmpty {
-            topicSubscriptionsDebugText = "Topic subscriptions: none"
-        } else {
-            topicSubscriptionsDebugText = (["Topic subscriptions"] + topicSubscriptions.map { subscription in
-                "\(topicDisplayName(subscription.topic)): \(subscriptionCacheDescription(subscription))"
-            }).joined(separator: "\n")
-        }
-        let debugText = [
-            "Push status: \(remoteNotificationsPushStatus.debugDescription)",
-            topicSubscriptionsDebugText
-        ].joined(separator: "\n\n")
 
         remoteNotificationsDebugItems = [
             RemoteNotificationsDebugItem(subtitle: "Endpoint ARN",
@@ -446,11 +432,79 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
                                          copyValue: endpoint),
             RemoteNotificationsDebugItem(subtitle: "Push token",
                                          body: token ?? "none",
-                                         copyValue: token),
-            RemoteNotificationsDebugItem(subtitle: "Debug",
-                                         body: debugText,
-                                         copyValue: debugText)
+                                         copyValue: token)
         ]
+    }
+
+    private func refreshServerPushData(repairMismatch: Bool = false) {
+        guard RemoteNotificationsManager.shared.isConfigured,
+              let endpointARN = UserDefaults.standard.string(forKey: "Rippple.endpointArnForSNS") else {
+            pushAPIStatus = .blocked
+            serverPushInformation = nil
+            refreshPushDataDebugItems()
+            return
+        }
+
+        pushAPIStatus = .running
+
+        Task { [weak self] in
+            do {
+                let pushInformation = try await RemoteNotificationsManager.shared.pushInformation(endpointARN: endpointARN)
+                await MainActor.run { [self] in
+                    guard let self = self else { return }
+                    self.serverPushInformation = pushInformation
+                    self.finishServerPushDataRefresh(repairMismatch: repairMismatch)
+                }
+            } catch {
+                await MainActor.run { [self] in
+                    guard let self = self else { return }
+                    self.serverPushInformation = nil
+                    self.finishServerPushDataRefresh(serverError: error.localizedDescription,
+                                                     repairMismatch: repairMismatch)
+                }
+            }
+        }
+    }
+
+    private func finishServerPushDataRefresh(serverError: String? = nil, repairMismatch: Bool) {
+        refreshPushDataDebugItems(serverError: serverError)
+        let needsRepair = serverError != nil || pushDataDebugItems.contains(where: { !$0.valuesMatch })
+        pushAPIStatus = needsRepair ? .retry : .success
+        guard repairMismatch, needsRepair else { return }
+        remoteNotificationsPushCompleted = false
+        forcePushRemoteNotificationsData()
+    }
+
+    private func refreshPushDataDebugItems(serverError: String? = nil) {
+        guard let endpointARN = UserDefaults.standard.string(forKey: "Rippple.endpointArnForSNS"),
+              let traktSlug = UserManager.shared.currentUser?.slug else {
+            pushDataDebugItems = []
+            return
+        }
+
+        let local = currentPushInformation(endpointARN: endpointARN, traktSlug: traktSlug)
+        let server = serverPushInformation
+        let unavailableServerValue = serverError ?? "not fetched"
+
+        pushDataDebugItems = [
+            PushDataDebugItem(property: "Endpoint ARN", localValue: local.enpointARN, serverValue: server?.enpointARN ?? unavailableServerValue),
+            PushDataDebugItem(property: "Trakt ID", localValue: local.traktId, serverValue: server?.traktId ?? unavailableServerValue),
+            PushDataDebugItem(property: "commentNewLikes", localValue: String(local.commentNewLikes), serverValue: server.map { String($0.commentNewLikes) } ?? unavailableServerValue),
+            PushDataDebugItem(property: "commentNewReply", localValue: String(local.commentNewReply), serverValue: server.map { String($0.commentNewReply) } ?? unavailableServerValue),
+            PushDataDebugItem(property: "commentNewMention", localValue: String(local.commentNewMention), serverValue: server.map { String($0.commentNewMention) } ?? unavailableServerValue),
+            PushDataDebugItem(property: "activityNewFollower", localValue: String(local.activityNewFollower), serverValue: server.map { String($0.activityNewFollower) } ?? unavailableServerValue)
+        ]
+    }
+
+    private func currentPushInformation(endpointARN: String, traktSlug: String) -> PushInformationModel {
+        return PushInformationModel(traktId: traktSlug,
+                                    enpointARN: endpointARN,
+                                    environement: endpointEnvironment(),
+                                    premium: PurchaseManager.shared.purchased ? "VIP" : "non-VIP",
+                                    commentNewLikes: ActivityNotificationsManager.shared.commentNewLikes,
+                                    commentNewReply: ActivityNotificationsManager.shared.commentNewReply,
+                                    commentNewMention: ActivityNotificationsManager.shared.commentNewMention,
+                                    activityNewFollower: ActivityNotificationsManager.shared.activityNewFollower)
     }
 
     private func refreshScheduledNotifications() {
@@ -523,12 +577,6 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
         }
 
         return topicStates
-    }
-
-    private func subscriptionCacheDescription(_ cacheStatus: RemoteNotificationsSubscriptionCacheStatus) -> String {
-        guard cacheStatus.topicARNConfigured else { return "not configured" }
-        guard let isSubscribed = cacheStatus.isSubscribed else { return "missing" }
-        return isSubscribed ? "subscribed" : "unsubscribed"
     }
 
     private func topicDisplayName(_ topic: RemoteNotificationTopic) -> String {
@@ -661,6 +709,51 @@ private struct RemoteNotificationsDebugItemCell: View {
     }
 }
 
+private struct PushDataDebugItem: Hashable, Identifiable {
+    let property: String
+    let localValue: String
+    let serverValue: String
+
+    var id: String {
+        return property
+    }
+
+    var valuesMatch: Bool {
+        return localValue == serverValue
+    }
+}
+
+private struct PushDataDebugItemCell: View {
+    let item: PushDataDebugItem
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Text(item.property)
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Image(systemName: item.valuesMatch ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                    .foregroundStyle(item.valuesMatch ? .green : .orange)
+                    .accessibilityLabel(item.valuesMatch ? "Values match" : "Values differ")
+            }
+
+            LabeledContent("Device") {
+                Text(item.localValue)
+                    .multilineTextAlignment(.trailing)
+                    .textSelection(.enabled)
+            }
+            .font(.footnote)
+
+            LabeledContent("Server") {
+                Text(item.serverValue)
+                    .multilineTextAlignment(.trailing)
+                    .textSelection(.enabled)
+            }
+            .font(.footnote)
+        }
+    }
+}
+
 private enum TroubleshootStatus: Equatable {
     case waiting
     case running
@@ -769,19 +862,6 @@ private enum RemoteNotificationsPushStatus {
     case running
     case success(String)
     case failure(String)
-
-    var debugDescription: String {
-        switch self {
-        case .waiting:
-            return "waiting"
-        case .running:
-            return "running..."
-        case .success(let message):
-            return "success - \(message)"
-        case .failure(let message):
-            return "failed - \(message)"
-        }
-    }
 
     var troubleshootStatus: TroubleshootStatus {
         switch self {
