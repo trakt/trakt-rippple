@@ -15,9 +15,7 @@ let (onRecentSearchChangedTransmitter, onRecentSearchChangedReceiver) = Receiver
 
 extension RecentSearch {
     var searchFieldQuery: String {
-        var components = URLComponents()
-        components.percentEncodedQuery = query
-        if let value = components.queryItems?.first(where: { $0.name == "query" })?.value,
+        if let value = queryParameter(named: "query"),
            value.isEmpty == false {
             return value
         }
@@ -29,6 +27,20 @@ extension RecentSearch {
         }
 
         return name
+    }
+
+    private func queryParameter(named requestedName: String) -> String? {
+        for parameter in query.split(separator: "&", omittingEmptySubsequences: false) {
+            let components = parameter.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            guard let encodedName = components.first else { continue }
+            let name = String(encodedName)
+            guard name.removingPercentEncoding == requestedName else { continue }
+
+            let value = components.count > 1 ? String(components[1]) : ""
+            return value.removingPercentEncoding ?? value
+        }
+
+        return nil
     }
 }
 
