@@ -6,6 +6,7 @@
 //  Copyright © Trakt. All rights reserved.
 //
 
+import Kingfisher
 import Receiver
 import UIKit
 
@@ -39,6 +40,10 @@ final class MainTabBarController: UITabBarController {
     private var contextMenus = [TabBarContextMenuInteractionDelegate]()
 
     private let checkinView = CheckinView()
+
+    private var profileAvatarURL: URL?
+    private var profileAvatarDownloadTask: DownloadTask?
+    private var profileTabImage = UIImage(systemName: "person.crop.circle")
 
     private var tabStore: [Tab: UITab] {
         var store = [Tab: UITab]()
@@ -124,7 +129,7 @@ final class MainTabBarController: UITabBarController {
                                     StyledNavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "RatingsViewController"))
                                 })
         store[.profile] = UITab(title: "Profile",
-                                image: UIImage(systemName: "person.crop.circle"),
+                                image: profileTabImage,
                                 identifier: Tab.profile.rawValue,
                                 viewControllerProvider: { _ in
                                     UIStoryboard(name: "Profile", bundle: nil).instantiateInitialViewController()!
@@ -152,6 +157,7 @@ final class MainTabBarController: UITabBarController {
         updateTabBarMinimizeBehavior(neverMinimize: UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize"))
 
         updateTabBar(animated: false)
+        updateProfileTabImage(for: UserManager.shared.currentUser)
 
         if let userDefault = UserDefaults.standard.string(forKey: "MainTabBarController.selectedTab"),
            let tab = Tab(rawValue: userDefault),
@@ -163,6 +169,11 @@ final class MainTabBarController: UITabBarController {
         onTabBarChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.updateTabBar(animated: false)
+        }.disposed(by: disposeBag)
+
+        onSettingsChangedReceiver.listen { [weak self] settings in
+            guard let self = self else { return }
+            self.updateProfileTabImage(for: settings?.user)
         }.disposed(by: disposeBag)
 
         neverMinimizeTabBarReceiver.listen { [weak self] neverMinimize in
@@ -177,6 +188,38 @@ final class MainTabBarController: UITabBarController {
         }.disposed(by: disposeBag)
 
         delegate = self
+    }
+
+    private func updateProfileTabImage(for user: User?) {
+        profileAvatarDownloadTask?.cancel()
+        let avatarURL = user?.images?.avatar.full
+        if avatarURL != profileAvatarURL {
+            setProfileTabImage(UIImage(systemName: "person.crop.circle"))
+        }
+        profileAvatarURL = avatarURL
+
+        guard let profileAvatarURL = profileAvatarURL else {
+            return
+        }
+
+        let size = CGSize(width: 28, height: 28)
+        let processor = RoundCornerImageProcessor(cornerRadius: size.height / 2.0,
+                                                  targetSize: size)
+        profileAvatarDownloadTask = KingfisherManager.shared.retrieveImage(with: profileAvatarURL,
+                                                                           options: [.scaleFactor(traitCollection.displayScale), .processor(processor)]) { [weak self] result in
+            guard case .success(let imageResult) = result else { return }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                guard self.profileAvatarURL == profileAvatarURL else { return }
+                self.setProfileTabImage(imageResult.image.withRenderingMode(.alwaysOriginal))
+            }
+        }
+    }
+
+    private func setProfileTabImage(_ image: UIImage?) {
+        profileTabImage = image
+        tabs.first(where: { $0.identifier == Tab.profile.rawValue })?.image = image
     }
 
     private func updateTabBarMinimizeBehavior(neverMinimize: Bool) {
