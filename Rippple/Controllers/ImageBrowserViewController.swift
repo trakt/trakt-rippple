@@ -56,7 +56,7 @@ final class ImageBrowserViewController: UIViewController {
         let layout = createLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.backgroundColor = .systemBackground
+        collectionView.backgroundColor = .ripppleViewBackground
         collectionView.delegate = self
         collectionView.register(ImageBrowserCell.self, forCellWithReuseIdentifier: ImageBrowserCell.reuseIdentifier)
         collectionView.register(LogoImageBrowserCell.self, forCellWithReuseIdentifier: LogoImageBrowserCell.reuseIdentifier)
@@ -123,7 +123,7 @@ final class ImageBrowserViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .ripppleViewBackground
         setupNavigationTitle()
         setupCloseButton()
         setupUI()
@@ -993,7 +993,7 @@ final class LogoImageBrowserCell: UICollectionViewCell {
     }
 
     func configure(with url: URL) {
-        contentView.backgroundColor = .secondarySystemBackground
+        contentView.backgroundColor = .ripppleSecondaryBackground
         imageView.kf.setImage(with: url, placeholder: nil)
     }
 
@@ -1001,6 +1001,6 @@ final class LogoImageBrowserCell: UICollectionViewCell {
         super.prepareForReuse()
         imageView.kf.cancelDownloadTask()
         imageView.image = nil
-        contentView.backgroundColor = .secondarySystemBackground
+        contentView.backgroundColor = .ripppleSecondaryBackground
     }
 }

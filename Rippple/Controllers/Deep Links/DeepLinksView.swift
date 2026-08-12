@@ -135,7 +135,7 @@ struct DeepLinksView: View {
     @Environment(\.openURL) var openURL
 
     var body: some View {
-        SwiftUI.List {
+        RipppleList {
             Section {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("\(Image(systemName: "square.2.layers.3d")) About Deeplinks")
@@ -160,13 +160,13 @@ struct DeepLinksView: View {
                                 openURL(URL(string: deeplinkInfo.deeplink)!)
                             } label: {
                                 Text("Test it")
-                                    .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                    .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                             }.buttonStyle(.borderedProminent)
                             Button {
                                 UIPasteboard.general.string = deeplinkInfo.deeplink
                             } label: {
                                 Text("Copy it")
-                                    .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                    .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                             }.buttonStyle(.borderedProminent)
                         }
                     }
@@ -186,13 +186,13 @@ struct DeepLinksView: View {
                                 openURL(URL(string: deeplinkInfo.deeplink)!)
                             } label: {
                                 Text("Test it")
-                                    .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                    .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                             }.buttonStyle(.borderedProminent)
                             Button {
                                 UIPasteboard.general.string = deeplinkInfo.deeplink
                             } label: {
                                 Text("Copy it")
-                                    .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                    .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                             }.buttonStyle(.borderedProminent)
                         }
                     }
@@ -214,13 +214,13 @@ struct DeepLinksView: View {
                             openURL(URL(string: "ripl://comments/327791")!)
                         } label: {
                             Text("Test it")
-                                .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                         }.buttonStyle(.borderedProminent)
                         Button {
                             UIPasteboard.general.string = "ripl://comments/327791"
                         } label: {
                             Text("Copy it")
-                                .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                         }.buttonStyle(.borderedProminent)
                     }
                     Text("`ripl://trakt/comments/_id_`")
@@ -231,13 +231,13 @@ struct DeepLinksView: View {
                             openURL(URL(string: "ripl://trakt/comments/327791")!)
                         } label: {
                             Text("Test it")
-                                .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                         }.buttonStyle(.borderedProminent)
                         Button {
                             UIPasteboard.general.string = "ripl://trakt/comments/327791"
                         } label: {
                             Text("Copy it")
-                                .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                         }.buttonStyle(.borderedProminent)
                     }
                     Text("`ripl://app.trakt.tv/comments/_id_`")
@@ -248,13 +248,13 @@ struct DeepLinksView: View {
                             openURL(URL(string: "ripl://app.trakt.tv/comments/327791")!)
                         } label: {
                             Text("Test it")
-                                .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                         }.buttonStyle(.borderedProminent)
                         Button {
                             UIPasteboard.general.string = "ripl://app.trakt.tv/comments/327791"
                         } label: {
                             Text("Copy it")
-                                .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                         }.buttonStyle(.borderedProminent)
                     }
                 }
@@ -280,13 +280,13 @@ struct DeepLinksView: View {
                                 openURL(URL(string: deeplinkInfo.deeplink)!)
                             } label: {
                                 Text("Test it")
-                                    .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                    .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                             }.buttonStyle(.borderedProminent)
                             Button {
                                 UIPasteboard.general.string = deeplinkInfo.deeplink
                             } label: {
                                 Text("Copy it")
-                                    .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                                    .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                             }.buttonStyle(.borderedProminent)
                         }
                     }

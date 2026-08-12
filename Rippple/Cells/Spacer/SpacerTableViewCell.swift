@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class SpacerTableViewCell: UITableViewCell {
+final class SpacerTableViewCell: TintedCanvasTableViewCell {
     private let spacer = UIView()
 
     var space: Float = 0.0 {

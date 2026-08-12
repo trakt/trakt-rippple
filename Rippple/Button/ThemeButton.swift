@@ -192,11 +192,7 @@ final class ThemeButton: UIButton {
         layer.cornerRadius = bounds.size.height / 2.0
         layer.shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: layer.cornerRadius).cgPath
 
-        titleLabel?.textColor = UIColor(dynamicProvider: { _ in
-            UIColor(asset: .globalTint).isLight == true ? .black : .white
-        })
-        imageView?.tintColor = UIColor(dynamicProvider: { _ in
-            UIColor(asset: .globalTint).isLight == true ? .black : .white
-        })
+        titleLabel?.textColor = .ripppleTintContrastingLabel
+        imageView?.tintColor = .ripppleTintContrastingLabel
     }
 }

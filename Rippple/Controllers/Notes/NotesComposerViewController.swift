@@ -53,6 +53,7 @@ final class NotesComposerViewController: UIViewController {
     override func viewDidLoad() {
         isModalInPresentation = true
 
+        textView.backgroundColor = .ripppleViewBackground
         privacyButton.maximumContentSizeCategory = .large
         spoilerButton.maximumContentSizeCategory = .large
         previewButton.maximumContentSizeCategory = .large

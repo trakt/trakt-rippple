@@ -9,7 +9,7 @@
 import LRUCache
 import UIKit
 
-class GenresBrowseTableViewCell: UITableViewCell {
+class GenresBrowseTableViewCell: TintedCanvasTableViewCell {
     private struct CacheEntry {
         let items: [Genre]
         let expirationDate: Date
@@ -73,6 +73,7 @@ class GenresBrowseTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
 
+        collectionView.backgroundColor = .ripppleViewBackground
         collectionView.allowsFocus = false
         collectionView.delegate = self
 

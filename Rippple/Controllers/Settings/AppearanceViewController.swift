@@ -15,6 +15,7 @@ final class AppearanceViewController: UITableViewController {
     private let disposeBag = DisposeBag()
 
     @IBOutlet var tintColorButton: UIButton!
+    @IBOutlet var tintedAppearanceSwitch: UISwitch!
     @IBOutlet var neverMinimizeTabBarSwitch: UISwitch!
 
     override func viewDidLoad() {
@@ -26,6 +27,7 @@ final class AppearanceViewController: UITableViewController {
         tintColorButton.setTitleColor(UIColor(asset: .globalTint), for: .focused)
         tintColorButton.setTitleColor(UIColor(asset: .globalTint), for: .highlighted)
 
+        tintedAppearanceSwitch.isOn = UIApplication.shared.isTintedAppearanceEnabled
         neverMinimizeTabBarSwitch.isOn = UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize")
 
         updateButton()
@@ -40,6 +42,10 @@ final class AppearanceViewController: UITableViewController {
         neverMinimizeTabBarTransmitter.broadcast(sender.isOn)
     }
 
+    @IBAction private func tintedAppearanceValueChanged(_ sender: UISwitch) {
+        UIApplication.shared.setTintedAppearance(enabled: sender.isOn)
+    }
+
     @objc
     private func updateButton() {
         tintColorButton.setTitle(UIApplication.shared.currentTint.name.capitalized,
@@ -50,7 +56,8 @@ final class AppearanceViewController: UITableViewController {
                                            backgroundColor: value.color)
             let action = UIAction(title: value.name.capitalized,
                                   image: image,
-                                  state: value == UIApplication.shared.currentTint ? .on : .off) { _ in
+                                  state: value == UIApplication.shared.currentTint ? .on : .off) { [weak self] _ in
+                guard let self = self else { return }
                 UIApplication.shared.setTintColor(tint: value)
                 self.updateButton()
             }
@@ -79,6 +86,10 @@ final class AppearanceViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        if section == 0 {
+            return "Apply the app tint color to backgrounds and cards."
+        }
+
         #if targetEnvironment(macCatalyst)
         if section == 1 {
             switch UIApplication.shared.currentUserInterfaceStyle {
@@ -139,7 +150,7 @@ final class AppearanceViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if section == 0 {
-            return 1
+            return 2
         } else if section == 1 {
             return 3
         } else {

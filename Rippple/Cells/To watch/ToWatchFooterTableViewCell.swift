@@ -9,7 +9,7 @@
 import Receiver
 import UIKit
 
-final class ToWatchFooterTableViewCell: UITableViewCell {
+final class ToWatchFooterTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var emoji: UILabel!
     @IBOutlet var title: UILabel!
     @IBOutlet var label: UILabel!

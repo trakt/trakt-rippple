@@ -16,8 +16,8 @@ final class SeasonsRatingsHeaderCollectionViewCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        backgroundColor = .systemBackground
-        contentView.backgroundColor = .systemBackground
+        backgroundColor = .ripppleViewBackground
+        contentView.backgroundColor = .ripppleViewBackground
 
         label.translatesAutoresizingMaskIntoConstraints = false
         label.adjustsFontForContentSizeCategory = true
@@ -25,7 +25,7 @@ final class SeasonsRatingsHeaderCollectionViewCell: UICollectionViewCell {
         label.font = UIFont.preferredFont(forTextStyle: .subheadline, compatibleWith: nil)
         label.textAlignment = .center
         label.textColor = .secondaryLabel
-        label.backgroundColor = .systemBackground
+        label.backgroundColor = .ripppleViewBackground
 
         contentView.addSubview(label)
 
@@ -63,7 +63,7 @@ final class SeasonsRatingsContentCollectionViewCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        backgroundColor = .systemBackground
+        backgroundColor = .ripppleViewBackground
         contentView.backgroundColor = .clear
 
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -142,8 +142,8 @@ final class SeasonsRatingsEmptyCollectionViewCell: UICollectionViewCell {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = .systemBackground
-        contentView.backgroundColor = .systemBackground
+        backgroundColor = .ripppleViewBackground
+        contentView.backgroundColor = .ripppleViewBackground
         maximumContentSizeCategory = .extraExtraExtraLarge
         isAccessibilityElement = false
     }

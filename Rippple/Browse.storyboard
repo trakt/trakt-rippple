@@ -13,7 +13,7 @@
         <scene sceneID="ww8-Yh-nvr">
             <objects>
                 <tableViewController storyboardIdentifier="browse" id="KUC-LR-OlN" customClass="BrowseViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" id="hEF-MM-9Zb">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" id="hEF-MM-9Zb" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -22,7 +22,7 @@
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="ZQu-sd-iEq">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="ZQu-sd-iEq" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="6" width="393" height="53"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -69,13 +69,13 @@
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="0ig-b1-AfO" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="SeU-Yw-Tzy" userLabel="Loading">
+                <view contentMode="scaleToFill" id="SeU-Yw-Tzy" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cIs-13-R7W" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="81" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="cIs-13-R7W" secondAttribute="height" multiplier="1:1" id="svW-XN-kfv"/>
                                 <constraint firstAttribute="width" constant="50" id="xxc-Is-JiK"/>
@@ -115,7 +115,7 @@
         <scene sceneID="0Cl-I2-yUz">
             <objects>
                 <collectionViewController storyboardIdentifier="GridViewController" id="CUs-aj-9lS" customClass="GridViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="1nN-RM-9gD">
+                    <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="1nN-RM-9gD" customClass="TintedCollectionView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -172,7 +172,7 @@
         <scene sceneID="VxC-0S-Cg0">
             <objects>
                 <viewController id="CSg-0m-F9g" customClass="CommentsBrowseViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="LIc-nq-NvD">
+                    <view key="view" contentMode="scaleToFill" id="LIc-nq-NvD" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -287,7 +287,7 @@
         <scene sceneID="fK0-np-ogt">
             <objects>
                 <tableViewController storyboardIdentifier="standalone browse" id="zSA-XB-Jh8" customClass="BrowseViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" id="8Dt-nX-tXJ">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" id="8Dt-nX-tXJ" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -296,7 +296,7 @@
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="Meg-cq-3Yg">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="Meg-cq-3Yg" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="6" width="393" height="53"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -329,13 +329,13 @@
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="RVi-OZ-quJ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="Hdi-fC-goO" userLabel="Loading">
+                <view contentMode="scaleToFill" id="Hdi-fC-goO" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0oc-SJ-MZE" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="81" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="50" id="SMx-8u-ENo"/>
                                 <constraint firstAttribute="width" secondItem="0oc-SJ-MZE" secondAttribute="height" multiplier="1:1" id="ZPc-CC-P8I"/>

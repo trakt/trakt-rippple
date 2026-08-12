@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class MediaOverviewTableViewCell: UITableViewCell {
+final class MediaOverviewTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var taglineLabel: UILabel!
     @IBOutlet var overviewLabel: UILabel!
 

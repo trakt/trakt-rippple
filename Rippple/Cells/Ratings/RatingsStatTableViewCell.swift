@@ -12,7 +12,7 @@ protocol RatingsStatTableViewCellDelegate: AnyObject {
     func updateFilteredRatings(filteredRatings: [Int])
 }
 
-final class RatingsStatTableViewCell: UITableViewCell {
+final class RatingsStatTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var rating: EFCountingLabel!
     @IBOutlet var votes: EFCountingLabel!
 

@@ -768,7 +768,7 @@ extension RatingsViewController: RatingsStatTableViewCellDelegate {
     }
 }
 
-final class RatingsHeaderTableViewCell: UITableViewCell {
+final class RatingsHeaderTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var title: UILabel!
     @IBOutlet var count: UILabel!
 

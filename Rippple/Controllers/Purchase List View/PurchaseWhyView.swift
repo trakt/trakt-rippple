@@ -166,8 +166,6 @@ struct FeatureItemView: View {
 }
 
 struct ReviewItemView: View {
-    @Environment(\.colorScheme) var colorScheme
-
     var title: String
     var rating: Int
     var name: String
@@ -195,7 +193,7 @@ struct ReviewItemView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }.padding()
-        }.background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.systemBackground))
+        }.background(Color(uiColor: .ripppleCardBackground))
             .cornerRadius(15)
             .shadow(color: .black.opacity(0.3), radius: 8)
     }

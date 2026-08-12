@@ -9,7 +9,7 @@
 import Receiver
 import UIKit
 
-final class PeopleTableViewCell: UITableViewCell {
+final class PeopleTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var avatarImageView: PeopleProfileImageView!
     @IBOutlet var avatarContainer: UIView!
     @IBOutlet var avatarInitialLabel: UILabel!
@@ -35,6 +35,7 @@ final class PeopleTableViewCell: UITableViewCell {
         avatarContainer.layer.masksToBounds = true
         avatarContainer.layer.borderWidth = 1
         avatarContainer.layer.borderColor = UIColor.tertiarySystemFill.cgColor
+        avatarContainer.backgroundColor = .ripppleInsideGroupedCardBackground
 
         actorEpisodeCountsReceiver.listen { [weak self] redactsEpisodeCounts in
             guard let self = self else { return }

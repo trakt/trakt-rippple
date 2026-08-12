@@ -11,7 +11,7 @@ import Moya
 import Receiver
 import UIKit
 
-final class EpisodeShowTableViewCell: UITableViewCell {
+final class EpisodeShowTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var title: RedactableLabel!
     @IBOutlet var subtitle: UILabel!
     @IBOutlet var additionalInfo: UILabel!
@@ -86,7 +86,7 @@ final class EpisodeShowTableViewCell: UITableViewCell {
         backgroundView.backgroundColor = .clear
         selectedBackgroundView = backgroundView
         let multipleBackgroundView = UIView()
-        multipleBackgroundView.backgroundColor = .tertiarySystemBackground
+        multipleBackgroundView.backgroundColor = .ripppleTertiaryBackground
         multipleSelectionBackgroundView = multipleBackgroundView
 
         maximumContentSizeCategory = .extraExtraExtraLarge

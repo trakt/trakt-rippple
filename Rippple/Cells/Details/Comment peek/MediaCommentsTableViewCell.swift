@@ -13,7 +13,7 @@ protocol MediaCommentsTableViewCellDelegate: AnyObject {
     func cell(_ cell: MediaCommentsTableViewCell, action: MediaCommentsTableViewCell.Action)
 }
 
-final class MediaCommentsTableViewCell: UITableViewCell {
+final class MediaCommentsTableViewCell: TintedCanvasTableViewCell {
     private let disposeBag = DisposeBag()
 
     enum Action {

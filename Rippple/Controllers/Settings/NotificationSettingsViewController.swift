@@ -24,7 +24,7 @@ struct NotificationSettingsView: View {
     @State private var values = NotificationSetting.currentValues()
 
     var body: some View {
-        Form {
+        RipppleForm {
             Section {
                 Button(action: onTroubleshoot) {
                     HStack {

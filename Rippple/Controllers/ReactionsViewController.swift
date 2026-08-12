@@ -89,7 +89,7 @@ final class ReactionsViewController: UITableViewController {
 
             return cell
         case .reactions:
-            let cell = UITableViewCell(style: .default, reuseIdentifier: "reactions")
+            let cell = TintedCanvasTableViewCell(style: .default, reuseIdentifier: "reactions")
             cell.selectionStyle = .none
             cell.contentConfiguration = UIHostingConfiguration {
                 ScrollView(.horizontal, showsIndicators: false) {

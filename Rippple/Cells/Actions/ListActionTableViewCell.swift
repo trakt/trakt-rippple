@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class ListActionTableViewCell: UITableViewCell {
+final class ListActionTableViewCell: TintedCanvasTableViewCell {
     private var fetchTask: _Concurrency.Task<Void, Never>?
 
     var isLoading = false

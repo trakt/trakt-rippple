@@ -369,7 +369,7 @@ final class ActivityViewController: UITableViewController {
 
     private func configureFloatingButton() {
         backgroundButton = UIButton()
-        backgroundButton.backgroundColor = .systemBackground.withAlphaComponent(0.4)
+        backgroundButton.backgroundColor = .ripppleViewBackground.withAlphaComponent(0.4)
         backgroundButton.translatesAutoresizingMaskIntoConstraints = false
         backgroundButton.alpha = 0.0
         view.addSubview(backgroundButton)
@@ -385,7 +385,7 @@ final class ActivityViewController: UITableViewController {
         dateSelection = UICalendarSelectionSingleDate(delegate: self)
         calendarView.selectionBehavior = dateSelection
 
-        calendarView.backgroundColor = .tertiarySystemBackground
+        calendarView.backgroundColor = .ripppleTertiaryBackground
         calendarView.layer.borderColor = UIColor.secondarySystemBackground.cgColor
         calendarView.layer.borderWidth = 0.5
         calendarView.translatesAutoresizingMaskIntoConstraints = false
@@ -1058,7 +1058,7 @@ protocol ActivityHeaderTableViewCellDelegate: AnyObject {
     func action(for cell: ActivityHeaderTableViewCell)
 }
 
-final class ActivityHeaderTableViewCell: UITableViewCell {
+final class ActivityHeaderTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var title: UILabel!
     @IBOutlet var subtitle: UILabel?
     @IBOutlet var chevron: UIImageView?

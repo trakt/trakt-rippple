@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class InfoCardTableViewCell: UITableViewCell {
+final class InfoCardTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var infoImage: UIImageView!
     @IBOutlet var title: UILabel!
     @IBOutlet var body: UILabel!

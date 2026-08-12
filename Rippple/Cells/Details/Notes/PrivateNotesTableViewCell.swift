@@ -9,7 +9,7 @@
 import Receiver
 import UIKit
 
-final class PrivateNotesTableViewCell: UITableViewCell {
+final class PrivateNotesTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var notes: NotesLabel!
 
     private let disposeBag = DisposeBag()

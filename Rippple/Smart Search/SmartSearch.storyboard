@@ -35,12 +35,12 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="9tx-I2-EoO">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="9tx-I2-EoO" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="iNM-qI-hni">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="iNM-qI-hni" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -75,13 +75,13 @@
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="XrS-9r-wn5" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="7yl-56-OaG" userLabel="Loading">
+                <view contentMode="scaleToFill" id="7yl-56-OaG" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gEe-jy-k7I" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="46" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="gEe-jy-k7I" secondAttribute="height" multiplier="1:1" id="63X-zr-XFH"/>
                                 <constraint firstAttribute="width" constant="50" id="D9Y-IY-lJ6"/>
@@ -98,7 +98,7 @@
                         <constraint firstItem="gEe-jy-k7I" firstAttribute="centerX" secondItem="6tv-xe-IfB" secondAttribute="centerX" id="y9a-eR-acu"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="b8s-z2-llC" userLabel="Empty">
+                <view contentMode="scaleToFill" id="b8s-z2-llC" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -120,7 +120,7 @@ Try with complete original titles.</string>
                         <constraint firstItem="zEf-Ag-VbI" firstAttribute="leading" secondItem="uML-fg-zNx" secondAttribute="leading" constant="16" id="fQA-5p-iin"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="8UH-7a-bLS" userLabel="Error">
+                <view contentMode="scaleToFill" id="8UH-7a-bLS" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>

@@ -14,7 +14,7 @@ protocol NotesTableViewCellDelegate: AnyObject {
     func cell(_ cell: NotesTableViewCell, action: NotesTableViewCell.Action)
 }
 
-final class NotesTableViewCell: UITableViewCell {
+final class NotesTableViewCell: TintedCanvasTableViewCell {
     enum Action {
         case media(MediaModel)
         case person(Person)

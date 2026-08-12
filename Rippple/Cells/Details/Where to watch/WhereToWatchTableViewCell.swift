@@ -29,7 +29,7 @@ struct ProviderType: Identifiable, Equatable, Hashable, Codable {
     var type: [String]?
 }
 
-final class WhereToWatchTableViewCell: UITableViewCell, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+final class WhereToWatchTableViewCell: TintedCanvasTableViewCell, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     @IBOutlet var collectionView: UICollectionView!
 
     private let disposeBag = DisposeBag()

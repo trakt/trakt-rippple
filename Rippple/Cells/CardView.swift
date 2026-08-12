@@ -24,7 +24,10 @@ enum CardType {
 final class CardView: UIView {
     @objc
     fileprivate func applyMode() {
-        if traitCollection.userInterfaceStyle == .dark {
+        if traitCollection.ripppleTintedAppearance {
+            backgroundView.backgroundColor = .ripppleCardBackground
+            borderView.layer.borderColor = UIColor(asset: .separator).withAlphaComponent(0.5).cgColor
+        } else if traitCollection.userInterfaceStyle == .dark {
             backgroundView.backgroundColor = .secondarySystemBackground
             borderView.layer.borderColor = UIColor(asset: .separator).withAlphaComponent(0.5).cgColor
         } else {
@@ -104,7 +107,10 @@ final class CardView: UIView {
         ])
 
         applyMode()
-        registerForTraitChanges([UITraitUserInterfaceStyle.self],
+        registerForTraitChanges([UITraitUserInterfaceStyle.self,
+                                 UITraitAccessibilityContrast.self,
+                                 RipppleTintTrait.self,
+                                 RipppleTintedAppearanceTrait.self],
                                 action: #selector(applyMode))
     }
 
@@ -116,7 +122,10 @@ final class CardView: UIView {
 final class InsideCardView: UIView {
     @objc
     fileprivate func applyMode() {
-        if traitCollection.userInterfaceStyle == .dark {
+        if traitCollection.ripppleTintedAppearance {
+            layer.borderColor = UIColor(asset: .separator).withAlphaComponent(0.5).cgColor
+            backgroundColor = .ripppleInsideCardBackground
+        } else if traitCollection.userInterfaceStyle == .dark {
             layer.borderColor = UIColor(asset: .separator).withAlphaComponent(0.5).cgColor
             backgroundColor = .tertiarySystemBackground
         } else {
@@ -141,7 +150,10 @@ final class InsideCardView: UIView {
     }
 
     private func commonSetup() {
-        registerForTraitChanges([UITraitUserInterfaceStyle.self],
+        registerForTraitChanges([UITraitUserInterfaceStyle.self,
+                                 UITraitAccessibilityContrast.self,
+                                 RipppleTintTrait.self,
+                                 RipppleTintedAppearanceTrait.self],
                                 action: #selector(applyMode))
 
         layer.cornerRadius = ViewRadius.large.rawValue

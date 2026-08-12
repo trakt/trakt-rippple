@@ -14,7 +14,7 @@ private struct Service {
     var filter: SavedFilter
 }
 
-class ServicesBrowseTableViewCell: UITableViewCell {
+class ServicesBrowseTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var collectionView: UICollectionView!
 
     weak var presentingViewController: UIViewController?
@@ -71,6 +71,7 @@ class ServicesBrowseTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
 
+        collectionView.backgroundColor = .ripppleViewBackground
         collectionView.allowsFocus = false
         collectionView.delegate = self
 

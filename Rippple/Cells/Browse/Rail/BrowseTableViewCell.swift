@@ -10,7 +10,7 @@ import LRUCache
 import Receiver
 import UIKit
 
-class BrowseTableViewCell: UITableViewCell {
+class BrowseTableViewCell: TintedCanvasTableViewCell {
     private struct CacheKey: Hashable {
         let section: String
         let path: String

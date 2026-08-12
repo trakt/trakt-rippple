@@ -13,7 +13,7 @@ struct ImageCacheSettingsView: View {
     @State private var stats: ImagesManager.CacheStats?
 
     var body: some View {
-        Form {
+        RipppleForm {
             Section(header: Text("Disk Image Usage")) {
                 if let stats = stats {
                     cacheSizeProgressRow(diskSize: stats.diskSize,

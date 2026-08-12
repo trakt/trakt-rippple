@@ -13,7 +13,7 @@ protocol MediaMoreTableViewCellDelegate: AnyObject {
     func cell(_ cell: MediaMoreTableViewCell, didSelect season: Season)
 }
 
-final class MediaMoreTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollectionViewDelegate {
+final class MediaMoreTableViewCell: TintedCanvasTableViewCell, UICollectionViewDataSource, UICollectionViewDelegate {
     private let disposeBag = DisposeBag()
 
     @IBOutlet var title: UILabel!

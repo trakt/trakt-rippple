@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class PeopleInfoTableViewCell: UITableViewCell {
+final class PeopleInfoTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var mainInfoLabel: UILabel!
     @IBOutlet var secondaryInfoLabel: UILabel!
 

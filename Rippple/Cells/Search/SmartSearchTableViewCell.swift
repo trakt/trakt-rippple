@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class SmartSearchTableViewCell: UITableViewCell {
+final class SmartSearchTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var title: UILabel!
     @IBOutlet var separator: UIView!
 
@@ -22,16 +22,11 @@ final class SmartSearchTableViewCell: UITableViewCell {
         super.setSelected(selected, animated: animated)
         if selected {
             card.backgroundColor = UIColor(asset: .globalTint)
-            title.textColor = .white
+            title.textColor = .ripppleTintContrastingLabel
             separator.isHidden = true
         } else {
-            if traitCollection.userInterfaceStyle == .dark {
-                card.backgroundColor = .secondarySystemBackground
-                title.textColor = .label
-            } else {
-                card.backgroundColor = .systemBackground
-                title.textColor = .label
-            }
+            card.backgroundColor = .ripppleCardBackground
+            title.textColor = .label
             separator.isHidden = false
         }
     }
@@ -40,16 +35,11 @@ final class SmartSearchTableViewCell: UITableViewCell {
         super.setHighlighted(highlighted, animated: animated)
         if highlighted {
             card.backgroundColor = UIColor(asset: .globalTint)
-            title.textColor = .white
+            title.textColor = .ripppleTintContrastingLabel
             separator.isHidden = true
         } else {
-            if traitCollection.userInterfaceStyle == .dark {
-                card.backgroundColor = .secondarySystemBackground
-                title.textColor = .label
-            } else {
-                card.backgroundColor = .systemBackground
-                title.textColor = .label
-            }
+            card.backgroundColor = .ripppleCardBackground
+            title.textColor = .label
             separator.isHidden = false
         }
     }

@@ -34,7 +34,7 @@ final class ProfileButton: UIButton {
         imageView?.layer.cornerRadius = size / 2.0
         imageView?.layer.cornerCurve = .continuous
         imageView?.layer.masksToBounds = true
-        imageView?.backgroundColor = UIColor.secondarySystemBackground
+        imageView?.backgroundColor = UIColor.ripppleSecondaryBackground
         imageView?.layer.borderWidth = 1
         imageView?.layer.borderColor = UIColor.tertiarySystemFill.cgColor
 

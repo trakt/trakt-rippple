@@ -15,7 +15,7 @@ protocol ListTableViewCellDelegate: AnyObject {
     func cell(_ cell: ListTableViewCell, action: ListTableViewCell.Action)
 }
 
-final class ListTableViewCell: UITableViewCell {
+final class ListTableViewCell: TintedCanvasTableViewCell {
     enum Action {
         case touch
         case user

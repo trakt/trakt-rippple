@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class PeopleBioTableViewCell: UITableViewCell {
+final class PeopleBioTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var biography: UILabel!
 
     var person: Person! {

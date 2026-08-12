@@ -302,7 +302,9 @@ extension SidebarViewController {
 
 extension SidebarViewController {
     private func configureHierarchy() {
+        view.backgroundColor = .ripppleViewBackground
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
+        collectionView.backgroundColor = .ripppleViewBackground
         collectionView.isScrollEnabled = true
         collectionView.delegate = self
         collectionView.dropDelegate = self
@@ -340,7 +342,8 @@ extension SidebarViewController {
 //            content.textProperties.font = UIFont.preferredFont(forTextStyle: .headline)
             cell.contentConfiguration = content
 
-            let background = UIBackgroundConfiguration.listCell()
+            var background = UIBackgroundConfiguration.listCell()
+            background.backgroundColor = .clear
             cell.backgroundConfiguration = background
 
             cell.accessories = [.outlineDisclosure()]
@@ -363,7 +366,8 @@ extension SidebarViewController {
             content.textProperties.adjustsFontSizeToFitWidth = false
             cell.contentConfiguration = content
 
-            let background = UIBackgroundConfiguration.listCell()
+            var background = UIBackgroundConfiguration.listCell()
+            background.backgroundColor = .clear
             cell.backgroundConfiguration = background
 
             cell.accessories = []

@@ -13,7 +13,7 @@
         <scene sceneID="QCT-h4-EB1">
             <objects>
                 <viewController id="Sqa-X5-OaC" customClass="LoginBrowseViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="Cvw-JT-64L">
+                    <view key="view" contentMode="scaleToFill" id="Cvw-JT-64L" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -68,7 +68,7 @@
         <scene sceneID="pvJ-lO-fto">
             <objects>
                 <viewController id="UBF-Em-5Eh" customClass="LoginViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="lf4-S3-ZGN">
+                    <view key="view" contentMode="scaleToFill" id="lf4-S3-ZGN" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>

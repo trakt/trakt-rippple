@@ -10,7 +10,7 @@ import Moya
 import Receiver
 import UIKit
 
-final class MirTableViewCell: UITableViewCell {
+final class MirTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var plays: EFCountingLabel!
     @IBOutlet var minutes: EFCountingLabel!
     @IBOutlet var ratings: EFCountingLabel!

@@ -138,7 +138,7 @@ struct ActivityPunchcardView: View {
     }
 }
 
-final class ActivityPunchcardTableViewCell: UITableViewCell {
+final class ActivityPunchcardTableViewCell: TintedCanvasTableViewCell {
     static let reuseIdentifier = "activity punchcard"
     private static let punchcardHorizontalInset: CGFloat = 40
 

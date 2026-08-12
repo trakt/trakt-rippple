@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class PulseTableViewCell: UITableViewCell {
+final class PulseTableViewCell: TintedCanvasTableViewCell {
     enum CardType {
         case top
         case middle
@@ -80,7 +80,7 @@ final class PulseTableViewCell: UITableViewCell {
         backgroundView.backgroundColor = .clear
         selectedBackgroundView = backgroundView
         let multipleBackgroundView = UIView()
-        multipleBackgroundView.backgroundColor = .tertiarySystemBackground
+        multipleBackgroundView.backgroundColor = .ripppleTertiaryBackground
         multipleSelectionBackgroundView = multipleBackgroundView
 
         maximumContentSizeCategory = .extraExtraExtraLarge

@@ -46,7 +46,7 @@ struct BadgeAppIconView: View {
     ]
 
     var body: some View {
-        SwiftUI.List {
+        RipppleList {
             Section(footer: Text(footerText)) {
                 ForEach($noOption) { option in
                     Button {

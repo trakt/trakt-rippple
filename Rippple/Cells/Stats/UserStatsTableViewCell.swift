@@ -10,7 +10,7 @@ import Moya
 import Receiver
 import UIKit
 
-final class UserStatsTableViewCell: UITableViewCell {
+final class UserStatsTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var plays: EFCountingLabel!
     @IBOutlet var minutes: EFCountingLabel!
 

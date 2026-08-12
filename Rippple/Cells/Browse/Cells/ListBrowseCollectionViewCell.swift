@@ -61,7 +61,7 @@ final class ListBrowseTableViewCell: BrowseTableViewCell {
         guard collectionView == nil else { return }
 
         selectionStyle = .none
-        backgroundColor = .systemBackground
+        backgroundColor = .ripppleViewBackground
         contentView.backgroundColor = .clear
 
         let collectionView = HorizontalOnlyCollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
@@ -70,7 +70,7 @@ final class ListBrowseTableViewCell: BrowseTableViewCell {
         collectionView.showsVerticalScrollIndicator = false
         collectionView.alwaysBounceVertical = false
         collectionView.isDirectionalLockEnabled = true
-        collectionView.backgroundColor = .systemBackground
+        collectionView.backgroundColor = .ripppleViewBackground
         collectionView.contentInsetAdjustmentBehavior = .never
 
         contentView.addSubview(collectionView)

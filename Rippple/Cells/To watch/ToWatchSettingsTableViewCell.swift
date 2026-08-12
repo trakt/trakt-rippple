@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class ToWatchSettingsTableViewCell: UITableViewCell {
+final class ToWatchSettingsTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var sortOrderImageView: UIImageView!
     @IBOutlet var sortLabel: UILabel!
 }

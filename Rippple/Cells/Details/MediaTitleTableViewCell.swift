@@ -43,7 +43,7 @@ extension UIView {
     }
 }
 
-final class MediaTitleTableViewCell: UITableViewCell {
+final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
     private let disposeBag = DisposeBag()
 
     enum Action {

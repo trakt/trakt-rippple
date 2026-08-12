@@ -803,7 +803,8 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                         "AnticipatedNotificationsManager.anticipatedMovies",
                                         "Stinger.alert.type",
                                         "AppManager.currentUserInterfaceStyle",
-                                        "AppManager.currentTint"]
+                                        "AppManager.currentTint",
+                                        "AppManager.tintedAppearance"]
 
         let ubiquitousKeys: Set = ["ShelfManager.shelf",
                                    "EpisodeToWatchManager.pinnedShows",
@@ -869,6 +870,15 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                     UIApplication.shared.setTintColor(tint: tint)
                 }
                 print("[Migration Deeplink] \(key): \(tint.name) (RipppleTintColor), applied via setTintColor")
+                continue
+            }
+
+            if key == "AppManager.tintedAppearance" {
+                let enabled = valueString == "1" || valueString.lowercased() == "true"
+                DispatchQueue.main.async {
+                    UIApplication.shared.setTintedAppearance(enabled: enabled)
+                }
+                print("[Migration Deeplink] \(key): \(enabled) (Bool), applied via setTintedAppearance")
                 continue
             }
 

@@ -189,7 +189,9 @@ final class BrowseViewController: UITableViewController {
                 return cell
             }
         case .inReview:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "inReview") ?? UITableViewCell(style: .default, reuseIdentifier: "inReview")
+            let cell = tableView.dequeueReusableCell(withIdentifier: "inReview") ?? TintedCanvasTableViewCell(style: .default, reuseIdentifier: "inReview")
+            cell.backgroundColor = .ripppleViewBackground
+            cell.contentView.backgroundColor = .clear
             cell.selectionStyle = .none
             cell.contentConfiguration = UIHostingConfiguration {
                 InReviewView()

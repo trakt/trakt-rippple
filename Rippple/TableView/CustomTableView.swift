@@ -9,7 +9,128 @@
 import Receiver
 import UIKit
 
-class CustomTableView: UITableView {
+class TintedView: UIView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .ripppleViewBackground
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        backgroundColor = .ripppleViewBackground
+    }
+}
+
+class TintedTableView: UITableView {
+    override init(frame: CGRect, style: UITableView.Style) {
+        super.init(frame: frame, style: style)
+        applyBackground()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        applyBackground()
+    }
+
+    fileprivate func applyBackground() {
+        backgroundColor = style == .plain ? .ripppleViewBackground : .ripppleGroupedViewBackground
+    }
+}
+
+final class TintedPlainTableView: TintedTableView {
+    override fileprivate func applyBackground() {
+        backgroundColor = .ripppleViewBackground
+    }
+}
+
+final class TintedCollectionView: UICollectionView {
+    override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {
+        super.init(frame: frame, collectionViewLayout: layout)
+        backgroundColor = .ripppleViewBackground
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        backgroundColor = .ripppleViewBackground
+    }
+}
+
+class TintedCanvasTableViewCell: UITableViewCell {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        applyBackground()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        applyBackground()
+    }
+
+    private func applyBackground() {
+        backgroundColor = .ripppleViewBackground
+        contentView.backgroundColor = .clear
+    }
+}
+
+class TintedRowTableViewCell: UITableViewCell {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        applyBackground()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        applyBackground()
+    }
+
+    private func applyBackground() {
+        backgroundColor = .ripppleSystemCardBackground
+        contentView.backgroundColor = .clear
+    }
+}
+
+final class TintedTableViewCell: UITableViewCell {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        applyBackground()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        applyBackground()
+    }
+
+    private func applyBackground() {
+        backgroundColor = .ripppleGroupedCardBackground
+        contentView.backgroundColor = .clear
+    }
+}
+
+class CustomTableView: TintedTableView {
     private let customTableViewDisposeBag = DisposeBag()
 
     override func awakeFromNib() {

@@ -68,11 +68,11 @@ struct TrailersView: View {
                         ZStack {
                             if colorScheme == .dark {
                                 RoundedRectangle(cornerRadius: ViewRadius.large.rawValue)
-                                    .fill(Color(UIColor.secondarySystemBackground))
+                                    .fill(Color(UIColor.ripppleCardBackground))
                                     .stroke(Color(UIColor.clear), lineWidth: 0.0)
                             } else {
                                 RoundedRectangle(cornerRadius: ViewRadius.large.rawValue)
-                                    .fill(Color(UIColor.systemBackground))
+                                    .fill(Color(UIColor.ripppleCardBackground))
                                     .stroke(Color(UIColor.lightGray.lighter().withAlphaComponent(0.5)), lineWidth: 0.3)
                                     .shadow(color: Color(UIColor.lightGray.lighter().withAlphaComponent(0.8)),
                                             radius: 3)

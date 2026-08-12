@@ -9,7 +9,7 @@
 import Receiver
 import UIKit
 
-final class CertificationTableViewCell: UITableViewCell {
+final class CertificationTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var nameLabel: UILabel!
     @IBOutlet var metadataLabel: UILabel!
     @IBOutlet var descriptionLabel: UILabel!

@@ -39,7 +39,7 @@ struct TransactionsView: View {
                                            description: Text("Couldn't find any past transactions for Rippple."))
                 } else {
                     VStack(spacing: 12) {
-                        SwiftUI.List {
+                        RipppleList {
                             if !header.isEmpty {
                                 Section {
                                     Text(header)

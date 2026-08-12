@@ -20,7 +20,7 @@ protocol CommentTableViewCellDelegate: AnyObject {
     func actionsMenu(for cell: CommentTableViewCell) -> UIMenu?
 }
 
-final class CommentTableViewCell: UITableViewCell {
+final class CommentTableViewCell: TintedCanvasTableViewCell {
     enum Action {
         case presentReplies
         case presentAuthor

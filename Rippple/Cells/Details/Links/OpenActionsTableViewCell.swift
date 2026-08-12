@@ -14,7 +14,7 @@ protocol OpenInRowTableViewCellDelegate: AnyObject {
     func openInRowCellDidTapSettings(_ cell: OpenActionsTableViewCell)
 }
 
-final class OpenActionsTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+final class OpenActionsTableViewCell: TintedCanvasTableViewCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     weak var delegate: OpenInRowTableViewCellDelegate?
 
     @IBOutlet var titleLabel: UILabel!
@@ -152,7 +152,7 @@ final class OpenInActionCollectionViewCell: UICollectionViewCell {
         v.layer.cornerCurve = .continuous
         v.layer.borderWidth = 1
         v.layer.borderColor = UIColor.quaternarySystemFill.cgColor
-        v.backgroundColor = .tertiarySystemBackground
+        v.backgroundColor = .ripppleTertiaryBackground
         return v
     }()
 

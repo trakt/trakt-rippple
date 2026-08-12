@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class SearchTableViewCell: UITableViewCell {
+final class SearchTableViewCell: TintedCanvasTableViewCell {
     private var text: String!
     private var subtext: String?
     private var searchQuery: String?

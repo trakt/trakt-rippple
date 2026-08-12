@@ -18,7 +18,7 @@ private struct ToWatchInfoView: View {
 
     var body: some View {
         NavigationStack {
-            SwiftUI.List {
+            RipppleList {
                 Section {
                     Text(whatItDoes)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -43,7 +43,7 @@ private struct ToWatchInfoView: View {
             .listStyle(.insetGrouped)
             .listSectionSpacing(.compact)
             .navigationTitle(title)
-            .background(Color(UIColor.systemBackground))
+            .background(Color(UIColor.ripppleViewBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

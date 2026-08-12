@@ -9,7 +9,7 @@
 import Kingfisher
 import UIKit
 
-final class SocialActivityUserTableViewCell: UITableViewCell {
+final class SocialActivityUserTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var card: CardView!
 
     @IBOutlet var topConstraint: NSLayoutConstraint!
@@ -73,7 +73,7 @@ final class SocialActivityUserTableViewCell: UITableViewCell {
         avatarImageView.layer.borderWidth = 1
         avatarImageView.layer.borderColor = UIColor.tertiarySystemFill.cgColor
         avatarImageView.clipsToBounds = true
-        avatarImageView.backgroundColor = .tertiarySystemBackground.withAlphaComponent(1.0)
+        avatarImageView.backgroundColor = .ripppleTertiaryBackground.withAlphaComponent(1.0)
 
         nameLabel.font = .preferredFont(forTextStyle: .headline)
         nameLabel.adjustsFontForContentSizeCategory = true

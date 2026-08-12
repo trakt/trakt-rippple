@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class NotificationCenterTableViewCell: UITableViewCell {
+final class NotificationCenterTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var title: UILabel!
     @IBOutlet var subtitle: UILabel!
     @IBOutlet var body: UILabel!

@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class ActionTableViewCell: UITableViewCell {
+final class ActionTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var actionTitle: UILabel!
     @IBOutlet var actionImage: UIImageView!
 

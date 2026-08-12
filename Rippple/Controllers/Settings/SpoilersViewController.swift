@@ -64,7 +64,7 @@ struct SpoilersView: View {
     @AppStorage("GeneralSettings.actorEpisodeCountSpoilers") private var redactsActorEpisodeCounts = true
 
     var body: some View {
-        Form {
+        RipppleForm {
             Section("Try It") {
                 VStack(alignment: .leading, spacing: 8) {
                     SpoilerSampleLabel()

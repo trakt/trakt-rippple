@@ -16,7 +16,7 @@ struct NotificationsTroubleshootView: View {
     @StateObject private var viewModel = NotificationsTroubleshootViewModel()
 
     var body: some View {
-        Form {
+        RipppleForm {
             Section("Status") {
                 TroubleshootStatusRow(title: "Rippple Settings",
                                       status: viewModel.appSettingsStatus)

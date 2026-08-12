@@ -31,7 +31,7 @@ struct SeasonsRatingsCellViewModel {
 
     static let empty = SeasonsRatingsCellViewModel(text: nil,
                                                    textColor: .label,
-                                                   backgroundColor: .systemBackground,
+                                                   backgroundColor: .ripppleViewBackground,
                                                    progress: nil,
                                                    accessibilityLabel: nil)
 }

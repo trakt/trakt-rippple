@@ -12,7 +12,7 @@ protocol CastTableViewCellDelegate: AnyObject {
     func cell(_ cell: CastTableViewCell, action: CastTableViewCell.Action)
 }
 
-final class CastTableViewCell: UITableViewCell {
+final class CastTableViewCell: TintedCanvasTableViewCell {
     private enum Layout {
         static let compactCollectionHeight: CGFloat = 135
         static let regularCollectionHeight: CGFloat = 148

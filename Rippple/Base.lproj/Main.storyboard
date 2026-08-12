@@ -38,7 +38,7 @@
         <scene sceneID="5BL-Tc-h4G">
             <objects>
                 <viewController storyboardIdentifier="ToWatchViewController" id="HSd-hG-SPN" customClass="ToWatchViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="SUU-dH-DpV">
+                    <view key="view" contentMode="scaleToFill" id="SUU-dH-DpV" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -105,7 +105,7 @@
         <scene sceneID="VLj-LY-DJk">
             <objects>
                 <viewController id="T28-uJ-fU7" customClass="PurchaseModalViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="cjm-tA-efZ">
+                    <view key="view" contentMode="scaleToFill" id="cjm-tA-efZ" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -141,7 +141,7 @@
         <scene sceneID="LBA-kt-I9q">
             <objects>
                 <viewController storyboardIdentifier="PurchaseViewController" title="Premium" id="914-3h-tRH" customClass="PurchaseViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="o2O-ne-cEU">
+                    <view key="view" contentMode="scaleToFill" id="o2O-ne-cEU" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -319,7 +319,7 @@ If we offer a free trial, any unused portion will be lost if you decide to make 
         <scene sceneID="dE7-r2-ltQ">
             <objects>
                 <viewController storyboardIdentifier="Subscribe" id="9Ww-d2-dTm" customClass="PurchaseViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="BMW-8e-Wr6">
+                    <view key="view" contentMode="scaleToFill" id="BMW-8e-Wr6" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -398,12 +398,12 @@ If we offer a free trial, any unused portion will be lost if you decide to make 
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="0Qj-AS-8q8">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="0Qj-AS-8q8" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="5Gv-Yj-f93">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="5Gv-Yj-f93" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -500,12 +500,12 @@ Come back later...</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="Wp9-0b-zXa">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="Wp9-0b-zXa" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="e9a-Sm-1dW">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="e9a-Sm-1dW" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="84"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -534,7 +534,7 @@ Come back later...</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="CHz-Sa-ugl" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="hVq-5D-BSt" userLabel="Error">
+                <view contentMode="scaleToFill" id="hVq-5D-BSt" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -543,7 +543,7 @@ Come back later...</string>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="An error occurred..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9ks-uT-Cmb">
                                     <rect key="frame" x="0.0" y="0.0" width="208" height="15.666666666666666"/>
-                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                     <color key="textColor" systemColor="secondaryLabelColor"/>
                                     <nil key="highlightedColor"/>
@@ -567,7 +567,7 @@ Come back later...</string>
                         <constraint firstItem="NAm-u4-xlh" firstAttribute="centerY" secondItem="1Pi-w2-ZH9" secondAttribute="centerY" id="tk8-wg-YzZ"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="TX3-zQ-RTQ" userLabel="Empty">
+                <view contentMode="scaleToFill" id="TX3-zQ-RTQ" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -586,13 +586,13 @@ Come back later...</string>
                         <constraint firstItem="IjH-zg-lDa" firstAttribute="centerY" secondItem="4ED-Mk-FUA" secondAttribute="centerY" id="QbH-7X-cuV"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="7ws-ak-hqD" userLabel="Loading">
+                <view contentMode="scaleToFill" id="7ws-ak-hqD" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Zk6-l8-q5J" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="66" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="Zk6-l8-q5J" secondAttribute="height" multiplier="1:1" id="Gp8-H9-KCi"/>
                                 <constraint firstAttribute="width" constant="50" id="dwT-lc-bBu"/>
@@ -629,12 +629,12 @@ Come back later...</string>
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="400" sectionHeaderHeight="28" sectionFooterHeight="28" id="NHs-AJ-aPG" customClass="CustomTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="zco-m1-Cn9">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="zco-m1-Cn9" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="uK3-L5-mEu">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="uK3-L5-mEu" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="75"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -686,13 +686,13 @@ Come back later...</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="BwB-RR-YM1" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="tlS-6B-qZS">
+                <view contentMode="scaleToFill" id="tlS-6B-qZS" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qih-VS-7jT">
                             <rect key="frame" x="16" y="38.333333333333343" width="208" height="51.666666666666657"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <string key="text">No comments yet.
 Be the fist to add a review or shout.</string>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
@@ -708,13 +708,13 @@ Be the fist to add a review or shout.</string>
                         <constraint firstItem="iAG-6h-cbN" firstAttribute="trailing" secondItem="Qih-VS-7jT" secondAttribute="trailing" constant="16" id="pTe-lz-tYQ"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="pqv-FP-HNM">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="pqv-FP-HNM" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PaM-qm-tEq">
                             <rect key="frame" x="32" y="47.333333333333343" width="176" height="33.666666666666657"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <string key="text">No comments yet.
 Be the fist to add one.</string>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
@@ -729,13 +729,13 @@ Be the fist to add one.</string>
                         <constraint firstAttribute="trailingMargin" secondItem="PaM-qm-tEq" secondAttribute="trailing" constant="16" id="iCK-Cq-OiF"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Yga-Yh-pM3">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Yga-Yh-pM3" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YYb-IP-2xB" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="39" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="YYb-IP-2xB" secondAttribute="height" multiplier="1:1" id="XX9-mc-7Dq"/>
                                 <constraint firstAttribute="width" constant="50" id="lGE-84-J4q"/>
@@ -751,7 +751,7 @@ Be the fist to add one.</string>
                         <constraint firstItem="YYb-IP-2xB" firstAttribute="centerX" secondItem="Yga-Yh-pM3" secondAttribute="centerXWithinMargins" id="HkD-6s-BqX"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="pjW-5J-LZF">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="pjW-5J-LZF" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -760,7 +760,7 @@ Be the fist to add one.</string>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="An error occurred..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RGg-jt-IBF">
                                     <rect key="frame" x="0.0" y="0.0" width="176" height="15.666666666666666"/>
-                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                     <color key="textColor" systemColor="secondaryLabelColor"/>
                                     <nil key="highlightedColor"/>
@@ -939,7 +939,7 @@ Be the fist to add one.</string>
         <scene sceneID="dVH-yS-V6A">
             <objects>
                 <viewController id="wxF-4f-o5P" customClass="DeeplinkLoadingViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="Kox-q4-fq3">
+                    <view key="view" contentMode="scaleToFill" id="Kox-q4-fq3" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -952,7 +952,7 @@ Be the fist to add one.</string>
                                     </activityIndicatorView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="Loading..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tb2-n0-K1O">
                                         <rect key="frame" x="0.0" y="27.000000000000004" width="59.666666666666664" height="15.666666666666668"/>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                         <color key="textColor" systemColor="secondaryLabelColor"/>
                                         <nil key="highlightedColor"/>
@@ -995,7 +995,7 @@ Be the fist to add one.</string>
         <scene sceneID="0iV-sH-rBl">
             <objects>
                 <viewController id="VzZ-D7-DRW" customClass="WhatsNewViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="nWc-ct-ihO">
+                    <view key="view" contentMode="scaleToFill" id="nWc-ct-ihO" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -1126,7 +1126,7 @@ Be the fist to add one.</string>
         <scene sceneID="b8n-gj-OHr">
             <objects>
                 <collectionViewController id="yVf-9J-Wcy" customClass="FollowingStoryLikeViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" id="zuh-se-4fc">
+                    <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" id="zuh-se-4fc" customClass="TintedCollectionView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="240" height="110"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -1154,16 +1154,16 @@ Be the fist to add one.</string>
         <scene sceneID="h0j-sG-uKX">
             <objects>
                 <tableViewController title="Likes" id="wkR-xU-97g" customClass="ReactionsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="wJx-Pl-flD">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="wJx-Pl-flD" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="uoO-Tf-MDO">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="uoO-Tf-MDO" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="0.0"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="dDx-yg-NcV">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="dDx-yg-NcV" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="0.0"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -1184,13 +1184,13 @@ Be the fist to add one.</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="HNI-Hu-mdv" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="moO-Us-3dw" userLabel="Empty View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="moO-Us-3dw" userLabel="Empty View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No one likes this comment... yet." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CK3-Ug-2Mo">
                             <rect key="frame" x="16" y="56.333333333333336" width="208" height="15.666666666666664"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                             <color key="textColor" systemColor="secondaryLabelColor"/>
                             <nil key="highlightedColor"/>
@@ -1204,13 +1204,13 @@ Be the fist to add one.</string>
                         <constraint firstItem="CK3-Ug-2Mo" firstAttribute="leading" secondItem="moO-Us-3dw" secondAttribute="leading" constant="16" id="sQU-K3-Kej"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="uX4-bT-g65" userLabel="Footer View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="uX4-bT-g65" userLabel="Footer View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Rpq-dt-Epf">
                             <rect key="frame" x="16" y="29.333333333333336" width="208" height="69.666666666666657"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <string key="text">Only public user account are shown in this list. 
 Keeping things private for private users...</string>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
@@ -1226,13 +1226,13 @@ Keeping things private for private users...</string>
                         <constraint firstAttribute="trailing" secondItem="Rpq-dt-Epf" secondAttribute="trailing" constant="16" id="jt7-l6-CLr"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Jza-G9-B5R" userLabel="Loading View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Jza-G9-B5R" userLabel="Loading View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hof-mt-jAq" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="39" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="hof-mt-jAq" secondAttribute="height" multiplier="1:1" id="7OH-NU-zhg"/>
                                 <constraint firstAttribute="width" constant="50" id="JCC-C7-nPa"/>
@@ -1249,7 +1249,7 @@ Keeping things private for private users...</string>
                         <constraint firstItem="hof-mt-jAq" firstAttribute="centerX" secondItem="Jza-G9-B5R" secondAttribute="centerX" id="AZX-W4-6Wz"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="EmZ-6J-FPR" userLabel="Error View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="EmZ-6J-FPR" userLabel="Error View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -1298,16 +1298,16 @@ Keeping things private for private users...</string>
         <scene sceneID="Ozj-op-kTm">
             <objects>
                 <tableViewController storyboardIdentifier="SearchViewController" id="qHj-Dm-cz1" customClass="SearchViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="ZoA-zh-Ei3">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="ZoA-zh-Ei3" customClass="TintedPlainTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="Ihp-Ms-UlI">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="Ihp-Ms-UlI" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="15"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="mUP-dA-sjO">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="mUP-dA-sjO" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="15" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -1368,7 +1368,7 @@ Keeping things private for private users...</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="syl-qq-cF9">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="syl-qq-cF9" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -1395,13 +1395,13 @@ Keeping things private for private users...</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GXu-Fj-g06" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="HK2-X2-cak" userLabel="Loading">
+                <view contentMode="scaleToFill" id="HK2-X2-cak" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mCw-fl-m9F" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="66" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="mCw-fl-m9F" secondAttribute="height" multiplier="1:1" id="L1z-Lx-EVt"/>
                                 <constraint firstAttribute="width" constant="50" id="gQY-Nl-NP4"/>
@@ -1418,7 +1418,7 @@ Keeping things private for private users...</string>
                         <constraint firstItem="mCw-fl-m9F" firstAttribute="centerY" secondItem="uT6-CZ-n0E" secondAttribute="centerY" id="ztJ-QJ-U18"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="svC-5m-yBN" userLabel="Empty">
+                <view contentMode="scaleToFill" id="svC-5m-yBN" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -1440,7 +1440,7 @@ Try with complete original titles.</string>
                         <constraint firstItem="op8-BW-FJ3" firstAttribute="trailing" secondItem="qk2-KW-acK" secondAttribute="trailing" constant="16" id="gJk-Qe-yy3"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="1wv-cV-JSE" userLabel="Error">
+                <view contentMode="scaleToFill" id="1wv-cV-JSE" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -1522,16 +1522,16 @@ Try with complete original titles.</string>
         <scene sceneID="bpJ-ZB-lMz">
             <objects>
                 <tableViewController storyboardIdentifier="Seasons" title="Seasons" id="ebW-jm-Hhe" customClass="SeasonsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="4Hv-R7-5qp">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="4Hv-R7-5qp" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="SQE-Va-jeL">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="SQE-Va-jeL" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="dsD-jm-uIh">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="dsD-jm-uIh" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="0.0"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -1554,7 +1554,7 @@ Try with complete original titles.</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="5HE-Fk-RT8" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="MpU-Us-Cba" userLabel="Empty View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="MpU-Us-Cba" userLabel="Empty View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -1576,7 +1576,7 @@ Try with complete original titles.</string>
                         <constraint firstItem="x2d-NH-tI1" firstAttribute="centerY" secondItem="MpU-Us-Cba" secondAttribute="centerY" id="mdL-2L-ZcA"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="akU-HZ-fye" userLabel="Error View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="akU-HZ-fye" userLabel="Error View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -1625,16 +1625,16 @@ Try with complete original titles.</string>
         <scene sceneID="csU-Un-Gdf">
             <objects>
                 <tableViewController id="wce-dX-i1I" customClass="PeoplesTableViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="100" sectionHeaderHeight="1" sectionFooterHeight="1" id="b4p-r6-Tqq">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="100" sectionHeaderHeight="1" sectionFooterHeight="1" id="b4p-r6-Tqq" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="92V-ip-qQB">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="92V-ip-qQB" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="prq-h0-Obu">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="prq-h0-Obu" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -1655,7 +1655,7 @@ Try with complete original titles.</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="c7G-CX-BC1" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="JhJ-uM-1Xs" userLabel="Empty">
+                <view contentMode="scaleToFill" id="JhJ-uM-1Xs" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -1676,7 +1676,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                         <constraint firstItem="9FO-Am-gVz" firstAttribute="centerY" secondItem="aLp-qo-y32" secondAttribute="centerY" id="8LD-Y6-NM4"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="yEz-kd-0Hg" userLabel="Error">
+                <view contentMode="scaleToFill" id="yEz-kd-0Hg" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -1715,21 +1715,21 @@ No cast, no crew. Is this even a thing 🤔</string>
         <scene sceneID="65l-hk-L7q">
             <objects>
                 <tableViewController storyboardIdentifier="PeopleViewController" id="GrS-hG-vgo" customClass="PeopleViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="1" sectionFooterHeight="1" id="knK-sd-D6N">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="1" sectionFooterHeight="1" id="knK-sd-D6N" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="MaK-ax-gQi">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="MaK-ax-gQi" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
-                                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="dcw-c7-Fc7">
+                                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="dcw-c7-Fc7" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                                     <rect key="frame" x="87" y="-62" width="240" height="128"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VoR-VY-Wff">
                                             <rect key="frame" x="95" y="39" width="50" height="50"/>
-                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" secondItem="VoR-VY-Wff" secondAttribute="height" multiplier="1:1" id="DFz-fc-Ubc"/>
                                                 <constraint firstAttribute="width" constant="50" id="iti-jd-DWv"/>
@@ -1743,7 +1743,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                                         <constraint firstItem="VoR-VY-Wff" firstAttribute="centerX" secondItem="dcw-c7-Fc7" secondAttribute="centerX" id="4Gn-LF-SbA"/>
                                     </constraints>
                                 </view>
-                                <view contentMode="scaleToFill" id="Xb9-A7-On5" userLabel="Error">
+                                <view contentMode="scaleToFill" id="Xb9-A7-On5" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                                     <rect key="frame" x="87" y="-62" width="240" height="128"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
@@ -1778,7 +1778,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                             </subviews>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="KaX-VZ-H49">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="KaX-VZ-H49" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="75"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -1809,11 +1809,11 @@ No cast, no crew. Is this even a thing 🤔</string>
         <scene sceneID="JpW-RM-dxS">
             <objects>
                 <tableViewController id="kI7-GD-JKr" customClass="PeopleChronologyTableViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="qRl-Nd-KS4">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="qRl-Nd-KS4" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="wev-hm-e63">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="wev-hm-e63" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="1"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -1836,7 +1836,7 @@ No cast, no crew. Is this even a thing 🤔</string>
         <scene sceneID="zjK-fD-gbF">
             <objects>
                 <tableViewController id="803-Dd-q2y" customClass="PulseViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="Z5b-jZ-e8T">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="Z5b-jZ-e8T" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -1855,7 +1855,7 @@ No cast, no crew. Is this even a thing 🤔</string>
         <scene sceneID="Ea5-Rx-afN">
             <objects>
                 <viewController hidesBottomBarWhenPushed="YES" id="apC-Gu-ZsO" customClass="SeasonsRatingsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="vg5-ma-xNS">
+                    <view key="view" contentMode="scaleToFill" id="vg5-ma-xNS" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -1912,13 +1912,13 @@ No cast, no crew. Is this even a thing 🤔</string>
         <scene sceneID="SL0-Fo-LVI">
             <objects>
                 <tableViewController id="JnX-dG-gMI" customClass="SeasonsRatingsLegendViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" id="IbJ-MF-Umq">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" id="IbJ-MF-Umq" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <sections>
                             <tableViewSection id="VgS-79-cRs">
                                 <cells>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="ANe-9w-E5V">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="ANe-9w-E5V" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="18" width="374" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="ANe-9w-E5V" id="IIJ-2E-AWa">
@@ -1956,7 +1956,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="P0U-Eg-NMB">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="P0U-Eg-NMB" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="89" width="374" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="P0U-Eg-NMB" id="Yxl-6b-I6J">
@@ -1994,7 +1994,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="PQf-Lj-alk">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="PQf-Lj-alk" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="160" width="374" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="PQf-Lj-alk" id="dia-d2-QVW">
@@ -2032,7 +2032,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="2UO-gy-OjG">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="2UO-gy-OjG" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="231" width="374" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="2UO-gy-OjG" id="Zaz-7z-DBu">
@@ -2074,7 +2074,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                             </tableViewSection>
                             <tableViewSection id="ckK-s0-O9w">
                                 <cells>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="yjw-Pc-Q8k">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="yjw-Pc-Q8k" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="338" width="374" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="yjw-Pc-Q8k" id="MT5-TR-WeC">
@@ -2143,21 +2143,21 @@ No cast, no crew. Is this even a thing 🤔</string>
         <scene sceneID="f28-5w-QLq">
             <objects>
                 <tableViewController id="ioV-zc-UU0" customClass="PeopleSearchResultsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="100" sectionHeaderHeight="28" sectionFooterHeight="28" id="TON-X0-8am">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="100" sectionHeaderHeight="28" sectionFooterHeight="28" id="TON-X0-8am" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="VQB-mQ-HII">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="VQB-mQ-HII" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
-                                <view contentMode="scaleToFill" id="PIc-vF-h5t" userLabel="Loading">
+                                <view contentMode="scaleToFill" id="PIc-vF-h5t" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                                     <rect key="frame" x="87" y="-62" width="240" height="128"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rmA-WX-XUu" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                                             <rect key="frame" x="95" y="39" width="50" height="50"/>
-                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="50" id="3FU-T2-efG"/>
                                                 <constraint firstAttribute="width" secondItem="rmA-WX-XUu" secondAttribute="height" multiplier="1:1" id="6L0-1t-ZGq"/>
@@ -2174,7 +2174,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                                         <constraint firstItem="rmA-WX-XUu" firstAttribute="centerX" secondItem="bd5-Yj-z4h" secondAttribute="centerX" id="u9I-QD-8W8"/>
                                     </constraints>
                                 </view>
-                                <view contentMode="scaleToFill" id="0IB-le-Cmc" userLabel="Empty">
+                                <view contentMode="scaleToFill" id="0IB-le-Cmc" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                                     <rect key="frame" x="87" y="-62" width="240" height="128"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
@@ -2195,7 +2195,7 @@ Are you sure about this people name's spelling?</string>
                                         <constraint firstItem="5na-cd-Gfs" firstAttribute="leading" secondItem="YZr-E5-sHv" secondAttribute="leading" constant="16" id="kkp-x5-Ipq"/>
                                     </constraints>
                                 </view>
-                                <view contentMode="scaleToFill" id="Z7i-MG-BqR" userLabel="Error">
+                                <view contentMode="scaleToFill" id="Z7i-MG-BqR" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                                     <rect key="frame" x="87" y="-62" width="240" height="128"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
@@ -2230,7 +2230,7 @@ Are you sure about this people name's spelling?</string>
                             </subviews>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="KzO-MO-7xj">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="KzO-MO-7xj" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -2257,16 +2257,16 @@ Are you sure about this people name's spelling?</string>
         <scene sceneID="jda-0j-PJU">
             <objects>
                 <tableViewController storyboardIdentifier="CustomListsViewController" id="uD6-x2-LEm" customClass="CustomListsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="66" estimatedRowHeight="66" sectionHeaderHeight="28" sectionFooterHeight="28" id="fAY-pQ-1LO">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="66" estimatedRowHeight="66" sectionHeaderHeight="28" sectionFooterHeight="28" id="fAY-pQ-1LO" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="Qt7-KF-z11">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="Qt7-KF-z11" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="Uug-fz-JFd">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="Uug-fz-JFd" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -2320,7 +2320,7 @@ Are you sure about this people name's spelling?</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="0We-OB-XRD" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="Aym-tg-pkK" userLabel="Error">
+                <view contentMode="scaleToFill" id="Aym-tg-pkK" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -2329,7 +2329,7 @@ Are you sure about this people name's spelling?</string>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="An error occurred..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yl9-zx-iwS">
                                     <rect key="frame" x="0.0" y="0.0" width="208" height="15.666666666666666"/>
-                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                     <color key="textColor" systemColor="secondaryLabelColor"/>
                                     <nil key="highlightedColor"/>
@@ -2354,13 +2354,13 @@ Are you sure about this people name's spelling?</string>
                         <constraint firstItem="yFu-rR-AQb" firstAttribute="leading" secondItem="EDm-jn-PRU" secondAttribute="leading" constant="-16" id="sh2-pD-W19"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="FZd-uN-ibW" userLabel="Loading">
+                <view contentMode="scaleToFill" id="FZd-uN-ibW" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sQe-fQ-t6X">
                             <rect key="frame" x="95" y="66" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="sQe-fQ-t6X" secondAttribute="height" multiplier="1:1" id="U3T-eh-7jJ"/>
                                 <constraint firstAttribute="width" constant="50" id="e3W-Gy-4l6"/>
@@ -2385,11 +2385,11 @@ Are you sure about this people name's spelling?</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="GAq-rv-Gzb">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="GAq-rv-Gzb" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
-                                <view contentMode="scaleToFill" id="8jt-dW-I3C" userLabel="Error">
+                                <view contentMode="scaleToFill" id="8jt-dW-I3C" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                                     <rect key="frame" x="87" y="-62" width="240" height="128"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
@@ -2398,7 +2398,7 @@ Are you sure about this people name's spelling?</string>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="An error occurred..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3p6-Kr-Ytc">
                                                     <rect key="frame" x="0.0" y="0.0" width="208" height="15.666666666666666"/>
-                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                     <color key="textColor" systemColor="secondaryLabelColor"/>
                                                     <nil key="highlightedColor"/>
@@ -2422,7 +2422,7 @@ Are you sure about this people name's spelling?</string>
                                         <constraint firstItem="vfq-tB-DQc" firstAttribute="leading" secondItem="vv4-CJ-ueA" secondAttribute="leading" constant="-16" id="zmo-6e-NxP"/>
                                     </constraints>
                                 </view>
-                                <view contentMode="scaleToFill" id="mRi-56-ar9" userLabel="Empty">
+                                <view contentMode="scaleToFill" id="mRi-56-ar9" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                                     <rect key="frame" x="87" y="-62" width="240" height="128"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
@@ -2441,13 +2441,13 @@ Are you sure about this people name's spelling?</string>
                                         <constraint firstItem="NVV-To-x17" firstAttribute="leading" secondItem="tFM-3H-BGY" secondAttribute="leading" constant="16" id="yX8-Wp-T3a"/>
                                     </constraints>
                                 </view>
-                                <view contentMode="scaleToFill" id="bW0-sN-EOJ" userLabel="Loading">
+                                <view contentMode="scaleToFill" id="bW0-sN-EOJ" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                                     <rect key="frame" x="87" y="-62" width="240" height="128"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LBG-CA-YF0">
                                             <rect key="frame" x="95" y="39" width="50" height="50"/>
-                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" secondItem="LBG-CA-YF0" secondAttribute="height" multiplier="1:1" id="I1B-dI-4eL"/>
                                                 <constraint firstAttribute="width" constant="50" id="dDQ-wd-C6d"/>
@@ -2464,7 +2464,7 @@ Are you sure about this people name's spelling?</string>
                             </subviews>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="fYe-gb-tft">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="fYe-gb-tft" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="84"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -2502,13 +2502,13 @@ Are you sure about this people name's spelling?</string>
         <scene sceneID="wch-8c-sht">
             <objects>
                 <tableViewController id="Wb3-UU-xw1" customClass="ListFormViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="insetGrouped" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="d8d-m7-2dB">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="insetGrouped" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="d8d-m7-2dB" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <sections>
                             <tableViewSection id="wmq-zo-vog">
                                 <cells>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="56" id="bA7-yq-A4n">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="56" id="bA7-yq-A4n" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="18" width="374" height="56"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="bA7-yq-A4n" id="LR7-WC-sTD">
@@ -2529,7 +2529,7 @@ Are you sure about this people name's spelling?</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="56" id="Fmj-47-3ZK">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="56" id="Fmj-47-3ZK" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="74" width="374" height="56"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Fmj-47-3ZK" id="3mh-QY-nwe">
@@ -2550,7 +2550,7 @@ Are you sure about this people name's spelling?</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="53" id="gGA-s4-FZw">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="53" id="gGA-s4-FZw" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="130" width="374" height="53"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="gGA-s4-FZw" id="ppH-lh-dDS">
@@ -2574,7 +2574,7 @@ Are you sure about this people name's spelling?</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="47" id="LW1-DS-Zik">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="47" id="LW1-DS-Zik" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="183" width="374" height="47"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="LW1-DS-Zik" id="4ic-Cb-Cs9">
@@ -2602,7 +2602,7 @@ Are you sure about this people name's spelling?</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="47" id="VvN-vT-Nhn">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="47" id="VvN-vT-Nhn" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="230" width="374" height="47"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="VvN-vT-Nhn" id="kbZ-uC-IkL">
@@ -2695,12 +2695,12 @@ Are you sure about this people name's spelling?</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="V2K-3L-TkF">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="V2K-3L-TkF" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="ZG7-Pm-O3n">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="ZG7-Pm-O3n" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="421" width="414" height="25"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -2838,12 +2838,12 @@ Are you sure about this people name's spelling?</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="84L-mz-mg3">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="84L-mz-mg3" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="m0e-uS-iwM">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="m0e-uS-iwM" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="421" width="414" height="25"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -3010,16 +3010,16 @@ Are you sure about this people name's spelling?</string>
         <scene sceneID="AVS-Y2-628">
             <objects>
                 <tableViewController id="Zqa-6j-kaq" customClass="ListSearchResultsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="100" sectionHeaderHeight="28" sectionFooterHeight="28" id="7EN-St-yfK">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="100" sectionHeaderHeight="28" sectionFooterHeight="28" id="7EN-St-yfK" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="a2L-Pa-mVN">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="a2L-Pa-mVN" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="ubn-uz-qZN">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="ubn-uz-qZN" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -3040,13 +3040,13 @@ Are you sure about this people name's spelling?</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6Tc-ZB-LuC" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="zqi-5m-7PB" userLabel="Loading">
+                <view contentMode="scaleToFill" id="zqi-5m-7PB" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="e8V-3Q-Cgl" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="66" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="50" id="5qi-dn-rJo"/>
                                 <constraint firstAttribute="width" secondItem="e8V-3Q-Cgl" secondAttribute="height" multiplier="1:1" id="6jg-Tg-m6p"/>
@@ -3063,7 +3063,7 @@ Are you sure about this people name's spelling?</string>
                         <constraint firstItem="e8V-3Q-Cgl" firstAttribute="centerX" secondItem="wIW-HW-dcd" secondAttribute="centerX" id="yHG-B2-iUt"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="b86-NM-fRa" userLabel="Empty">
+                <view contentMode="scaleToFill" id="b86-NM-fRa" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -3084,7 +3084,7 @@ Try with other terms. Maybe another spelling?</string>
                         <constraint firstItem="3YP-56-ha8" firstAttribute="trailing" secondItem="4tG-1z-HuW" secondAttribute="trailing" constant="16" id="tea-uu-nMN"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="J1z-9Q-Vd5" userLabel="Error">
+                <view contentMode="scaleToFill" id="J1z-9Q-Vd5" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -3143,12 +3143,12 @@ Try with other terms. Maybe another spelling?</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="6DG-Wu-QKG">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="6DG-Wu-QKG" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="O7r-GF-0Z2">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="O7r-GF-0Z2" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -3176,7 +3176,7 @@ Try with other terms. Maybe another spelling?</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pdu-he-WPh" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="zKd-iV-SEY" userLabel="Error">
+                <view contentMode="scaleToFill" id="zKd-iV-SEY" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -3185,7 +3185,7 @@ Try with other terms. Maybe another spelling?</string>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="An error occurred..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fE2-Sz-bk3">
                                     <rect key="frame" x="0.0" y="0.0" width="208" height="15.666666666666666"/>
-                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                     <color key="textColor" systemColor="secondaryLabelColor"/>
                                     <nil key="highlightedColor"/>
@@ -3209,7 +3209,7 @@ Try with other terms. Maybe another spelling?</string>
                         <constraint firstItem="rNx-OJ-g47" firstAttribute="trailing" secondItem="mc9-Ys-diM" secondAttribute="trailing" constant="16" id="liL-yW-qRS"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="hdd-TR-G8h" userLabel="Empty">
+                <view contentMode="scaleToFill" id="hdd-TR-G8h" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -3228,13 +3228,13 @@ Try with other terms. Maybe another spelling?</string>
                         <constraint firstItem="crh-gb-aBa" firstAttribute="leading" secondItem="Ywe-fo-Men" secondAttribute="leading" constant="16" id="z4z-Ap-JYf"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="W4a-eq-aZe" userLabel="Loading">
+                <view contentMode="scaleToFill" id="W4a-eq-aZe" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Zpt-gV-48k" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="66" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="50" id="LpQ-JQ-Q9s"/>
                                 <constraint firstAttribute="width" secondItem="Zpt-gV-48k" secondAttribute="height" multiplier="1:1" id="rmh-G6-jUC"/>
@@ -3292,12 +3292,12 @@ Try with other terms. Maybe another spelling?</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="KtJ-uC-dyX">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="KtJ-uC-dyX" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="lZL-dc-b5t">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="lZL-dc-b5t" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -3325,7 +3325,7 @@ Try with other terms. Maybe another spelling?</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="h0D-Am-XiQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="84j-EC-9fj" userLabel="Error">
+                <view contentMode="scaleToFill" id="84j-EC-9fj" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -3334,7 +3334,7 @@ Try with other terms. Maybe another spelling?</string>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="An error occurred..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="es4-1f-Mj8">
                                     <rect key="frame" x="0.0" y="0.0" width="208" height="15.666666666666666"/>
-                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                     <color key="textColor" systemColor="secondaryLabelColor"/>
                                     <nil key="highlightedColor"/>
@@ -3358,7 +3358,7 @@ Try with other terms. Maybe another spelling?</string>
                         <constraint firstItem="K0D-OZ-rxJ" firstAttribute="centerY" secondItem="Chc-pD-NrY" secondAttribute="centerY" id="Yix-MY-Zmn"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="Xi6-C9-Tlb" userLabel="Empty">
+                <view contentMode="scaleToFill" id="Xi6-C9-Tlb" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -3377,13 +3377,13 @@ Try with other terms. Maybe another spelling?</string>
                         <constraint firstItem="jMp-Yo-QHZ" firstAttribute="trailing" secondItem="7Sq-4t-ELG" secondAttribute="trailing" constant="16" id="kq7-b2-7sc"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="FMB-s5-vk0" userLabel="Loading">
+                <view contentMode="scaleToFill" id="FMB-s5-vk0" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JA1-4h-0rs" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="66" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="JA1-4h-0rs" secondAttribute="height" multiplier="1:1" id="MAm-lZ-pMq"/>
                                 <constraint firstAttribute="width" constant="50" id="gay-9p-iVn"/>
@@ -3411,12 +3411,12 @@ Try with other terms. Maybe another spelling?</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="DBE-qx-2yN">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="DBE-qx-2yN" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="ixT-5H-ZdM">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="ixT-5H-ZdM" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="421" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -3498,11 +3498,11 @@ Try with other terms. Maybe another spelling?</string>
         <scene sceneID="xXZ-RC-PWp">
             <objects>
                 <tableViewController title="Followers" hidesBottomBarWhenPushed="YES" id="c07-n5-0P4" customClass="FollowersViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="wNX-dd-S0q">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="wNX-dd-S0q" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="pDK-nH-M2Z">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="pDK-nH-M2Z" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="0.0"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -3523,13 +3523,13 @@ Try with other terms. Maybe another spelling?</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Xi6-x5-TGr" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="2dn-uP-MsT" userLabel="Empty View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="2dn-uP-MsT" userLabel="Empty View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No Followers" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lw9-FT-RzN">
                             <rect key="frame" x="16" y="56.333333333333336" width="208" height="15.666666666666664"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                             <color key="textColor" systemColor="secondaryLabelColor"/>
                             <nil key="highlightedColor"/>
@@ -3543,13 +3543,13 @@ Try with other terms. Maybe another spelling?</string>
                         <constraint firstItem="lw9-FT-RzN" firstAttribute="leading" secondItem="2dn-uP-MsT" secondAttribute="leading" constant="16" id="mKS-kM-M2V"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="fnv-rv-YQB" userLabel="Footer View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="fnv-rv-YQB" userLabel="Footer View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IzG-TQ-Bu7">
                             <rect key="frame" x="16" y="29.333333333333336" width="208" height="69.666666666666657"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <string key="text">Only public user account are shown in this list. 
 Keeping things private for private users...</string>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
@@ -3565,13 +3565,13 @@ Keeping things private for private users...</string>
                         <constraint firstItem="IzG-TQ-Bu7" firstAttribute="leading" secondItem="fnv-rv-YQB" secondAttribute="leading" constant="16" id="yUg-OR-wCJ"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="VJY-hS-PHg" userLabel="Loading View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="VJY-hS-PHg" userLabel="Loading View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jVg-Gd-zLe" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="39" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="jVg-Gd-zLe" secondAttribute="height" multiplier="1:1" id="cLc-4G-bda"/>
                                 <constraint firstAttribute="width" constant="50" id="yVf-Yo-a0C"/>
@@ -3588,7 +3588,7 @@ Keeping things private for private users...</string>
                         <constraint firstItem="jVg-Gd-zLe" firstAttribute="centerX" secondItem="VJY-hS-PHg" secondAttribute="centerX" id="vQn-8H-Gru"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="ot4-oJ-t2h" userLabel="Error View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="ot4-oJ-t2h" userLabel="Error View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -3627,11 +3627,11 @@ Keeping things private for private users...</string>
         <scene sceneID="mXt-Lk-cWv">
             <objects>
                 <tableViewController title="Following" hidesBottomBarWhenPushed="YES" id="egg-bY-9Dk" customClass="FollowingViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="gEp-lm-HHa">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="gEp-lm-HHa" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="ibo-h0-y6I">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="ibo-h0-y6I" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="0.0"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -3653,13 +3653,13 @@ Keeping things private for private users...</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bK4-et-c8U" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="pO7-Yw-5bb" userLabel="Empty View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="pO7-Yw-5bb" userLabel="Empty View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None Following" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wg2-ki-Cp4">
                             <rect key="frame" x="16" y="56.333333333333336" width="208" height="15.666666666666664"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                             <color key="textColor" systemColor="secondaryLabelColor"/>
                             <nil key="highlightedColor"/>
@@ -3673,13 +3673,13 @@ Keeping things private for private users...</string>
                         <constraint firstAttribute="trailing" secondItem="Wg2-ki-Cp4" secondAttribute="trailing" constant="16" id="GUy-GS-RhI"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="iRj-p4-Sa2" userLabel="Footer View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="iRj-p4-Sa2" userLabel="Footer View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rIe-FN-Voe">
                             <rect key="frame" x="16" y="29.333333333333336" width="208" height="69.666666666666657"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <string key="text">Only public user account are shown in this list. 
 Keeping things private for private users...</string>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
@@ -3695,13 +3695,13 @@ Keeping things private for private users...</string>
                         <constraint firstAttribute="trailing" secondItem="rIe-FN-Voe" secondAttribute="trailing" constant="16" id="ytt-Mr-V4A"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="0pi-Wy-dbf" userLabel="Loading View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="0pi-Wy-dbf" userLabel="Loading View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XiJ-cx-Jgm" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="39" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="50" id="aSW-Tk-QVL"/>
                                 <constraint firstAttribute="width" secondItem="XiJ-cx-Jgm" secondAttribute="height" multiplier="1:1" id="rMI-pz-lzc"/>
@@ -3718,7 +3718,7 @@ Keeping things private for private users...</string>
                         <constraint firstItem="XiJ-cx-Jgm" firstAttribute="centerX" secondItem="0pi-Wy-dbf" secondAttribute="centerX" id="auk-Ew-GWn"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="fpy-Lh-Spv" userLabel="Error View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="fpy-Lh-Spv" userLabel="Error View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -3757,11 +3757,11 @@ Keeping things private for private users...</string>
         <scene sceneID="dpy-iu-X1a">
             <objects>
                 <tableViewController title="Friends" hidesBottomBarWhenPushed="YES" id="LlY-4n-mcl" customClass="FriendsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="5KO-dL-hi8">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="5KO-dL-hi8" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="m2o-RI-lLo">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="m2o-RI-lLo" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="0.0"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -3782,13 +3782,13 @@ Keeping things private for private users...</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3hT-Gf-jL4" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="K5e-Mn-WPO" userLabel="Empty View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="K5e-Mn-WPO" userLabel="Empty View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No Friends (yet)" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G2X-gy-DGA">
                             <rect key="frame" x="16" y="56.333333333333336" width="208" height="15.666666666666664"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                             <color key="textColor" systemColor="secondaryLabelColor"/>
                             <nil key="highlightedColor"/>
@@ -3802,13 +3802,13 @@ Keeping things private for private users...</string>
                         <constraint firstAttribute="trailing" secondItem="G2X-gy-DGA" secondAttribute="trailing" constant="16" id="n6v-hg-YJO"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="LWd-1l-c8L" userLabel="Footer View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="LWd-1l-c8L" userLabel="Footer View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ADi-o5-qpv">
                             <rect key="frame" x="16" y="29.333333333333336" width="208" height="69.666666666666657"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <string key="text">Only public user account are shown in this list. 
 Keeping things private for private users...</string>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
@@ -3824,13 +3824,13 @@ Keeping things private for private users...</string>
                         <constraint firstItem="ADi-o5-qpv" firstAttribute="centerY" secondItem="LWd-1l-c8L" secondAttribute="centerY" id="cSk-gM-0QZ"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="XXd-fb-NMq" userLabel="Loading View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="XXd-fb-NMq" userLabel="Loading View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1j1-NE-XPB" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="39" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="50" id="Sv6-fC-w0e"/>
                                 <constraint firstAttribute="width" secondItem="1j1-NE-XPB" secondAttribute="height" multiplier="1:1" id="jcY-w8-PFT"/>
@@ -3847,7 +3847,7 @@ Keeping things private for private users...</string>
                         <constraint firstItem="1j1-NE-XPB" firstAttribute="centerY" secondItem="XXd-fb-NMq" secondAttribute="centerY" id="q81-OB-KCC"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="bzP-ur-0BM" userLabel="Error View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="bzP-ur-0BM" userLabel="Error View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -3890,12 +3890,12 @@ Keeping things private for private users...</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="k4A-gc-UaG">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="k4A-gc-UaG" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="05z-n1-1Sd">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="05z-n1-1Sd" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -3921,7 +3921,7 @@ Keeping things private for private users...</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Hfa-X3-YVr" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="7bN-TO-o7p" userLabel="Error">
+                <view contentMode="scaleToFill" id="7bN-TO-o7p" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -3954,7 +3954,7 @@ Keeping things private for private users...</string>
                         <constraint firstItem="CgK-Ay-Djm" firstAttribute="trailing" secondItem="PoH-7t-e2U" secondAttribute="trailing" constant="16" id="xav-sz-Vyt"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="YyK-ZT-XEY" userLabel="Empty">
+                <view contentMode="scaleToFill" id="YyK-ZT-XEY" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -4014,12 +4014,12 @@ Keeping things private for private users...</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="Bvv-pz-kap">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="Bvv-pz-kap" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="39Z-Mu-6fb">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="39Z-Mu-6fb" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -4051,7 +4051,7 @@ Keeping things private for private users...</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Yoh-fP-sL7" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="AcR-Eu-sK8" userLabel="Error">
+                <view contentMode="scaleToFill" id="AcR-Eu-sK8" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -4060,7 +4060,7 @@ Keeping things private for private users...</string>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="An error occurred..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i83-yx-y2X">
                                     <rect key="frame" x="0.0" y="0.0" width="208" height="15.666666666666666"/>
-                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                     <color key="textColor" systemColor="secondaryLabelColor"/>
                                     <nil key="highlightedColor"/>
@@ -4084,7 +4084,7 @@ Keeping things private for private users...</string>
                         <constraint firstItem="xJV-J0-ytE" firstAttribute="centerY" secondItem="qwG-kp-Yhb" secondAttribute="centerY" id="wB3-cD-SfQ"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="pwf-et-Alv" userLabel="Empty">
+                <view contentMode="scaleToFill" id="pwf-et-Alv" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -4103,13 +4103,13 @@ Keeping things private for private users...</string>
                         <constraint firstItem="DdV-P2-qCC" firstAttribute="trailing" secondItem="yal-ku-X8E" secondAttribute="trailing" constant="16" id="qey-x7-Vl2"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="bxY-Rc-nPy" userLabel="Loading">
+                <view contentMode="scaleToFill" id="bxY-Rc-nPy" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JA7-qb-jJF" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="66" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="JA7-qb-jJF" secondAttribute="height" multiplier="1:1" id="5zG-9s-usY"/>
                                 <constraint firstAttribute="width" constant="50" id="yfH-hh-B35"/>
@@ -4173,16 +4173,16 @@ Keeping things private for private users...</string>
         <scene sceneID="HqY-vb-guZ">
             <objects>
                 <tableViewController id="I5J-hZ-k87" customClass="CollaborationsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="66" estimatedRowHeight="66" sectionHeaderHeight="28" sectionFooterHeight="28" id="v7M-s3-DSx">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="66" estimatedRowHeight="66" sectionHeaderHeight="28" sectionFooterHeight="28" id="v7M-s3-DSx" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="QQb-OS-n1P">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="QQb-OS-n1P" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="qOM-SV-6Lv">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="qOM-SV-6Lv" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -4205,7 +4205,7 @@ Keeping things private for private users...</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wXA-Bt-rLJ" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="trZ-Wh-qNB" userLabel="Error">
+                <view contentMode="scaleToFill" id="trZ-Wh-qNB" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -4214,7 +4214,7 @@ Keeping things private for private users...</string>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="An error occurred..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QYP-zK-ALX">
                                     <rect key="frame" x="0.0" y="0.0" width="208" height="15.666666666666666"/>
-                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                     <color key="textColor" systemColor="secondaryLabelColor"/>
                                     <nil key="highlightedColor"/>
@@ -4239,13 +4239,13 @@ Keeping things private for private users...</string>
                         <constraint firstItem="UVP-Jj-tRQ" firstAttribute="centerY" secondItem="vPQ-V4-3dn" secondAttribute="centerY" id="yMI-OF-wAw"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="486-K8-QTZ" userLabel="Loading">
+                <view contentMode="scaleToFill" id="486-K8-QTZ" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CO2-Hh-1Yg">
                             <rect key="frame" x="95" y="66" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="CO2-Hh-1Yg" secondAttribute="height" multiplier="1:1" id="7Eh-LB-Uhm"/>
                                 <constraint firstAttribute="width" constant="50" id="Dyb-qM-tFA"/>
@@ -4259,7 +4259,7 @@ Keeping things private for private users...</string>
                         <constraint firstItem="CO2-Hh-1Yg" firstAttribute="centerX" secondItem="4jm-C1-SQm" secondAttribute="centerX" id="wA8-4t-j4A"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="nQQ-kF-6SI" userLabel="Empty">
+                <view contentMode="scaleToFill" id="nQQ-kF-6SI" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
@@ -4299,12 +4299,12 @@ Keeping things private for private users...</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="SK5-VY-Lxm">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="SK5-VY-Lxm" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="wmd-dN-6LP">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="wmd-dN-6LP" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -4328,16 +4328,16 @@ Keeping things private for private users...</string>
         <scene sceneID="cse-bK-mi4">
             <objects>
                 <tableViewController id="7B8-z3-9lE" customClass="CertificationsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="100" sectionHeaderHeight="1" sectionFooterHeight="1" id="mdb-dv-WqO">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="100" sectionHeaderHeight="1" sectionFooterHeight="1" id="mdb-dv-WqO" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="n8p-rs-dqK">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="n8p-rs-dqK" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="NFd-RV-XQQ">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="NFd-RV-XQQ" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -4391,12 +4391,12 @@ Keeping things private for private users...</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="MOe-jf-9nf">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="MOe-jf-9nf" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="f0J-4K-eYa">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="f0J-4K-eYa" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -4424,12 +4424,12 @@ Keeping things private for private users...</string>
                         <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="dzi-3v-NPx">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="dzi-3v-NPx" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="EuJ-5T-MlV">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="EuJ-5T-MlV" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="5" width="414" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -4493,11 +4493,11 @@ Keeping things private for private users...</string>
         <scene sceneID="uyP-PG-EIF">
             <objects>
                 <tableViewController title="Blocked" hidesBottomBarWhenPushed="YES" id="npm-YZ-eKq" customClass="BlockedViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="TVG-pm-Hd1">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="TVG-pm-Hd1" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="SIS-Sy-X1i">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="SIS-Sy-X1i" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="0.0"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -4514,13 +4514,13 @@ Keeping things private for private users...</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="LFH-1f-ulH" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="lva-3O-z27" userLabel="Empty View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="lva-3O-z27" userLabel="Empty View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No User Blocked" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jDy-6K-Kjg">
                             <rect key="frame" x="16" y="56.333333333333336" width="208" height="15.666666666666664"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                             <color key="textColor" systemColor="secondaryLabelColor"/>
                             <nil key="highlightedColor"/>
@@ -4541,11 +4541,11 @@ Keeping things private for private users...</string>
         <scene sceneID="edD-cw-ur9">
             <objects>
                 <tableViewController title="Pending Following Requests" hidesBottomBarWhenPushed="YES" id="pbN-6G-KLY" customClass="PendingFollowingRequestsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="3RT-Ze-M1p">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="88" estimatedRowHeight="88" sectionHeaderHeight="28" sectionFooterHeight="28" id="3RT-Ze-M1p" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="HVi-CI-cho">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="HVi-CI-cho" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="414" height="0.0"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -4565,13 +4565,13 @@ Keeping things private for private users...</string>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6ls-x1-HG8" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="a6g-hF-uQ0" userLabel="Empty View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="a6g-hF-uQ0" userLabel="Empty View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No Pending Following Requests" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PmM-ID-s8M">
                             <rect key="frame" x="16" y="56.333333333333336" width="208" height="15.666666666666664"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                             <color key="textColor" systemColor="secondaryLabelColor"/>
                             <nil key="highlightedColor"/>
@@ -4585,13 +4585,13 @@ Keeping things private for private users...</string>
                         <constraint firstItem="PmM-ID-s8M" firstAttribute="centerY" secondItem="a6g-hF-uQ0" secondAttribute="centerY" id="fNb-pp-6xh"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="vH5-4h-DlR" userLabel="Loading View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="vH5-4h-DlR" userLabel="Loading View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yoB-a2-5qp" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="95" y="39" width="50" height="50"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="50" id="N4h-lM-ZXW"/>
                                 <constraint firstAttribute="width" secondItem="yoB-a2-5qp" secondAttribute="height" multiplier="1:1" id="y2F-TK-WHb"/>
@@ -4608,7 +4608,7 @@ Keeping things private for private users...</string>
                         <constraint firstItem="yoB-a2-5qp" firstAttribute="centerX" secondItem="vH5-4h-DlR" secondAttribute="centerX" id="vMg-Bp-MOQ"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="K7w-D1-43R" userLabel="Error View">
+                <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="K7w-D1-43R" userLabel="Error View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>

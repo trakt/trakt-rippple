@@ -14,7 +14,7 @@ protocol LastWatchedTableViewCellDelegate: AnyObject {
     func cell(_ cell: LastWatchedTableViewCell, action: LastWatchedTableViewCell.Action)
 }
 
-final class LastWatchedTableViewCell: UITableViewCell {
+final class LastWatchedTableViewCell: TintedCanvasTableViewCell {
     enum Action {
         case details
     }

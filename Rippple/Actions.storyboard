@@ -42,13 +42,13 @@
         <scene sceneID="0tU-UC-YoF">
             <objects>
                 <viewController id="00w-hO-Uri" customClass="MarkWatchedProgressActionViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="UbI-Va-2GO">
+                    <view key="view" contentMode="scaleToFill" id="UbI-Va-2GO" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="657"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aZ9-7I-Ryy" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                                 <rect key="frame" x="152.5" y="120" width="70" height="70"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="aZ9-7I-Ryy" secondAttribute="height" multiplier="1:1" id="36T-62-Ptd"/>
                                     <constraint firstAttribute="width" secondItem="aZ9-7I-Ryy" secondAttribute="height" multiplier="1:1" id="IJE-AS-XHE"/>
@@ -82,13 +82,13 @@
         <scene sceneID="Eog-Df-X6f">
             <objects>
                 <viewController id="sJD-xT-L9c" customClass="MultiWatchedProgressActionViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="W2n-eN-teL">
+                    <view key="view" contentMode="scaleToFill" id="W2n-eN-teL" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="X82-h4-JuI" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                                 <rect key="frame" x="152.5" y="120" width="70" height="70"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="X82-h4-JuI" secondAttribute="height" multiplier="1:1" id="1P9-Oe-d3m"/>
                                     <constraint firstAttribute="width" secondItem="X82-h4-JuI" secondAttribute="height" multiplier="1:1" id="EbA-bL-ved"/>
@@ -121,7 +121,7 @@
         <scene sceneID="eSp-Hj-heV">
             <objects>
                 <tableViewController id="6sk-kU-gOa" customClass="MarkWatchedActionErrorViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="HvR-l4-xug">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="HvR-l4-xug" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -177,11 +177,11 @@
         <scene sceneID="fvd-3q-PEG">
             <objects>
                 <tableViewController id="BXP-uv-zQG" customClass="MultiWatchedActionErrorViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="mCS-zE-NL2">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="mCS-zE-NL2" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <view key="tableHeaderView" contentMode="scaleToFill" id="vQs-EY-OUa">
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="vQs-EY-OUa" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="0.0" width="375" height="170"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
@@ -210,7 +210,7 @@
                                 <constraint firstItem="aYf-8b-l9N" firstAttribute="centerY" secondItem="vQs-EY-OUa" secondAttribute="centerY" constant="10" id="WgM-j7-10i"/>
                             </constraints>
                         </view>
-                        <view key="tableFooterView" contentMode="scaleToFill" id="98e-r8-LAo">
+                        <view key="tableFooterView" contentMode="scaleToFill" id="98e-r8-LAo" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                             <rect key="frame" x="0.0" y="170" width="375" height="5"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -347,13 +347,13 @@ you need to watch 🙅‍♂️</string>
         <scene sceneID="OqU-BI-h1S">
             <objects>
                 <viewController id="zvb-oC-FqO" customClass="MediaShowNextLoadingViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="4yq-2y-h8C">
+                    <view key="view" contentMode="scaleToFill" id="4yq-2y-h8C" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mws-HK-fwb" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                                 <rect key="frame" x="152.5" y="120" width="70" height="70"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="Mws-HK-fwb" secondAttribute="height" multiplier="1:1" id="SRP-7k-jNA"/>
                                     <constraint firstAttribute="width" constant="70" id="cqp-aT-vPr"/>

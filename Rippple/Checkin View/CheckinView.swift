@@ -14,7 +14,7 @@ final class CheckinView: UIView {
         let imageView = PosterImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.isRounded = true
-        imageView.backgroundColor = .tertiarySystemBackground
+        imageView.backgroundColor = .ripppleTertiaryBackground
         imageView.layer.cornerRadius = 36.0 / 2.0
         imageView.layer.cornerCurve = .circular
         imageView.layer.masksToBounds = true

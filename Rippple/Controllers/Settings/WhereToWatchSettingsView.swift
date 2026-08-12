@@ -19,7 +19,7 @@ struct WhereToWatchSettingsView: View {
     @State private var loading = false
 
     var body: some View {
-        Form {
+        RipppleForm {
             Section {
                 Picker("Display Mode", selection: $selectedMode) {
                     Text("All Providers").tag("Display All")

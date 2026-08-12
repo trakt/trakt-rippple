@@ -471,7 +471,7 @@ struct MovieToWatchSettingsView: View {
     @State private var isPresentingAddListPicker = false
 
     var body: some View {
-        SwiftUI.List {
+        RipppleList {
             Section {
                 toggleRow(title: "Watchlisted",
                           value: Binding(get: { viewModel.watchlist },
@@ -669,7 +669,7 @@ struct MovieAddListPickerView: View {
 
     var body: some View {
         NavigationStack {
-            SwiftUI.List {
+            RipppleList {
                 smartSearchSection
                 listSection(title: "Custom Lists",
                             lists: viewModel.availableCustomLists,

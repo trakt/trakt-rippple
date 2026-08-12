@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class BrowseLinkCardViewCell: UITableViewCell {
+final class BrowseLinkCardViewCell: TintedCanvasTableViewCell {
     @IBOutlet var topLayoutConstraint: NSLayoutConstraint!
 
     @IBOutlet var cardView: CardView!

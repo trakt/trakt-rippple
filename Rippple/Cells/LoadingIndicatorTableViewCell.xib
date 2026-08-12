@@ -18,7 +18,7 @@
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gc1-vw-Ry5" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                         <rect key="frame" x="171.66666666666666" y="25" width="50" height="50"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="50" id="rlP-iY-VsT"/>
                             <constraint firstAttribute="width" secondItem="gc1-vw-Ry5" secondAttribute="height" multiplier="1:1" id="wdl-qC-GbA"/>

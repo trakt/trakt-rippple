@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class SentimentsTableViewCell: UITableViewCell {
+final class SentimentsTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var bodyLabel: UILabel!
     @IBOutlet var metaLabel: UILabel!

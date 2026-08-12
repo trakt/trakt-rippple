@@ -12,7 +12,7 @@
         <scene sceneID="xPd-aw-mBj">
             <objects>
                 <tableViewController storyboardIdentifier="calendar" id="tHu-0b-Npa" customClass="CalendarViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="3Me-sx-Zip">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="3Me-sx-Zip" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -51,13 +51,13 @@
                         <segue destination="c4t-3i-H8J" kind="show" identifier="details" id="r7b-o8-Tab"/>
                     </connections>
                 </tableViewController>
-                <view clipsSubviews="YES" contentMode="scaleToFill" id="Trt-G5-kLh" userLabel="Loading">
+                <view clipsSubviews="YES" contentMode="scaleToFill" id="Trt-G5-kLh" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4Ay-UW-IqH" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                             <rect key="frame" x="-50" y="-64" width="340" height="340"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="4Ay-UW-IqH" secondAttribute="height" multiplier="1:1" id="b3U-zB-bHm"/>
                             </constraints>
@@ -92,7 +92,7 @@
         <scene sceneID="DVd-HB-wLz">
             <objects>
                 <viewController id="E88-W5-g4M" customClass="CalendarSettingsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="Bha-MM-KlY">
+                    <view key="view" contentMode="scaleToFill" id="Bha-MM-KlY" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <viewLayoutGuide key="safeArea" id="IJu-Ik-Woh"/>

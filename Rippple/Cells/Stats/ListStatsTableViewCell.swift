@@ -13,7 +13,7 @@ protocol ListStatsTableViewCellDelegate: AnyObject {
     func cell(_ cell: ListStatsTableViewCell, action: ListStatsTableViewCell.Action)
 }
 
-final class ListStatsTableViewCell: UITableViewCell {
+final class ListStatsTableViewCell: TintedCanvasTableViewCell {
     enum Action {
         case progress
     }

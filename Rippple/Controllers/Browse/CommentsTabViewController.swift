@@ -60,7 +60,7 @@ final class CommentsTabViewController: UIViewController {
         super.viewDidLoad()
 
         navigationItem.style = .browser
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .ripppleViewBackground
 
         configureProfileBarButtonItem()
         configureBarButtonItems()

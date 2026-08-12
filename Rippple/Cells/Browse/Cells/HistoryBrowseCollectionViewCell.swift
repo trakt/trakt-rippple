@@ -79,7 +79,7 @@ final class HistoryBrowseCollectionViewCell: UICollectionViewCell {
         poster.layer.cornerRadius = poster.bounds.height / 2.0
         poster.layer.cornerCurve = .continuous
         poster.layer.masksToBounds = true
-        poster.backgroundColor = UIColor.secondarySystemBackground
+        poster.backgroundColor = UIColor.ripppleSecondaryBackground
         poster.layer.borderWidth = 1
         poster.layer.borderColor = UIColor.tertiarySystemFill.cgColor
 
