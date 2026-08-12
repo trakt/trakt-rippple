@@ -179,11 +179,6 @@ final class CustomListsViewController: UITableViewController {
         navigationItem.style = .browser
         navigationItem.subtitle = "Loading..."
 
-        // TODO: fix when on main thread
-        while user == nil {
-            user = UserManager.shared.currentUser
-        }
-
         // if it's not the first VC on the stack, it means it's not the main user activities view but another user's
         if navigationController?.viewControllers.first != self {
             navigationItem.leftBarButtonItem = nil

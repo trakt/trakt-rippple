@@ -505,11 +505,6 @@ final class ActivityViewController: UITableViewController {
 
         configureFloatingButton()
 
-        // TODO: fix when on main thread
-        while user == nil {
-            user = UserManager.shared.currentUser
-        }
-
         tableView.allowsFocus = false
         tableView.separatorStyle = .none
         tableView.register(UINib(nibName: "MediaTableViewCell", bundle: nil), forCellReuseIdentifier: "media")

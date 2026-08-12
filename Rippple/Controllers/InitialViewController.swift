@@ -31,7 +31,17 @@ final class InitialViewController: UIViewController {
         super.viewDidAppear(animated)
 
         if SessionManager.shared.isLoggedIn {
-            UIApplication.shared.switchToMainApp()
+            guard UserManager.shared.currentUser == nil else {
+                UIApplication.shared.switchToMainApp()
+                return
+            }
+
+            disposable = onSettingsChangedReceiver.listen { _ in
+                guard UserManager.shared.currentUser != nil else { return }
+                DispatchQueue.main.async {
+                    UIApplication.shared.switchToMainApp()
+                }
+            }
         } else {
             UIApplication.shared.switchToLogin()
         }

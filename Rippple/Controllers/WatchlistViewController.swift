@@ -381,11 +381,6 @@ final class WatchlistViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // TODO: fix when on main thread
-        while user == nil {
-            user = UserManager.shared.currentUser
-        }
-
         refreshControl?.isEnabled = false
 
         navigationItem.style = .browser
