@@ -436,6 +436,9 @@ final class AboutViewController: UITableViewController {
                 #endif
             }
             cell.accessoryType = .none
+        } else if AboutSection(rawValue: indexPath.section) == .about, indexPath.row == 2 {
+            cell.imageView?.image = UIImage(systemName: "text.and.command.interface.window")
+                ?? UIImage(systemName: "text.and.command.macwindow")
         }
         return cell
     }

@@ -782,7 +782,7 @@ Version 1.0 (123)</string>
                                                     <nil key="textColor"/>
                                                     <color key="highlightedColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </label>
-                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" insetsLayoutMarginsFromSafeArea="NO" image="text.and.command.macwindow" catalog="system" id="6cG-2m-gWf">
+                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" insetsLayoutMarginsFromSafeArea="NO" id="6cG-2m-gWf">
                                                     <rect key="frame" x="8.1666666666666661" y="16.666666666666671" width="23.666666666666668" height="17.333333333333332"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </imageView>
@@ -1663,7 +1663,6 @@ Version 1.0 (123)</string>
         <image name="sparkles.rectangle.stack" catalog="system" width="126" height="128"/>
         <image name="square.2.layers.3d" catalog="system" width="128" height="117"/>
         <image name="star" catalog="system" width="128" height="116"/>
-        <image name="text.and.command.macwindow" catalog="system" width="128" height="93"/>
         <image name="text.document" catalog="system" width="115" height="128"/>
         <image name="text.redaction" catalog="system" width="128" height="101"/>
         <image name="tmdbIconSmall" width="25" height="25"/>

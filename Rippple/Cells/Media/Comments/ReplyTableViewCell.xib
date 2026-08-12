@@ -127,7 +127,7 @@
                                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="music.microphone" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="pop-oa-tEn">
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="pop-oa-tEn">
                                                 <rect key="frame" x="61" y="1" width="17.5" height="17"/>
                                                 <color key="tintColor" systemColor="secondaryLabelColor"/>
                                                 <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="small" weight="black"/>
@@ -225,7 +225,6 @@
     <resources>
         <image name="bg_bubble_grey" width="47" height="41"/>
         <image name="bg_placeholder_avatar_tiny" width="30" height="30"/>
-        <image name="music.microphone" catalog="system" width="128" height="119"/>
         <namedColor name="Global Tint">
             <color red="0.68235294117647061" green="0.32156862745098042" blue="0.87058823529411766" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

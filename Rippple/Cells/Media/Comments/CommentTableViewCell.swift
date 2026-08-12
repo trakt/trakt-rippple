@@ -112,6 +112,9 @@ final class CommentTableViewCell: TintedCanvasTableViewCell {
         CommentTableViewCell.dateFormatter.formattingContext = .listItem
         CommentTableViewCell.dateFormatter.locale = Locale(identifier: "en_US")
 
+        replyMicImageView?.image = UIImage(systemName: "microphone.dynamic.on.stand")
+            ?? UIImage(systemName: "music.microphone")
+
         if let poster = poster {
             poster.layer.cornerRadius = ViewRadius.medium.rawValue
             poster.layer.cornerCurve = .continuous
