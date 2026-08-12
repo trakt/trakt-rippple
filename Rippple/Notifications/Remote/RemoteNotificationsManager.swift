@@ -141,6 +141,12 @@ final class RemoteNotificationsManager {
         return true
     }
 
+    func pushInformation(endpointARN: String) async throws -> PushInformationModel {
+        let data = try await get(path: "/push/registrations",
+                                 queryItems: [URLQueryItem(name: "enpointARN", value: endpointARN)])
+        return try decoder.decode(PushInformationModel.self, from: data)
+    }
+
     func removePushInformation(endpointARN: String) async throws {
         let body = PushInformationReference(enpointARN: endpointARN)
         _ = try await delete(path: "/push/registrations", body: body)
@@ -218,6 +224,11 @@ final class RemoteNotificationsManager {
         return try await data(for: request)
     }
 
+    private func get(path: String, queryItems: [URLQueryItem]) async throws -> Data {
+        let request = try request(method: "GET", path: path, queryItems: queryItems)
+        return try await data(for: request)
+    }
+
     private func put<T: Encodable>(path: String, body: T) async throws -> Data {
         let request = try request(method: "PUT", path: path, body: encoder.encode(body))
         return try await data(for: request)
@@ -250,7 +261,10 @@ final class RemoteNotificationsManager {
         return data
     }
 
-    private func request(method: String, path: String, body: Data) throws -> URLRequest {
+    private func request(method: String,
+                         path: String,
+                         queryItems: [URLQueryItem] = [],
+                         body: Data? = nil) throws -> URLRequest {
         guard let baseURL = baseURL else {
             throw RemoteNotificationsManagerError.notConfigured
         }
@@ -268,7 +282,7 @@ final class RemoteNotificationsManager {
             .filter { !$0.isEmpty }
             .joined(separator: "/")
         components.path = "/\(fullPath)"
-        components.query = nil
+        components.queryItems = queryItems.isEmpty ? nil : queryItems
         components.fragment = nil
         guard let url = components.url else {
             throw RemoteNotificationsManagerError.invalidBaseURL
