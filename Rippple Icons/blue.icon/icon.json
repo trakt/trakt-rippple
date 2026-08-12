@@ -1,0 +1,259 @@
+{
+  "groups": [
+    {
+      "layers": [
+        {
+          "blend-mode": "normal",
+          "glass": true,
+          "image-name": "Layer 3.png",
+          "name": "Layer 3",
+          "opacity": 1,
+          "position": {
+            "scale": 1.5,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          },
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-gray:1.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:0.07000,0.53000,0.94000,1.00000"
+              }
+            }
+          ]
+        }
+      ],
+      "name": "Group",
+      "position": {
+        "scale": 1,
+        "translation-in-points": [
+          0,
+          8
+        ]
+      },
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency-specializations": [
+        {
+          "value": {
+            "enabled": true,
+            "value": 0.8
+          }
+        },
+        {
+          "appearance": "dark",
+          "value": {
+            "enabled": true,
+            "value": 0
+          }
+        },
+        {
+          "appearance": "tinted",
+          "value": {
+            "enabled": true,
+            "value": 0.9
+          }
+        }
+      ]
+    },
+    {
+      "layers": [
+        {
+          "blend-mode": "normal",
+          "glass": true,
+          "hidden": false,
+          "image-name": "Layer 2.png",
+          "name": "Layer 2",
+          "opacity": 0.6,
+          "position": {
+            "scale": 1.18,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          },
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-gray:1.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:0.00000,0.37000,0.76000,1.00000"
+              }
+            }
+          ]
+        }
+      ],
+      "position": {
+        "scale": 1,
+        "translation-in-points": [
+          0,
+          6
+        ]
+      },
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency-specializations": [
+        {
+          "value": {
+            "enabled": true,
+            "value": 0.7
+          }
+        },
+        {
+          "appearance": "dark",
+          "value": {
+            "enabled": true,
+            "value": 0
+          }
+        },
+        {
+          "appearance": "tinted",
+          "value": {
+            "enabled": true,
+            "value": 0.9
+          }
+        }
+      ]
+    },
+    {
+      "blend-mode": "normal",
+      "blur-material": null,
+      "layers": [
+        {
+          "blend-mode": "normal",
+          "glass": true,
+          "image-name": "Layer 1.png",
+          "name": "Layer 1",
+          "opacity": 0.5,
+          "position": {
+            "scale": 1.08,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          },
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-gray:1.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:0.00000,0.25000,0.50000,1.00000"
+              }
+            }
+          ]
+        }
+      ],
+      "name": "Group",
+      "position": {
+        "scale": 1,
+        "translation-in-points": [
+          0,
+          5
+        ]
+      },
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "specular": true,
+      "translucency-specializations": [
+        {
+          "value": {
+            "enabled": true,
+            "value": 0.7
+          }
+        },
+        {
+          "appearance": "dark",
+          "value": {
+            "enabled": true,
+            "value": 0
+          }
+        },
+        {
+          "appearance": "tinted",
+          "value": {
+            "enabled": true,
+            "value": 1
+          }
+        }
+      ]
+    },
+    {
+      "layers": [
+        {
+          "blend-mode": "normal",
+          "glass": false,
+          "hidden-specializations": [
+            {
+              "value": true
+            },
+            {
+              "appearance": "light",
+              "value": false
+            }
+          ],
+          "image-name": "logomark.square.gradient-b644b16c38ff775861b4b1f58c1230f6a097a2466ab33ae00445a505c33fcb91 2.svg",
+          "name": "logomark.square.gradient-b644b16c38ff775861b4b1f58c1230f6a097a2466ab33ae00445a505c33fcb91 2",
+          "position": {
+            "scale": 23,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "specular": false,
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  },
+  "fill-specializations": [
+    {
+      "value": {
+        "linear-gradient": [
+          "srgb:0.19608,0.67843,0.90196,1.00000",
+          "srgb:0.00000,0.27843,0.67059,1.00000"
+        ]
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "linear-gradient": [
+          "srgb:0.00000,0.04500,0.12000,1.00000",
+          "srgb:0.00000,0.00800,0.02000,1.00000"
+        ]
+      }
+    }
+  ]
+}

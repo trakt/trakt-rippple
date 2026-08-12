@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <clipPath id="icon-shape">
+      <path d="M48,11.26v25.47c0,6.22-5.05,11.27-11.27,11.27H11.26C5.04,48,0,42.95,0,36.73V11.26C0,5.04,5.04,0,11.26,0h25.47C42.95,0,48,5.04,48,11.26Z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#icon-shape)">
+    <rect width="48" height="7" y="0" fill="#7B1FA2"/>
+    <rect width="48" height="7" y="7" fill="#1565C0"/>
+    <rect width="48" height="7" y="14" fill="#00A6D6"/>
+    <rect width="48" height="7" y="21" fill="#43A047"/>
+    <rect width="48" height="7" y="28" fill="#FDD835"/>
+    <rect width="48" height="7" y="35" fill="#FB8C00"/>
+    <rect width="48" height="7" y="42" fill="#E53935"/>
+  </g>
+</svg>

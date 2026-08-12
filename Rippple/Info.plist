@@ -54,7 +54,6 @@
 	<true/>
 	<key>NSUserActivityTypes</key>
 	<array>
-		<string>IconTypeIntent</string>
 		<string>MediaTypeIntent</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>

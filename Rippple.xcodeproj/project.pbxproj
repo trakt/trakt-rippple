@@ -65,6 +65,24 @@
 		09DCC2602EFA889B00C3EA79 /* FullScreenImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DCC25F2EFA889B00C3EA79 /* FullScreenImageViewController.swift */; };
 		09E390172EB21BC800C39B30 /* InReviewBrowseRail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09E390162EB21BC800C39B30 /* InReviewBrowseRail.swift */; };
 		09EFFF762E61E9B5009176CA /* Rippple Trakt.icon in Resources */ = {isa = PBXBuildFile; fileRef = 09EFFF752E61E974009176CA /* Rippple Trakt.icon */; };
+		A1C000000000000000000201 /* red.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000101 /* red.icon */; };
+		A1C000000000000000000202 /* orange.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000102 /* orange.icon */; };
+		A1C000000000000000000203 /* yellow.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000103 /* yellow.icon */; };
+		A1C000000000000000000204 /* green.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000104 /* green.icon */; };
+		A1C000000000000000000205 /* mint.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000105 /* mint.icon */; };
+		A1C000000000000000000206 /* teal.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000106 /* teal.icon */; };
+		A1C000000000000000000207 /* cyan.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000107 /* cyan.icon */; };
+		A1C000000000000000000208 /* blue.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000108 /* blue.icon */; };
+		A1C000000000000000000209 /* indigo.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000109 /* indigo.icon */; };
+		A1C000000000000000000212 /* purple.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000112 /* purple.icon */; };
+		A1C00000000000000000020A /* pink.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010A /* pink.icon */; };
+		A1C00000000000000000020B /* brown.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010B /* brown.icon */; };
+		A1C00000000000000000020C /* pride.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010C /* pride.icon */; };
+		A1C00000000000000000020D /* monochrome.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010D /* monochrome.icon */; };
+		A1C00000000000000000020E /* shadow.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010E /* shadow.icon */; };
+		A1C00000000000000000020F /* unity.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010F /* unity.icon */; };
+		A1C000000000000000000210 /* ghost.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000110 /* ghost.icon */; };
+		A1C000000000000000000211 /* peace.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000111 /* peace.icon */; };
 		09F100022FCC100000000001 /* ListProgressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F100012FCC100000000001 /* ListProgressViewController.swift */; };
 		09F275D02E055A670059D7CD /* LRUCache in Frameworks */ = {isa = PBXBuildFile; productRef = 09F275CF2E055A670059D7CD /* LRUCache */; };
 		09F4C1952E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09F4C1942E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib */; };
@@ -148,7 +166,6 @@
 		3A2E11E42897C65E00BA1713 /* ProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2E11E32897C65E00BA1713 /* ProgressManager.swift */; };
 		3A3012E11FE6A9A800F31D75 /* Markdown+Mention.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3012E01FE6A9A800F31D75 /* Markdown+Mention.swift */; };
 		3A3125062D3293DB00FEEC5A /* PurchaseConfirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3125052D3293CA00FEEC5A /* PurchaseConfirmationView.swift */; };
-		3A32120F2886A486004010A2 /* IconWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A32120E2886A486004010A2 /* IconWidget.swift */; };
 		3A3380EE2DCB810500B7C5F3 /* ListedImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3380ED2DCB810500B7C5F3 /* ListedImageView.swift */; };
 		3A383BF52567AE0900182477 /* TrendingNotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A383BF42567AE0900182477 /* TrendingNotificationsManager.swift */; };
 		3A38605525C546CF00D9739E /* CountryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38605425C546CF00D9739E /* CountryManager.swift */; };
@@ -399,13 +416,7 @@
 		3ABBA4A424A892EC0063ACD7 /* MediaCommentsCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3ABBA4A224A8916F0063ACD7 /* MediaCommentsCollectionViewCell.xib */; };
 		3ABC59C221D5253300E957ED /* ProfileButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ABC59C121D5253300E957ED /* ProfileButton.swift */; };
 		3ABF28B02A55696D00469836 /* L3BrowseTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3ABF28AF2A55696D00469836 /* L3BrowseTableViewCell.xib */; };
-		3ABF28B52A56C5FD00469836 /* AppIconRailTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ABF28B42A56C5FD00469836 /* AppIconRailTableViewCell.swift */; };
-		3ABF28B72A56C60C00469836 /* AppIconRailTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3ABF28B62A56C60C00469836 /* AppIconRailTableViewCell.xib */; };
-		3ABF28B92A56C61A00469836 /* AppIconCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ABF28B82A56C61A00469836 /* AppIconCollectionViewCell.swift */; };
-		3ABF28BB2A56C62700469836 /* AppIconCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3ABF28BA2A56C62700469836 /* AppIconCollectionViewCell.xib */; };
-		3ABF28BF2A58300E00469836 /* AppIconGeneratorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ABF28BE2A58300D00469836 /* AppIconGeneratorView.swift */; };
-		3ABF28C02A58309D00469836 /* AppIconGeneratorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ABF28BE2A58300D00469836 /* AppIconGeneratorView.swift */; };
-		3ABF73B52A5C43B2008CBD7B /* AppIcons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3ABF73B42A5C43B2008CBD7B /* AppIcons.xcassets */; };
+		3ABF28BF2A58300E00469836 /* AppIconPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ABF28BE2A58300D00469836 /* AppIconPreviewView.swift */; };
 		3AC0DE022DFE000100000001 /* SyncWatchedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC0DE012DFE000100000001 /* SyncWatchedManager.swift */; };
 		3AC160D6201F3459004A2A4F /* DeeplinkViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC160D5201F3459004A2A4F /* DeeplinkViewController.swift */; };
 		3AC160D8201F52AF004A2A4F /* DeeplinkLoadingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC160D7201F52AF004A2A4F /* DeeplinkLoadingViewController.swift */; };
@@ -435,8 +446,6 @@
 		3AD62F59253ED28000F541EB /* EpisodeShowTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD62F58253ED28000F541EB /* EpisodeShowTableViewCell.swift */; };
 		3AD62F5D253ED5F300F541EB /* SeasonShowTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AD62F5B253ED47000F541EB /* SeasonShowTableViewCell.xib */; };
 		3AD62F61253ED91900F541EB /* EpisodeShowTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AD62F5F253ED8EA00F541EB /* EpisodeShowTableViewCell.xib */; };
-		3AD7D08B2886F6C1001C1205 /* IconWidget.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 3AD7D08A2886F6C1001C1205 /* IconWidget.intentdefinition */; };
-		3AD7D08C288722B7001C1205 /* IconWidget.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 3AD7D08A2886F6C1001C1205 /* IconWidget.intentdefinition */; };
 		3AD80E0C2129560800C70E7F /* SeasonsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD80E0B2129560800C70E7F /* SeasonsViewController.swift */; };
 		3AD80E1121295AAB00C70E7F /* SeasonTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD80E102129595000C70E7F /* SeasonTableViewCell.swift */; };
 		3AD80E1221295AB200C70E7F /* SeasonTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AD80E0F2129595000C70E7F /* SeasonTableViewCell.xib */; };
@@ -622,6 +631,24 @@
 		09E390162EB21BC800C39B30 /* InReviewBrowseRail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InReviewBrowseRail.swift; sourceTree = "<group>"; };
 		09EB07F330052C3F00BAD1D8 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 		09EFFF752E61E974009176CA /* Rippple Trakt.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Rippple Trakt.icon"; sourceTree = "<group>"; };
+		A1C000000000000000000101 /* red.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = red.icon; sourceTree = "<group>"; };
+		A1C000000000000000000102 /* orange.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = orange.icon; sourceTree = "<group>"; };
+		A1C000000000000000000103 /* yellow.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = yellow.icon; sourceTree = "<group>"; };
+		A1C000000000000000000104 /* green.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = green.icon; sourceTree = "<group>"; };
+		A1C000000000000000000105 /* mint.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = mint.icon; sourceTree = "<group>"; };
+		A1C000000000000000000106 /* teal.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = teal.icon; sourceTree = "<group>"; };
+		A1C000000000000000000107 /* cyan.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = cyan.icon; sourceTree = "<group>"; };
+		A1C000000000000000000108 /* blue.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = blue.icon; sourceTree = "<group>"; };
+		A1C000000000000000000109 /* indigo.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = indigo.icon; sourceTree = "<group>"; };
+		A1C000000000000000000112 /* purple.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = purple.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010A /* pink.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = pink.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010B /* brown.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = brown.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010C /* pride.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = pride.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010D /* monochrome.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = monochrome.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010E /* shadow.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = shadow.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010F /* unity.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = unity.icon; sourceTree = "<group>"; };
+		A1C000000000000000000110 /* ghost.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = ghost.icon; sourceTree = "<group>"; };
+		A1C000000000000000000111 /* peace.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = peace.icon; sourceTree = "<group>"; };
 		09F100012FCC100000000001 /* ListProgressViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListProgressViewController.swift; sourceTree = "<group>"; };
 		09F4C1942E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ToWatchSettingsTableViewCell.xib; sourceTree = "<group>"; };
 		09F8022A30A0000000000002 /* ToWatchSearchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchSearchManager.swift; sourceTree = "<group>"; };
@@ -709,7 +736,6 @@
 		3A2E11E32897C65E00BA1713 /* ProgressManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressManager.swift; sourceTree = "<group>"; };
 		3A3012E01FE6A9A800F31D75 /* Markdown+Mention.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Markdown+Mention.swift"; sourceTree = "<group>"; };
 		3A3125052D3293CA00FEEC5A /* PurchaseConfirmationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseConfirmationView.swift; sourceTree = "<group>"; };
-		3A32120E2886A486004010A2 /* IconWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconWidget.swift; sourceTree = "<group>"; };
 		3A3380ED2DCB810500B7C5F3 /* ListedImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListedImageView.swift; sourceTree = "<group>"; };
 		3A383BF42567AE0900182477 /* TrendingNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendingNotificationsManager.swift; sourceTree = "<group>"; };
 		3A38605425C546CF00D9739E /* CountryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryManager.swift; sourceTree = "<group>"; };
@@ -961,12 +987,7 @@
 		3ABBA4A224A8916F0063ACD7 /* MediaCommentsCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaCommentsCollectionViewCell.xib; sourceTree = "<group>"; };
 		3ABC59C121D5253300E957ED /* ProfileButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileButton.swift; sourceTree = "<group>"; };
 		3ABF28AF2A55696D00469836 /* L3BrowseTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = L3BrowseTableViewCell.xib; sourceTree = "<group>"; };
-		3ABF28B42A56C5FD00469836 /* AppIconRailTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconRailTableViewCell.swift; sourceTree = "<group>"; };
-		3ABF28B62A56C60C00469836 /* AppIconRailTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AppIconRailTableViewCell.xib; sourceTree = "<group>"; };
-		3ABF28B82A56C61A00469836 /* AppIconCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconCollectionViewCell.swift; sourceTree = "<group>"; };
-		3ABF28BA2A56C62700469836 /* AppIconCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AppIconCollectionViewCell.xib; sourceTree = "<group>"; };
-		3ABF28BE2A58300D00469836 /* AppIconGeneratorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconGeneratorView.swift; sourceTree = "<group>"; };
-		3ABF73B42A5C43B2008CBD7B /* AppIcons.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = AppIcons.xcassets; sourceTree = "<group>"; };
+		3ABF28BE2A58300D00469836 /* AppIconPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPreviewView.swift; sourceTree = "<group>"; };
 		3AC0DE012DFE000100000001 /* SyncWatchedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncWatchedManager.swift; sourceTree = "<group>"; };
 		3AC160D5201F3459004A2A4F /* DeeplinkViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewController.swift; sourceTree = "<group>"; };
 		3AC160D7201F52AF004A2A4F /* DeeplinkLoadingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkLoadingViewController.swift; sourceTree = "<group>"; };
@@ -995,7 +1016,6 @@
 		3AD62F58253ED28000F541EB /* EpisodeShowTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeShowTableViewCell.swift; sourceTree = "<group>"; };
 		3AD62F5B253ED47000F541EB /* SeasonShowTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SeasonShowTableViewCell.xib; sourceTree = "<group>"; };
 		3AD62F5F253ED8EA00F541EB /* EpisodeShowTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EpisodeShowTableViewCell.xib; sourceTree = "<group>"; };
-		3AD7D08A2886F6C1001C1205 /* IconWidget.intentdefinition */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; path = IconWidget.intentdefinition; sourceTree = "<group>"; };
 		3AD80E0B2129560800C70E7F /* SeasonsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonsViewController.swift; sourceTree = "<group>"; };
 		3AD80E0F2129595000C70E7F /* SeasonTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SeasonTableViewCell.xib; sourceTree = "<group>"; };
 		3AD80E102129595000C70E7F /* SeasonTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonTableViewCell.swift; sourceTree = "<group>"; };
@@ -1883,7 +1903,6 @@
 			isa = PBXGroup;
 			children = (
 				3A171BA228857A34005EEDA9 /* SingleWidget.swift */,
-				3A32120E2886A486004010A2 /* IconWidget.swift */,
 			);
 			path = Widget;
 			sourceTree = "<group>";
@@ -1997,7 +2016,6 @@
 				3A90313F287B032600FA27D4 /* Widget.swift */,
 				09B898F62F1CE3A800DC202D /* OpenRipppleIntent.swift */,
 				3A903141287B032600FA27D4 /* Widget.intentdefinition */,
-				3AD7D08A2886F6C1001C1205 /* IconWidget.intentdefinition */,
 				3A903142287B032700FA27D4 /* Assets.xcassets */,
 				3A903144287B032700FA27D4 /* Info.plist */,
 				3A90314A287B032700FA27D4 /* WidgetExtension.entitlements */,
@@ -2019,6 +2037,7 @@
 				090676E32F5838390076ECA8 /* THIRD_PARTY_NOTICES.md */,
 				09EB07F330052C3F00BAD1D8 /* AGENTS.md */,
 				09EFFF752E61E974009176CA /* Rippple Trakt.icon */,
+				A1C000000000000000000001 /* Rippple Icons */,
 				09DA107A2F4DB82D00DD80F5 /* docs */,
 				3A9119C61FADC7EB00457D28 /* Rippple */,
 				3A90313E287B032600FA27D4 /* Widget */,
@@ -2027,6 +2046,31 @@
 				3A9119C51FADC7EB00457D28 /* Products */,
 				31F48457202A6704839BA0C4 /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		A1C000000000000000000001 /* Rippple Icons */ = {
+			isa = PBXGroup;
+			children = (
+				A1C000000000000000000101 /* red.icon */,
+				A1C000000000000000000102 /* orange.icon */,
+				A1C000000000000000000103 /* yellow.icon */,
+				A1C000000000000000000104 /* green.icon */,
+				A1C000000000000000000105 /* mint.icon */,
+				A1C000000000000000000106 /* teal.icon */,
+				A1C000000000000000000107 /* cyan.icon */,
+				A1C000000000000000000108 /* blue.icon */,
+				A1C000000000000000000109 /* indigo.icon */,
+				A1C000000000000000000112 /* purple.icon */,
+				A1C00000000000000000010A /* pink.icon */,
+				A1C00000000000000000010B /* brown.icon */,
+				A1C00000000000000000010C /* pride.icon */,
+				A1C00000000000000000010D /* monochrome.icon */,
+				A1C00000000000000000010E /* shadow.icon */,
+				A1C00000000000000000010F /* unity.icon */,
+				A1C000000000000000000111 /* peace.icon */,
+				A1C000000000000000000110 /* ghost.icon */,
+			);
+			path = "Rippple Icons";
 			sourceTree = "<group>";
 		};
 		3A9119C51FADC7EB00457D28 /* Products */ = {
@@ -2128,7 +2172,6 @@
 				3A38B8302AC0929500624B11 /* Notes.storyboard */,
 				3AB909A62C594232005EE32D /* Sharing.storyboard */,
 				3A9119CE1FADC7EB00457D28 /* Assets.xcassets */,
-				3ABF73B42A5C43B2008CBD7B /* AppIcons.xcassets */,
 				3A9119D31FADC7EB00457D28 /* Info.plist */,
 				3A65AC1A2019E10900FF24A8 /* Rippple.entitlements */,
 				3A77A85629FC193B0006177D /* RipppleDebug.entitlements */,
@@ -2361,21 +2404,10 @@
 			path = ProfileButton;
 			sourceTree = "<group>";
 		};
-		3ABF28B32A56C5EA00469836 /* Settings */ = {
-			isa = PBXGroup;
-			children = (
-				3ABF28B42A56C5FD00469836 /* AppIconRailTableViewCell.swift */,
-				3ABF28B62A56C60C00469836 /* AppIconRailTableViewCell.xib */,
-				3ABF28B82A56C61A00469836 /* AppIconCollectionViewCell.swift */,
-				3ABF28BA2A56C62700469836 /* AppIconCollectionViewCell.xib */,
-			);
-			path = Settings;
-			sourceTree = "<group>";
-		};
 		3ABF28BD2A582FF400469836 /* AppIcon */ = {
 			isa = PBXGroup;
 			children = (
-				3ABF28BE2A58300D00469836 /* AppIconGeneratorView.swift */,
+				3ABF28BE2A58300D00469836 /* AppIconPreviewView.swift */,
 			);
 			path = AppIcon;
 			sourceTree = "<group>";
@@ -2586,7 +2618,6 @@
 			children = (
 				0990B1C82E17DFA800D523D0 /* Spacer */,
 				3A1F001C2AC424F400D80DB5 /* Notes */,
-				3ABF28B32A56C5EA00469836 /* Settings */,
 				3A1B950E2A3C7CED0044972F /* Browse */,
 				3A77A85A29FC22B40006177D /* Notification Center */,
 				3A7FF65029F3104F00E2E08E /* Empty */,
@@ -2898,7 +2929,6 @@
 				3A8CD220249E5BCE0075FA90 /* MediaPosterTableViewCell.xib in Resources */,
 				3A1B95162A3C7E220044972F /* L1BrowseCollectionViewCell.xib in Resources */,
 				3ADFA0B62336601E00D8DD79 /* CastTableViewCell.xib in Resources */,
-				3ABF73B52A5C43B2008CBD7B /* AppIcons.xcassets in Resources */,
 				3A67B73C23A3FDAD003C5E4D /* ListActionTableViewCell.xib in Resources */,
 				3A77899A220EEA9B005CC195 /* Actions.storyboard in Resources */,
 				3A7B6DB02345332D0014A0D8 /* PeopleInfoTableViewCell.xib in Resources */,
@@ -2909,7 +2939,6 @@
 				3A40A9A0286C94FC00737201 /* ListStatsTableViewCell.xib in Resources */,
 				3A775F2E288C6E0E00F9A95D /* RatingsStatTableViewCell.xib in Resources */,
 				3A3EA9542DA96087004D55A8 /* InfoCardTableViewCell.xib in Resources */,
-				3ABF28B72A56C60C00469836 /* AppIconRailTableViewCell.xib in Resources */,
 				3AA2B6EC2A3F2EF3000F3D27 /* L2BrowseTableViewCell.xib in Resources */,
 				3A1B950D2A3C61E10044972F /* Browse.storyboard in Resources */,
 				3A5B3E8A2798402C000FEEEE /* FollowersAndFriendsTableViewCell.xib in Resources */,
@@ -2927,13 +2956,30 @@
 				3AFD2B2B2A54521E0021D5BC /* GenreBrowseCollectionViewCell.xib in Resources */,
 				3A740922239FAEA600508F99 /* StandardListTableViewCell.xib in Resources */,
 				09EFFF762E61E9B5009176CA /* Rippple Trakt.icon in Resources */,
+				A1C000000000000000000201 /* red.icon in Resources */,
+				A1C000000000000000000202 /* orange.icon in Resources */,
+				A1C000000000000000000203 /* yellow.icon in Resources */,
+				A1C000000000000000000204 /* green.icon in Resources */,
+				A1C000000000000000000205 /* mint.icon in Resources */,
+				A1C000000000000000000206 /* teal.icon in Resources */,
+				A1C000000000000000000207 /* cyan.icon in Resources */,
+				A1C000000000000000000208 /* blue.icon in Resources */,
+				A1C000000000000000000209 /* indigo.icon in Resources */,
+				A1C000000000000000000212 /* purple.icon in Resources */,
+				A1C00000000000000000020A /* pink.icon in Resources */,
+				A1C00000000000000000020B /* brown.icon in Resources */,
+				A1C00000000000000000020C /* pride.icon in Resources */,
+				A1C00000000000000000020D /* monochrome.icon in Resources */,
+				A1C00000000000000000020E /* shadow.icon in Resources */,
+				A1C00000000000000000020F /* unity.icon in Resources */,
+				A1C000000000000000000211 /* peace.icon in Resources */,
+				A1C000000000000000000210 /* ghost.icon in Resources */,
 				3A0C7EBD26F509C400FD1F27 /* LinkTableViewCell.xib in Resources */,
 				3A02A45B27A81A89000B87A8 /* RatingsHeaderTableViewCell.xib in Resources */,
 				3A27032225C202C1000871A5 /* WhereToWatchCollectionViewCell.xib in Resources */,
 				09F4C1952E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib in Resources */,
 				3AB2464520066195008B3A58 /* RipppleMessage.xib in Resources */,
 				3A216A052C1F39C10006E14C /* L2BrowseCollectionViewCell.xib in Resources */,
-				3ABF28BB2A56C62700469836 /* AppIconCollectionViewCell.xib in Resources */,
 				3A17702E2638AD2700F2F928 /* ToWatchFooterTableViewCell.xib in Resources */,
 				3AECA32F24367F4500A863CC /* LightListTableViewCell.xib in Resources */,
 				3A02D0522B41B70000B6E51B /* CertificationTableViewCell.xib in Resources */,
@@ -3099,9 +3145,7 @@
 			files = (
 				3AD15D0C287D9A3300FD0B2F /* WidgetModel.swift in Sources */,
 				3A903145287B032700FA27D4 /* Widget.intentdefinition in Sources */,
-				3A32120F2886A486004010A2 /* IconWidget.swift in Sources */,
 				3A903140287B032600FA27D4 /* Widget.swift in Sources */,
-				3ABF28C02A58309D00469836 /* AppIconGeneratorView.swift in Sources */,
 				3A9DC0ED28D49314009C2C27 /* LiveActivity.swift in Sources */,
 				09B898F92F1CE3A800DC202D /* OpenRipppleIntent.swift in Sources */,
 				090676E22F4F114D0076ECA8 /* KeychainStore.swift in Sources */,
@@ -3109,7 +3153,6 @@
 				3A7074192CA00BEB0003F306 /* Color+Extension.swift in Sources */,
 				09060B972F2F997E0069502F /* Secrets.swift in Sources */,
 				3A171BA328857A34005EEDA9 /* SingleWidget.swift in Sources */,
-				3AD7D08B2886F6C1001C1205 /* IconWidget.intentdefinition in Sources */,
 				3A171BA528857A45005EEDA9 /* LockWidget.swift in Sources */,
 				3A775F282887EAD200F9A95D /* LastWatchedLockWidget.swift in Sources */,
 			);
@@ -3256,7 +3299,6 @@
 				3AC160D6201F3459004A2A4F /* DeeplinkViewController.swift in Sources */,
 				3A2DF49722C75BB300D63877 /* CardView.swift in Sources */,
 				3A9F4F0025EA7BEC002C3767 /* RecommendedNotificationsManager.swift in Sources */,
-				3AD7D08C288722B7001C1205 /* IconWidget.intentdefinition in Sources */,
 				3A7FD5952519EDF7001D428E /* UserFavoritesViewController.swift in Sources */,
 				3AFD2B2D2A5460320021D5BC /* GenreBrowseCollectionViewCell.swift in Sources */,
 				3A3BC693271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift in Sources */,
@@ -3264,7 +3306,6 @@
 				3AE5C89724A0D67900820841 /* MediaBackdropTableViewCell.swift in Sources */,
 				3A0D036D2C9DB3DE00D0DDD7 /* AppIconChooserView.swift in Sources */,
 				3A72F3BE2B023B5B00AB9383 /* PinnedShowsManager.swift in Sources */,
-				3ABF28B92A56C61A00469836 /* AppIconCollectionViewCell.swift in Sources */,
 				3A2AAD2A2806CA570055FCD8 /* WatchedViewController.swift in Sources */,
 				3A02D04D2B41B35000B6E51B /* CertificationsViewController.swift in Sources */,
 				3AD8FDC429F45E6A006A26EC /* NotificationCenterViewController.swift in Sources */,
@@ -3286,7 +3327,6 @@
 				3A1770302638AD2E00F2F928 /* ToWatchFooterTableViewCell.swift in Sources */,
 				3A81B28929E57866001F6144 /* LoadingIndicatorTableViewCell.swift in Sources */,
 				3A510DEA292E26D2000BC1B7 /* CollaborationsManager.swift in Sources */,
-				3ABF28B52A56C5FD00469836 /* AppIconRailTableViewCell.swift in Sources */,
 				3A1878A5283B9B7800E54540 /* PinnedImageView.swift in Sources */,
 				3ADE1DAB2492A15A0066F85D /* NotificationsTroubleshootViewController.swift in Sources */,
 				3A0C7EBB26F509B400FD1F27 /* LinkTableViewCell.swift in Sources */,
@@ -3329,7 +3369,7 @@
 				3A5AEABB24423D12002CD0C3 /* MarkWatchedProgressActionViewController.swift in Sources */,
 				3A4F757F2344FD1900D3592B /* PeopleViewController.swift in Sources */,
 				3A5AEAB52441DA98002CD0C3 /* MarkWatchedActionViewController.swift in Sources */,
-				3ABF28BF2A58300E00469836 /* AppIconGeneratorView.swift in Sources */,
+				3ABF28BF2A58300E00469836 /* AppIconPreviewView.swift in Sources */,
 				3A41DE8A25AAF8B5008F133A /* WatchedManager.swift in Sources */,
 				3AC0DE022DFE000100000001 /* SyncWatchedManager.swift in Sources */,
 				3AD932A41FB85D15005289B5 /* CommentTableViewCell.swift in Sources */,
@@ -3830,9 +3870,27 @@
 		3A9119D71FADC7EB00457D28 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = (
+					red,
+					orange,
+					yellow,
+					green,
+					mint,
+					teal,
+					cyan,
+					blue,
+					indigo,
+					purple,
+					pink,
+					brown,
+					pride,
+					unity,
+					peace,
+					monochrome,
+					shadow,
+					ghost,
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Rippple Trakt";
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Rippple/RipppleDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -3875,9 +3933,27 @@
 		3A9119D81FADC7EB00457D28 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = (
+					red,
+					orange,
+					yellow,
+					green,
+					mint,
+					teal,
+					cyan,
+					blue,
+					indigo,
+					purple,
+					pink,
+					brown,
+					pride,
+					unity,
+					peace,
+					monochrome,
+					shadow,
+					ghost,
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Rippple Trakt";
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Rippple/Rippple.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;

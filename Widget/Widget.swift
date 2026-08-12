@@ -24,7 +24,6 @@ struct WidgetsWithActivities: WidgetBundle {
         RipppleOpenControlWidget()
         RipppleOpenSearchControlWidget()
         SingleWidget()
-        RipppleIcon()
     }
 }
 #else
@@ -35,7 +34,6 @@ struct WidgetsWithActivities: WidgetBundle {
         RipppleLiveActivityWidget()
         SingleWidget()
         RipppleLock()
-        RipppleIcon()
         LastWatchedLockWidget()
         ShowToWatchLockWidget()
         MovieToWatchLockWidget()

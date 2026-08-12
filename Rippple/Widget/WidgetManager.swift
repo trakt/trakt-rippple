@@ -215,19 +215,6 @@ final class WidgetManager {
                 self.store(singleWidget: progress, with: WidgetType.moviesComing.rawValue)
             }
         }.disposed(by: disposeBag)
-
-        #if !targetEnvironment(macCatalyst)
-        if let alternateIconName = UIApplication.shared.alternateIconName, let identifier = AppIconIdentifier(rawValue: alternateIconName) {
-            storeAppIconForWidget(appIcon: AppIcon(name: "", identifier: identifier))
-        } else {
-            storeAppIconForWidget(appIcon: AppIcon(name: "", identifier: .original))
-        }
-        #endif
-    }
-
-    func storeAppIconForWidget(appIcon: AppIcon) {
-        UserDefaults(suiteName: "group.tv.trakt.rippple")!.set(appIcon.identifier.rawValue, forKey: "WidgetManager.appIcon")
-        WidgetCenter.shared.reloadTimelines(ofKind: "RipppleIcon")
     }
 
     static let shared = WidgetManager()
