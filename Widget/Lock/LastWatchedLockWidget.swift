@@ -17,18 +17,16 @@ struct RectangularLockProvider: TimelineProvider {
 
     var widgetType: WidgetType
 
-    var placeholderProgress = WidgetModel(label: "Widget Preview",
-                                          title: "Stranger Things",
-                                          subtitle: "S04E07",
-                                          image: nil,
-                                          behind: nil,
-                                          redacted: false)
+    let emptyProgress = WidgetModel(title: "Nothing Found",
+                                    subtitle: "Nothing found for this kind of Widget right now.",
+                                    image: nil,
+                                    behind: nil)
 
     func placeholder(in context: Context) -> Entry {
         if let entry = decodeEntry(for: widgetType) {
             return entry
         }
-        return Entry(date: Date(), progress: placeholderProgress)
+        return Entry(date: Date(), progress: emptyProgress)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) {
@@ -36,7 +34,7 @@ struct RectangularLockProvider: TimelineProvider {
             completion(entry)
             return
         }
-        completion(Entry(date: Date(), progress: placeholderProgress))
+        completion(Entry(date: Date(), progress: emptyProgress))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {

@@ -38,8 +38,18 @@
 		09A5A0F82E98F00100BFC59C /* CalendarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A5A0F72E98F00100BFC59C /* CalendarManager.swift */; };
 		09A94A952F1BF69200642C38 /* ToWatchInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A94A942F1BF69200642C38 /* ToWatchInfoView.swift */; };
 		09B898F52F1CE2EB00DC202D /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09B898F42F1CE2EB00DC202D /* AppIntents.framework */; };
-		09B898F72F1CE3A800DC202D /* OpenRipppleIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B898F62F1CE3A800DC202D /* OpenRipppleIntent.swift */; };
 		09B898F92F1CE3A800DC202D /* OpenRipppleIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B898F62F1CE3A800DC202D /* OpenRipppleIntent.swift */; };
+		0A4E700230A1000000000002 /* ToWatchWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E700130A1000000000001 /* ToWatchWidget.swift */; };
+		0A6D800230AE000000000002 /* QuickAccessWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D800130AE000000000001 /* QuickAccessWidget.swift */; };
+		0A6D801330AF000000000013 /* WatchingControlWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801230AF000000000012 /* WatchingControlWidget.swift */; };
+		0A6D801530AF000000000015 /* WatchingControlWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */; };
+		0A6D801630AF000000000016 /* WatchingControlWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */; };
+		0A4E700430A1000000000004 /* ToWatchWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E700330A1000000000003 /* ToWatchWidgetActionIntent.swift */; };
+		0A4E700530A1000000000005 /* ToWatchWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E700330A1000000000003 /* ToWatchWidgetActionIntent.swift */; };
+		0A4E701230A6000000000002 /* UpcomingWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E701130A6000000000001 /* UpcomingWidget.swift */; };
+		0A5C100230A7000000000002 /* ActivityPunchcardWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5C100130A7000000000001 /* ActivityPunchcardWidget.swift */; };
+		0A5C100430A7000000000004 /* ActivityPunchcardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5C100330A7000000000003 /* ActivityPunchcardView.swift */; };
+		0A5C100530A7000000000005 /* ActivityPunchcardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5C100330A7000000000003 /* ActivityPunchcardView.swift */; };
 		09B899032F21184200DC202D /* TraktAPIProvider+List.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899022F21184200DC202D /* TraktAPIProvider+List.swift */; };
 		09B899062F2A123400DC202D /* TraktAPIProvider+Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */; };
 		09B8990B2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */; };
@@ -450,6 +460,7 @@
 		3AD80E1121295AAB00C70E7F /* SeasonTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD80E102129595000C70E7F /* SeasonTableViewCell.swift */; };
 		3AD80E1221295AB200C70E7F /* SeasonTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AD80E0F2129595000C70E7F /* SeasonTableViewCell.xib */; };
 		3AD8E5B724967AFD0045A2F7 /* ShortcutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD8E5B624967AFD0045A2F7 /* ShortcutManager.swift */; };
+		0A1B2C3D4E5F60718293A402 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F60718293A401 /* AppIntents.swift */; };
 		3AD8FDC229F44C32006A26EC /* NotificationCenterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD8FDC129F44C32006A26EC /* NotificationCenterManager.swift */; };
 		3AD8FDC429F45E6A006A26EC /* NotificationCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD8FDC329F45E6A006A26EC /* NotificationCenterViewController.swift */; };
 		3AD910422D6884E400E09D0D /* SeasonButtonCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD910412D6884E400E09D0D /* SeasonButtonCollectionViewCell.swift */; };
@@ -598,6 +609,12 @@
 		09A94A942F1BF69200642C38 /* ToWatchInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchInfoView.swift; sourceTree = "<group>"; };
 		09B898F42F1CE2EB00DC202D /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/AppIntents.framework; sourceTree = DEVELOPER_DIR; };
 		09B898F62F1CE3A800DC202D /* OpenRipppleIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenRipppleIntent.swift; sourceTree = "<group>"; };
+		0A4E700130A1000000000001 /* ToWatchWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchWidget.swift; sourceTree = "<group>"; };
+		0A6D800130AE000000000001 /* QuickAccessWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAccessWidget.swift; sourceTree = "<group>"; };
+		0A6D801230AF000000000012 /* WatchingControlWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchingControlWidget.swift; sourceTree = "<group>"; };
+		0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchingControlWidgetActionIntent.swift; sourceTree = "<group>"; };
+		0A4E700330A1000000000003 /* ToWatchWidgetActionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchWidgetActionIntent.swift; sourceTree = "<group>"; };
+		0A4E701130A6000000000001 /* UpcomingWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingWidget.swift; sourceTree = "<group>"; };
 		09B899022F21184200DC202D /* TraktAPIProvider+List.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+List.swift"; sourceTree = "<group>"; };
 		09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Collection.swift"; sourceTree = "<group>"; };
 		09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Watchlist.swift"; sourceTree = "<group>"; };
@@ -657,6 +674,8 @@
 		0A0B0C0D0E0F10111213141E /* OpenActionsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenActionsTableViewCell.swift; sourceTree = "<group>"; };
 		0A4C7D012F10000100C0DE01 /* ActivityPunchcardTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityPunchcardTableViewCell.swift; sourceTree = "<group>"; };
 		0A4C7D032F10000100C0DE01 /* ActivityPunchcardTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ActivityPunchcardTableViewCell.xib; sourceTree = "<group>"; };
+		0A5C100130A7000000000001 /* ActivityPunchcardWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityPunchcardWidget.swift; sourceTree = "<group>"; };
+		0A5C100330A7000000000003 /* ActivityPunchcardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityPunchcardView.swift; sourceTree = "<group>"; };
 		0FA34C9B2F3D11B700E5A1C3 /* UpcomingLabelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingLabelManager.swift; sourceTree = "<group>"; };
 		3A020B9620D3B64B0081FA3E /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		3A020B9820D3DE070081FA3E /* SearchResultsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsViewController.swift; sourceTree = "<group>"; };
@@ -1020,6 +1039,7 @@
 		3AD80E0F2129595000C70E7F /* SeasonTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SeasonTableViewCell.xib; sourceTree = "<group>"; };
 		3AD80E102129595000C70E7F /* SeasonTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonTableViewCell.swift; sourceTree = "<group>"; };
 		3AD8E5B624967AFD0045A2F7 /* ShortcutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutManager.swift; sourceTree = "<group>"; };
+		0A1B2C3D4E5F60718293A401 /* AppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 		3AD8FDC129F44C32006A26EC /* NotificationCenterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterManager.swift; sourceTree = "<group>"; };
 		3AD8FDC329F45E6A006A26EC /* NotificationCenterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterViewController.swift; sourceTree = "<group>"; };
 		3AD910412D6884E400E09D0D /* SeasonButtonCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonButtonCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -1902,6 +1922,13 @@
 		3A775F2A2887EAE200F9A95D /* Widget */ = {
 			isa = PBXGroup;
 			children = (
+				0A5C100130A7000000000001 /* ActivityPunchcardWidget.swift */,
+				0A4E700130A1000000000001 /* ToWatchWidget.swift */,
+				0A6D800130AE000000000001 /* QuickAccessWidget.swift */,
+				0A6D801230AF000000000012 /* WatchingControlWidget.swift */,
+				0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */,
+				0A4E701130A6000000000001 /* UpcomingWidget.swift */,
+				0A4E700330A1000000000003 /* ToWatchWidgetActionIntent.swift */,
 				3A171BA228857A34005EEDA9 /* SingleWidget.swift */,
 			);
 			path = Widget;
@@ -2194,6 +2221,7 @@
 				3A40A99F286C94FC00737201 /* ListStatsTableViewCell.xib */,
 				3A941F632DD728D80096B65A /* MirTableViewCell.swift */,
 				3A941F652DD728E80096B65A /* MirTableViewCell.xib */,
+				0A5C100330A7000000000003 /* ActivityPunchcardView.swift */,
 				0A4C7D012F10000100C0DE01 /* ActivityPunchcardTableViewCell.swift */,
 				0A4C7D032F10000100C0DE01 /* ActivityPunchcardTableViewCell.xib */,
 			);
@@ -2530,6 +2558,7 @@
 		3AD8E5B524967AE90045A2F7 /* Shortcut */ = {
 			isa = PBXGroup;
 			children = (
+				0A1B2C3D4E5F60718293A401 /* AppIntents.swift */,
 				3AD8E5B624967AFD0045A2F7 /* ShortcutManager.swift */,
 			);
 			path = Shortcut;
@@ -3143,6 +3172,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A5C100230A7000000000002 /* ActivityPunchcardWidget.swift in Sources */,
+				0A5C100430A7000000000004 /* ActivityPunchcardView.swift in Sources */,
+				0A4E700230A1000000000002 /* ToWatchWidget.swift in Sources */,
+				0A6D800230AE000000000002 /* QuickAccessWidget.swift in Sources */,
+				0A6D801330AF000000000013 /* WatchingControlWidget.swift in Sources */,
+				0A6D801530AF000000000015 /* WatchingControlWidgetActionIntent.swift in Sources */,
+				0A4E701230A6000000000002 /* UpcomingWidget.swift in Sources */,
+				0A4E700430A1000000000004 /* ToWatchWidgetActionIntent.swift in Sources */,
 				3AD15D0C287D9A3300FD0B2F /* WidgetModel.swift in Sources */,
 				3A903145287B032700FA27D4 /* Widget.intentdefinition in Sources */,
 				3A903140287B032600FA27D4 /* Widget.swift in Sources */,
@@ -3238,7 +3275,6 @@
 				3A44BF451FD2D4920026AADE /* UIWindow+Extension.swift in Sources */,
 				3A5B3E97279C5CC1000FEEEE /* FollowersViewController.swift in Sources */,
 				09A94A952F1BF69200642C38 /* ToWatchInfoView.swift in Sources */,
-				09B898F72F1CE3A800DC202D /* OpenRipppleIntent.swift in Sources */,
 				3AD8FDC229F44C32006A26EC /* NotificationCenterManager.swift in Sources */,
 				3AAA3EC12549EFFC006AEED1 /* RipppleRetryPolicy.swift in Sources */,
 				3AB909A52C5941B0005EE32D /* SharingView.swift in Sources */,
@@ -3353,6 +3389,9 @@
 				3AB30A4D2A87816100EB672D /* ServiceBrowseCollectionViewCell.swift in Sources */,
 				3AD80E1121295AAB00C70E7F /* SeasonTableViewCell.swift in Sources */,
 				3AD8E5B724967AFD0045A2F7 /* ShortcutManager.swift in Sources */,
+				0A1B2C3D4E5F60718293A402 /* AppIntents.swift in Sources */,
+				0A4E700530A1000000000005 /* ToWatchWidgetActionIntent.swift in Sources */,
+				0A6D801630AF000000000016 /* WatchingControlWidgetActionIntent.swift in Sources */,
 				3A7B6DB7234641EF0014A0D8 /* MediaCollectionViewCell.swift in Sources */,
 				3A2E11E42897C65E00BA1713 /* ProgressManager.swift in Sources */,
 				3A5D8FA3292E0B4D001E6BA5 /* CollaborationsViewController.swift in Sources */,
@@ -3390,6 +3429,7 @@
 				3A6F58B9264FC4430087345C /* BadgeAppIconViewController.swift in Sources */,
 				3A941F642DD728D80096B65A /* MirTableViewCell.swift in Sources */,
 				0A4C7D022F10000100C0DE01 /* ActivityPunchcardTableViewCell.swift in Sources */,
+				0A5C100530A7000000000005 /* ActivityPunchcardView.swift in Sources */,
 				3A6FB931202B3DF700018413 /* FilterManager.swift in Sources */,
 				3AD80E0C2129560800C70E7F /* SeasonsViewController.swift in Sources */,
 				3AB909A32C594183005EE32D /* SharingViewController.swift in Sources */,
@@ -3564,7 +3604,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.9.1;
+				MARKETING_VERSION = 27.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.notificationservice;
@@ -3603,7 +3643,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.9.1;
+				MARKETING_VERSION = 27.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.notificationservice;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3643,7 +3683,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.9.1;
+				MARKETING_VERSION = 27.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.widget;
@@ -3684,7 +3724,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.9.1;
+				MARKETING_VERSION = 27.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3774,7 +3814,7 @@
 				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 26.9.1;
+				MARKETING_VERSION = 27.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				"OTHER_SWIFT_FLAGS[sdk=iphonesimulator*]" = "-D IOS_SIMULATOR";
@@ -3855,7 +3895,7 @@
 				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 26.9.1;
+				MARKETING_VERSION = 27.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -3914,7 +3954,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.9.1;
+				MARKETING_VERSION = 27.0;
 				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3977,7 +4017,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.9.1;
+				MARKETING_VERSION = 27.0;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -4013,7 +4053,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.9.1;
+				MARKETING_VERSION = 27.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.widgetintent;
@@ -4051,7 +4091,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.9.1;
+				MARKETING_VERSION = 27.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.widgetintent;
 				PRODUCT_NAME = "$(TARGET_NAME)";

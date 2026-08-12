@@ -57,6 +57,235 @@ struct WidgetModel: Identifiable, Codable, Equatable, Hashable {
     }
 }
 
+struct ToWatchWidgetEpisode: Identifiable, Codable, Equatable {
+    let episodeTraktIdentifier: Int
+    let showTraktIdentifier: Int
+    let showTMDbIdentifier: Int?
+    let showTitle: String
+    let seasonNumber: Int
+    let episodeNumber: Int
+    let runtime: Int?
+    let behind: String?
+
+    private static let numberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.minimumIntegerDigits = 2
+        return formatter
+    }()
+
+    var id: Int {
+        episodeTraktIdentifier
+    }
+
+    var episodeDeeplink: URL {
+        URL(string: "ripl://shows/\(showTraktIdentifier)/seasons/\(seasonNumber)/episodes/\(episodeNumber)")!
+    }
+
+    var showDeeplink: URL {
+        URL(string: "ripl://shows/\(showTraktIdentifier)")!
+    }
+
+    var localizedEpisodeNumber: String {
+        "S\(ToWatchWidgetEpisode.numberFormatter.string(from: NSNumber(value: seasonNumber))!)E\(ToWatchWidgetEpisode.numberFormatter.string(from: NSNumber(value: episodeNumber))!)"
+    }
+
+    var localizedEpisodeDetails: String {
+        guard let runtime = runtime else { return localizedEpisodeNumber }
+        return "\(localizedEpisodeNumber) · \(runtime)′"
+    }
+}
+
+struct ToWatchWidgetMovie: Identifiable, Codable, Equatable {
+    let movieTraktIdentifier: Int
+    let movieTMDbIdentifier: Int?
+    let title: String
+    let releaseYear: Int?
+    let runtime: Int?
+
+    var id: Int {
+        movieTraktIdentifier
+    }
+
+    var deeplink: URL {
+        URL(string: "ripl://movies/\(movieTraktIdentifier)")!
+    }
+
+    var localizedDetails: String? {
+        releaseYear.map(String.init)
+    }
+}
+
+struct UpcomingWidgetItem: Identifiable, Codable, Equatable {
+    let traktIdentifier: Int
+    let tmdbIdentifier: Int?
+    let tmdbMediaType: String
+    let title: String
+    let metadata: String
+    let releaseDate: Date
+    let deeplink: URL
+
+    var id: String {
+        "\(tmdbMediaType):\(traktIdentifier)"
+    }
+}
+
+struct QuickAccessWidgetItem: Identifiable, Codable, Equatable {
+    let traktIdentifier: Int
+    let tmdbIdentifier: Int?
+    let tmdbMediaType: String
+    let title: String
+    let deeplink: URL
+
+    var id: String {
+        "\(tmdbMediaType):\(traktIdentifier)"
+    }
+}
+
+enum WatchingControlWidgetItemState: String, Codable {
+    case currentlyWatching
+    case lastWatched
+    case nextEpisode
+}
+
+struct WatchingControlWidgetItem: Identifiable, Codable, Equatable {
+    let state: WatchingControlWidgetItemState
+    let traktIdentifier: Int
+    let tmdbIdentifier: Int?
+    let tmdbMediaType: String
+    let title: String
+    let subtitle: String?
+    let deeplink: URL
+    let showTraktIdentifier: Int?
+    let isCheckInActive: Bool
+    let checkInStartDate: Date?
+    let checkInEndDate: Date?
+
+    var id: String {
+        "\(tmdbMediaType):\(traktIdentifier)"
+    }
+}
+
+private enum WidgetCodableStorage {
+    private static let defaults = UserDefaults(suiteName: "group.tv.trakt.rippple")!
+
+    static func items<Item: Decodable>(forKey key: String) -> [Item] {
+        guard let data = defaults.data(forKey: key) else { return [] }
+        return (try? JSONDecoder().decode([Item].self, from: data)) ?? []
+    }
+
+    static func publish<Item: Codable & Equatable>(_ items: [Item], forKey key: String) {
+        guard items != self.items(forKey: key),
+              let data = try? JSONEncoder().encode(items) else { return }
+        defaults.set(data, forKey: key)
+    }
+}
+
+enum ToWatchWidgetStorage {
+    static let kind = "ToWatchWidget"
+    static let actionNotificationIdentifier = "ToWatchWidgetAction"
+    static let episodeKey = "widget.episodesToWatch.list"
+    static let movieKey = "widget.moviesToWatch.list"
+
+    static func episodes() -> [ToWatchWidgetEpisode] {
+        WidgetCodableStorage.items(forKey: episodeKey)
+    }
+
+    static func movies() -> [ToWatchWidgetMovie] {
+        WidgetCodableStorage.items(forKey: movieKey)
+    }
+
+    static func publish(_ episodes: [ToWatchWidgetEpisode]) {
+        WidgetCodableStorage.publish(episodes, forKey: episodeKey)
+    }
+
+    static func publish(_ movies: [ToWatchWidgetMovie]) {
+        WidgetCodableStorage.publish(movies, forKey: movieKey)
+    }
+}
+
+enum UpcomingWidgetStorage {
+    static let kind = "UpcomingWidget"
+    static let episodeKey = "widget.upcomingEpisodes.list"
+    static let movieKey = "widget.upcomingMovies.list"
+
+    static func episodes() -> [UpcomingWidgetItem] {
+        WidgetCodableStorage.items(forKey: episodeKey)
+    }
+
+    static func movies() -> [UpcomingWidgetItem] {
+        WidgetCodableStorage.items(forKey: movieKey)
+    }
+
+    static func publishEpisodes(_ items: [UpcomingWidgetItem]) {
+        WidgetCodableStorage.publish(items, forKey: episodeKey)
+    }
+
+    static func publishMovies(_ items: [UpcomingWidgetItem]) {
+        WidgetCodableStorage.publish(items, forKey: movieKey)
+    }
+}
+
+enum QuickAccessWidgetStorage {
+    static let kind = "QuickAccessWidget"
+    static let dataKey = "widget.quickAccess.trending"
+
+    static func items() -> [QuickAccessWidgetItem] {
+        WidgetCodableStorage.items(forKey: dataKey)
+    }
+
+    static func publish(_ items: [QuickAccessWidgetItem]) {
+        WidgetCodableStorage.publish(items, forKey: dataKey)
+    }
+}
+
+enum WatchingControlWidgetStorage {
+    static let kind = "WatchingControlWidget"
+    static let dataKey = "widget.watchingControl.item"
+    static let toWatchDeeplink = URL(string: "ripl://towatch")!
+    static let episodesToWatchDeeplink = URL(string: "ripl://towatch/episodes")!
+    static let moviesToWatchDeeplink = URL(string: "ripl://towatch/movies")!
+
+    static func item() -> WatchingControlWidgetItem? {
+        let items: [WatchingControlWidgetItem] = WidgetCodableStorage.items(forKey: dataKey)
+        return items.first
+    }
+
+    static func publish(_ item: WatchingControlWidgetItem?) {
+        WidgetCodableStorage.publish(item.map { [$0] } ?? [], forKey: dataKey)
+    }
+}
+
+struct ActivityPunchcardWidgetDay: Codable, Equatable {
+    let date: Date
+    let activityCount: Int
+}
+
+enum ActivityPunchcardWidgetStorage {
+    static let kind = "ActivityPunchcardWidget"
+    static let dataKey = "widget.activityPunchcard.days"
+
+    private static let defaults = UserDefaults(suiteName: "group.tv.trakt.rippple")!
+    private static let maximumStoredDayCount = 400
+
+    static func activityCounts() -> [Date: Int] {
+        guard let data = defaults.data(forKey: dataKey),
+              let days = try? JSONDecoder().decode([ActivityPunchcardWidgetDay].self, from: data) else { return [:] }
+        return Dictionary(days.map { ($0.date, $0.activityCount) }, uniquingKeysWith: +)
+    }
+
+    static func publish(_ activityCounts: [Date: Int], calendar: Calendar = .current) {
+        guard let firstDate = calendar.date(byAdding: .day,
+                                            value: -(maximumStoredDayCount - 1),
+                                            to: calendar.startOfDay(for: .now)) else { return }
+        let days = activityCounts.lazy
+            .filter { $0.key >= firstDate && $0.value > 0 }
+            .map { ActivityPunchcardWidgetDay(date: $0.key, activityCount: $0.value) }
+            .sorted { $0.date < $1.date }
+        guard let data = try? JSONEncoder().encode(days) else { return }
+        defaults.set(data, forKey: dataKey)
+    }
+}
+
 enum CalendarRelativeDateFormatter {
     static func string(for date: Date,
                        relativeTo referenceDate: Date = Date(),

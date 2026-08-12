@@ -13,31 +13,35 @@ import WidgetKit
 struct SingleWidgetProvider: IntentTimelineProvider {
     typealias Entry = SingleEntry
 
-    var placeholderProgress = WidgetModel(label: "Widget Preview",
-                                          title: "Stranger Things",
-                                          subtitle: "S04E08",
-                                          image: nil,
-                                          behind: "2 behind",
-                                          redacted: false)
+    let emptyProgress = WidgetModel(title: "Nothing Found",
+                                    subtitle: "Nothing found for this kind of Widget right now.",
+                                    image: nil,
+                                    behind: nil)
 
     func placeholder(in context: Context) -> Entry {
-        let uiImage = UIImage(named: "WidgetPreview")
-
-        return Entry(date: Date(),
-                     configuration: Intent(),
-                     progress: placeholderProgress,
-                     uiImage: uiImage)
+        let configuration = Intent()
+        guard let identifier = configuration.type?.identifier,
+              let type = WidgetType(rawValue: identifier),
+              let entry = decodeEntry(for: type, configuration: configuration, in: context) else {
+            return Entry(date: Date(),
+                         configuration: configuration,
+                         progress: emptyProgress,
+                         uiImage: nil)
+        }
+        return entry
     }
 
     func getSnapshot(for configuration: MediaWidgetIntent, in context: Context, completion: @escaping (Entry) -> Void) {
-        let uiImage = UIImage(named: "WidgetPreview")
-
-        let entry = Entry(date: Date(),
-                          configuration: configuration,
-                          progress: placeholderProgress,
-                          uiImage: uiImage)
-
-        completion(entry)
+        getTimeline(for: configuration, in: context) { timeline in
+            if let entry = timeline.entries.first {
+                completion(entry)
+            } else {
+                completion(Entry(date: Date(),
+                                 configuration: configuration,
+                                 progress: self.emptyProgress,
+                                 uiImage: nil))
+            }
+        }
     }
 
     private func decodeEntry(for type: WidgetType, configuration: MediaWidgetIntent, in context: Context) -> Entry? {
@@ -248,7 +252,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
 
         if let movie = data?.movie {
             let loadedImage = await TMDbImageLoader().loadImage(for: movie.ids.tmdb,
-                                                                type: "movie",
+                                                                mediaType: "movie",
                                                                 with: imageWidthToGet(for: context))
 
             if let released = movie.released {
@@ -272,7 +276,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
             entries.append(entry)
         } else if let show = data?.show {
             let loadedImage = await TMDbImageLoader().loadImage(for: show.ids.tmdb,
-                                                                type: "tv",
+                                                                mediaType: "tv",
                                                                 with: imageWidthToGet(for: context))
 
             let progress = await TraktItemLoader().loadProgress(from: URL(string: "\(TraktAPIConfiguration.baseURL)/shows/\(show.ids.trakt)/progress/watched?last_activity=watched")!)
@@ -381,6 +385,7 @@ struct SingleWidget: Widget {
             SingleWidgetEntryView(progress: entry.progress, uiImage: entry.uiImage, configuration: entry.configuration)
         }.configurationDisplayName("Peek")
             .description("Get a peek at your last or currently watching, next or upcoming movie or TV show.")
+            .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
             // .containerBackgroundRemovable(false)
             .contentMarginsDisabled()
     }
@@ -407,11 +412,9 @@ struct SingleWidgetEntryView: View {
                         Image(uiImage: uiImage)
                             .resizable()
                             .widgetAccentedRenderingMode(.fullColor)
-                            .grayscale(widgetRenderingMode == .fullColor ? 0 : 1)
                             .scaledToFill()
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .clipped()
-                            .opacity(widgetRenderingMode == .fullColor ? 1 : 0.45)
                             .mask {
                                 if (configuration?.header?.boolValue ?? true && progress.label != nil) || configuration?.info?.boolValue ?? true || configuration?.title?.boolValue ?? true {
                                     Rectangle()
@@ -892,16 +895,34 @@ struct TMDbImage: Codable {
 }
 
 struct TMDbImageLoader {
+    enum ImageType {
+        case poster
+        case backdrop
+    }
+
     var session = URLSession.shared
 
-    func loadImage(for tmdbId: Int64, type: String, with width: CGFloat) async -> UIImage? {
+    func loadImage(for tmdbId: Int64,
+                   mediaType: String,
+                   with width: CGFloat,
+                   imageType: ImageType = .backdrop) async -> UIImage? {
         do {
             let (configurationData, _) = try await session.data(from: URL(string: "https://api.themoviedb.org/3/configuration?api_key=\(TmdbAPIConfiguration.apiKey)")!)
             let decoder = JSONDecoder()
             let configuration = try decoder.decode(TMDbConfiguration.self, from: configurationData)
 
-            let (imagesData, _) = try await session.data(from: URL(string: "https://api.themoviedb.org/3/\(type)/\(tmdbId)/images?api_key=\(TmdbAPIConfiguration.apiKey)")!)
+            let (imagesData, _) = try await session.data(from: URL(string: "https://api.themoviedb.org/3/\(mediaType)/\(tmdbId)/images?api_key=\(TmdbAPIConfiguration.apiKey)")!)
             let images = try decoder.decode(TMDbPostersImages.self, from: imagesData)
+
+            if imageType == .poster,
+               let poster = images.posters.first(where: { $0.language == "en" }) ?? images.posters.first,
+               let posterSize = configuration.images.posterSizes.first(where: { size in
+                   guard size.hasPrefix("w"), let posterWidth = Float(size.dropFirst()) else { return false }
+                   return posterWidth >= Float(width)
+               }) ?? configuration.images.posterSizes.last {
+                let (image, _) = try await session.data(from: URL(string: "\(configuration.images.baseURL)\(posterSize)/\(poster.filePath)")!)
+                return UIImage(data: image)
+            }
 
             // first, we check for the first backdrop without a language because they are usually better
             for backdrop in images.backdrops where backdrop.language == nil {
@@ -946,6 +967,30 @@ struct TMDbImageLoader {
         } catch {
             return nil
         }
+    }
+}
+
+func loadWidgetPosters<Item: Sendable, Identifier: Hashable & Sendable>(for items: [Item],
+                                                                        identifier: @escaping @Sendable (Item) -> Identifier,
+                                                                        tmdbIdentifier: @escaping @Sendable (Item) -> Int?,
+                                                                        mediaType: @escaping @Sendable (Item) -> String) async -> [Identifier: UIImage] {
+    await withTaskGroup(of: (Identifier, UIImage?).self) { group in
+        for item in items {
+            guard let tmdbIdentifier = tmdbIdentifier(item) else { continue }
+            group.addTask {
+                let image = await TMDbImageLoader().loadImage(for: Int64(tmdbIdentifier),
+                                                              mediaType: mediaType(item),
+                                                              with: 120,
+                                                              imageType: .poster)
+                return (identifier(item), image)
+            }
+        }
+
+        var posters = [Identifier: UIImage]()
+        for await(identifier, image) in group {
+            posters[identifier] = image
+        }
+        return posters
     }
 }
 

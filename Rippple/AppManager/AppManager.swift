@@ -17,6 +17,7 @@ import ActivityKit
 #endif
 
 import StoreKit
+import WidgetKit
 
 final class AppManager: NSObject, ASWebAuthenticationPresentationContextProviding {
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
@@ -343,6 +344,8 @@ public extension UIApplication {
             windowScene.traitOverrides.ripppleTintedAppearance = enabled
             window.traitOverrides.ripppleTintedAppearance = enabled
         }
+        WidgetCenter.shared.reloadTimelines(ofKind: ToWatchWidgetStorage.kind)
+        WidgetCenter.shared.reloadTimelines(ofKind: ActivityPunchcardWidgetStorage.kind)
     }
 
     func setDarkMode() {

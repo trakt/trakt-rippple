@@ -408,6 +408,36 @@ final class EpisodeToWatchManager {
         debouncedForceRefresh.call()
     }
 
+    @MainActor
+    func refreshProgress(forShowWithTraktIdentifier showTraktIdentifier: Int64) async {
+        if let show = mediaModels.compactMap(\.show).first(where: {
+            $0.identifiers.trakt == showTraktIdentifier
+        }) {
+            status = .loading
+            ProgressManager.shared.resetCache(for: show)
+
+            let operation = UpdateShowProgressOperation(shows: [show], mediaModels: mediaModels)
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                operation.completionBlock = {
+                    continuation.resume()
+                }
+                operationQueue.addOperation(operation)
+            }
+
+            status = .content
+            if !operation.isCancelled {
+                mediaModels = operation.mediaModels
+            }
+        }
+
+        debouncedTransmit.fireNow()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.main.async {
+                continuation.resume()
+            }
+        }
+    }
+
     private func forceRefresh() {
         if SessionManager.shared.isLoggedOut {
             print("EpisodeToWatchManager.forceRefresh stop because NOT logged in")

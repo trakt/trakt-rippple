@@ -7,6 +7,7 @@
 //
 
 import AlamofireNetworkActivityIndicator
+import AppIntents
 import BackgroundTasks
 import NVActivityIndicatorView
 import Receiver
@@ -109,6 +110,13 @@ class RipppleHostingController<Content: View>: UIHostingController<RipppleHosted
 class AppDelegate: UIResponder, UIApplicationDelegate {
     private let disposeBag = DisposeBag()
     private var lastRegisteredPushInformation: PushInformationModel?
+
+    override init() {
+        super.init()
+        AppDependencyManager.shared.add(dependency: ToWatchWidgetActionHandler.app)
+        AppDependencyManager.shared.add(dependency: WatchingControlWidgetActionHandler.app)
+    }
+
     private lazy var debouncedRegisterForPushNotifications = Debouncer(delay: 1.0) { [weak self] in
         guard SessionManager.shared.isLoggedIn else { return }
         guard let self = self else { return }

@@ -24,6 +24,12 @@ struct WidgetsWithActivities: WidgetBundle {
         RipppleOpenControlWidget()
         RipppleOpenSearchControlWidget()
         SingleWidget()
+        if #available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *) {
+            ToWatchWidget()
+        }
+        UpcomingWidget()
+        QuickAccessWidget()
+        ActivityPunchcardWidget()
     }
 }
 #else
@@ -33,12 +39,21 @@ struct WidgetsWithActivities: WidgetBundle {
         RipppleOpenSearchControlWidget()
         RipppleLiveActivityWidget()
         SingleWidget()
+        if #available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *) {
+            ToWatchWidget()
+        }
+        UpcomingWidget()
+        QuickAccessWidget()
+        if #available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *) {
+            WatchingControlWidget()
+        }
         RipppleLock()
         LastWatchedLockWidget()
         ShowToWatchLockWidget()
         MovieToWatchLockWidget()
         UpcomingShowLockWidget()
         UpcomingMovieLockWidget()
+        ActivityPunchcardWidget()
     }
 }
 #endif

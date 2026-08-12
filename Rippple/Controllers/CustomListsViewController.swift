@@ -179,6 +179,7 @@ final class CustomListsViewController: UITableViewController {
         navigationItem.style = .browser
         navigationItem.subtitle = "Loading..."
 
+        // TODO: fix when on main thread
         while user == nil {
             user = UserManager.shared.currentUser
         }

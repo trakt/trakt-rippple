@@ -9,22 +9,22 @@
 import AppIntents
 
 struct OpenRipppleIntent: AppIntent {
-    static var title: LocalizedStringResource = "Open Rippple"
-    static var openAppWhenRun: Bool = true
-    static var isDiscoverable: Bool = true
+    static let title: LocalizedStringResource = "Open Rippple"
+    static let openAppWhenRun = true
+    static let isDiscoverable = true
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        return .result()
+        .result()
     }
 }
 
 struct OpenRipppleSearchIntent: AppIntent {
-    static var title: LocalizedStringResource = "Rippple Search"
-    static var isDiscoverable: Bool = true
+    static let title: LocalizedStringResource = "Rippple Search"
+    static let isDiscoverable = true
 
     @MainActor
     func perform() async throws -> some OpensIntent {
-        return .result(opensIntent: OpenURLIntent(URL(string: "https://rippple.app/search")!))
+        .result(opensIntent: OpenURLIntent(URL(string: "https://rippple.app/search")!))
     }
 }

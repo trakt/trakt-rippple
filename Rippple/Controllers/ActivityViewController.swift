@@ -505,6 +505,7 @@ final class ActivityViewController: UITableViewController {
 
         configureFloatingButton()
 
+        // TODO: fix when on main thread
         while user == nil {
             user = UserManager.shared.currentUser
         }
