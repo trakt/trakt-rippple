@@ -1045,15 +1045,11 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
         for show in shows {
             progressDispatchGroup.enter()
             _Concurrency.Task {
-                if let showProgress = await show.mediaModel.progress() {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        if self.isCancelled { return }
-                        showProgressMap[show] = showProgress
-                        self.progressDispatchGroup.leave()
-                    }
-                } else {
-                    self.progressDispatchGroup.leave()
+                let showProgress = await show.mediaModel.progress()
+                DispatchQueue.main.async {
+                    defer { self.progressDispatchGroup.leave() }
+                    guard !self.isCancelled, let showProgress = showProgress else { return }
+                    self.showProgressMap[show] = showProgress
                 }
             }
         }
@@ -1237,11 +1233,10 @@ private class UpdateShowProgressOperation: Operation, @unchecked Sendable {
             let progressDispatchGroup = progressDispatchGroup
             _Concurrency.Task {
                 let showProgress = await show.mediaModel.progress()
-                DispatchQueue.main.async { [weak self] in
+                DispatchQueue.main.async {
                     defer { progressDispatchGroup.leave() }
-                    guard let self = self else { return }
                     guard !self.isCancelled, let showProgress = showProgress else { return }
-                    showProgressMap[show] = showProgress
+                    self.showProgressMap[show] = showProgress
                 }
             }
         }

@@ -194,7 +194,7 @@ final class ListStatsTableViewCell: TintedCanvasTableViewCell {
             return
         }
 
-        DispatchQueue.global(qos: .userInteractive).async {
+        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
             var itemsCount = 0.0
             var watchedMoviesCount = 0.0
             var watchedShowsCount = 0.0

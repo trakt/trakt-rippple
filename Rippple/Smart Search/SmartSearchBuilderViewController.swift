@@ -1864,7 +1864,11 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
     }
 
     private func buildLanguagesMenu() -> UIMenuElement {
-        return UIDeferredMenuElement.uncached { completion in
+        return UIDeferredMenuElement.uncached { [weak self] completion in
+            guard let self = self else {
+                completion([])
+                return
+            }
             var service = TraktAPIService.movieLanguages
             if self.smartSearch.contentType == .show {
                 service = TraktAPIService.tvLanguages
@@ -1942,7 +1946,11 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
     }
 
     private func buildCountriesMenu() -> UIMenuElement {
-        return UIDeferredMenuElement.uncached { completion in
+        return UIDeferredMenuElement.uncached { [weak self] completion in
+            guard let self = self else {
+                completion([])
+                return
+            }
             var service = TraktAPIService.movieCountries
             if self.smartSearch.contentType == .show {
                 service = TraktAPIService.tvCountries
@@ -2039,7 +2047,11 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
     }
 
     private func buildNetworkMenu() -> UIMenuElement {
-        return UIDeferredMenuElement.uncached { completion in
+        return UIDeferredMenuElement.uncached { [weak self] completion in
+            guard let self = self else {
+                completion([])
+                return
+            }
             TraktAPIProvider.provider.request(TraktAPIService.networks, callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
 
@@ -2105,7 +2117,11 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
     }
 
     private func buildCertificationsMenu() -> UIMenuElement {
-        return UIDeferredMenuElement.uncached { completion in
+        return UIDeferredMenuElement.uncached { [weak self] completion in
+            guard let self = self else {
+                completion([])
+                return
+            }
             var service = TraktAPIService.movieCertifications
             if self.smartSearch.contentType == .show {
                 service = TraktAPIService.tvCertifications
@@ -2154,7 +2170,11 @@ final class SmartSearchBuilderViewController: SearchResultsViewController {
     }
 
     private func buildGenresMenu() -> UIMenuElement {
-        return UIDeferredMenuElement.uncached { completion in
+        return UIDeferredMenuElement.uncached { [weak self] completion in
+            guard let self = self else {
+                completion([])
+                return
+            }
             var service = TraktAPIService.movieGenres
             if self.smartSearch.contentType == .show {
                 service = TraktAPIService.tvGenres

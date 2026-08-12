@@ -627,7 +627,11 @@ final class ActivityViewController: UITableViewController {
     @IBAction func unwindFromCommentComposer(segue: UIStoryboardSegue) {}
 
     private func filterMenu() -> UIMenu {
-        let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
+        let deferredMenuElement = UIDeferredMenuElement.uncached { [weak self] completion in
+            guard let self = self else {
+                completion([])
+                return
+            }
             let all = UIAction(title: "Everything", image: nil, state: self.currentFilter == .none ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .none

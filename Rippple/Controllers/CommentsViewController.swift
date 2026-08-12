@@ -780,7 +780,7 @@ extension CommentsViewController {
 
         TraktAPIProvider.fetchActivityDates(slug: user.slug,
                                             startDate: startDate,
-                                            endDate: endDate) { result in
+                                            endDate: endDate) { [weak self] result in
             var activityCounts = [Date: Int]()
             switch result {
             case .success(let activityDates):

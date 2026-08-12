@@ -489,7 +489,8 @@ extension SeasonsViewController {
                 confirmationAlertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
                     completion(false)
                 }))
-                confirmationAlertController.addAction(UIAlertAction(title: "Yes, Remove All Watch", style: .destructive, handler: { _ in
+                confirmationAlertController.addAction(UIAlertAction(title: "Yes, Remove All Watch", style: .destructive, handler: { [weak self] _ in
+                    guard let self = self else { completion(false); return }
                     guard let traktId = season.identifiers.trakt else {
                         completion(false)
                         return
@@ -531,7 +532,8 @@ extension SeasonsViewController {
                 confirmationAlertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
                     completion(false)
                 }))
-                confirmationAlertController.addAction(UIAlertAction(title: "Yes, Remove All Watch", style: .destructive, handler: { _ in
+                confirmationAlertController.addAction(UIAlertAction(title: "Yes, Remove All Watch", style: .destructive, handler: { [weak self] _ in
+                    guard let self = self else { completion(false); return }
                     guard let traktId = episode.identifiers.trakt else {
                         completion(false)
                         return

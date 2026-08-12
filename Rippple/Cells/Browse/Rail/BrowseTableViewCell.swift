@@ -608,9 +608,18 @@ extension BrowseTableViewCell: UICollectionViewDelegate {
             return UIContextMenuConfiguration(identifier: nil, previewProvider: {
                 nil
                 // return self.contextMenu.previewViewController
-            }, actionProvider: { _ in
-                let dynamicAction = UIDeferredMenuElement.uncached { completion in
-                    Task {
+            }, actionProvider: { [weak self] _ in
+                guard let self = self else { return UIMenu(children: []) }
+                let dynamicAction = UIDeferredMenuElement.uncached { [weak self] completion in
+                    guard let self = self else {
+                        completion([])
+                        return
+                    }
+                    Task { [weak self] in
+                        guard let self = self else {
+                            completion([])
+                            return
+                        }
                         guard let progress = await self.contextMenu.media.progress() else {
                             completion(self.contextMenu.toWatchMenu.children)
                             return

@@ -102,7 +102,7 @@ final class OpenActionsTableViewCell: TintedCanvasTableViewCell, UICollectionVie
         let entry = openInEntries[indexPath.item]
 
         return UIContextMenuConfiguration(identifier: nil,
-                                          previewProvider: nil) { _ in
+                                          previewProvider: nil) { [weak self] _ in
             let openAction = UIAction(title: "Open",
                                       image: UIImage(systemName: "safari")) { [weak self] _ in
                 guard let self = self else { return }

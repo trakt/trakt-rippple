@@ -280,8 +280,7 @@ final class MediaMoreTableViewCell: TintedCanvasTableViewCell, UICollectionViewD
 
         do {
             let result: [Season] = try await withCheckedThrowingContinuation { continuation in
-                TraktAPIProvider.provider.request(.seasons(id: showId), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                    guard let self = self else { return }
+                TraktAPIProvider.provider.request(.seasons(id: showId), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                     switch result {
                     case .success(let moyaResponse):
                         do {

@@ -345,7 +345,7 @@ final class AboutViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         if case .premium = AboutSection(rawValue: indexPath.section) {
-            cell.contentConfiguration = UIHostingConfiguration {
+            cell.contentConfiguration = UIHostingConfiguration { [weak self] in
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         VStack(alignment: .leading) {

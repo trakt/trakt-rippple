@@ -343,8 +343,16 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached { completion in
-                    Task {
+                let addToList = UIDeferredMenuElement.uncached { [weak self] completion in
+                    guard let self = self else {
+                        completion([])
+                        return
+                    }
+                    Task { [weak self] in
+                        guard let self = self else {
+                            completion([])
+                            return
+                        }
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
@@ -454,8 +462,16 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached { completion in
-                    Task {
+                let addToList = UIDeferredMenuElement.uncached { [weak self] completion in
+                    guard let self = self else {
+                        completion([])
+                        return
+                    }
+                    Task { [weak self] in
+                        guard let self = self else {
+                            completion([])
+                            return
+                        }
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
@@ -654,8 +670,16 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached { completion in
-                    Task {
+                let addToList = UIDeferredMenuElement.uncached { [weak self] completion in
+                    guard let self = self else {
+                        completion([])
+                        return
+                    }
+                    Task { [weak self] in
+                        guard let self = self else {
+                            completion([])
+                            return
+                        }
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
@@ -736,8 +760,16 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached { completion in
-                    Task {
+                let addToList = UIDeferredMenuElement.uncached { [weak self] completion in
+                    guard let self = self else {
+                        completion([])
+                        return
+                    }
+                    Task { [weak self] in
+                        guard let self = self else {
+                            completion([])
+                            return
+                        }
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
@@ -954,8 +986,16 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached { completion in
-                    Task {
+                let addToList = UIDeferredMenuElement.uncached { [weak self] completion in
+                    guard let self = self else {
+                        completion([])
+                        return
+                    }
+                    Task { [weak self] in
+                        guard let self = self else {
+                            completion([])
+                            return
+                        }
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
@@ -1024,8 +1064,16 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached { completion in
-                    Task {
+                let addToList = UIDeferredMenuElement.uncached { [weak self] completion in
+                    guard let self = self else {
+                        completion([])
+                        return
+                    }
+                    Task { [weak self] in
+                        guard let self = self else {
+                            completion([])
+                            return
+                        }
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
@@ -1094,8 +1142,16 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached { completion in
-                    Task {
+                let addToList = UIDeferredMenuElement.uncached { [weak self] completion in
+                    guard let self = self else {
+                        completion([])
+                        return
+                    }
+                    Task { [weak self] in
+                        guard let self = self else {
+                            completion([])
+                            return
+                        }
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
@@ -1150,8 +1206,16 @@ class ContextMenuHelper: NSObject {
             }
 
             if ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false || CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }).isEmpty == false {
-                let addToList = UIDeferredMenuElement.uncached { completion in
-                    Task {
+                let addToList = UIDeferredMenuElement.uncached { [weak self] completion in
+                    guard let self = self else {
+                        completion([])
+                        return
+                    }
+                    Task { [weak self] in
+                        guard let self = self else {
+                            completion([])
+                            return
+                        }
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
