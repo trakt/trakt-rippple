@@ -302,9 +302,10 @@ extension SidebarViewController {
 
 extension SidebarViewController {
     private func configureHierarchy() {
-        view.backgroundColor = .ripppleViewBackground
+        view.backgroundColor = .clear
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
-        collectionView.backgroundColor = .ripppleViewBackground
+        collectionView.backgroundColor = .clear
+        collectionView.isOpaque = false
         collectionView.isScrollEnabled = true
         collectionView.delegate = self
         collectionView.dropDelegate = self
@@ -350,21 +351,42 @@ extension SidebarViewController {
         }
 
         let cellRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { cell, _, item in
+            cell.tintAdjustmentMode = .normal
+
             #if targetEnvironment(macCatalyst)
-            var content = UIListContentConfiguration.cell() // Mac
             if let tooltip = item.subtitle {
                 let toolTipInteraction = UIToolTipInteraction(defaultToolTip: tooltip)
                 cell.addInteraction(toolTipInteraction)
             }
             cell.tintColor = UIColor(asset: .safeGlobalTint)
-            #else
-            var content = UIListContentConfiguration.subtitleCell() // iPad
-            content.secondaryText = item.subtitle
             #endif
-            content.text = item.title
-            content.image = item.image
-            content.textProperties.adjustsFontSizeToFitWidth = false
-            cell.contentConfiguration = content
+
+            cell.configurationUpdateHandler = { cell, state in
+                #if targetEnvironment(macCatalyst)
+                var content = UIListContentConfiguration.cell()
+                #else
+                var content = UIListContentConfiguration.subtitleCell()
+                content.secondaryText = item.subtitle
+                #endif
+
+                content.text = item.title
+                content.image = item.image
+                content.textProperties.adjustsFontSizeToFitWidth = false
+
+                if state.isSelected || state.isHighlighted {
+                    let contrastingColor = UIColor.ripppleTintContrastingLabel
+                    content.textProperties.color = contrastingColor
+                    content.secondaryTextProperties.color = contrastingColor.withAlphaComponent(0.7)
+                    content.imageProperties.tintColor = contrastingColor
+                } else {
+                    content.textProperties.color = .label
+                    content.secondaryTextProperties.color = .secondaryLabel
+                    content.imageProperties.tintColor = UIColor(asset: .safeGlobalTint)
+                }
+
+                cell.contentConfiguration = content
+            }
+            cell.setNeedsUpdateConfiguration()
 
             var background = UIBackgroundConfiguration.listCell()
             background.backgroundColor = .clear

@@ -112,10 +112,11 @@ final class SearchHeaderView: UITableViewHeaderFooterView {
         super.awakeFromNib()
 
         contentView.backgroundColor = .clear
-        backgroundColor = .clear
         button.titleLabel?.font = .preferredFont(forTextStyle: .subheadline)
 
-        backgroundConfiguration = nil
+        var background = UIBackgroundConfiguration.clear()
+        background.backgroundColor = .ripppleViewBackground
+        backgroundConfiguration = background
 
         maximumContentSizeCategory = .extraExtraLarge
     }

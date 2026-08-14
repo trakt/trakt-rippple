@@ -109,7 +109,7 @@ class TintedRowTableViewCell: UITableViewCell {
     }
 }
 
-final class TintedTableViewCell: UITableViewCell {
+class TintedTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         applyBackground()
@@ -127,6 +127,74 @@ final class TintedTableViewCell: UITableViewCell {
     private func applyBackground() {
         backgroundColor = .ripppleGroupedCardBackground
         contentView.backgroundColor = .clear
+    }
+}
+
+final class TintedSettingsTableViewCell: TintedTableViewCell {
+    private var originalTextColor: UIColor?
+    private var originalContentTextColor: UIColor?
+    private var isTintedTextVisible = false
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+
+        let selectedBackgroundView = UIView()
+        selectedBackgroundView.backgroundColor = .clear
+        self.selectedBackgroundView = selectedBackgroundView
+
+        let multipleSelectionBackgroundView = UIView()
+        multipleSelectionBackgroundView.backgroundColor = .clear
+        self.multipleSelectionBackgroundView = multipleSelectionBackgroundView
+    }
+
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+        updateTextColor()
+    }
+
+    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
+        super.setHighlighted(highlighted, animated: animated)
+        updateTextColor()
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        restoreTextColor()
+        originalTextColor = nil
+        originalContentTextColor = nil
+    }
+
+    private func updateTextColor() {
+        let shouldShowTintedText = isSelected || isHighlighted
+        guard shouldShowTintedText != isTintedTextVisible else { return }
+
+        if shouldShowTintedText {
+            originalTextColor = textLabel?.textColor
+            textLabel?.textColor = UIColor(asset: .globalTint)
+
+            if var content = contentConfiguration as? UIListContentConfiguration {
+                originalContentTextColor = content.textProperties.color
+                content.textProperties.color = UIColor(asset: .globalTint)
+                contentConfiguration = content
+            }
+
+            isTintedTextVisible = true
+        } else {
+            restoreTextColor()
+        }
+    }
+
+    private func restoreTextColor() {
+        guard isTintedTextVisible else { return }
+
+        textLabel?.textColor = originalTextColor
+        if var content = contentConfiguration as? UIListContentConfiguration,
+           let originalContentTextColor = originalContentTextColor {
+            content.textProperties.color = originalContentTextColor
+            contentConfiguration = content
+        }
+
+        isTintedTextVisible = false
     }
 }
 

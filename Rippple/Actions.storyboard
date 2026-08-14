@@ -233,7 +233,7 @@
         <scene sceneID="aLS-9v-T3T">
             <objects>
                 <tableViewController id="ugq-JZ-pPa" customClass="MediaNextEpisodeErrorViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="8eo-It-m62">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="8eo-It-m62" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="657"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -291,7 +291,7 @@ the next episode you need to watch 🤷‍♂️</string>
         <scene sceneID="fxC-0e-hTn">
             <objects>
                 <tableViewController id="VLR-Om-c10" customClass="MediaNoNextEpisodeViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="dV4-MQ-W7V">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="dV4-MQ-W7V" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="657"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

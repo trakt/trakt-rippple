@@ -154,7 +154,7 @@ Try with complete original titles.</string>
                         <constraint firstItem="bB5-Wk-dYW" firstAttribute="leading" secondItem="Vpu-de-sOI" secondAttribute="leading" constant="-16" id="sBO-5Z-nkI"/>
                     </constraints>
                 </view>
-                <view contentMode="scaleToFill" id="eXv-j9-mLA">
+                <view contentMode="scaleToFill" id="eXv-j9-mLA" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="320" height="300"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>

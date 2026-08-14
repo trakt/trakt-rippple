@@ -338,16 +338,10 @@ extension UIColor {
             return false
         }
 
-        func linearized(_ component: CGFloat) -> CGFloat {
-            if component <= 0.04045 {
-                return component / 12.92
-            }
-            return pow((component + 0.055) / 1.055, 2.4)
-        }
-
-        let luminance = (0.2126 * linearized(red))
-            + (0.7152 * linearized(green))
-            + (0.0722 * linearized(blue))
-        return luminance > 0.179
+        let perceivedBrightness = sqrt((0.299 * red * red)
+            + (0.587 * green * green)
+            + (0.114 * blue * blue))
+        let lightColorThreshold: CGFloat = 0.6
+        return perceivedBrightness > lightColorThreshold
     }
 }

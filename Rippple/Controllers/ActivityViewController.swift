@@ -1085,7 +1085,6 @@ final class ActivityHeaderTableViewCell: TintedCanvasTableViewCell {
         button?.contentHorizontalAlignment = .right
         selectionStyle = .none
 
-        backgroundColor = .clear
         title.textColor = .label
 
         maximumContentSizeCategory = .extraExtraExtraLarge

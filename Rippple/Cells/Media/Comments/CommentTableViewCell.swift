@@ -115,6 +115,12 @@ final class CommentTableViewCell: TintedCanvasTableViewCell {
         replyMicImageView?.image = UIImage(systemName: "microphone.dynamic.on.stand")
             ?? UIImage(systemName: "music.microphone")
 
+        if let chatBubbleBackgroundImage = chatBubbleBackgroundImage {
+            chatBubbleBackgroundImage.image = chatBubbleBackgroundImage.image?.withRenderingMode(.alwaysTemplate)
+            chatBubbleBackgroundImage.tintColor = .ripppleCardBackground
+            chatBubbleBackgroundImage.tintAdjustmentMode = .normal
+        }
+
         if let poster = poster {
             poster.layer.cornerRadius = ViewRadius.medium.rawValue
             poster.layer.cornerCurve = .continuous
