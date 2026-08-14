@@ -282,8 +282,13 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                         let user = try response.map(User.self, using: TraktAPIProvider.decoder)
 
                         DispatchQueue.main.async {
-                            self.performSegue(withIdentifier: "deeplink",
-                                              sender: CommentsCoordinator.ListType.user(user))
+                            if user.isCurrentUser {
+                                let profileViewController = UIStoryboard(name: "Profile", bundle: nil).instantiateViewController(identifier: "ProfileViewController")
+                                self.navigationController?.pushViewController(profileViewController, animated: true)
+                            } else {
+                                self.performSegue(withIdentifier: "deeplink",
+                                                  sender: CommentsCoordinator.ListType.user(user))
+                            }
                         }
                     } catch {
                         DispatchQueue.main.async {

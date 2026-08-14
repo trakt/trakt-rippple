@@ -49,7 +49,7 @@
         <!--Profile-->
         <scene sceneID="NxK-JF-7ju">
             <objects>
-                <viewController id="FWd-pQ-IfQ" customClass="ProfileViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ProfileViewController" id="FWd-pQ-IfQ" customClass="ProfileViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="AUz-tM-kZl" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
