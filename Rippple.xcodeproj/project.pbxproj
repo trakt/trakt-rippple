@@ -39,24 +39,12 @@
 		09A94A952F1BF69200642C38 /* ToWatchInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A94A942F1BF69200642C38 /* ToWatchInfoView.swift */; };
 		09B898F52F1CE2EB00DC202D /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09B898F42F1CE2EB00DC202D /* AppIntents.framework */; };
 		09B898F92F1CE3A800DC202D /* OpenRipppleIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B898F62F1CE3A800DC202D /* OpenRipppleIntent.swift */; };
-		0A4E700230A1000000000002 /* ToWatchWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E700130A1000000000001 /* ToWatchWidget.swift */; };
-		0A6D800230AE000000000002 /* QuickAccessWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D800130AE000000000001 /* QuickAccessWidget.swift */; };
-		0A6D801330AF000000000013 /* WatchingControlWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801230AF000000000012 /* WatchingControlWidget.swift */; };
-		0A6D801530AF000000000015 /* WatchingControlWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */; };
-		0A6D801630AF000000000016 /* WatchingControlWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */; };
-		0A4E700430A1000000000004 /* ToWatchWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E700330A1000000000003 /* ToWatchWidgetActionIntent.swift */; };
-		0A4E700530A1000000000005 /* ToWatchWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E700330A1000000000003 /* ToWatchWidgetActionIntent.swift */; };
-		0A4E701230A6000000000002 /* UpcomingWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E701130A6000000000001 /* UpcomingWidget.swift */; };
-		0A5C100230A7000000000002 /* ActivityPunchcardWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5C100130A7000000000001 /* ActivityPunchcardWidget.swift */; };
-		0A5C100430A7000000000004 /* ActivityPunchcardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5C100330A7000000000003 /* ActivityPunchcardView.swift */; };
-		0A5C100530A7000000000005 /* ActivityPunchcardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5C100330A7000000000003 /* ActivityPunchcardView.swift */; };
 		09B899032F21184200DC202D /* TraktAPIProvider+List.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899022F21184200DC202D /* TraktAPIProvider+List.swift */; };
 		09B899062F2A123400DC202D /* TraktAPIProvider+Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */; };
 		09B8990B2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */; };
 		09B8990D2F2A568900DC202D /* TraktAPIProvider+Recommended.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */; };
 		09B8990F2F9F000100DC202D /* TraktAPIProvider+Watched.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B8990E2F9F000100DC202D /* TraktAPIProvider+Watched.swift */; };
 		09B899112FCC000100DC202D /* TraktAPIProvider+Social.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899102FCC000100DC202D /* TraktAPIProvider+Social.swift */; };
-		09B899252FD0000100DC202D /* TraktAPIProvider+User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899242FD0000100DC202D /* TraktAPIProvider+User.swift */; };
 		09B899132FCC010100DC202D /* SocialActivityTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899122FCC010100DC202D /* SocialActivityTableViewCell.swift */; };
 		09B899152FCC010100DC202D /* SocialActivityTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B899142FCC010100DC202D /* SocialActivityTableViewCell.xib */; };
 		09B899172FCC020100DC202D /* SocialActivitiesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899182FCC020100DC202D /* SocialActivitiesViewController.swift */; };
@@ -65,6 +53,7 @@
 		09B8991D2FCC020100DC202D /* SocialActivityUserTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B8991E2FCC020100DC202D /* SocialActivityUserTableViewCell.xib */; };
 		09B8991F2FCC030100DC202D /* SocialActivityCommentTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899202FCC030100DC202D /* SocialActivityCommentTableViewCell.swift */; };
 		09B899212FCC030100DC202D /* SocialActivityCommentTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B899222FCC030100DC202D /* SocialActivityCommentTableViewCell.xib */; };
+		09B899252FD0000100DC202D /* TraktAPIProvider+User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B899242FD0000100DC202D /* TraktAPIProvider+User.swift */; };
 		09C0DEAA2FC1000000D00001 /* Receiver in Frameworks */ = {isa = PBXBuildFile; productRef = 09C0DEAC2FC1000000D00003 /* Receiver */; };
 		09C0DEAD2FC1100000D00004 /* Haring in Frameworks */ = {isa = PBXBuildFile; productRef = 09C0DEAF2FC1100000D00006 /* Haring */; };
 		09C0DEC22F9ABCD000000001 /* CommentsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */; };
@@ -75,24 +64,6 @@
 		09DCC2602EFA889B00C3EA79 /* FullScreenImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DCC25F2EFA889B00C3EA79 /* FullScreenImageViewController.swift */; };
 		09E390172EB21BC800C39B30 /* InReviewBrowseRail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09E390162EB21BC800C39B30 /* InReviewBrowseRail.swift */; };
 		09EFFF762E61E9B5009176CA /* Rippple Trakt.icon in Resources */ = {isa = PBXBuildFile; fileRef = 09EFFF752E61E974009176CA /* Rippple Trakt.icon */; };
-		A1C000000000000000000201 /* red.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000101 /* red.icon */; };
-		A1C000000000000000000202 /* orange.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000102 /* orange.icon */; };
-		A1C000000000000000000203 /* yellow.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000103 /* yellow.icon */; };
-		A1C000000000000000000204 /* green.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000104 /* green.icon */; };
-		A1C000000000000000000205 /* mint.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000105 /* mint.icon */; };
-		A1C000000000000000000206 /* teal.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000106 /* teal.icon */; };
-		A1C000000000000000000207 /* cyan.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000107 /* cyan.icon */; };
-		A1C000000000000000000208 /* blue.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000108 /* blue.icon */; };
-		A1C000000000000000000209 /* indigo.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000109 /* indigo.icon */; };
-		A1C000000000000000000212 /* purple.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000112 /* purple.icon */; };
-		A1C00000000000000000020A /* pink.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010A /* pink.icon */; };
-		A1C00000000000000000020B /* brown.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010B /* brown.icon */; };
-		A1C00000000000000000020C /* pride.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010C /* pride.icon */; };
-		A1C00000000000000000020D /* monochrome.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010D /* monochrome.icon */; };
-		A1C00000000000000000020E /* shadow.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010E /* shadow.icon */; };
-		A1C00000000000000000020F /* unity.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010F /* unity.icon */; };
-		A1C000000000000000000210 /* ghost.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000110 /* ghost.icon */; };
-		A1C000000000000000000211 /* peace.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000111 /* peace.icon */; };
 		09F100022FCC100000000001 /* ListProgressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F100012FCC100000000001 /* ListProgressViewController.swift */; };
 		09F275D02E055A670059D7CD /* LRUCache in Frameworks */ = {isa = PBXBuildFile; productRef = 09F275CF2E055A670059D7CD /* LRUCache */; };
 		09F4C1952E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09F4C1942E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib */; };
@@ -100,8 +71,20 @@
 		0A0B0C0D0E0F101112131417 /* OpenActionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0B0C0D0E0F101112131418 /* OpenActionManager.swift */; };
 		0A0B0C0D0E0F10111213141B /* OpenInSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0B0C0D0E0F10111213141C /* OpenInSettingsView.swift */; };
 		0A0B0C0D0E0F10111213141D /* OpenActionsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0B0C0D0E0F10111213141E /* OpenActionsTableViewCell.swift */; };
+		0A1B2C3D4E5F60718293A402 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F60718293A401 /* AppIntents.swift */; };
 		0A4C7D022F10000100C0DE01 /* ActivityPunchcardTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4C7D012F10000100C0DE01 /* ActivityPunchcardTableViewCell.swift */; };
 		0A4C7D042F10000100C0DE01 /* ActivityPunchcardTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A4C7D032F10000100C0DE01 /* ActivityPunchcardTableViewCell.xib */; };
+		0A4E700230A1000000000002 /* ToWatchWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E700130A1000000000001 /* ToWatchWidget.swift */; };
+		0A4E700430A1000000000004 /* ToWatchWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E700330A1000000000003 /* ToWatchWidgetActionIntent.swift */; };
+		0A4E700530A1000000000005 /* ToWatchWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E700330A1000000000003 /* ToWatchWidgetActionIntent.swift */; };
+		0A4E701230A6000000000002 /* UpcomingWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E701130A6000000000001 /* UpcomingWidget.swift */; };
+		0A5C100230A7000000000002 /* ActivityPunchcardWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5C100130A7000000000001 /* ActivityPunchcardWidget.swift */; };
+		0A5C100430A7000000000004 /* ActivityPunchcardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5C100330A7000000000003 /* ActivityPunchcardView.swift */; };
+		0A5C100530A7000000000005 /* ActivityPunchcardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5C100330A7000000000003 /* ActivityPunchcardView.swift */; };
+		0A6D800230AE000000000002 /* QuickAccessWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D800130AE000000000001 /* QuickAccessWidget.swift */; };
+		0A6D801330AF000000000013 /* WatchingControlWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801230AF000000000012 /* WatchingControlWidget.swift */; };
+		0A6D801530AF000000000015 /* WatchingControlWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */; };
+		0A6D801630AF000000000016 /* WatchingControlWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */; };
 		0FA34C9B2F3D11B700E5A1C2 /* UpcomingLabelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA34C9B2F3D11B700E5A1C3 /* UpcomingLabelManager.swift */; };
 		3A020B9720D3B64B0081FA3E /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A020B9620D3B64B0081FA3E /* SearchViewController.swift */; };
 		3A020B9920D3DE070081FA3E /* SearchResultsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A020B9820D3DE070081FA3E /* SearchResultsViewController.swift */; };
@@ -431,7 +414,6 @@
 		3AC160D6201F3459004A2A4F /* DeeplinkViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC160D5201F3459004A2A4F /* DeeplinkViewController.swift */; };
 		3AC160D8201F52AF004A2A4F /* DeeplinkLoadingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC160D7201F52AF004A2A4F /* DeeplinkLoadingViewController.swift */; };
 		3AC4599D1FBCD6E00016B111 /* CommentsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC4599C1FBCD6E00016B111 /* CommentsViewController.swift */; };
-		A1B2C3D4E5F60718293A4B5D /* ReportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* ReportViewController.swift */; };
 		3AC7C6F32AB225150092F871 /* NotificationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A77A85729FC1B410006177D /* NotificationModel.swift */; };
 		3AC8308C1FD7079400088486 /* LikeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC8308B1FD7079400088486 /* LikeManager.swift */; };
 		3AC8BEAA24E449B0000EB9A0 /* SearchTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AC8BEA824E4480B000EB9A0 /* SearchTableViewCell.xib */; };
@@ -460,7 +442,6 @@
 		3AD80E1121295AAB00C70E7F /* SeasonTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD80E102129595000C70E7F /* SeasonTableViewCell.swift */; };
 		3AD80E1221295AB200C70E7F /* SeasonTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AD80E0F2129595000C70E7F /* SeasonTableViewCell.xib */; };
 		3AD8E5B724967AFD0045A2F7 /* ShortcutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD8E5B624967AFD0045A2F7 /* ShortcutManager.swift */; };
-		0A1B2C3D4E5F60718293A402 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1B2C3D4E5F60718293A401 /* AppIntents.swift */; };
 		3AD8FDC229F44C32006A26EC /* NotificationCenterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD8FDC129F44C32006A26EC /* NotificationCenterManager.swift */; };
 		3AD8FDC429F45E6A006A26EC /* NotificationCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD8FDC329F45E6A006A26EC /* NotificationCenterViewController.swift */; };
 		3AD910422D6884E400E09D0D /* SeasonButtonCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD910412D6884E400E09D0D /* SeasonButtonCollectionViewCell.swift */; };
@@ -525,6 +506,25 @@
 		3AFD2B2F2A54616B0021D5BC /* GenresBrowseTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD2B2E2A54616B0021D5BC /* GenresBrowseTableViewCell.swift */; };
 		3AFD3F0E1FB733360003B966 /* TraktAPIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD3F0D1FB733360003B966 /* TraktAPIProvider.swift */; };
 		3AFDDDA12A63EFF70069840D /* BrowseConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFDDDA02A63EFF70069840D /* BrowseConfigViewController.swift */; };
+		A1B2C3D4E5F60718293A4B5D /* ReportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* ReportViewController.swift */; };
+		A1C000000000000000000201 /* red.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000101 /* red.icon */; };
+		A1C000000000000000000202 /* orange.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000102 /* orange.icon */; };
+		A1C000000000000000000203 /* yellow.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000103 /* yellow.icon */; };
+		A1C000000000000000000204 /* green.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000104 /* green.icon */; };
+		A1C000000000000000000205 /* mint.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000105 /* mint.icon */; };
+		A1C000000000000000000206 /* teal.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000106 /* teal.icon */; };
+		A1C000000000000000000207 /* cyan.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000107 /* cyan.icon */; };
+		A1C000000000000000000208 /* blue.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000108 /* blue.icon */; };
+		A1C000000000000000000209 /* indigo.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000109 /* indigo.icon */; };
+		A1C00000000000000000020A /* pink.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010A /* pink.icon */; };
+		A1C00000000000000000020B /* brown.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010B /* brown.icon */; };
+		A1C00000000000000000020C /* pride.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010C /* pride.icon */; };
+		A1C00000000000000000020D /* monochrome.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010D /* monochrome.icon */; };
+		A1C00000000000000000020E /* shadow.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010E /* shadow.icon */; };
+		A1C00000000000000000020F /* unity.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C00000000000000000010F /* unity.icon */; };
+		A1C000000000000000000210 /* ghost.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000110 /* ghost.icon */; };
+		A1C000000000000000000211 /* peace.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000111 /* peace.icon */; };
+		A1C000000000000000000212 /* purple.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000112 /* purple.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -609,19 +609,12 @@
 		09A94A942F1BF69200642C38 /* ToWatchInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchInfoView.swift; sourceTree = "<group>"; };
 		09B898F42F1CE2EB00DC202D /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/AppIntents.framework; sourceTree = DEVELOPER_DIR; };
 		09B898F62F1CE3A800DC202D /* OpenRipppleIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenRipppleIntent.swift; sourceTree = "<group>"; };
-		0A4E700130A1000000000001 /* ToWatchWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchWidget.swift; sourceTree = "<group>"; };
-		0A6D800130AE000000000001 /* QuickAccessWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAccessWidget.swift; sourceTree = "<group>"; };
-		0A6D801230AF000000000012 /* WatchingControlWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchingControlWidget.swift; sourceTree = "<group>"; };
-		0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchingControlWidgetActionIntent.swift; sourceTree = "<group>"; };
-		0A4E700330A1000000000003 /* ToWatchWidgetActionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchWidgetActionIntent.swift; sourceTree = "<group>"; };
-		0A4E701130A6000000000001 /* UpcomingWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingWidget.swift; sourceTree = "<group>"; };
 		09B899022F21184200DC202D /* TraktAPIProvider+List.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+List.swift"; sourceTree = "<group>"; };
 		09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Collection.swift"; sourceTree = "<group>"; };
 		09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Watchlist.swift"; sourceTree = "<group>"; };
 		09B8990C2F2A568900DC202D /* TraktAPIProvider+Recommended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Recommended.swift"; sourceTree = "<group>"; };
 		09B8990E2F9F000100DC202D /* TraktAPIProvider+Watched.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Watched.swift"; sourceTree = "<group>"; };
 		09B899102FCC000100DC202D /* TraktAPIProvider+Social.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+Social.swift"; sourceTree = "<group>"; };
-		09B899242FD0000100DC202D /* TraktAPIProvider+User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+User.swift"; sourceTree = "<group>"; };
 		09B899122FCC010100DC202D /* SocialActivityTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialActivityTableViewCell.swift; sourceTree = "<group>"; };
 		09B899142FCC010100DC202D /* SocialActivityTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SocialActivityTableViewCell.xib; sourceTree = "<group>"; };
 		09B899182FCC020100DC202D /* SocialActivitiesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialActivitiesViewController.swift; sourceTree = "<group>"; };
@@ -630,6 +623,7 @@
 		09B8991E2FCC020100DC202D /* SocialActivityUserTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SocialActivityUserTableViewCell.xib; sourceTree = "<group>"; };
 		09B899202FCC030100DC202D /* SocialActivityCommentTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialActivityCommentTableViewCell.swift; sourceTree = "<group>"; };
 		09B899222FCC030100DC202D /* SocialActivityCommentTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SocialActivityCommentTableViewCell.xib; sourceTree = "<group>"; };
+		09B899242FD0000100DC202D /* TraktAPIProvider+User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+User.swift"; sourceTree = "<group>"; };
 		09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsTabViewController.swift; sourceTree = "<group>"; };
 		09C0DEC32FA3B00100000001 /* ListBrowseCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListBrowseCollectionViewCell.swift; sourceTree = "<group>"; };
 		09D261392F76B1B000536D3D /* ListItemsMarkerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItemsMarkerManager.swift; sourceTree = "<group>"; };
@@ -648,34 +642,23 @@
 		09E390162EB21BC800C39B30 /* InReviewBrowseRail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InReviewBrowseRail.swift; sourceTree = "<group>"; };
 		09EB07F330052C3F00BAD1D8 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 		09EFFF752E61E974009176CA /* Rippple Trakt.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Rippple Trakt.icon"; sourceTree = "<group>"; };
-		A1C000000000000000000101 /* red.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = red.icon; sourceTree = "<group>"; };
-		A1C000000000000000000102 /* orange.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = orange.icon; sourceTree = "<group>"; };
-		A1C000000000000000000103 /* yellow.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = yellow.icon; sourceTree = "<group>"; };
-		A1C000000000000000000104 /* green.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = green.icon; sourceTree = "<group>"; };
-		A1C000000000000000000105 /* mint.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = mint.icon; sourceTree = "<group>"; };
-		A1C000000000000000000106 /* teal.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = teal.icon; sourceTree = "<group>"; };
-		A1C000000000000000000107 /* cyan.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = cyan.icon; sourceTree = "<group>"; };
-		A1C000000000000000000108 /* blue.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = blue.icon; sourceTree = "<group>"; };
-		A1C000000000000000000109 /* indigo.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = indigo.icon; sourceTree = "<group>"; };
-		A1C000000000000000000112 /* purple.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = purple.icon; sourceTree = "<group>"; };
-		A1C00000000000000000010A /* pink.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = pink.icon; sourceTree = "<group>"; };
-		A1C00000000000000000010B /* brown.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = brown.icon; sourceTree = "<group>"; };
-		A1C00000000000000000010C /* pride.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = pride.icon; sourceTree = "<group>"; };
-		A1C00000000000000000010D /* monochrome.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = monochrome.icon; sourceTree = "<group>"; };
-		A1C00000000000000000010E /* shadow.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = shadow.icon; sourceTree = "<group>"; };
-		A1C00000000000000000010F /* unity.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = unity.icon; sourceTree = "<group>"; };
-		A1C000000000000000000110 /* ghost.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = ghost.icon; sourceTree = "<group>"; };
-		A1C000000000000000000111 /* peace.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = peace.icon; sourceTree = "<group>"; };
 		09F100012FCC100000000001 /* ListProgressViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListProgressViewController.swift; sourceTree = "<group>"; };
 		09F4C1942E71BB0A0097829D /* ToWatchSettingsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ToWatchSettingsTableViewCell.xib; sourceTree = "<group>"; };
 		09F8022A30A0000000000002 /* ToWatchSearchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchSearchManager.swift; sourceTree = "<group>"; };
 		0A0B0C0D0E0F101112131418 /* OpenActionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenActionManager.swift; sourceTree = "<group>"; };
 		0A0B0C0D0E0F10111213141C /* OpenInSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenInSettingsView.swift; sourceTree = "<group>"; };
 		0A0B0C0D0E0F10111213141E /* OpenActionsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenActionsTableViewCell.swift; sourceTree = "<group>"; };
+		0A1B2C3D4E5F60718293A401 /* AppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 		0A4C7D012F10000100C0DE01 /* ActivityPunchcardTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityPunchcardTableViewCell.swift; sourceTree = "<group>"; };
 		0A4C7D032F10000100C0DE01 /* ActivityPunchcardTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ActivityPunchcardTableViewCell.xib; sourceTree = "<group>"; };
+		0A4E700130A1000000000001 /* ToWatchWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchWidget.swift; sourceTree = "<group>"; };
+		0A4E700330A1000000000003 /* ToWatchWidgetActionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchWidgetActionIntent.swift; sourceTree = "<group>"; };
+		0A4E701130A6000000000001 /* UpcomingWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingWidget.swift; sourceTree = "<group>"; };
 		0A5C100130A7000000000001 /* ActivityPunchcardWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityPunchcardWidget.swift; sourceTree = "<group>"; };
 		0A5C100330A7000000000003 /* ActivityPunchcardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityPunchcardView.swift; sourceTree = "<group>"; };
+		0A6D800130AE000000000001 /* QuickAccessWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAccessWidget.swift; sourceTree = "<group>"; };
+		0A6D801230AF000000000012 /* WatchingControlWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchingControlWidget.swift; sourceTree = "<group>"; };
+		0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchingControlWidgetActionIntent.swift; sourceTree = "<group>"; };
 		0FA34C9B2F3D11B700E5A1C3 /* UpcomingLabelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingLabelManager.swift; sourceTree = "<group>"; };
 		3A020B9620D3B64B0081FA3E /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		3A020B9820D3DE070081FA3E /* SearchResultsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsViewController.swift; sourceTree = "<group>"; };
@@ -1011,7 +994,6 @@
 		3AC160D5201F3459004A2A4F /* DeeplinkViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewController.swift; sourceTree = "<group>"; };
 		3AC160D7201F52AF004A2A4F /* DeeplinkLoadingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkLoadingViewController.swift; sourceTree = "<group>"; };
 		3AC4599C1FBCD6E00016B111 /* CommentsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsViewController.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A4B5C /* ReportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportViewController.swift; sourceTree = "<group>"; };
 		3AC8308B1FD7079400088486 /* LikeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LikeManager.swift; sourceTree = "<group>"; };
 		3AC8BEA724E44808000EB9A0 /* SearchTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTableViewCell.swift; sourceTree = "<group>"; };
 		3AC8BEA824E4480B000EB9A0 /* SearchTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SearchTableViewCell.xib; sourceTree = "<group>"; };
@@ -1039,7 +1021,6 @@
 		3AD80E0F2129595000C70E7F /* SeasonTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SeasonTableViewCell.xib; sourceTree = "<group>"; };
 		3AD80E102129595000C70E7F /* SeasonTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonTableViewCell.swift; sourceTree = "<group>"; };
 		3AD8E5B624967AFD0045A2F7 /* ShortcutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutManager.swift; sourceTree = "<group>"; };
-		0A1B2C3D4E5F60718293A401 /* AppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 		3AD8FDC129F44C32006A26EC /* NotificationCenterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterManager.swift; sourceTree = "<group>"; };
 		3AD8FDC329F45E6A006A26EC /* NotificationCenterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterViewController.swift; sourceTree = "<group>"; };
 		3AD910412D6884E400E09D0D /* SeasonButtonCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonButtonCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -1105,6 +1086,25 @@
 		3AFD3F0D1FB733360003B966 /* TraktAPIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraktAPIProvider.swift; sourceTree = "<group>"; };
 		3AFD3F0F1FB734630003B966 /* TraktAPIModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraktAPIModel.swift; sourceTree = "<group>"; };
 		3AFDDDA02A63EFF70069840D /* BrowseConfigViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseConfigViewController.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* ReportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportViewController.swift; sourceTree = "<group>"; };
+		A1C000000000000000000101 /* red.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = red.icon; sourceTree = "<group>"; };
+		A1C000000000000000000102 /* orange.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = orange.icon; sourceTree = "<group>"; };
+		A1C000000000000000000103 /* yellow.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = yellow.icon; sourceTree = "<group>"; };
+		A1C000000000000000000104 /* green.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = green.icon; sourceTree = "<group>"; };
+		A1C000000000000000000105 /* mint.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = mint.icon; sourceTree = "<group>"; };
+		A1C000000000000000000106 /* teal.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = teal.icon; sourceTree = "<group>"; };
+		A1C000000000000000000107 /* cyan.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = cyan.icon; sourceTree = "<group>"; };
+		A1C000000000000000000108 /* blue.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = blue.icon; sourceTree = "<group>"; };
+		A1C000000000000000000109 /* indigo.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = indigo.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010A /* pink.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = pink.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010B /* brown.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = brown.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010C /* pride.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = pride.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010D /* monochrome.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = monochrome.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010E /* shadow.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = shadow.icon; sourceTree = "<group>"; };
+		A1C00000000000000000010F /* unity.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = unity.icon; sourceTree = "<group>"; };
+		A1C000000000000000000110 /* ghost.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = ghost.icon; sourceTree = "<group>"; };
+		A1C000000000000000000111 /* peace.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = peace.icon; sourceTree = "<group>"; };
+		A1C000000000000000000112 /* purple.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = purple.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2075,31 +2075,6 @@
 			);
 			sourceTree = "<group>";
 		};
-		A1C000000000000000000001 /* Rippple Icons */ = {
-			isa = PBXGroup;
-			children = (
-				A1C000000000000000000101 /* red.icon */,
-				A1C000000000000000000102 /* orange.icon */,
-				A1C000000000000000000103 /* yellow.icon */,
-				A1C000000000000000000104 /* green.icon */,
-				A1C000000000000000000105 /* mint.icon */,
-				A1C000000000000000000106 /* teal.icon */,
-				A1C000000000000000000107 /* cyan.icon */,
-				A1C000000000000000000108 /* blue.icon */,
-				A1C000000000000000000109 /* indigo.icon */,
-				A1C000000000000000000112 /* purple.icon */,
-				A1C00000000000000000010A /* pink.icon */,
-				A1C00000000000000000010B /* brown.icon */,
-				A1C00000000000000000010C /* pride.icon */,
-				A1C00000000000000000010D /* monochrome.icon */,
-				A1C00000000000000000010E /* shadow.icon */,
-				A1C00000000000000000010F /* unity.icon */,
-				A1C000000000000000000111 /* peace.icon */,
-				A1C000000000000000000110 /* ghost.icon */,
-			);
-			path = "Rippple Icons";
-			sourceTree = "<group>";
-		};
 		3A9119C51FADC7EB00457D28 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -2771,6 +2746,31 @@
 			path = Header;
 			sourceTree = "<group>";
 		};
+		A1C000000000000000000001 /* Rippple Icons */ = {
+			isa = PBXGroup;
+			children = (
+				A1C000000000000000000101 /* red.icon */,
+				A1C000000000000000000102 /* orange.icon */,
+				A1C000000000000000000103 /* yellow.icon */,
+				A1C000000000000000000104 /* green.icon */,
+				A1C000000000000000000105 /* mint.icon */,
+				A1C000000000000000000106 /* teal.icon */,
+				A1C000000000000000000107 /* cyan.icon */,
+				A1C000000000000000000108 /* blue.icon */,
+				A1C000000000000000000109 /* indigo.icon */,
+				A1C000000000000000000112 /* purple.icon */,
+				A1C00000000000000000010A /* pink.icon */,
+				A1C00000000000000000010B /* brown.icon */,
+				A1C00000000000000000010C /* pride.icon */,
+				A1C00000000000000000010D /* monochrome.icon */,
+				A1C00000000000000000010E /* shadow.icon */,
+				A1C00000000000000000010F /* unity.icon */,
+				A1C000000000000000000111 /* peace.icon */,
+				A1C000000000000000000110 /* ghost.icon */,
+			);
+			path = "Rippple Icons";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -3133,7 +3133,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = /bin/sh;
-			shellScript = "git=`sh /etc/profile; which git`\n\nappVersion=26.9.1\n\nbaseBuild=2864\ncommitCount=`\"$git\" rev-list --all |wc -l`\nappBuild=$((baseBuild + commitCount))\n\n#xcrun agvtool new-marketing-version $appVersion\n#xcrun agvtool new-version -all $appBuild\n";
+			shellScript = "git=`sh /etc/profile; which git`\n\nappVersion=27.0\n\nbaseBuild=2864\ncommitCount=`\"$git\" rev-list --all |wc -l`\nappBuild=$((baseBuild + commitCount))\n\n#xcrun agvtool new-marketing-version $appVersion\n#xcrun agvtool new-version -all $appBuild\n";
 		};
 		3AFD13AD2F6F2B4C00D1E2F6 /* Run Script (Secrets Check) */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -3910,26 +3910,7 @@
 		3A9119D71FADC7EB00457D28 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = (
-					red,
-					orange,
-					yellow,
-					green,
-					mint,
-					teal,
-					cyan,
-					blue,
-					indigo,
-					purple,
-					pink,
-					brown,
-					pride,
-					unity,
-					peace,
-					monochrome,
-					shadow,
-					ghost,
-				);
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "red orange yellow green mint teal cyan blue indigo purple pink brown pride unity peace monochrome shadow ghost";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Rippple Trakt";
 				CODE_SIGN_ENTITLEMENTS = Rippple/RipppleDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -3973,26 +3954,7 @@
 		3A9119D81FADC7EB00457D28 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = (
-					red,
-					orange,
-					yellow,
-					green,
-					mint,
-					teal,
-					cyan,
-					blue,
-					indigo,
-					purple,
-					pink,
-					brown,
-					pride,
-					unity,
-					peace,
-					monochrome,
-					shadow,
-					ghost,
-				);
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "red orange yellow green mint teal cyan blue indigo purple pink brown pride unity peace monochrome shadow ghost";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Rippple Trakt";
 				CODE_SIGN_ENTITLEMENTS = Rippple/Rippple.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
