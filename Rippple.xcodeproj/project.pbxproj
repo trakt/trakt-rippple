@@ -3948,7 +3948,7 @@
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				INFOPLIST_FILE = Rippple/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Rippple II";
+				INFOPLIST_KEY_CFBundleDisplayName = Rippple;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -4011,7 +4011,7 @@
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				INFOPLIST_FILE = Rippple/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Rippple II";
+				INFOPLIST_KEY_CFBundleDisplayName = Rippple;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
