@@ -16,7 +16,6 @@ final class AppearanceViewController: UITableViewController {
 
     @IBOutlet var tintColorButton: UIButton!
     @IBOutlet var tintedAppearanceSwitch: UISwitch!
-    @IBOutlet var neverMinimizeTabBarSwitch: UISwitch!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,18 +27,11 @@ final class AppearanceViewController: UITableViewController {
         tintColorButton.setTitleColor(UIColor(asset: .globalTint), for: .highlighted)
 
         tintedAppearanceSwitch.isOn = UIApplication.shared.isTintedAppearanceEnabled
-        neverMinimizeTabBarSwitch.isOn = UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize")
 
         updateButton()
 
         registerForTraitChanges([UITraitUserInterfaceStyle.self],
                                 action: #selector(updateButton))
-    }
-
-    @IBAction private func neverMinimizeTabBarValueChanged(_ sender: UISwitch) {
-        UserDefaults.standard.set(sender.isOn, forKey: "MainTabBarController.neverMinimize")
-        UserDefaults.standard.synchronize()
-        neverMinimizeTabBarTransmitter.broadcast(sender.isOn)
     }
 
     @IBAction private func tintedAppearanceValueChanged(_ sender: UISwitch) {
@@ -117,13 +109,6 @@ final class AppearanceViewController: UITableViewController {
             @unknown default:
                 return "Always two there are, no more, no less."
             }
-        } else if section == 3 {
-            switch UIDevice.current.userInterfaceIdiom {
-            case .pad:
-                return "Customize the bottom tab bar when Rippple is in a 'phone' kind of layout (eg in split view)."
-            default:
-                return nil
-            }
         } else {
             return nil
         }
@@ -136,7 +121,7 @@ final class AppearanceViewController: UITableViewController {
         } else if section == 0 {
             return "Tint Color"
         } else {
-            return UIDevice.current.userInterfaceIdiom == .phone || UIDevice.current.userInterfaceIdiom == .pad ? "Tab bar" : nil
+            return nil
         }
     }
 
@@ -144,7 +129,7 @@ final class AppearanceViewController: UITableViewController {
         #if targetEnvironment(macCatalyst)
         return 1
         #else
-        return 3
+        return 2
         #endif
     }
 
@@ -154,7 +139,7 @@ final class AppearanceViewController: UITableViewController {
         } else if section == 1 {
             return 3
         } else {
-            return UIDevice.current.userInterfaceIdiom == .phone || UIDevice.current.userInterfaceIdiom == .pad ? 2 : 0
+            return 0
         }
     }
 

@@ -275,7 +275,13 @@ final class MainTabBarController: UITabBarController {
         guard let currentIndex = tabBar.items!.firstIndex(of: item) else { return }
         var tabPositions = customTabs
         if let control = item.value(forKey: "view") as? UIControl {
-            var manageActions = [UIAction]()
+            let customizeTabs = UIAction(title: "Customize Tabs",
+                                         image: UIImage(systemName: "slider.horizontal.3"),
+                                         handler: { [weak self] _ in
+                                             guard let self = self else { return }
+                                             self.showTabBarCustomization()
+                                         })
+            var manageActions = [customizeTabs]
             switch tabPositions[safe: currentIndex] {
             case .purchase:
                 break
@@ -310,7 +316,7 @@ final class MainTabBarController: UITabBarController {
                                       })
                 manageActions.append(remove)
             case .search:
-                return
+                break
             case .profile:
                 let remove = UIAction(title: "Remove Profile",
                                       image: UIImage(systemName: "xmark.circle"),
@@ -437,18 +443,8 @@ final class MainTabBarController: UITabBarController {
                 return
             }
 
-            if tabPositions != defaultTabBar {
-                let reset = UIAction(title: "Reset Default Tabs",
-                                     image: UIImage(systemName: "arrow.counterclockwise"),
-                                     handler: { [weak self] _ in
-                                         guard let self = self else { return }
-                                         self.save(tabs: self.defaultTabBar)
-                                     })
-                manageActions.append(reset)
-            }
-
             var swapActions = [UIAction]()
-            for (position, tab) in tabPositions.enumerated() {
+            for (position, tab) in tabPositions.enumerated() where tabPositions[safe: currentIndex] != .search {
                 if position == currentIndex { continue }
                 switch tab {
                 case .purchase:
@@ -583,7 +579,6 @@ final class MainTabBarController: UITabBarController {
                     swapActions.append(swapAction)
                 }
             }
-
             var replaceActions = [UIAction]()
             for tab in Tab.allCases {
                 if tabPositions.contains(tab) { continue }
@@ -762,6 +757,22 @@ final class MainTabBarController: UITabBarController {
             let interaction = UIContextMenuInteraction(delegate: delegate)
             control.addInteraction(interaction)
         }
+    }
+
+    private func showTabBarCustomization() {
+        let storyboard = UIStoryboard(name: "Profile", bundle: nil)
+        guard let viewController = storyboard.instantiateViewController(withIdentifier: "TabBarCustomization") as? TabBarCustomizationViewController else { return }
+
+        let navigationController = StyledNavigationController(rootViewController: viewController)
+        viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close,
+                                                                          target: self,
+                                                                          action: #selector(dismissTabBarCustomization))
+        present(navigationController, animated: true)
+    }
+
+    @objc
+    private func dismissTabBarCustomization() {
+        dismiss(animated: true)
     }
 
     private func save(tabs: [Tab]) {
