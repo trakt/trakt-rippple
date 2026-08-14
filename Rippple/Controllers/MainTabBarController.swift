@@ -152,8 +152,6 @@ final class MainTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // tabBar.tintColor = .label
-
         updateTabBarMinimizeBehavior(neverMinimize: UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize"))
 
         updateTabBar(animated: false)
@@ -223,7 +221,19 @@ final class MainTabBarController: UITabBarController {
     }
 
     private func updateTabBarMinimizeBehavior(neverMinimize: Bool) {
-        tabBarMinimizeBehavior = neverMinimize ? .never : .onScrollDown
+        if neverMinimize {
+            tabBarMinimizeBehavior = .never
+
+            if #available(iOS 27.0, *) {
+                prominentTabIdentifier = nil
+            }
+        } else {
+            tabBarMinimizeBehavior = .onScrollDown
+
+            if #available(iOS 27.0, *) {
+                prominentTabIdentifier = Tab.search.rawValue
+            }
+        }
     }
 
     private func updateWatchingItem() {
@@ -833,6 +843,13 @@ extension MainTabBarController: UITabBarControllerDelegate {
             } else if tab.identifier == Tab.calendar.rawValue {
                 if let navigationController = viewController as? UINavigationController, let calendarViewController = navigationController.topViewController as? CalendarViewController {
                     calendarViewController.scrollToClosestToNow(animated: true)
+                }
+            } else if tab.identifier == Tab.search.rawValue {
+                if shouldScrollToTop(view: viewController.view) {
+                    scrollToTop(view: viewController.view)
+                } else if let navigationController = viewController as? UINavigationController,
+                          let searchViewController = navigationController.topViewController as? SearchViewController {
+                    searchViewController.focusSearchField()
                 }
             } else if tab.identifier == Tab.browse.rawValue {
                 if shouldScrollToTop(view: viewController.view) {

@@ -709,6 +709,7 @@ final class SearchViewController: UITableViewController {
         tableView.dataSource = dataSource
 
         navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.style = .browser
 
         showsSmartSearches = SmartSearch.smartSearches(for: .show)
@@ -839,9 +840,13 @@ final class SearchViewController: UITableViewController {
         if shouldOpenKeyboard {
             shouldOpenKeyboard = false
             DispatchQueue.main.async {
-                self.searchController.searchBar.searchTextField.becomeFirstResponder()
+                self.focusSearchField()
             }
         }
+    }
+
+    func focusSearchField() {
+        searchController.searchBar.searchTextField.becomeFirstResponder()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
