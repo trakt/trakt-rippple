@@ -952,7 +952,7 @@ private final class TabBarContextMenuInteractionDelegate: NSObject, UIContextMen
 
         tabBarController.updateTabBar(animated: true)
 
-        if tabBarController.tabBar.window == nil { return nil }
+        guard view.window != nil else { return nil }
 
         let parameters = UIPreviewParameters()
         return UITargetedPreview(view: view, parameters: parameters)
