@@ -27,9 +27,9 @@ struct AppIconChooserView: View {
     ]
 
     private let specialIcons: [AppIconIdentifier] = [
-        .unity,
+        .peace,
         .pride,
-        .peace
+        .unity
     ]
 
     private let stealthIcons: [AppIconIdentifier] = [
@@ -55,9 +55,9 @@ struct AppIconChooserView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 iconSection(title: nil, identifiers: [.original])
-                iconSection(title: "Color Edition", identifiers: colorIcons)
-                iconSection(title: "Special Edition", identifiers: specialIcons)
-                iconSection(title: "Stealth Edition", identifiers: stealthIcons)
+                iconSection(title: "Color Editions", identifiers: colorIcons)
+                iconSection(title: "Community Editions", identifiers: specialIcons)
+                iconSection(title: "Stealth Editions", identifiers: stealthIcons)
             }
             .padding()
         }
@@ -104,7 +104,7 @@ struct AppIconChooserView: View {
                                 .frame(maxWidth: 72)
                                 .aspectRatio(1, contentMode: .fit)
 
-                            Text(appearance.name)
+                            Text(previewAppearance == appearance ? "✔ \(appearance.name)" : appearance.name)
                                 .font(.caption)
                                 .fontWeight(previewAppearance == appearance ? .semibold : .medium)
                                 .foregroundStyle(.primary)
@@ -149,7 +149,7 @@ struct AppIconChooserView: View {
                                                appearance: previewAppearance)
                                 .aspectRatio(1, contentMode: .fit)
 
-                            Text(identifier.name)
+                            Text(selectedIdentifier == identifier ? "✔ \(identifier.name)" : identifier.name)
                                 .font(.caption)
                                 .foregroundStyle(.primary)
                                 .lineLimit(1)
