@@ -50,20 +50,16 @@ struct ActivityPunchcardWidget: Widget {
 }
 
 private struct ActivityPunchcardWidgetView: View {
-    @Environment(\.widgetFamily) private var widgetFamily
-
     let entry: ActivityPunchcardWidgetEntry
 
     var body: some View {
         ActivityPunchcardView(activityCounts: entry.activityCounts,
                               referenceDate: entry.date,
                               tint: tintColor,
-                              punchSize: 13,
-                              dimensionCountReduction: 1,
-                              additionalColumnCountReduction: widgetFamily == .systemMedium ? 2 : 0,
-                              expandsPunchesToFit: true,
+                              punchSize: ActivityPunchcardMetrics.punchSize * 1.2,
+                              fillsAvailableSpace: true,
                               outerCornerRadiusFactor: 0.8)
-            .padding(10)
+            .padding(14)
             .containerBackground(.background, for: .widget)
             .widgetURL(URL(string: "ripl://users/me"))
     }

@@ -33,24 +33,20 @@ struct ActivityPunchcardView: View {
     var tint = UIColor(asset: .globalTint)
     var punchSize = ActivityPunchcardMetrics.punchSize
     var spacing = ActivityPunchcardMetrics.spacing
-    var dimensionCountReduction = 0
-    var additionalColumnCountReduction = 0
-    var expandsPunchesToFit = false
+    var fillsAvailableSpace = false
     var outerCornerRadiusFactor: CGFloat = 0.5
 
     var body: some View {
         GeometryReader { geometry in
-            let columnCount = max(dimensionCount(for: geometry.size.width)
-                - dimensionCountReduction
-                - additionalColumnCountReduction, 1)
-            let rowCount = max(dimensionCount(for: geometry.size.height) - dimensionCountReduction, 1)
+            let columnCount = dimensionCount(for: geometry.size.width)
+            let rowCount = dimensionCount(for: geometry.size.height)
             let resolvedPunchSize = resolvedPunchSize(for: geometry.size,
                                                       columnCount: columnCount,
                                                       rowCount: rowCount)
             let punches = punches(count: columnCount * rowCount)
             let maximumCount = punches.map(\.activityCount).max() ?? 0
             let isEmpty = maximumCount == 0
-            let columns = Array(repeating: GridItem(.fixed(resolvedPunchSize),
+            let columns = Array(repeating: GridItem(.fixed(resolvedPunchSize.width),
                                                     spacing: spacing),
                                 count: columnCount)
 
@@ -62,12 +58,13 @@ struct ActivityPunchcardView: View {
                     UnevenRoundedRectangle(cornerRadii: cornerRadii(for: index,
                                                                     columnCount: columnCount,
                                                                     rowCount: rowCount,
-                                                                    punchSize: resolvedPunchSize),
+                                                                    punchSize: min(resolvedPunchSize.width,
+                                                                                   resolvedPunchSize.height)),
                                            style: .continuous)
                         .fill(color(for: punch.activityCount,
                                     maximumCount: maximumCount))
-                        .frame(width: resolvedPunchSize,
-                               height: resolvedPunchSize)
+                        .frame(width: resolvedPunchSize.width,
+                               height: resolvedPunchSize.height)
                         .accessibilityLabel(punch.date.formatted(date: .complete,
                                                                  time: .omitted))
                         .accessibilityValue(punch.activityCount == 1
@@ -75,8 +72,8 @@ struct ActivityPunchcardView: View {
                             : "\(punch.activityCount) activities")
                 }
             }
-            .frame(width: gridLength(for: columnCount, punchSize: resolvedPunchSize),
-                   height: gridLength(for: rowCount, punchSize: resolvedPunchSize))
+            .frame(width: gridLength(for: columnCount, punchSize: resolvedPunchSize.width),
+                   height: gridLength(for: rowCount, punchSize: resolvedPunchSize.height))
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .opacity(isLoading ? 0.1 : isEmpty ? 0.2 : 1)
             .animation(isLoading ? .easeInOut(duration: 1).repeatForever() : .default,
@@ -97,11 +94,14 @@ struct ActivityPunchcardView: View {
 
     private func resolvedPunchSize(for size: CGSize,
                                    columnCount: Int,
-                                   rowCount: Int) -> CGFloat {
-        guard expandsPunchesToFit else { return punchSize }
+                                   rowCount: Int) -> CGSize {
+        guard fillsAvailableSpace else {
+            return CGSize(width: punchSize, height: punchSize)
+        }
         let horizontalSize = (size.width - (CGFloat(columnCount - 1) * spacing)) / CGFloat(columnCount)
         let verticalSize = (size.height - (CGFloat(rowCount - 1) * spacing)) / CGFloat(rowCount)
-        return max(min(horizontalSize, verticalSize), punchSize)
+        return CGSize(width: max(horizontalSize, 0),
+                      height: max(verticalSize, 0))
     }
 
     private func gridLength(for dimensionCount: Int, punchSize: CGFloat) -> CGFloat {
