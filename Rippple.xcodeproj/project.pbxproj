@@ -525,6 +525,7 @@
 		A1C000000000000000000210 /* ghost.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000110 /* ghost.icon */; };
 		A1C000000000000000000211 /* peace.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000111 /* peace.icon */; };
 		A1C000000000000000000212 /* purple.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000112 /* purple.icon */; };
+		A1C000000000000000000213 /* graphite.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000113 /* graphite.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1105,6 +1106,7 @@
 		A1C000000000000000000110 /* ghost.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = ghost.icon; sourceTree = "<group>"; };
 		A1C000000000000000000111 /* peace.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = peace.icon; sourceTree = "<group>"; };
 		A1C000000000000000000112 /* purple.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = purple.icon; sourceTree = "<group>"; };
+		A1C000000000000000000113 /* graphite.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = graphite.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2763,6 +2765,7 @@
 				A1C00000000000000000010B /* brown.icon */,
 				A1C00000000000000000010C /* pride.icon */,
 				A1C00000000000000000010D /* monochrome.icon */,
+				A1C000000000000000000113 /* graphite.icon */,
 				A1C00000000000000000010E /* shadow.icon */,
 				A1C00000000000000000010F /* unity.icon */,
 				A1C000000000000000000111 /* peace.icon */,
@@ -2999,6 +3002,7 @@
 				A1C00000000000000000020B /* brown.icon in Resources */,
 				A1C00000000000000000020C /* pride.icon in Resources */,
 				A1C00000000000000000020D /* monochrome.icon in Resources */,
+				A1C000000000000000000213 /* graphite.icon in Resources */,
 				A1C00000000000000000020E /* shadow.icon in Resources */,
 				A1C00000000000000000020F /* unity.icon in Resources */,
 				A1C000000000000000000211 /* peace.icon in Resources */,
@@ -3910,7 +3914,7 @@
 		3A9119D71FADC7EB00457D28 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "red orange yellow green mint teal cyan blue indigo purple pink brown pride unity peace monochrome shadow ghost";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "red orange yellow green mint teal cyan blue indigo purple pink brown pride unity peace monochrome graphite shadow ghost";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Rippple Trakt";
 				CODE_SIGN_ENTITLEMENTS = Rippple/RipppleDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -3954,7 +3958,7 @@
 		3A9119D81FADC7EB00457D28 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "red orange yellow green mint teal cyan blue indigo purple pink brown pride unity peace monochrome shadow ghost";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "red orange yellow green mint teal cyan blue indigo purple pink brown pride unity peace monochrome graphite shadow ghost";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "Rippple Trakt";
 				CODE_SIGN_ENTITLEMENTS = Rippple/Rippple.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";

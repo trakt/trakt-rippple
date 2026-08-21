@@ -23,7 +23,8 @@ struct AppIconChooserView: View {
         .purple,
         .pink,
         .brown,
-        .monochrome
+        .monochrome,
+        .graphite
     ]
 
     private let specialIcons: [AppIconIdentifier] = [

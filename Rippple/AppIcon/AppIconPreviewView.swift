@@ -24,6 +24,7 @@ enum AppIconIdentifier: String, Hashable, CaseIterable {
     case brown
     case pride
     case monochrome
+    case graphite
     case shadow
     case ghost
     case unity
@@ -61,6 +62,8 @@ enum AppIconIdentifier: String, Hashable, CaseIterable {
             return "Pride"
         case .monochrome:
             return "Monochrome"
+        case .graphite:
+            return "Graphite"
         case .shadow:
             return "Shadow"
         case .ghost:
