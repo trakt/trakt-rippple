@@ -239,15 +239,50 @@ public enum RipppleTintColor: Int, CaseIterable {
     }
 }
 
+enum RipppleAppearanceDefaults {
+    static let suiteName = "group.tv.trakt.rippple"
+    static let tintKey = "AppManager.currentTint"
+    static let tintedAppearanceKey = "AppManager.tintedAppearance"
+}
+
+/// Catalyst modal contexts can start a separate trait hierarchy, so defaults must remain live after UIKit caches them.
+final class RipppleTintTraitValue: NSObject {
+    private let explicitTint: RipppleTintColor?
+
+    fileprivate var tint: RipppleTintColor {
+        if let explicitTint = explicitTint {
+            return explicitTint
+        }
+        let rawValue = UserDefaults(suiteName: RipppleAppearanceDefaults.suiteName)!.integer(forKey: RipppleAppearanceDefaults.tintKey)
+        return RipppleTintColor(rawValue: rawValue) ?? .original
+    }
+
+    fileprivate init(tint: RipppleTintColor? = nil) {
+        explicitTint = tint
+    }
+}
+
 struct RipppleTintTrait: UITraitDefinition {
-    static let defaultValue = RipppleTintColor.original
+    static let defaultValue = RipppleTintTraitValue()
     static let affectsColorAppearance = true
     static let name = "RipppleTint"
     static let identifier = "com.rippple"
 }
 
+final class RipppleTintedAppearanceTraitValue: NSObject {
+    private let explicitIsEnabled: Bool?
+
+    fileprivate var isEnabled: Bool {
+        return explicitIsEnabled ?? UserDefaults.standard.bool(forKey: RipppleAppearanceDefaults.tintedAppearanceKey)
+    }
+
+    fileprivate init(isEnabled: Bool? = nil) {
+        explicitIsEnabled = isEnabled
+    }
+}
+
 struct RipppleTintedAppearanceTrait: UITraitDefinition {
-    static let defaultValue = false
+    static let defaultValue = RipppleTintedAppearanceTraitValue()
     static let affectsColorAppearance = true
     static let name = "RipppleTintedAppearance"
     static let identifier = "com.rippple.tinted-appearance"
@@ -255,23 +290,23 @@ struct RipppleTintedAppearanceTrait: UITraitDefinition {
 
 extension UITraitCollection {
     var ripppleTintColor: RipppleTintColor {
-        self[RipppleTintTrait.self]
+        self[RipppleTintTrait.self].tint
     }
 
     var ripppleTintedAppearance: Bool {
-        self[RipppleTintedAppearanceTrait.self]
+        self[RipppleTintedAppearanceTrait.self].isEnabled
     }
 }
 
 extension UIMutableTraits {
     var ripppleTintColor: RipppleTintColor {
-        get { self[RipppleTintTrait.self] }
-        set { self[RipppleTintTrait.self] = newValue }
+        get { self[RipppleTintTrait.self].tint }
+        set { self[RipppleTintTrait.self] = RipppleTintTraitValue(tint: newValue) }
     }
 
     var ripppleTintedAppearance: Bool {
-        get { self[RipppleTintedAppearanceTrait.self] }
-        set { self[RipppleTintedAppearanceTrait.self] = newValue }
+        get { self[RipppleTintedAppearanceTrait.self].isEnabled }
+        set { self[RipppleTintedAppearanceTrait.self] = RipppleTintedAppearanceTraitValue(isEnabled: newValue) }
     }
 }
 

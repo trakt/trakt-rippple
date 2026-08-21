@@ -258,10 +258,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://search")!)
 
-        AppManager.shared.setup()
-
+        #if targetEnvironment(macCatalyst)
+        UIView.appearance().tintColor = UIColor(asset: .globalTint)
+        #else
         let view = UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self])
         view.tintColor = UIColor(asset: .globalTint)
+        #endif
+        AppManager.shared.setup()
 
         UISwitch.appearance().onTintColor = RipppleAppearance.switchTintColor
         UIProgressView.appearance().trackTintColor = UIColor(asset: .globalTint).withAlphaComponent(0.25)
