@@ -12,10 +12,21 @@ import UIKit
 let (onTabBarChangedTransmitter, onTabBarChangedReceiver) = Receiver<Int>.make(with: .hot)
 
 final class TabBarCustomizationViewController: UITableViewController {
-    private enum Mode: Int {
+    private enum Mode: Int, CaseIterable {
         case defaultTabs
         case island
         case onePage
+
+        var storageKey: String {
+            switch self {
+            case .defaultTabs:
+                return "default"
+            case .island:
+                return "island"
+            case .onePage:
+                return "onePage"
+            }
+        }
     }
 
     private enum Section {
@@ -25,6 +36,10 @@ final class TabBarCustomizationViewController: UITableViewController {
     }
 
     private let modeSegmentedControl = ReselectableSegmentedControl(items: ["Default", "Island", "One Page"])
+    private let tabStoreKeyPrefix = "TabBarCustomizationViewController.tab.positions"
+    private var selectedMode = Mode.defaultTabs
+    private var tabStores = [Mode: [MainTabBarController.Tab]]()
+    private var currentTabs = [MainTabBarController.Tab]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,32 +59,22 @@ final class TabBarCustomizationViewController: UITableViewController {
         modeSegmentedControl.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         headerView.addSubview(modeSegmentedControl)
         tableView.tableHeaderView = headerView
-        updateSelectedMode()
+        setupTabStores()
     }
 
     private func save(tabs: [MainTabBarController.Tab]) {
-        if tabs.isEmpty {
-            save(tabs: defaultTabBar)
-            tableView.reloadData()
-            return
-        }
-        if tabs.count > 5 {
-            save(tabs: defaultTabBar)
-            tableView.reloadData()
-            return
-        }
-        if tabs.contains(where: { $0 == .search }) == false, tabs != defaultSingleTabBar {
-            save(tabs: defaultSingleTabBar)
-            save(neverMinimize: false)
-            tableView.reloadData()
-            return
-        }
+        let tabs = tabsAddingBrowseIfNeeded(tabs, for: selectedMode)
+        guard isValid(tabs: tabs, for: selectedMode) else { return }
+        self.tabs = tabs
+        applyToMainTabStore(tabs: tabs)
+    }
+
+    private func applyToMainTabStore(tabs: [MainTabBarController.Tab]) {
         if let encoded = try? JSONEncoder().encode(tabs) {
             UserDefaults.standard.set(encoded, forKey: "MainTabBarController.tab.positions")
             UserDefaults.standard.synchronize()
             UISelectionFeedbackGenerator().selectionChanged()
             onTabBarChangedTransmitter.broadcast(1)
-            updateSelectedMode()
         }
     }
 
@@ -77,23 +82,19 @@ final class TabBarCustomizationViewController: UITableViewController {
         UserDefaults.standard.set(neverMinimize, forKey: "MainTabBarController.neverMinimize")
         UserDefaults.standard.synchronize()
         neverMinimizeTabBarTransmitter.broadcast(neverMinimize)
-        updateSelectedMode()
     }
 
     @objc
     private func modeValueChanged(_ sender: UISegmentedControl) {
         guard let mode = Mode(rawValue: sender.selectedSegmentIndex) else { return }
-        switch mode {
-        case .defaultTabs:
-            save(tabs: defaultTabBar)
-            save(neverMinimize: false)
-        case .island:
-            save(tabs: islandTabBar)
-            save(neverMinimize: true)
-        case .onePage:
-            save(tabs: defaultSingleTabBar)
-            save(neverMinimize: false)
+        if mode == selectedMode {
+            save(tabs: defaultTabs(for: mode))
+        } else {
+            selectedMode = mode
+            currentTabs = tabStores[mode] ?? defaultTabs(for: mode)
+            applyToMainTabStore(tabs: tabs)
         }
+        save(neverMinimize: mode == .island)
         reloadTableView()
     }
 
@@ -104,44 +105,77 @@ final class TabBarCustomizationViewController: UITableViewController {
         }
     }
 
-    private func updateSelectedMode() {
-        let mode: Mode
-        if tabs == defaultSingleTabBar {
-            mode = .onePage
-        } else if neverMinimize {
-            mode = .island
-        } else {
-            mode = .defaultTabs
+    private func setupTabStores() {
+        for mode in Mode.allCases {
+            let persistedTabs = persistedTabs(for: mode).map { tabsAddingBrowseIfNeeded($0, for: mode) }
+            tabStores[mode] = persistedTabs.map { isValid(tabs: $0, for: mode) ? $0 : defaultTabs(for: mode) } ?? defaultTabs(for: mode)
         }
-        modeSegmentedControl.selectedSegmentIndex = mode.rawValue
+
+        if mainTabStore == defaultSingleTabBar {
+            selectedMode = .onePage
+        } else if mainNeverMinimize {
+            selectedMode = .island
+        }
+        currentTabs = mainTabStore
+        modeSegmentedControl.selectedSegmentIndex = selectedMode.rawValue
+    }
+
+    private func persistedTabs(for mode: Mode) -> [MainTabBarController.Tab]? {
+        guard let data = UserDefaults.standard.data(forKey: tabStoreKey(for: mode)) else { return nil }
+        return try? JSONDecoder().decode([MainTabBarController.Tab].self, from: data)
+    }
+
+    private func tabStoreKey(for mode: Mode) -> String {
+        return "\(tabStoreKeyPrefix).\(mode.storageKey)"
+    }
+
+    private func persist(tabs: [MainTabBarController.Tab], for mode: Mode) {
+        guard let encoded = try? JSONEncoder().encode(tabs) else { return }
+        UserDefaults.standard.set(encoded, forKey: tabStoreKey(for: mode))
+    }
+
+    private func isValid(tabs: [MainTabBarController.Tab], for mode: Mode) -> Bool {
+        switch mode {
+        case .defaultTabs, .island:
+            return tabs.contains(.search) && tabs.contains(where: { $0 != .search }) && tabs.count <= 5
+        case .onePage:
+            return tabs == defaultSingleTabBar
+        }
+    }
+
+    private func tabsAddingBrowseIfNeeded(_ tabs: [MainTabBarController.Tab], for mode: Mode) -> [MainTabBarController.Tab] {
+        guard mode != .onePage,
+              tabs.contains(.search),
+              tabs.contains(where: { $0 != .search }) == false else { return tabs }
+        return tabs + [.browse]
+    }
+
+    private func defaultTabs(for mode: Mode) -> [MainTabBarController.Tab] {
+        switch mode {
+        case .defaultTabs:
+            return defaultTabBar
+        case .island:
+            return islandTabBar
+        case .onePage:
+            return defaultSingleTabBar
+        }
     }
 
     private func remove(tab: MainTabBarController.Tab) {
+        guard selectedMode != .onePage, tab != .search else { return }
         var tabs = tabs
         guard tabs.count > 1, tabs.contains(tab) else { return }
         tabs.removeAll { $0 == tab }
-
-        if tab == .search {
-            save(tabs: defaultSingleTabBar)
-            save(neverMinimize: false)
-        } else {
-            save(tabs: tabs)
-        }
+        save(tabs: tabs)
         reloadTableView()
     }
 
     private func add(tab: MainTabBarController.Tab) {
+        guard selectedMode != .onePage else { return }
         var tabs = tabs
-        guard tabs.contains(tab) == false else { return }
-        let requiredSlots = tabs.contains(.search) || tab == .search ? 1 : 2
-        guard tabs.count + requiredSlots <= 5 else { return }
+        guard tabs.contains(tab) == false, tabs.count < 5 else { return }
 
         tabs.append(tab)
-        if tab == .search {
-            save(neverMinimize: true)
-        } else if tabs.contains(.search) == false {
-            tabs.append(.search)
-        }
         save(tabs: tabs)
         reloadTableView()
     }
@@ -150,10 +184,25 @@ final class TabBarCustomizationViewController: UITableViewController {
     private let islandTabBar: [MainTabBarController.Tab] = [.browse, .search, .profile]
     private let defaultSingleTabBar: [MainTabBarController.Tab] = [.browse]
     private var neverMinimize: Bool {
-        return UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize")
+        return selectedMode == .island
     }
 
     private var tabs: [MainTabBarController.Tab] {
+        get {
+            return currentTabs
+        }
+        set {
+            currentTabs = newValue
+            tabStores[selectedMode] = newValue
+            persist(tabs: newValue, for: selectedMode)
+        }
+    }
+
+    private var mainNeverMinimize: Bool {
+        return UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize")
+    }
+
+    private var mainTabStore: [MainTabBarController.Tab] {
         guard let data = UserDefaults.standard.value(forKey: "MainTabBarController.tab.positions") as? Data,
               let decodedData = try? JSONDecoder().decode([MainTabBarController.Tab].self, from: data) else {
             return defaultTabBar
@@ -177,6 +226,9 @@ final class TabBarCustomizationViewController: UITableViewController {
     }
 
     private var sections: [Section] {
+        if selectedMode == .onePage {
+            return [.tabs]
+        }
         var sections: [Section] = [.tabs]
         if displaysSearchSeparately {
             sections.append(.search)
@@ -219,13 +271,11 @@ final class TabBarCustomizationViewController: UITableViewController {
         case .tabs:
             if tabs.contains(.search) == false {
                 return "Just the Browse and a floating button for more."
-            } else if neverMinimize == true {
-                return "Use the handle on the right to (re)move tabs."
             } else {
-                return nil
+                return "Use the handle on the right to (re)move tabs."
             }
         case .search:
-            return "Use the handle on the right to (re)move tabs."
+            return nil
         case .notTabs:
             return "Those won't be in your tabs."
         case nil:
@@ -318,6 +368,7 @@ final class TabBarCustomizationViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         switch section(at: indexPath.section) {
         case .tabs:
             remove(tab: displayedTabs[indexPath.row])
@@ -331,59 +382,39 @@ final class TabBarCustomizationViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        return section(at: indexPath.section) != nil
+        guard selectedMode != .onePage else { return false }
+        return section(at: indexPath.section) != .search
     }
 
     override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        var tabs = tabs
-        let sourceSection = section(at: sourceIndexPath.section)
-        let destinationSection = section(at: destinationIndexPath.section)
-        if sourceSection == .search, destinationSection == .tabs {
-            tabs.removeAll { $0 == .search }
-            let destinationIndex = insertionIndex(forDisplayedRow: destinationIndexPath.row, in: tabs)
-            tabs.insert(.search, at: destinationIndex)
-            save(neverMinimize: true)
-            save(tabs: tabs)
+        guard selectedMode != .onePage else {
             tableView.reloadData()
             return
         }
-        if sourceSection == .search, destinationSection == .notTabs {
-            save(tabs: defaultSingleTabBar)
-            save(neverMinimize: false)
+
+        var tabs = tabs
+        let sourceSection = section(at: sourceIndexPath.section)
+        let destinationSection = section(at: destinationIndexPath.section)
+        guard sourceSection != .search, destinationSection != .search else {
             tableView.reloadData()
             return
         }
         if sourceSection == .tabs, destinationSection == .notTabs {
             let tab = displayedTabs[sourceIndexPath.row]
-            tabs.removeAll { $0 == tab }
-
-            // if we remove the search, then we switch to default one page
-            if tabs.contains(where: { $0 == .search }) == false, tabs != defaultSingleTabBar {
-                save(tabs: defaultSingleTabBar)
-                save(neverMinimize: false)
+            guard tab != .search else {
                 tableView.reloadData()
                 return
             }
+            tabs.removeAll { $0 == tab }
         }
         if sourceSection == .notTabs, destinationSection == .tabs {
+            guard tabs.count < 5 else {
+                tableView.reloadData()
+                return
+            }
             let tab = notTabs[sourceIndexPath.row]
             let destinationIndex = insertionIndex(forDisplayedRow: destinationIndexPath.row, in: tabs)
             tabs.insert(tab, at: destinationIndex)
-
-            if tab == .search {
-                save(neverMinimize: true)
-                save(tabs: tabs)
-                tableView.reloadData()
-                return
-            }
-
-            // if we insert something and search is not there, add it automatically
-            if tabs.contains(where: { $0 == .search }) == false, tabs != defaultSingleTabBar {
-                tabs.append(.search)
-                save(tabs: tabs)
-                tableView.reloadData()
-                return
-            }
         }
         if sourceSection == .tabs, destinationSection == .tabs {
             let displayedTabs = displayedTabs
@@ -392,6 +423,7 @@ final class TabBarCustomizationViewController: UITableViewController {
             tabs.swapAt(sourceIndex, destinationIndex)
         }
         save(tabs: tabs)
+        tableView.reloadData()
     }
 
     override func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
@@ -399,7 +431,13 @@ final class TabBarCustomizationViewController: UITableViewController {
         let sourceSection = section(at: sourceIndexPath.section)
         let destinationSection = section(at: proposedDestinationIndexPath.section)
 
-        if destinationSection == .search {
+        if selectedMode == .onePage || sourceSection == .search || destinationSection == .search {
+            return sourceIndexPath
+        }
+        if selectedMode == .island,
+           sourceSection == .tabs,
+           displayedTabs[sourceIndexPath.row] == .search,
+           destinationSection == .notTabs {
             return sourceIndexPath
         }
         if sourceSection == .notTabs, destinationSection == .notTabs {
@@ -424,7 +462,8 @@ final class TabBarCustomizationViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return section(at: indexPath.section) != nil
+        guard selectedMode != .onePage else { return false }
+        return section(at: indexPath.section) != .search
     }
 
     override func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {

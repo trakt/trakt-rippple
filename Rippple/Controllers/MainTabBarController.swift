@@ -177,6 +177,7 @@ final class MainTabBarController: UITabBarController {
         neverMinimizeTabBarReceiver.listen { [weak self] neverMinimize in
             guard let self = self else { return }
             self.updateTabBarMinimizeBehavior(neverMinimize: neverMinimize)
+            self.updateTabBarContextMenus()
         }.disposed(by: disposeBag)
 
         updateWatchingItem()
@@ -245,11 +246,6 @@ final class MainTabBarController: UITabBarController {
         }
     }
 
-    func resetDefault() {
-        save(tabs: defaultTabBar)
-        updateTabBar(animated: true)
-    }
-
     fileprivate func updateTabBar(animated: Bool) {
         if customTabs == [Tab.browse] {
             isTabBarHidden = true
@@ -261,8 +257,13 @@ final class MainTabBarController: UITabBarController {
         }
         if tabs == self.tabs { return }
         setTabs(tabs, animated: animated)
+        updateTabBarContextMenus()
+    }
+
+    private func updateTabBarContextMenus() {
         contextMenus.removeAll()
-        for item in tabBar.items! {
+        guard let items = tabBar.items else { return }
+        for item in items {
             updateContextMenu(for: item)
         }
     }
@@ -275,6 +276,14 @@ final class MainTabBarController: UITabBarController {
         guard let currentIndex = tabBar.items!.firstIndex(of: item) else { return }
         var tabPositions = customTabs
         if let control = item.value(forKey: "view") as? UIControl {
+            for interaction in control.interactions where interaction.isKind(of: UIContextMenuInteraction.self) {
+                control.removeInteraction(interaction)
+            }
+            if tabPositions[safe: currentIndex] == .search,
+               UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize") == false {
+                return
+            }
+
             let customizeTabs = UIAction(title: "Customize Tabs",
                                          image: UIImage(systemName: "slider.horizontal.3"),
                                          handler: { [weak self] _ in
@@ -751,15 +760,12 @@ final class MainTabBarController: UITabBarController {
                                                                                         UIMenu(options: .displayInline, children: replaceActions)]),
                                                                 for: self)
             contextMenus.append(delegate)
-            for interaction in control.interactions where interaction.isKind(of: UIContextMenuInteraction.self) {
-                control.removeInteraction(interaction)
-            }
             let interaction = UIContextMenuInteraction(delegate: delegate)
             control.addInteraction(interaction)
         }
     }
 
-    private func showTabBarCustomization() {
+    func showTabBarCustomization() {
         let storyboard = UIStoryboard(name: "Profile", bundle: nil)
         guard let viewController = storyboard.instantiateViewController(withIdentifier: "TabBarCustomization") as? TabBarCustomizationViewController else { return }
 
@@ -776,11 +782,31 @@ final class MainTabBarController: UITabBarController {
     }
 
     private func save(tabs: [Tab]) {
+        let tabs = tabsAddingBrowseIfNeeded(tabs)
         if let encoded = try? JSONEncoder().encode(tabs) {
             UserDefaults.standard.set(encoded, forKey: "MainTabBarController.tab.positions")
+            UserDefaults.standard.set(encoded, forKey: tabCustomizationStoreKey(for: tabs))
             UserDefaults.standard.synchronize()
             UISelectionFeedbackGenerator().selectionChanged()
         }
+    }
+
+    private func tabsAddingBrowseIfNeeded(_ tabs: [Tab]) -> [Tab] {
+        guard tabs.contains(.search),
+              tabs.contains(where: { $0 != .search }) == false else { return tabs }
+        return tabs + [.browse]
+    }
+
+    private func tabCustomizationStoreKey(for tabs: [Tab]) -> String {
+        let modeStorageKey: String
+        if tabs == [.browse] {
+            modeStorageKey = "onePage"
+        } else if UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize") {
+            modeStorageKey = "island"
+        } else {
+            modeStorageKey = "default"
+        }
+        return "TabBarCustomizationViewController.tab.positions.\(modeStorageKey)"
     }
 
     private var customTabs: [Tab] {

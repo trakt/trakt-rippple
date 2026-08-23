@@ -648,11 +648,11 @@ final class BrowseViewController: UITableViewController {
             var structureActions = [UIAction]()
 
             if tabBarController?.isTabBarHidden == true {
-                structureActions.append(UIAction(title: "Reset Default Tabs",
-                                                 image: UIImage(systemName: "arrow.counterclockwise"),
+                structureActions.append(UIAction(title: "Customize Tabs",
+                                                 image: UIImage(systemName: "slider.horizontal.3"),
                                                  handler: { _ in
                                                      if let tabBarController = self.tabBarController as? MainTabBarController {
-                                                         tabBarController.resetDefault()
+                                                         tabBarController.showTabBarCustomization()
                                                      }
                                                  }))
                 structureMenu = UIMenu(options: .displayInline,
