@@ -88,20 +88,29 @@ struct WatchingControlWidgetProvider: AppIntentTimelineProvider {
         guard duration > 0 else {
             return Timeline(entries: [entry], policy: .never)
         }
-        let entryDates = stride(from: 0.0, through: 1.0, by: 0.025).map { progress in
+        let entryDates = stride(from: 0.0, to: 1.0, by: 0.025).map { progress in
             max(entry.date, startDate.addingTimeInterval(duration * progress))
         }
-        let entries = Array(Set(entryDates)).sorted().map { date in
+        var entries = Array(Set(entryDates)).sorted().map { date in
             WatchingControlWidgetEntry(date: date,
                                        configuration: configuration,
                                        item: item,
                                        poster: entry.poster)
         }
+        entries.append(WatchingControlWidgetEntry(date: endDate,
+                                                  configuration: configuration,
+                                                  item: item.endedCheckIn,
+                                                  poster: entry.poster))
         return Timeline(entries: entries, policy: .after(endDate))
     }
 
     private func entry(for configuration: WatchingControlWidgetConfigurationIntent) async -> WatchingControlWidgetEntry {
-        let item = WatchingControlWidgetStorage.item()
+        let item = WatchingControlWidgetStorage.item().map { item in
+            guard item.isCheckInActive,
+                  let endDate = item.checkInEndDate,
+                  endDate <= Date.now else { return item }
+            return item.endedCheckIn
+        }
         let posters = await loadWidgetPosters(for: item.map { [$0] } ?? [],
                                               identifier: \WatchingControlWidgetItem.id,
                                               tmdbIdentifier: \WatchingControlWidgetItem.tmdbIdentifier,
@@ -333,6 +342,20 @@ private struct WatchingControlWidgetEntryView: View {
 }
 
 private extension WatchingControlWidgetItem {
+    var endedCheckIn: WatchingControlWidgetItem {
+        WatchingControlWidgetItem(state: .lastWatched,
+                                  traktIdentifier: traktIdentifier,
+                                  tmdbIdentifier: tmdbIdentifier,
+                                  tmdbMediaType: tmdbMediaType,
+                                  title: title,
+                                  subtitle: subtitle,
+                                  deeplink: deeplink,
+                                  showTraktIdentifier: showTraktIdentifier,
+                                  isCheckInActive: false,
+                                  checkInStartDate: nil,
+                                  checkInEndDate: nil)
+    }
+
     static let placeholder = WatchingControlWidgetItem(state: .currentlyWatching,
                                                        traktIdentifier: 0,
                                                        tmdbIdentifier: nil,
