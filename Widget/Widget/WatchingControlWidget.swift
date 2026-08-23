@@ -157,7 +157,7 @@ private struct WatchingControlWidgetEntryView: View {
             .frame(width: controlSize, height: controlSize)
             .accessibilityLabel(accessibilityLabel(for: item))
         } else {
-            Link(destination: WatchingControlWidgetStorage.toWatchDeeplink) {
+            Link(destination: WatchingControlWidgetStorage.toWatchContainerDeeplink) {
                 emptyMedia
             }
             .buttonStyle(.plain)

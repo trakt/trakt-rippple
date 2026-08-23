@@ -979,6 +979,7 @@ Be the fist to add one.</string>
                         <segue destination="lJh-3e-WbX" kind="show" identifier="wheretowatch" id="CCU-er-fXu"/>
                         <segue destination="bFG-QG-Wsb" kind="show" identifier="browse this week" id="CNF-hT-0Yz"/>
                         <segue destination="sju-kY-Odk" kind="show" identifier="appicon" id="3Qh-xX-mAZ"/>
+                        <segue destination="Qaf-Qp-MRQ" kind="show" identifier="toWatch" id="tWt-Cn-tNr"/>
                         <segue destination="Qaf-Qp-MRQ" kind="show" identifier="toWatchEpisodes" id="IM8-Ro-B1s"/>
                         <segue destination="yPp-sX-6nb" kind="show" identifier="history" id="mi2-t8-gbx"/>
                         <segue destination="pbA-AN-6VU" kind="show" identifier="toWatchMovies" id="Nod-su-Rx4"/>
@@ -1082,10 +1083,10 @@ Be the fist to add one.</string>
             </objects>
             <point key="canvasLocation" x="4707" y="263"/>
         </scene>
-        <!--MoviesToWatchViewController-->
+        <!--ToWatchViewController-->
         <scene sceneID="Bfa-Ig-Lx3">
             <objects>
-                <viewControllerPlaceholder referencedIdentifier="MoviesToWatchViewController" id="pbA-AN-6VU" sceneMemberID="viewController">
+                <viewControllerPlaceholder referencedIdentifier="ToWatchViewController" id="pbA-AN-6VU" sceneMemberID="viewController">
                     <navigationItem key="navigationItem" id="SoN-uy-b6b"/>
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="2Qk-NU-KUH" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -4449,10 +4450,10 @@ Keeping things private for private users...</string>
             </objects>
             <point key="canvasLocation" x="-1690" y="-1961"/>
         </scene>
-        <!--EpisodesToWatchViewController-->
+        <!--ToWatchViewController-->
         <scene sceneID="4V8-7h-ngU">
             <objects>
-                <viewControllerPlaceholder referencedIdentifier="EpisodesToWatchViewController" id="Qaf-Qp-MRQ" sceneMemberID="viewController">
+                <viewControllerPlaceholder referencedIdentifier="ToWatchViewController" id="Qaf-Qp-MRQ" sceneMemberID="viewController">
                     <navigationItem key="navigationItem" id="vQc-RX-SJi"/>
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4Mi-lX-16a" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

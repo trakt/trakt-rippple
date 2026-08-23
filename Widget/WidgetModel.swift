@@ -241,7 +241,7 @@ enum QuickAccessWidgetStorage {
 enum WatchingControlWidgetStorage {
     static let kind = "WatchingControlWidget"
     static let dataKey = "widget.watchingControl.item"
-    static let toWatchDeeplink = URL(string: "ripl://towatch")!
+    static let toWatchContainerDeeplink = URL(string: "ripl://towatch")!
     static let episodesToWatchDeeplink = URL(string: "ripl://towatch/episodes")!
     static let moviesToWatchDeeplink = URL(string: "ripl://towatch/movies")!
 

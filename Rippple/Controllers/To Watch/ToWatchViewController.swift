@@ -31,13 +31,11 @@ final class ToWatchViewController: UIViewController {
             UserDefaults.standard.set(currentType.rawValue, forKey: "ToWatchViewController.currentType")
             UserDefaults.standard.synchronize()
 
-            navigationItem.style = .browser
-            navigationItem.title = "To Watch"
+            updateNavigationTitle()
 
             if isViewLoaded {
                 switch currentType {
                 case .movies:
-                    navigationItem.subtitle = "Movies"
                     moviesContainerView.translatesAutoresizingMaskIntoConstraints = false
                     view.addSubview(moviesContainerView)
                     episodesContainerView.removeFromSuperview()
@@ -48,7 +46,6 @@ final class ToWatchViewController: UIViewController {
                         moviesContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
                     ])
                 case .episodes:
-                    navigationItem.subtitle = "Episodes"
                     episodesContainerView.translatesAutoresizingMaskIntoConstraints = false
                     view.addSubview(episodesContainerView)
                     moviesContainerView.removeFromSuperview()
@@ -68,6 +65,12 @@ final class ToWatchViewController: UIViewController {
     }
 
     private var switchBarButtonItem = UIBarButtonItem()
+
+    private func updateNavigationTitle() {
+        navigationItem.style = .browser
+        navigationItem.title = "To Watch"
+        navigationItem.subtitle = currentType == .movies ? "Movies" : "Episodes"
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -180,6 +183,8 @@ final class ToWatchViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        updateNavigationTitle()
 
         #if targetEnvironment(macCatalyst)
         // On Mac Catalyst, do not show a left bar button item.

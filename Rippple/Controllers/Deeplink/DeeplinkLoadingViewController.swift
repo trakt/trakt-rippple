@@ -67,6 +67,18 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
             searchViewController.searchQuery = query
             searchViewController.isDeeplink = true
         }
+
+        if let toWatchViewController = segue.destination as? ToWatchViewController {
+            _ = toWatchViewController.view
+            switch segue.identifier {
+            case "toWatchMovies":
+                toWatchViewController.currentType = .movies
+            case "toWatchEpisodes":
+                toWatchViewController.currentType = .episodes
+            default:
+                break
+            }
+        }
     }
 
     @IBSegueAction
@@ -497,6 +509,8 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
             return
         case .browseThisWeek:
             performSegue(withIdentifier: "browse this week", sender: nil)
+        case .toWatch:
+            performSegue(withIdentifier: "toWatch", sender: nil)
         case .toWatchMovies:
             performSegue(withIdentifier: "toWatchMovies", sender: nil)
         case .toWatchEpisodes:
