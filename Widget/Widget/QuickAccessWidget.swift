@@ -96,10 +96,10 @@ private struct QuickAccessWidgetEntryView: View {
                                 .lineLimit(1)
                             Spacer(minLength: 0)
                         }
-                        .foregroundStyle(.white.opacity(0.72))
+                        .foregroundStyle(.primary.opacity(0.72))
                         .padding(.leading, 18)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(.white.opacity(0.2), in: Capsule())
+                        .background(.primary.opacity(0.2), in: Capsule())
                         .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -117,7 +117,7 @@ private struct QuickAccessWidgetEntryView: View {
             }
         }
         .padding(12)
-        .containerBackground(.black, for: .widget)
+        .containerBackground(.background, for: .widget)
     }
 
     private func controlSize(for availableSize: CGSize) -> CGFloat {
@@ -131,9 +131,9 @@ private struct QuickAccessWidgetEntryView: View {
         Link(destination: URL(string: "ripl://search")!) {
             Image(systemName: "magnifyingglass")
                 .font(.title3.weight(.medium))
-                .foregroundStyle(.white.opacity(0.72))
+                .foregroundStyle(.primary.opacity(0.72))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(.white.opacity(0.2), in: Circle())
+                .background(.primary.opacity(0.2), in: Circle())
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
@@ -187,9 +187,9 @@ private struct QuickAccessWidgetEntryView: View {
     private var emptyPoster: some View {
         Image(systemName: "film")
             .font(.title2)
-            .foregroundStyle(.white.opacity(0.5))
+            .foregroundStyle(.primary.opacity(0.5))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.white.opacity(0.12), in: Circle())
+            .background(.primary.opacity(0.12), in: Circle())
     }
 }
 

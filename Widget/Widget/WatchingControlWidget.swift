@@ -153,7 +153,7 @@ private struct WatchingControlWidgetEntryView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .padding(12)
-        .containerBackground(.black, for: .widget)
+        .containerBackground(.background, for: .widget)
     }
 
     @ViewBuilder
@@ -185,9 +185,9 @@ private struct WatchingControlWidgetEntryView: View {
             } else {
                 Image(systemName: "film")
                     .font(.title2)
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(.primary.opacity(0.5))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(.white.opacity(0.12))
+                    .background(.primary.opacity(0.12))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -201,8 +201,8 @@ private struct WatchingControlWidgetEntryView: View {
     private var emptyMedia: some View {
         Image(systemName: "film")
             .font(.title2)
-            .foregroundStyle(.white.opacity(0.5))
-            .background(.white.opacity(0.12))
+            .foregroundStyle(.primary.opacity(0.5))
+            .background(.primary.opacity(0.12))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .clipShape(Circle())
             .overlay {
@@ -229,15 +229,15 @@ private struct WatchingControlWidgetEntryView: View {
                 actionButton(systemImage: "circle",
                              accessibilityLabel: "Run selected shortcut",
                              controlSize: controlSize,
-                             foregroundStyle: .white.opacity(0.9),
-                             backgroundStyle: .white.opacity(0.2),
+                             foregroundStyle: .primary.opacity(0.9),
+                             backgroundStyle: .primary.opacity(0.2),
                              intent: RunSystemShortcutIntent(shortcut: shortcut))
             } else {
                 Image(systemName: "circle")
                     .font(.title3.weight(.medium))
-                    .foregroundStyle(.white.opacity(0.35))
+                    .foregroundStyle(.primary.opacity(0.35))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(.white.opacity(0.08), in: Circle())
+                    .background(.primary.opacity(0.08), in: Circle())
                     .contentShape(Circle())
                     .frame(width: controlSize, height: controlSize)
                     .accessibilityLabel("No shortcut selected")
@@ -252,9 +252,9 @@ private struct WatchingControlWidgetEntryView: View {
         Link(destination: destination) {
             Image(systemName: systemImage)
                 .font(.title3.weight(.medium))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(.primary.opacity(0.8))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(.white.opacity(0.2), in: Circle())
+                .background(.primary.opacity(0.2), in: Circle())
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
@@ -274,10 +274,10 @@ private struct WatchingControlWidgetEntryView: View {
                 if let checkInProgress {
                     ZStack {
                         Circle()
-                            .stroke(.white.opacity(0.3), lineWidth: 4)
+                            .stroke(.primary.opacity(0.3), lineWidth: 4)
                         Circle()
                             .trim(from: 0, to: checkInProgress)
-                            .stroke(.white, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                            .stroke(.primary, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                             .rotationEffect(.degrees(-90))
                     }
                     .padding(2)
@@ -289,8 +289,8 @@ private struct WatchingControlWidgetEntryView: View {
     private func actionButton<Intent: AppIntent>(systemImage: String,
                                                  accessibilityLabel: String,
                                                  controlSize: CGFloat,
-                                                 foregroundStyle: Color = .white.opacity(0.8),
-                                                 backgroundStyle: Color = .white.opacity(0.2),
+                                                 foregroundStyle: Color = .primary.opacity(0.8),
+                                                 backgroundStyle: Color = .primary.opacity(0.2),
                                                  intent: Intent) -> some View {
         Button(intent: intent) {
             Image(systemName: systemImage)
