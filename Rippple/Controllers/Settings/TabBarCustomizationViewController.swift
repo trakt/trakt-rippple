@@ -30,12 +30,21 @@ final class TabBarCustomizationViewController: UITableViewController {
     }
 
     private enum Section {
+        case presets
         case tabs
         case search
         case notTabs
     }
 
+    private struct Preset {
+        let title: String
+        let description: String
+        let mode: Mode
+        let tabs: [MainTabBarController.Tab]
+    }
+
     private let modeSegmentedControl = ReselectableSegmentedControl(items: ["Default", "Island", "One Page"])
+    private let modeHeaderView = UIView()
     private let tabStoreKeyPrefix = "TabBarCustomizationViewController.tab.positions"
     private var selectedMode = Mode.defaultTabs
     private var tabStores = [Mode: [MainTabBarController.Tab]]()
@@ -51,15 +60,37 @@ final class TabBarCustomizationViewController: UITableViewController {
         modeSegmentedControl.addTarget(self,
                                        action: #selector(modeValueChanged),
                                        for: .valueChanged)
-        let headerView = UIView(frame: CGRect(x: 0,
-                                              y: 0,
-                                              width: tableView.bounds.width,
-                                              height: 60))
-        modeSegmentedControl.frame = headerView.bounds.insetBy(dx: 20, dy: 10)
-        modeSegmentedControl.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        headerView.addSubview(modeSegmentedControl)
-        tableView.tableHeaderView = headerView
+        modeHeaderView.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 60)
+        modeHeaderView.addSubview(modeSegmentedControl)
+        modeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            modeSegmentedControl.topAnchor.constraint(equalTo: modeHeaderView.topAnchor, constant: 10),
+            modeSegmentedControl.leadingAnchor.constraint(equalTo: modeHeaderView.leadingAnchor, constant: 20),
+            modeSegmentedControl.trailingAnchor.constraint(equalTo: modeHeaderView.trailingAnchor, constant: -20),
+            modeSegmentedControl.bottomAnchor.constraint(equalTo: modeHeaderView.bottomAnchor, constant: -10)
+        ])
+        tableView.tableHeaderView = modeHeaderView
         setupTabStores()
+    }
+
+    private func apply(preset: Preset) {
+        guard isValid(tabs: preset.tabs, for: preset.mode),
+              let encoded = try? JSONEncoder().encode(preset.tabs) else { return }
+
+        selectedMode = preset.mode
+        currentTabs = preset.tabs
+        tabStores[preset.mode] = preset.tabs
+        modeSegmentedControl.selectedSegmentIndex = preset.mode.rawValue
+
+        UserDefaults.standard.set(encoded, forKey: tabStoreKey(for: preset.mode))
+        UserDefaults.standard.set(encoded, forKey: "MainTabBarController.tab.positions")
+        UserDefaults.standard.set(preset.mode == .island, forKey: "MainTabBarController.neverMinimize")
+        UserDefaults.standard.synchronize()
+
+        UISelectionFeedbackGenerator().selectionChanged()
+        onTabBarChangedTransmitter.broadcast(1)
+        neverMinimizeTabBarTransmitter.broadcast(preset.mode == .island)
+        reloadTableView()
     }
 
     private func save(tabs: [MainTabBarController.Tab]) {
@@ -183,6 +214,47 @@ final class TabBarCustomizationViewController: UITableViewController {
     private let defaultTabBar: [MainTabBarController.Tab] = [.browse, .toWatch, .history, .lists, .search]
     private let islandTabBar: [MainTabBarController.Tab] = [.browse, .search, .profile]
     private let defaultSingleTabBar: [MainTabBarController.Tab] = [.browse]
+    private var presets: [Preset] {
+        switch selectedMode {
+        case .defaultTabs:
+            return [Preset(title: "Default",
+                           description: "Browse, track your progress, revisit History, and manage Lists.",
+                           mode: .defaultTabs,
+                           tabs: [.browse, .toWatch, .history, .lists, .search]),
+                    Preset(title: "Tracking",
+                           description: "Keep progress, History, Watchlist, and your Ratings close at hand.",
+                           mode: .defaultTabs,
+                           tabs: [.toWatch, .history, .watchlist, .ratings, .search]),
+                    Preset(title: "Discovery",
+                           description: "Explore Browse, your Shelf, the Calendar, and Comments.",
+                           mode: .defaultTabs,
+                           tabs: [.browse, .shelf, .calendar, .comments, .search]),
+                    Preset(title: "Community",
+                           description: "Jump between Browse, Comments, the Wall, and Profile.",
+                           mode: .defaultTabs,
+                           tabs: [.browse, .comments, .wall, .profile, .search])]
+        case .island:
+            return [Preset(title: "Default",
+                           description: "A compact mix of Browse, Search, and Profile.",
+                           mode: .island,
+                           tabs: [.browse, .search, .profile]),
+                    Preset(title: "Tracking",
+                           description: "Keep To Watch, Search, and Profile together.",
+                           mode: .island,
+                           tabs: [.toWatch, .search, .profile]),
+                    Preset(title: "Discovery",
+                           description: "Explore Browse, your Shelf, Calendar, and Search.",
+                           mode: .island,
+                           tabs: [.browse, .shelf, .calendar, .search]),
+                    Preset(title: "Community",
+                           description: "Focus on Comments, Search, and Profile.",
+                           mode: .island,
+                           tabs: [.comments, .search, .profile])]
+        case .onePage:
+            return []
+        }
+    }
+
     private var neverMinimize: Bool {
         return selectedMode == .island
     }
@@ -229,7 +301,7 @@ final class TabBarCustomizationViewController: UITableViewController {
         if selectedMode == .onePage {
             return [.tabs]
         }
-        var sections: [Section] = [.tabs]
+        var sections: [Section] = [.presets, .tabs]
         if displaysSearchSeparately {
             sections.append(.search)
         }
@@ -255,12 +327,14 @@ final class TabBarCustomizationViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch self.section(at: section) {
+        case .presets:
+            return "Pick a preset"
         case .tabs:
             return "Your Tabs"
         case .search:
             return nil
         case .notTabs:
-            return "*Not* in Your Tabs"
+            return "Other available Tabs"
         case nil:
             return nil
         }
@@ -268,6 +342,8 @@ final class TabBarCustomizationViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         switch self.section(at: section) {
+        case .presets:
+            return nil
         case .tabs:
             if tabs.contains(.search) == false {
                 return "Just the Browse and a floating button for more."
@@ -283,8 +359,19 @@ final class TabBarCustomizationViewController: UITableViewController {
         }
     }
 
+    override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        guard self.section(at: section) == .presets else { return nil }
+        return UIView()
+    }
+
+    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return self.section(at: section) == .presets ? 18 : UITableView.automaticDimension
+    }
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch self.section(at: section) {
+        case .presets:
+            return presets.count
         case .tabs:
             return displayedTabs.count
         case .search:
@@ -300,8 +387,25 @@ final class TabBarCustomizationViewController: UITableViewController {
         let cell = super.tableView.dequeueReusableCell(withIdentifier: "item", for: indexPath)
 
         var content = cell.defaultContentConfiguration()
+        if section(at: indexPath.section) == .presets {
+            let preset = presets[indexPath.row]
+            content.text = preset.title
+            content.secondaryText = preset.description
+            content.textProperties.color = .label
+            content.textProperties.font = .preferredFont(forTextStyle: .body)
+            content.secondaryTextProperties.color = .secondaryLabel
+            content.secondaryTextProperties.font = .preferredFont(forTextStyle: .subheadline)
+            content.secondaryTextProperties.numberOfLines = 0
+            content.image = nil
+            cell.contentConfiguration = content
+            cell.selectionStyle = .default
+            return cell
+        }
+
         let tab: MainTabBarController.Tab
         switch section(at: indexPath.section) {
+        case .presets:
+            tab = .purchase
         case .tabs:
             tab = displayedTabs[indexPath.row]
         case .search:
@@ -370,6 +474,8 @@ final class TabBarCustomizationViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         switch section(at: indexPath.section) {
+        case .presets:
+            apply(preset: presets[indexPath.row])
         case .tabs:
             remove(tab: displayedTabs[indexPath.row])
         case .search:
@@ -383,7 +489,7 @@ final class TabBarCustomizationViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         guard selectedMode != .onePage else { return false }
-        return section(at: indexPath.section) != .search
+        return section(at: indexPath.section) != .search && section(at: indexPath.section) != .presets
     }
 
     override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
@@ -431,7 +537,7 @@ final class TabBarCustomizationViewController: UITableViewController {
         let sourceSection = section(at: sourceIndexPath.section)
         let destinationSection = section(at: proposedDestinationIndexPath.section)
 
-        if selectedMode == .onePage || sourceSection == .search || destinationSection == .search {
+        if selectedMode == .onePage || sourceSection == .presets || destinationSection == .presets || sourceSection == .search || destinationSection == .search {
             return sourceIndexPath
         }
         if selectedMode == .island,
@@ -463,7 +569,7 @@ final class TabBarCustomizationViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         guard selectedMode != .onePage else { return false }
-        return section(at: indexPath.section) != .search
+        return section(at: indexPath.section) != .search && section(at: indexPath.section) != .presets
     }
 
     override func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {
