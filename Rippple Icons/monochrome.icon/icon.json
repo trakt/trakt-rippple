@@ -1,17 +1,5 @@
 {
-  "fill" : {
-    "automatic-gradient" : "display-p3:0.90250,0.90250,0.90250,1.00000",
-    "orientation" : {
-      "start" : {
-        "x" : 0.5,
-        "y" : 1
-      },
-      "stop" : {
-        "x" : 0.5,
-        "y" : 0
-      }
-    }
-  },
+  "fill" : "system-light",
   "groups" : [
     {
       "layers" : [
