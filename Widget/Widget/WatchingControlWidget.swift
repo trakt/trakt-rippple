@@ -12,40 +12,15 @@ import WidgetKit
 
 #if !targetEnvironment(macCatalyst)
 @available(iOS 27.0, *)
-enum WatchingControlWidgetButtonAction: String, AppEnum {
-    case episodesToWatch
-    case moviesToWatch
-    case runShortcut
-
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Action")
-    static let typeDisplayName: LocalizedStringResource = "Action"
-    static let caseDisplayRepresentations: [WatchingControlWidgetButtonAction: DisplayRepresentation] = [
-        .episodesToWatch: "Open Episodes To Watch",
-        .moviesToWatch: "Open Movies To Watch",
-        .runShortcut: "Run a Shortcut"
-    ]
-}
-
-@available(iOS 27.0, *)
 struct WatchingControlWidgetConfigurationIntent: WidgetConfigurationIntent {
     static let title: LocalizedStringResource = "Watching Controls"
-    static let description = IntentDescription("Choose what the bottom-right button does.")
-
-    @Parameter(title: "Action", default: WatchingControlWidgetButtonAction.episodesToWatch)
-    var action: WatchingControlWidgetButtonAction
+    static let description = IntentDescription("Choose the shortcut for the bottom-right button.")
 
     @Parameter(title: "Shortcut")
     var shortcut: SystemShortcut?
 
     static var parameterSummary: some ParameterSummary {
-        Switch(\.$action) {
-            Case(.runShortcut) {
-                Summary("\(\.$action): \(\.$shortcut)")
-            }
-            DefaultCase {
-                Summary("\(\.$action)")
-            }
-        }
+        Summary("Run \(\.$shortcut)")
     }
 
     init() {}
@@ -99,17 +74,20 @@ struct WatchingControlWidgetProvider: AppIntentTimelineProvider {
         }
         entries.append(WatchingControlWidgetEntry(date: endDate,
                                                   configuration: configuration,
-                                                  item: item.endedCheckIn,
-                                                  poster: entry.poster))
+                                                  item: nil,
+                                                  poster: nil))
         return Timeline(entries: entries, policy: .after(endDate))
     }
 
     private func entry(for configuration: WatchingControlWidgetConfigurationIntent) async -> WatchingControlWidgetEntry {
-        let item = WatchingControlWidgetStorage.item().map { item in
-            guard item.isCheckInActive,
-                  let endDate = item.checkInEndDate,
-                  endDate <= Date.now else { return item }
-            return item.endedCheckIn
+        let item: WatchingControlWidgetItem? = WatchingControlWidgetStorage.item().flatMap { item in
+            guard item.state == .currentlyWatching,
+                  item.isCheckInActive else { return nil }
+            if let endDate = item.checkInEndDate,
+               endDate <= Date.now {
+                return nil
+            }
+            return item
         }
         let posters = await loadWidgetPosters(for: item.map { [$0] } ?? [],
                                               identifier: \WatchingControlWidgetItem.id,
@@ -170,6 +148,10 @@ private struct WatchingControlWidgetEntryView: View {
         if let item = entry.item {
             Link(destination: item.deeplink) {
                 poster
+                    .padding(5)
+                    .overlay {
+                        checkInProgressRing
+                    }
             }
             .buttonStyle(.plain)
             .frame(width: controlSize, height: controlSize)
@@ -194,9 +176,9 @@ private struct WatchingControlWidgetEntryView: View {
             } else {
                 Image(systemName: "film")
                     .font(.title2)
-                    .foregroundStyle(.primary.opacity(0.5))
+                    .foregroundStyle(mainActionColor.opacity(0.75))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(.primary.opacity(0.12))
+                    .background(mainActionColor.opacity(0.14))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -208,67 +190,32 @@ private struct WatchingControlWidgetEntryView: View {
     }
 
     private var emptyMedia: some View {
-        Image(systemName: "film")
-            .font(.title2)
-            .foregroundStyle(.primary.opacity(0.5))
-            .background(.primary.opacity(0.12))
+        Image(systemName: "checklist")
+            .font(.title3.weight(.medium))
+            .foregroundStyle(mainActionColor.opacity(0.9))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipShape(Circle())
-            .overlay {
-                Circle().strokeBorder(Color(uiColor: .tertiarySystemFill), lineWidth: 1)
-            }
+            .background(mainActionColor.opacity(0.16), in: Circle())
             .contentShape(Circle())
     }
 
     @ViewBuilder
     private func configuredActionButton(controlSize: CGFloat) -> some View {
-        switch entry.configuration.action {
-        case .episodesToWatch:
-            deeplinkButton(systemImage: "checklist",
-                           accessibilityLabel: "Open Episodes To Watch",
-                           destination: WatchingControlWidgetStorage.episodesToWatchDeeplink,
-                           controlSize: controlSize)
-        case .moviesToWatch:
-            deeplinkButton(systemImage: "checklist",
-                           accessibilityLabel: "Open Movies To Watch",
-                           destination: WatchingControlWidgetStorage.moviesToWatchDeeplink,
-                           controlSize: controlSize)
-        case .runShortcut:
-            if let shortcut = entry.configuration.shortcut {
-                actionButton(systemImage: "circle",
-                             accessibilityLabel: "Run selected shortcut",
-                             controlSize: controlSize,
-                             foregroundStyle: .primary.opacity(0.9),
-                             backgroundStyle: .primary.opacity(0.2),
-                             intent: RunSystemShortcutIntent(shortcut: shortcut))
-            } else {
-                Image(systemName: "circle")
-                    .font(.title3.weight(.medium))
-                    .foregroundStyle(.primary.opacity(0.35))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(.primary.opacity(0.08), in: Circle())
-                    .contentShape(Circle())
-                    .frame(width: controlSize, height: controlSize)
-                    .accessibilityLabel("No shortcut selected")
-            }
+        if let shortcut = entry.configuration.shortcut {
+            actionButton(systemImage: "command",
+                         accessibilityLabel: "Run selected shortcut",
+                         controlSize: controlSize,
+                         foregroundStyle: mainActionColor.opacity(0.9),
+                         backgroundStyle: mainActionColor.opacity(0.16),
+                         intent: RunSystemShortcutIntent(shortcut: shortcut))
+        } else {
+            actionButton(systemImage: "gearshape",
+                         accessibilityLabel: "Configure a shortcut",
+                         controlSize: controlSize,
+                         foregroundStyle: mainActionColor.opacity(0.35),
+                         backgroundStyle: mainActionColor.opacity(0.08),
+                         intent: RunSystemShortcutIntent())
+                .disabled(true)
         }
-    }
-
-    private func deeplinkButton(systemImage: String,
-                                accessibilityLabel: String,
-                                destination: URL,
-                                controlSize: CGFloat) -> some View {
-        Link(destination: destination) {
-            Image(systemName: systemImage)
-                .font(.title3.weight(.medium))
-                .foregroundStyle(.primary.opacity(0.8))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(.primary.opacity(0.2), in: Circle())
-                .contentShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .frame(width: controlSize, height: controlSize)
-        .accessibilityLabel(accessibilityLabel)
     }
 
     private func cancelButton(controlSize: CGFloat) -> some View {
@@ -279,27 +226,13 @@ private struct WatchingControlWidgetEntryView: View {
                      backgroundStyle: .red.opacity(cancelIsEnabled ? 0.2 : 0.08),
                      intent: CancelWatchingControlWidgetIntent())
             .disabled(!cancelIsEnabled)
-            .overlay {
-                if let checkInProgress {
-                    ZStack {
-                        Circle()
-                            .stroke(.primary.opacity(0.3), lineWidth: 4)
-                        Circle()
-                            .trim(from: 0, to: checkInProgress)
-                            .stroke(.primary, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                            .rotationEffect(.degrees(-90))
-                    }
-                    .padding(2)
-                    .allowsHitTesting(false)
-                }
-            }
     }
 
     private func actionButton<Intent: AppIntent>(systemImage: String,
                                                  accessibilityLabel: String,
                                                  controlSize: CGFloat,
-                                                 foregroundStyle: Color = .primary.opacity(0.8),
-                                                 backgroundStyle: Color = .primary.opacity(0.2),
+                                                 foregroundStyle: Color = .primary.opacity(0.75),
+                                                 backgroundStyle: Color = .primary.opacity(0.12),
                                                  intent: Intent) -> some View {
         Button(intent: intent) {
             Image(systemName: systemImage)
@@ -318,6 +251,10 @@ private struct WatchingControlWidgetEntryView: View {
         entry.item?.isCheckInActive == true
     }
 
+    private var mainActionColor: Color {
+        WidgetTint.color
+    }
+
     private var checkInProgress: Double? {
         guard let item = entry.item,
               item.isCheckInActive,
@@ -326,6 +263,22 @@ private struct WatchingControlWidgetEntryView: View {
         let duration = endDate.timeIntervalSince(startDate)
         guard duration > 0 else { return nil }
         return min(max(entry.date.timeIntervalSince(startDate) / duration, 0), 1)
+    }
+
+    @ViewBuilder
+    private var checkInProgressRing: some View {
+        if let checkInProgress {
+            ZStack {
+                Circle()
+                    .stroke(mainActionColor.opacity(0.25), lineWidth: 4)
+                Circle()
+                    .trim(from: 0, to: checkInProgress)
+                    .stroke(mainActionColor, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+            }
+            .padding(2)
+            .allowsHitTesting(false)
+        }
     }
 
     private func accessibilityLabel(for item: WatchingControlWidgetItem) -> String {
@@ -342,20 +295,6 @@ private struct WatchingControlWidgetEntryView: View {
 }
 
 private extension WatchingControlWidgetItem {
-    var endedCheckIn: WatchingControlWidgetItem {
-        WatchingControlWidgetItem(state: .lastWatched,
-                                  traktIdentifier: traktIdentifier,
-                                  tmdbIdentifier: tmdbIdentifier,
-                                  tmdbMediaType: tmdbMediaType,
-                                  title: title,
-                                  subtitle: subtitle,
-                                  deeplink: deeplink,
-                                  showTraktIdentifier: showTraktIdentifier,
-                                  isCheckInActive: false,
-                                  checkInStartDate: nil,
-                                  checkInEndDate: nil)
-    }
-
     static let placeholder = WatchingControlWidgetItem(state: .currentlyWatching,
                                                        traktIdentifier: 0,
                                                        tmdbIdentifier: nil,

@@ -357,6 +357,7 @@ public extension UIApplication {
             windowScene.traitOverrides.ripppleTintColor = tint
             AppManager.shared.applyAppearance(to: window)
         }
+        reloadTintedWidgetTimelines()
     }
 
     func setTintedAppearance(enabled: Bool) {
@@ -368,8 +369,13 @@ public extension UIApplication {
             windowScene.traitOverrides.ripppleTintedAppearance = enabled
             AppManager.shared.applyAppearance(to: window)
         }
+        reloadTintedWidgetTimelines()
+    }
+
+    private func reloadTintedWidgetTimelines() {
         WidgetCenter.shared.reloadTimelines(ofKind: ToWatchWidgetStorage.kind)
         WidgetCenter.shared.reloadTimelines(ofKind: ActivityPunchcardWidgetStorage.kind)
+        WidgetCenter.shared.reloadTimelines(ofKind: WatchingControlWidgetStorage.kind)
     }
 
     func setDarkMode() {

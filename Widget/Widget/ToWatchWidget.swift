@@ -177,7 +177,7 @@ private struct ToWatchWidgetEntryView: View {
         HStack(spacing: 10) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.title3)
-                .foregroundStyle(usesSystemRendering ? Color.primary : widgetTint)
+                .foregroundStyle(usesSystemRendering ? Color.primary : WidgetTint.color)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 1) {
                 Text("You’re all caught up")
@@ -269,7 +269,7 @@ private struct ToWatchWidgetRow: View {
     }
 
     private var actionColor: Color {
-        usesSystemRendering ? .primary : widgetTint
+        usesSystemRendering ? .primary : WidgetTint.color
     }
 
     private var actionAccessibilityLabel: String {
@@ -399,29 +399,4 @@ private func rowCount(for family: WidgetFamily) -> Int {
         return 6
     }
     return family == .systemLarge ? 4 : 2
-}
-
-private var widgetTint: Color {
-    let colors: [UIColor] = [
-        UIColor { traits in
-            if traits.userInterfaceStyle == .dark {
-                return UIColor(red: 191 / 255, green: 90 / 255, blue: 242 / 255, alpha: 1)
-            }
-            return UIColor(red: 174 / 255, green: 82 / 255, blue: 222 / 255, alpha: 1)
-        },
-        .systemRed,
-        .systemOrange,
-        .systemYellow,
-        .systemGreen,
-        .systemMint,
-        .systemTeal,
-        .systemCyan,
-        .systemBlue,
-        .systemIndigo,
-        .systemPink,
-        .systemBrown,
-        .label
-    ]
-    let index = UserDefaults(suiteName: "group.tv.trakt.rippple")!.integer(forKey: "AppManager.currentTint")
-    return Color(uiColor: colors.indices.contains(index) ? colors[index] : .systemPurple)
 }

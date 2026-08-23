@@ -11,6 +11,43 @@ import WidgetKit
 
 typealias MediaWidgetIntent = MediaTypeIntent
 
+enum WidgetTint {
+    private static let defaults = UserDefaults(suiteName: "group.tv.trakt.rippple")!
+    private static let key = "AppManager.currentTint"
+
+    static var color: Color {
+        Color(uiColor: uiColor)
+    }
+
+    static var uiColor: UIColor {
+        let colors: [UIColor] = [
+            UIColor { traits in
+                if traits.userInterfaceStyle == .dark {
+                    return UIColor(red: 191 / 255, green: 90 / 255, blue: 242 / 255, alpha: 1)
+                }
+                return UIColor(red: 174 / 255, green: 82 / 255, blue: 222 / 255, alpha: 1)
+            },
+            .systemRed,
+            .systemOrange,
+            .systemYellow,
+            .systemGreen,
+            .systemMint,
+            .systemTeal,
+            .systemCyan,
+            .systemBlue,
+            .systemIndigo,
+            .systemPink,
+            .systemBrown,
+            .label
+        ]
+        return colors.indices.contains(selectedIndex) ? colors[selectedIndex] : .systemPurple
+    }
+
+    private static var selectedIndex: Int {
+        defaults.integer(forKey: key)
+    }
+}
+
 @main
 struct RipppleWidgets {
     static func main() {

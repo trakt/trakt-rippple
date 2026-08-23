@@ -55,38 +55,13 @@ private struct ActivityPunchcardWidgetView: View {
     var body: some View {
         ActivityPunchcardView(activityCounts: entry.activityCounts,
                               referenceDate: entry.date,
-                              tint: tintColor,
+                              tint: WidgetTint.uiColor,
                               punchSize: ActivityPunchcardMetrics.punchSize * 1.2,
                               fillsAvailableSpace: true,
                               outerCornerRadiusFactor: 0.8)
             .padding(14)
             .containerBackground(.background, for: .widget)
             .widgetURL(URL(string: "ripl://users/me"))
-    }
-
-    private var tintColor: UIColor {
-        let colors: [UIColor] = [
-            UIColor { traits in
-                if traits.userInterfaceStyle == .dark {
-                    return UIColor(red: 191 / 255, green: 90 / 255, blue: 242 / 255, alpha: 1)
-                }
-                return UIColor(red: 174 / 255, green: 82 / 255, blue: 222 / 255, alpha: 1)
-            },
-            .systemRed,
-            .systemOrange,
-            .systemYellow,
-            .systemGreen,
-            .systemMint,
-            .systemTeal,
-            .systemCyan,
-            .systemBlue,
-            .systemIndigo,
-            .systemPink,
-            .systemBrown,
-            .label
-        ]
-        let index = UserDefaults(suiteName: "group.tv.trakt.rippple")!.integer(forKey: "AppManager.currentTint")
-        return colors.indices.contains(index) ? colors[index] : .systemPurple
     }
 }
 
