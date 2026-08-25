@@ -121,6 +121,7 @@ final class TabBarCustomizationViewController: UITableViewController {
         if mode == selectedMode {
             save(tabs: defaultTabs(for: mode))
         } else {
+            tabs = currentTabs
             selectedMode = mode
             currentTabs = tabStores[mode] ?? defaultTabs(for: mode)
             applyToMainTabStore(tabs: tabs)
