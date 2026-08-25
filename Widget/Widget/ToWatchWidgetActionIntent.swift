@@ -160,22 +160,32 @@ private func withToWatchWidgetActionNotifications(action: ToWatchWidgetAction,
 
 private func performToWatchWidgetAction(_ action: ToWatchWidgetAction,
                                         media: ToWatchWidgetMedia,
-                                        description: String,
-                                        refreshDescription: String,
                                         progress: Progress,
                                         actionHandler: ToWatchWidgetActionHandler,
                                         refresh: @Sendable () async -> Void) async throws {
     progress.totalUnitCount = 2
-    progress.localizedDescription = description
-    progress.localizedAdditionalDescription = "Performing action"
+    switch (action, media) {
+    case (.checkIn, .episode(let episode)):
+        progress.localizedDescription = "Checking in to \(episode.showTitle) \(episode.localizedEpisodeNumber)"
+    case (.checkIn, .movie(let movie)):
+        progress.localizedDescription = "Checking in to \(movie.title)"
+    case (.markWatched, .episode(let episode)):
+        progress.localizedDescription = "Marking \(episode.showTitle) \(episode.localizedEpisodeNumber) watched"
+    case (.markWatched, .movie(let movie)):
+        progress.localizedDescription = "Marking \(movie.title) watched"
+    case (.none, _):
+        return
+    }
+    progress.localizedAdditionalDescription = "Updating Trakt"
 
     try Task.checkCancellation()
     try await actionHandler.performAction(action, media)
     progress.completedUnitCount = 1
-    progress.localizedAdditionalDescription = refreshDescription
+    progress.localizedAdditionalDescription = "Refreshing To Watch"
 
     try Task.checkCancellation()
     await refresh()
+    progress.localizedAdditionalDescription = "Done"
     progress.completedUnitCount = 2
 }
 
@@ -235,8 +245,6 @@ struct EpisodesToWatchRefreshWidgetActionIntent: LongRunningIntent, CancellableI
             try await performBackgroundTask {
                 try await performToWatchWidgetAction(action,
                                                      media: media,
-                                                     description: "Updating episode",
-                                                     refreshDescription: "Updating episodes",
                                                      progress: progress,
                                                      actionHandler: actionHandler) {
                     await actionHandler.refreshEpisode(showTraktIdentifier)
@@ -292,8 +300,6 @@ struct MoviesToWatchRefreshWidgetActionIntent: LongRunningIntent, CancellableInt
             try await performBackgroundTask {
                 try await performToWatchWidgetAction(action,
                                                      media: media,
-                                                     description: "Updating movie",
-                                                     refreshDescription: "Updating movies",
                                                      progress: progress,
                                                      actionHandler: actionHandler) {
                     await actionHandler.refreshMovies()
