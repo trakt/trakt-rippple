@@ -1393,9 +1393,7 @@ extension ToWatchWidgetActionHandler {
     } refreshEpisode: { showTraktIdentifier in
         await EpisodeToWatchManager.shared.refreshProgress(forShowWithTraktIdentifier: Int64(showTraktIdentifier))
     } refreshMovies: {
-        await MainActor.run {
-            MovieToWatchManager.shared.forcedUserRefresh()
-        }
+        await MovieToWatchManager.shared.refreshProgressAfterWidgetAction()
     }
 }
 

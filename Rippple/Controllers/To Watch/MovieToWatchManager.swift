@@ -392,6 +392,33 @@ final class MovieToWatchManager {
         debouncedForceRefresh.call()
     }
 
+    @MainActor
+    func refreshProgressAfterWidgetAction() async {
+        guard SessionManager.shared.isLoggedIn, let movies = movies else { return }
+
+        status = .loading
+
+        let updateMoviesWatchedOperation = UpdateMoviesWatchedOperation(movies: movies)
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            updateMoviesWatchedOperation.completionBlock = {
+                continuation.resume()
+            }
+            operationQueue.addOperation(updateMoviesWatchedOperation)
+        }
+
+        guard !updateMoviesWatchedOperation.isCancelled else { return }
+
+        releaseInfoCache = updateMoviesWatchedOperation.releaseInfoByMovieId
+        mediaModels = updateMoviesWatchedOperation.mediaModels
+        futureMediaModels = updateMoviesWatchedOperation.futureMediaModels
+        debouncedTransmit.fireNow()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.main.async {
+                continuation.resume()
+            }
+        }
+    }
+
     private func forceRefresh() {
         if SessionManager.shared.isLoggedOut {
             print("MovieToWatchManager.forceRefresh stop because NOT logged in")
