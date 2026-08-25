@@ -104,6 +104,32 @@ final class SyncWatchedManager {
         debouncedRefreshWatchedEpisodes.call()
     }
 
+    func refreshImmediately(type: SyncWatchedType) async {
+        guard SessionManager.shared.isLoggedIn else { return }
+
+        let result: Result<SyncWatchedItems, Error> = await withCheckedContinuation { continuation in
+            TraktAPIProvider.fetchSyncWatchedItems(type: type) { result in
+                continuation.resume(returning: result)
+            }
+        }
+
+        switch result {
+        case .success(let items):
+            await MainActor.run {
+                switch type {
+                case .movies:
+                    self.movieWatchedItems = items
+                case .shows:
+                    self.showWatchedItems = self.polyfilledWatchedShows(items)
+                case .episodes:
+                    self.episodeWatchedItems = items
+                }
+            }
+        case .failure(let error):
+            print("Sync Watched \(type.rawValue.capitalized) request failure \(error)")
+        }
+    }
+
     func isWatched(type: SyncWatchedType, traktId: Int64) -> Bool {
         switch type {
         case .movies:

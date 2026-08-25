@@ -180,7 +180,7 @@ private func performToWatchWidgetAction(_ action: ToWatchWidgetAction,
 }
 
 @available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *)
-struct EpisodesToWatchRefreshWidgetActionIntent: LongRunningIntent, CancellableIntent {
+struct EpisodesToWatchRefreshWidgetActionIntent: LongRunningIntent, CancellableIntent, LiveActivityIntent {
     static let title: LocalizedStringResource = "Update Episode To Watch"
     static let isDiscoverable = false
     static var allowedExecutionTargets: IntentExecutionTargets {
@@ -248,7 +248,7 @@ struct EpisodesToWatchRefreshWidgetActionIntent: LongRunningIntent, CancellableI
 }
 
 @available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *)
-struct MoviesToWatchRefreshWidgetActionIntent: LongRunningIntent, CancellableIntent {
+struct MoviesToWatchRefreshWidgetActionIntent: LongRunningIntent, CancellableIntent, LiveActivityIntent {
     static let title: LocalizedStringResource = "Update Movie To Watch"
     static let isDiscoverable = false
     static var allowedExecutionTargets: IntentExecutionTargets {
