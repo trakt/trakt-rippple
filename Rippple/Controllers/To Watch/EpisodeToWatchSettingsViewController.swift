@@ -15,6 +15,7 @@ let (episodeToWatchSettingsUpdatedTransmitter, episodeToWatchSettingsUpdatedRece
 let (episodeUpcomingEnabledTransmitter, episodeUpcomingEnabledReceiver) = Receiver<Bool>.make(with: .hot)
 let (episodeToWatchGroupModeTransmitter, episodeToWatchGroupModeReceiver) = Receiver<EpisodeToWatchGroupMode>.make(with: .hot)
 let (episodeToWatchBingeableOnlyTransmitter, episodeToWatchBingeableOnlyReceiver) = Receiver<Bool>.make(with: .hot)
+let (episodeToWatchHideDuplicatesTransmitter, episodeToWatchHideDuplicatesReceiver) = Receiver<Bool>.make(with: .hot)
 
 private let episodeToWatchGroupModeStorageKey = "EpisodeToWatchSettings.groupMode"
 
@@ -162,6 +163,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
     @Published var sort: EpisodeToWatchSettings.Sort
     @Published var reverse: Bool
     @Published var bingeableOnly: Bool
+    @Published var hideDuplicates: Bool
     @Published var upcomingEnabled: Bool
     @Published var groupMode: EpisodeToWatchGroupMode
 
@@ -178,6 +180,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
         sort = settings.sort
         reverse = settings.reverse
         bingeableOnly = settings.bingeableOnly
+        hideDuplicates = settings.hideDuplicates
         upcomingEnabled = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.upcoming")
         groupMode = EpisodeToWatchGroupMode.currentValue()
 
@@ -286,6 +289,16 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
         bingeableOnly = newValue
         settings.bingeableOnly = newValue
         episodeToWatchBingeableOnlyTransmitter.broadcast(newValue)
+    }
+
+    func setHideDuplicates(_ newValue: Bool) {
+        guard PurchaseManager.shared.purchased else {
+            UIApplication.shared.switchToPurchase()
+            return
+        }
+        hideDuplicates = newValue
+        settings.hideDuplicates = newValue
+        episodeToWatchHideDuplicatesTransmitter.broadcast(newValue)
     }
 
     func setUpcomingEnabled(_ newValue: Bool) {
@@ -501,6 +514,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
         sort = settings.sort
         reverse = settings.reverse
         bingeableOnly = settings.bingeableOnly
+        hideDuplicates = settings.hideDuplicates
         upcomingEnabled = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.upcoming")
         groupMode = EpisodeToWatchGroupMode.currentValue()
         rebuildOtherListItems()
@@ -556,6 +570,7 @@ struct EpisodeToWatchSettingsView: View {
             Section {
                 upcomingRow
                 groupingRow
+                hideDuplicatesRow
             } header: {
                 Text("Display options:")
             }
@@ -672,6 +687,17 @@ struct EpisodeToWatchSettingsView: View {
             Spacer()
             Toggle("", isOn: Binding(get: { viewModel.bingeableOnly },
                                      set: { viewModel.setBingeableOnly($0) }))
+                .labelsHidden()
+        }
+    }
+
+    private var hideDuplicatesRow: some View {
+        HStack {
+            Text("Hide Duplicates Across Lists")
+                .foregroundStyle(.primary)
+            Spacer()
+            Toggle("", isOn: Binding(get: { viewModel.hideDuplicates },
+                                     set: { viewModel.setHideDuplicates($0) }))
                 .labelsHidden()
         }
     }
@@ -943,6 +969,7 @@ final class EpisodeToWatchSettings {
         sort = Sort(rawValue: UserDefaults.standard.integer(forKey: "EpisodeToWatchSettings.sort")) ?? Sort.automatic
         reverse = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.reverse")
         bingeableOnly = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.bingeableOnly")
+        hideDuplicates = UserDefaults.standard.bool(forKey: "EpisodeToWatchSettings.hideDuplicates")
 
         // Load otherLists from new format
         if let encodedOtherLists = UserDefaults.standard.object(forKey: "EpisodeToWatchSettings.otherLists") as? Data,
@@ -1060,6 +1087,13 @@ final class EpisodeToWatchSettings {
     var watched = true {
         didSet {
             UserDefaults.standard.set(watched, forKey: "EpisodeToWatchSettings.watched")
+            UserDefaults.standard.synchronize()
+        }
+    }
+
+    var hideDuplicates = false {
+        didSet {
+            UserDefaults.standard.set(hideDuplicates, forKey: "EpisodeToWatchSettings.hideDuplicates")
             UserDefaults.standard.synchronize()
         }
     }

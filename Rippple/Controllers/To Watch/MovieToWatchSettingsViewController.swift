@@ -14,6 +14,7 @@ let (movieToWatchSettingsUpdatedTransmitter, movieToWatchSettingsUpdatedReceiver
 
 let (movieUpcomingEnabledTransmitter, movieUpcomingEnabledReceiver) = Receiver<Bool>.make(with: .hot)
 let (movieToWatchGroupModeTransmitter, movieToWatchGroupModeReceiver) = Receiver<MovieToWatchGroupMode>.make(with: .hot)
+let (movieToWatchHideDuplicatesTransmitter, movieToWatchHideDuplicatesReceiver) = Receiver<Bool>.make(with: .hot)
 
 private let movieToWatchGroupModeStorageKey = "MovieToWatchSettings.groupMode"
 
@@ -159,6 +160,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
 
     @Published var sort: MovieToWatchSettings.Sort
     @Published var reverse: Bool
+    @Published var hideDuplicates: Bool
     @Published var upcomingEnabled: Bool
     @Published var groupMode: MovieToWatchGroupMode
 
@@ -173,6 +175,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
         collected = settings.collected
         sort = settings.sort
         reverse = settings.reverse
+        hideDuplicates = settings.hideDuplicates
         upcomingEnabled = UserDefaults.standard.bool(forKey: "MovieToWatchSettings.upcoming")
         groupMode = MovieToWatchGroupMode.currentValue()
 
@@ -258,6 +261,16 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
 
     func setReverse(_ newValue: Bool) {
         updateSetting(\.reverse, settingsKeyPath: \.reverse, to: newValue)
+    }
+
+    func setHideDuplicates(_ newValue: Bool) {
+        guard PurchaseManager.shared.purchased else {
+            UIApplication.shared.switchToPurchase()
+            return
+        }
+        hideDuplicates = newValue
+        settings.hideDuplicates = newValue
+        movieToWatchHideDuplicatesTransmitter.broadcast(newValue)
     }
 
     func setUpcomingEnabled(_ newValue: Bool) {
@@ -459,6 +472,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
         collected = settings.collected
         sort = settings.sort
         reverse = settings.reverse
+        hideDuplicates = settings.hideDuplicates
         upcomingEnabled = UserDefaults.standard.bool(forKey: "MovieToWatchSettings.upcoming")
         groupMode = MovieToWatchGroupMode.currentValue()
         rebuildOtherListItems()
@@ -512,6 +526,7 @@ struct MovieToWatchSettingsView: View {
             Section {
                 upcomingRow
                 groupingRow
+                hideDuplicatesRow
             } header: {
                 Text("Display options:")
             }
@@ -600,6 +615,17 @@ struct MovieToWatchSettingsView: View {
             Spacer()
             Toggle("", isOn: Binding(get: { viewModel.reverse },
                                      set: { viewModel.setReverse($0) }))
+                .labelsHidden()
+        }
+    }
+
+    private var hideDuplicatesRow: some View {
+        HStack {
+            Text("Hide Duplicates Across Lists")
+                .foregroundStyle(.primary)
+            Spacer()
+            Toggle("", isOn: Binding(get: { viewModel.hideDuplicates },
+                                     set: { viewModel.setHideDuplicates($0) }))
                 .labelsHidden()
         }
     }
@@ -869,6 +895,7 @@ final class MovieToWatchSettings {
 
         sort = Sort(rawValue: UserDefaults.standard.integer(forKey: "MovieToWatchSettings.sort")) ?? Sort.automatic
         reverse = UserDefaults.standard.bool(forKey: "MovieToWatchSettings.reverse")
+        hideDuplicates = UserDefaults.standard.bool(forKey: "MovieToWatchSettings.hideDuplicates")
 
         if let encodedOtherLists = UserDefaults.standard.object(forKey: "MovieToWatchSettings.otherLists") as? Data,
            let storedOtherLists = try? JSONDecoder().decode([MovieToWatchListItem].self, from: encodedOtherLists) {
@@ -984,6 +1011,13 @@ final class MovieToWatchSettings {
     var reverse = false {
         didSet {
             UserDefaults.standard.set(reverse, forKey: "MovieToWatchSettings.reverse")
+            UserDefaults.standard.synchronize()
+        }
+    }
+
+    var hideDuplicates = false {
+        didSet {
+            UserDefaults.standard.set(hideDuplicates, forKey: "MovieToWatchSettings.hideDuplicates")
             UserDefaults.standard.synchronize()
         }
     }

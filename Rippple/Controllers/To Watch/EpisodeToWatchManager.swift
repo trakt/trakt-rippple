@@ -373,6 +373,11 @@ final class EpisodeToWatchManager {
             self.debouncedTransmit.call()
         }.disposed(by: disposeBag)
 
+        episodeToWatchHideDuplicatesReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.debouncedTransmit.call()
+        }.disposed(by: disposeBag)
+
         episodeToWatchBingeableOnlyReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedTransmit.call()

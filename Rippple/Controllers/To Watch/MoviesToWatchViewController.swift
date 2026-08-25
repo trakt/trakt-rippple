@@ -133,9 +133,17 @@ final class MoviesToWatchViewController: UITableViewController {
             snapshot.appendItems([.footer], toSection: Section.footer)
         } else if let allMoviesInList = MovieToWatchManager.shared.moviesInList,
                   MovieToWatchGroupMode.currentValue() == .byLists {
+            let hideDuplicates = MovieToWatchSettings.shared.hideDuplicates
+            var includedMovies = Set<Movie>()
             for moviesInList in allMoviesInList.sorted(by: { $0.order < $1.order }) {
                 let section = Section.content(moviesInList.name, moviesInList.order)
-                let items = models.filter { moviesInList.shows.contains($0.movie!) }
+                let items = models.filter {
+                    moviesInList.shows.contains($0.movie!)
+                        && (hideDuplicates == false || includedMovies.contains($0.movie!) == false)
+                }
+                if hideDuplicates {
+                    includedMovies.formUnion(moviesInList.shows)
+                }
                 if items.isEmpty { continue }
                 snapshot.insertSections([section], beforeSection: Section.footer)
                 snapshot.appendItems([Wrapper.subheader(moviesInList.name, items.count > 1 ? "\(items.count) movies" : "\(items.count) movie")], toSection: section)
@@ -144,6 +152,7 @@ final class MoviesToWatchViewController: UITableViewController {
             }
             snapshot.appendItems([.footer], toSection: Section.footer)
         } else {
+            var remainingModels = models
             if let moviesInList = MovieToWatchManager.shared.moviesInList,
                let pinned = moviesInList.first(where: { $0.name == "Pinned" && $0.order == 0 }) {
                 let section = Section.content(pinned.name, pinned.order)
@@ -153,10 +162,15 @@ final class MoviesToWatchViewController: UITableViewController {
                     snapshot.appendItems([Wrapper.subheader(pinned.name, items.count > 1 ? "\(items.count) movies" : "\(items.count) movie")], toSection: section)
                     snapshot.appendItems(items.removingDuplicates().map { .content($0, pinned.name) }.removingDuplicates(),
                                          toSection: section)
-                    snapshot.appendItems([Wrapper.subheader("To Watch", models.count > 1 ? "\(models.count) movies" : "\(models.count) movie")], toSection: section)
+                    if MovieToWatchSettings.shared.hideDuplicates {
+                        remainingModels = models.filter { pinned.shows.contains($0.movie!) == false }
+                    }
+                    if remainingModels.isEmpty == false {
+                        snapshot.appendItems([Wrapper.subheader("To Watch", remainingModels.count > 1 ? "\(remainingModels.count) movies" : "\(remainingModels.count) movie")], toSection: section)
+                    }
                 }
             }
-            snapshot.appendItems(models.map { .content($0, nil) }.removingDuplicates(), toSection: Section.content(nil, nil))
+            snapshot.appendItems(remainingModels.map { .content($0, nil) }.removingDuplicates(), toSection: Section.content(nil, nil))
             snapshot.appendItems([.footer], toSection: Section.footer)
         }
 

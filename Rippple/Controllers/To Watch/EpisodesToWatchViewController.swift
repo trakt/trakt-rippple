@@ -136,9 +136,17 @@ final class EpisodesToWatchViewController: UITableViewController {
             snapshot.appendItems([.footer], toSection: Section.footer)
         } else if let allShowsInList = EpisodeToWatchManager.shared.showsInList,
                   EpisodeToWatchGroupMode.currentValue() == .byLists {
+            let hideDuplicates = EpisodeToWatchSettings.shared.hideDuplicates
+            var includedShows = Set<Show>()
             for showsInList in allShowsInList.sorted(by: { $0.order < $1.order }) {
                 let section = Section.content(showsInList.name, showsInList.order)
-                let items = models.filter { showsInList.shows.contains($0.show!) }
+                let items = models.filter {
+                    showsInList.shows.contains($0.show!)
+                        && (hideDuplicates == false || includedShows.contains($0.show!) == false)
+                }
+                if hideDuplicates {
+                    includedShows.formUnion(showsInList.shows)
+                }
                 if items.isEmpty { continue }
                 snapshot.insertSections([section], beforeSection: Section.footer)
                 snapshot.appendItems([Wrapper.subheader(showsInList.name, "\(episodeCount(in: items)) behind")], toSection: section)
@@ -147,6 +155,7 @@ final class EpisodesToWatchViewController: UITableViewController {
             }
             snapshot.appendItems([.footer], toSection: Section.footer)
         } else {
+            var remainingModels = models
             if let allShowsInList = EpisodeToWatchManager.shared.showsInList,
                let pinned = allShowsInList.first(where: { $0.name == "Pinned" && $0.order == 0 }) {
                 let section = Section.content(pinned.name, pinned.order)
@@ -156,10 +165,15 @@ final class EpisodesToWatchViewController: UITableViewController {
                     snapshot.appendItems([Wrapper.subheader(pinned.name, "\(episodeCount(in: items)) behind")], toSection: section)
                     snapshot.appendItems(items.removingDuplicates().map { .content($0, pinned.name) }.removingDuplicates(),
                                          toSection: section)
-                    snapshot.appendItems([Wrapper.subheader("Up Next", "\(episodeCount(in: models)) behind")], toSection: section)
+                    if EpisodeToWatchSettings.shared.hideDuplicates {
+                        remainingModels = models.filter { pinned.shows.contains($0.show!) == false }
+                    }
+                    if remainingModels.isEmpty == false {
+                        snapshot.appendItems([Wrapper.subheader("Up Next", "\(episodeCount(in: remainingModels)) behind")], toSection: section)
+                    }
                 }
             }
-            snapshot.appendItems(models.map { .content($0, nil) }.removingDuplicates(), toSection: Section.content(nil, nil))
+            snapshot.appendItems(remainingModels.map { .content($0, nil) }.removingDuplicates(), toSection: Section.content(nil, nil))
             snapshot.appendItems([.footer], toSection: Section.footer)
         }
 
