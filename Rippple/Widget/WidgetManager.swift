@@ -15,6 +15,7 @@ final class WidgetManager {
     private let disposeBag = DisposeBag()
 
     private init() {
+        WatchingControlWidgetStorage.publishProfileAvatarURL(UserManager.shared.currentUser?.images?.avatar.full)
         WidgetCenter.shared.reloadAllTimelines()
     }
 
@@ -37,10 +38,12 @@ final class WidgetManager {
             self.updateLastWatched()
         }.disposed(by: disposeBag)
 
-        onSettingsChangedReceiver.listen { [weak self] _ in
+        onSettingsChangedReceiver.listen { [weak self] settings in
             guard let self = self else { return }
+            WatchingControlWidgetStorage.publishProfileAvatarURL(settings?.user.images?.avatar.full)
             self.updateLastWatched()
             self.updateActivityPunchcard()
+            WidgetCenter.shared.reloadTimelines(ofKind: WatchingControlWidgetStorage.kind)
         }.disposed(by: disposeBag)
 
         onSyncWatchedMoviesChangedReceiver.listen { [weak self] _ in
@@ -75,6 +78,7 @@ final class WidgetManager {
                 QuickAccessWidgetStorage.trendingMoviesKey,
                 QuickAccessWidgetStorage.trendingShowsKey,
                 WatchingControlWidgetStorage.dataKey,
+                WatchingControlWidgetStorage.profileAvatarURLKey,
                 ActivityPunchcardWidgetStorage.dataKey
             ]
             for key in widgetKeys {

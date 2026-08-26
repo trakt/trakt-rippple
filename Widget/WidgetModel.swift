@@ -259,9 +259,17 @@ enum QuickAccessWidgetStorage {
 enum WatchingControlWidgetStorage {
     static let kind = "WatchingControlWidget"
     static let dataKey = "widget.watchingControl.item"
+    static let profileAvatarURLKey = "widget.watchingControl.profileAvatarURL"
     static let toWatchContainerDeeplink = URL(string: "ripl://towatch")!
     static let episodesToWatchDeeplink = URL(string: "ripl://towatch/episodes")!
     static let moviesToWatchDeeplink = URL(string: "ripl://towatch/movies")!
+    static let profileDeeplink = URL(string: "ripl://users/me")!
+    static let searchDeeplink = URL(string: "ripl://search")!
+
+    static var profileAvatarURL: URL? {
+        let urls: [URL] = WidgetCodableStorage.items(forKey: profileAvatarURLKey)
+        return urls.first
+    }
 
     static func item() -> WatchingControlWidgetItem? {
         let items: [WatchingControlWidgetItem] = WidgetCodableStorage.items(forKey: dataKey)
@@ -270,6 +278,10 @@ enum WatchingControlWidgetStorage {
 
     static func publish(_ item: WatchingControlWidgetItem?) {
         WidgetCodableStorage.publish(item.map { [$0] } ?? [], forKey: dataKey)
+    }
+
+    static func publishProfileAvatarURL(_ url: URL?) {
+        WidgetCodableStorage.publish(url.map { [$0] } ?? [], forKey: profileAvatarURLKey)
     }
 }
 
