@@ -71,6 +71,9 @@ final class WidgetManager {
                 ToWatchWidgetStorage.movieKey,
                 UpcomingWidgetStorage.episodeKey,
                 UpcomingWidgetStorage.movieKey,
+                QuickAccessWidgetStorage.trendingMediaKey,
+                QuickAccessWidgetStorage.trendingMoviesKey,
+                QuickAccessWidgetStorage.trendingShowsKey,
                 WatchingControlWidgetStorage.dataKey,
                 ActivityPunchcardWidgetStorage.dataKey
             ]
@@ -263,7 +266,6 @@ final class WidgetManager {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
                     let fetchedActivities = try response.map([HistoryItem].self, using: TraktAPIProvider.decoder)
-
                     if WatchingManager.shared.watchingItem == nil {
                         WatchingControlWidgetStorage.publish(fetchedActivities.first.flatMap(self.watchingControlWidgetItem))
                         WidgetCenter.shared.reloadTimelines(ofKind: WatchingControlWidgetStorage.kind)
@@ -308,9 +310,27 @@ final class WidgetManager {
     }
 
     private func updateTrendingMedia() {
-        TraktAPIProvider.provider.request(.trendingMedia(filters: [:],
-                                                         extended: .full,
-                                                         pageInfo: PageInfo.firstPage(with: 5)),
+        updateTrendingItems(service: .trendingMedia(filters: [:],
+                                                    extended: .full,
+                                                    pageInfo: PageInfo.firstPage(with: 5)),
+                            description: "media",
+                            publish: QuickAccessWidgetStorage.publishTrendingMedia)
+        updateTrendingItems(service: .trendingMovies(filters: [:],
+                                                     extended: .full,
+                                                     pageInfo: PageInfo.firstPage(with: 5)),
+                            description: "movies",
+                            publish: QuickAccessWidgetStorage.publishTrendingMovies)
+        updateTrendingItems(service: .trendingShows(filters: [:],
+                                                    extended: .full,
+                                                    pageInfo: PageInfo.firstPage(with: 5)),
+                            description: "shows",
+                            publish: QuickAccessWidgetStorage.publishTrendingShows)
+    }
+
+    private func updateTrendingItems(service: TraktAPIService,
+                                     description: String,
+                                     publish: @escaping ([QuickAccessWidgetItem]) -> Void) {
+        TraktAPIProvider.provider.request(service,
                                           callbackQueue: DispatchQueue.global(qos: .utility)) { result in
             switch result {
             case .success(let moyaResponse):
@@ -318,13 +338,13 @@ final class WidgetManager {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     let mediaItems = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
                     let widgetItems = mediaItems.compactMap { WidgetManager.quickAccessWidgetItem(from: $0) }
-                    QuickAccessWidgetStorage.publish(widgetItems)
+                    publish(widgetItems)
                     WidgetCenter.shared.reloadTimelines(ofKind: QuickAccessWidgetStorage.kind)
                 } catch {
-                    print("Trending media (/media/trending) request JSON mapping failed! \(error)")
+                    print("Trending \(description) request JSON mapping failed! \(error)")
                 }
             case .failure(let error):
-                print("Trending media (/media/trending) request failure \(error)")
+                print("Trending \(description) request failure \(error)")
             }
         }
     }

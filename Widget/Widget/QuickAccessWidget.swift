@@ -6,40 +6,83 @@
 //  Copyright © Trakt. All rights reserved.
 //
 
+import AppIntents
 import SwiftUI
 import WidgetKit
 
+enum QuickAccessWidgetContent: String, AppEnum {
+    case trendingMedia
+    case trendingMovies
+    case trendingShows
+
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Content")
+    static let typeDisplayName: LocalizedStringResource = "Content"
+    static let caseDisplayRepresentations: [QuickAccessWidgetContent: DisplayRepresentation] = [
+        .trendingMedia: "Trending Media",
+        .trendingMovies: "Trending Movies",
+        .trendingShows: "Trending Shows"
+    ]
+}
+
+struct QuickAccessWidgetConfigurationIntent: WidgetConfigurationIntent {
+    static let title: LocalizedStringResource = "Search"
+    static let description = IntentDescription("Choose the media shown below the search field.")
+
+    @Parameter(title: "Content", default: QuickAccessWidgetContent.trendingMedia)
+    var content: QuickAccessWidgetContent
+
+    init() {}
+}
+
 struct QuickAccessWidgetEntry: TimelineEntry {
     let date: Date
+    let configuration: QuickAccessWidgetConfigurationIntent
     let items: [QuickAccessWidgetItem]
     let posters: [String: UIImage]
 }
 
-struct QuickAccessWidgetProvider: TimelineProvider {
+struct QuickAccessWidgetProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> QuickAccessWidgetEntry {
-        entry(items: Array(QuickAccessWidgetStorage.items().prefix(itemCount(for: context.family))))
+        let configuration = QuickAccessWidgetConfigurationIntent()
+        return entry(configuration: configuration,
+                     items: Array(storedItems(for: configuration.content).prefix(itemCount(for: context.family))))
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (QuickAccessWidgetEntry) -> Void) {
-        Task {
-            completion(await entry(for: context.family))
-        }
+    func snapshot(for configuration: QuickAccessWidgetConfigurationIntent,
+                  in context: Context) async -> QuickAccessWidgetEntry {
+        await entry(for: configuration, family: context.family)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<QuickAccessWidgetEntry>) -> Void) {
-        Task {
-            completion(Timeline(entries: [await entry(for: context.family)], policy: .never))
-        }
+    func timeline(for configuration: QuickAccessWidgetConfigurationIntent,
+                  in context: Context) async -> Timeline<QuickAccessWidgetEntry> {
+        Timeline(entries: [await entry(for: configuration, family: context.family)], policy: .never)
     }
 
-    private func entry(for family: WidgetFamily) async -> QuickAccessWidgetEntry {
-        let items = Array(QuickAccessWidgetStorage.items().prefix(itemCount(for: family)))
+    private func entry(for configuration: QuickAccessWidgetConfigurationIntent,
+                       family: WidgetFamily) async -> QuickAccessWidgetEntry {
+        let items = Array(storedItems(for: configuration.content).prefix(itemCount(for: family)))
         let posters = await loadPosters(for: items)
-        return entry(items: items, posters: posters)
+        return entry(configuration: configuration, items: items, posters: posters)
     }
 
-    private func entry(items: [QuickAccessWidgetItem], posters: [String: UIImage] = [:]) -> QuickAccessWidgetEntry {
-        QuickAccessWidgetEntry(date: .now, items: items, posters: posters)
+    private func entry(configuration: QuickAccessWidgetConfigurationIntent,
+                       items: [QuickAccessWidgetItem],
+                       posters: [String: UIImage] = [:]) -> QuickAccessWidgetEntry {
+        QuickAccessWidgetEntry(date: .now,
+                               configuration: configuration,
+                               items: items,
+                               posters: posters)
+    }
+
+    private func storedItems(for content: QuickAccessWidgetContent) -> [QuickAccessWidgetItem] {
+        switch content {
+        case .trendingMedia:
+            return QuickAccessWidgetStorage.trendingMedia()
+        case .trendingMovies:
+            return QuickAccessWidgetStorage.trendingMovies()
+        case .trendingShows:
+            return QuickAccessWidgetStorage.trendingShows()
+        }
     }
 
     private func loadPosters(for items: [QuickAccessWidgetItem]) async -> [String: UIImage] {
@@ -52,8 +95,9 @@ struct QuickAccessWidgetProvider: TimelineProvider {
 
 struct QuickAccessWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: QuickAccessWidgetStorage.kind,
-                            provider: QuickAccessWidgetProvider()) { entry in
+        AppIntentConfiguration(kind: QuickAccessWidgetStorage.kind,
+                               intent: QuickAccessWidgetConfigurationIntent.self,
+                               provider: QuickAccessWidgetProvider()) { entry in
             QuickAccessWidgetEntryView(entry: entry)
         }
         .configurationDisplayName("Search")
@@ -69,98 +113,67 @@ private struct QuickAccessWidgetEntryView: View {
     let entry: QuickAccessWidgetEntry
 
     var body: some View {
-        GeometryReader { proxy in
-            let controlSize = controlSize(for: proxy.size)
+        VStack(spacing: quickAccessWidgetItemSpacing) {
+            searchButton
 
-            if family == .systemSmall {
-                VStack(spacing: 10) {
-                    HStack(spacing: 10) {
-                        searchIconButton(controlSize: controlSize)
-                        trendingItemButton(at: 0, controlSize: controlSize)
-                    }
-                    HStack(spacing: 10) {
-                        trendingItemButton(at: 1, controlSize: controlSize)
-                        trendingItemButton(at: 2, controlSize: controlSize)
-                    }
+            HStack(spacing: quickAccessWidgetItemSpacing) {
+                ForEach(0..<itemCount(for: family), id: \.self) { index in
+                    trendingItemButton(at: index)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                VStack(spacing: 10) {
-                    Link(destination: URL(string: "ripl://search")!) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "magnifyingglass")
-                                .font(.title3.weight(.medium))
-                            Text("Search")
-                                .font(.title3.weight(.medium))
-                                .minimumScaleFactor(0.7)
-                                .lineLimit(1)
-                            Spacer(minLength: 0)
-                        }
-                        .foregroundStyle(.primary.opacity(0.72))
-                        .padding(.leading, 18)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(.primary.opacity(0.2), in: Capsule())
-                        .contentShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
-                    .frame(height: controlSize)
-                    .accessibilityLabel("Search with Rippple")
-
-                    HStack(spacing: 10) {
-                        ForEach(0..<itemCount(for: family), id: \.self) { index in
-                            trendingItemButton(at: index, controlSize: controlSize)
-                        }
-                    }
-                    .frame(height: controlSize)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+            .clipped()
         }
-        .padding(12)
+        .padding(quickAccessWidgetContentPadding)
         .containerBackground(.background, for: .widget)
     }
 
-    private func controlSize(for availableSize: CGSize) -> CGFloat {
-        let controlCount = family == .systemSmall ? 2 : CGFloat(itemCount(for: family))
-        let width = (availableSize.width - 10 * (controlCount - 1)) / controlCount
-        let height = (availableSize.height - 10) / 2
-        return min(width, height)
-    }
-
-    private func searchIconButton(controlSize: CGFloat) -> some View {
+    private var searchButton: some View {
         Link(destination: URL(string: "ripl://search")!) {
-            Image(systemName: "magnifyingglass")
-                .font(.title3.weight(.medium))
-                .foregroundStyle(.primary.opacity(0.72))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(.primary.opacity(0.2), in: Circle())
-                .contentShape(Circle())
+            HStack(spacing: 7) {
+                Image(systemName: "magnifyingglass")
+                Text("Search")
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary.opacity(0.7))
+            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.primary.opacity(0.04), in: searchShape)
+            .overlay {
+                searchShape
+                    .strokeBorder(Color(uiColor: .tertiarySystemFill), lineWidth: 1)
+            }
+            .contentShape(searchShape)
         }
         .buttonStyle(.plain)
-        .frame(width: controlSize, height: controlSize)
+        .frame(maxWidth: .infinity)
+        .frame(height: quickAccessWidgetSearchHeight)
         .accessibilityLabel("Search with Rippple")
     }
 
-    @ViewBuilder
-    private func trendingItemButton(at index: Int, controlSize: CGFloat) -> some View {
-        if entry.items.indices.contains(index) {
-            let item = entry.items[index]
-            Link(destination: item.deeplink) {
-                poster(for: item)
-            }
-            .buttonStyle(.plain)
-            .frame(width: controlSize, height: controlSize)
-            .accessibilityLabel("Open \(item.title)")
-        } else {
-            emptyPoster
-                .frame(width: controlSize, height: controlSize)
-                .overlay {
-                    posterBorder
+    private func trendingItemButton(at index: Int) -> some View {
+        Group {
+            if entry.items.indices.contains(index) {
+                let item = entry.items[index]
+                Link(destination: item.deeplink) {
+                    poster(for: item, at: index)
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Open \(item.title)")
+            } else {
+                emptyPoster(at: index)
+                    .overlay {
+                        posterShape(at: index)
+                            .strokeBorder(Color(uiColor: .tertiarySystemFill), lineWidth: 1)
+                    }
+            }
         }
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
     }
 
-    private func poster(for item: QuickAccessWidgetItem) -> some View {
+    private func poster(for item: QuickAccessWidgetItem, at index: Int) -> some View {
         Group {
             if let poster = entry.posters[item.id] {
                 Image(uiImage: poster)
@@ -168,31 +181,49 @@ private struct QuickAccessWidgetEntryView: View {
                     .widgetAccentedRenderingMode(.fullColor)
                     .scaledToFill()
             } else {
-                emptyPoster
+                emptyPoster(at: index)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipShape(Circle())
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+        .clipShape(posterShape(at: index))
         .overlay {
-            posterBorder
+            posterShape(at: index)
+                .strokeBorder(Color(uiColor: .tertiarySystemFill), lineWidth: 1)
         }
-        .contentShape(Circle())
+        .contentShape(posterShape(at: index))
     }
 
-    private var posterBorder: some View {
-        Circle()
-            .strokeBorder(Color(uiColor: .tertiarySystemFill), lineWidth: 1)
-    }
-
-    private var emptyPoster: some View {
+    private func emptyPoster(at index: Int) -> some View {
         Image(systemName: "film")
             .font(.title2)
             .foregroundStyle(.primary.opacity(0.5))
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.primary.opacity(0.12), in: Circle())
+            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+            .background(.primary.opacity(0.12), in: posterShape(at: index))
+    }
+
+    private var searchShape: UnevenRoundedRectangle {
+        UnevenRoundedRectangle(topLeadingRadius: quickAccessWidgetOuterCornerRadius,
+                               bottomLeadingRadius: quickAccessWidgetCornerRadius,
+                               bottomTrailingRadius: quickAccessWidgetCornerRadius,
+                               topTrailingRadius: quickAccessWidgetOuterCornerRadius,
+                               style: .continuous)
+    }
+
+    private func posterShape(at index: Int) -> UnevenRoundedRectangle {
+        UnevenRoundedRectangle(topLeadingRadius: quickAccessWidgetCornerRadius,
+                               bottomLeadingRadius: index == 0 ? quickAccessWidgetOuterCornerRadius : quickAccessWidgetCornerRadius,
+                               bottomTrailingRadius: index == itemCount(for: family) - 1 ? quickAccessWidgetOuterCornerRadius : quickAccessWidgetCornerRadius,
+                               topTrailingRadius: quickAccessWidgetCornerRadius,
+                               style: .continuous)
     }
 }
 
 private func itemCount(for family: WidgetFamily) -> Int {
-    family == .systemMedium ? 5 : 3
+    family == .systemMedium ? 4 : 2
 }
+
+private let quickAccessWidgetContentPadding: CGFloat = 10
+private let quickAccessWidgetItemSpacing: CGFloat = 8
+private let quickAccessWidgetSearchHeight: CGFloat = 32
+private let quickAccessWidgetCornerRadius: CGFloat = 12
+private let quickAccessWidgetOuterCornerRadius: CGFloat = 20

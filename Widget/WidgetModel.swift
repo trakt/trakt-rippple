@@ -227,14 +227,32 @@ enum UpcomingWidgetStorage {
 
 enum QuickAccessWidgetStorage {
     static let kind = "QuickAccessWidget"
-    static let dataKey = "widget.quickAccess.trending"
+    static let trendingMediaKey = "widget.quickAccess.trending"
+    static let trendingMoviesKey = "widget.quickAccess.trendingMovies"
+    static let trendingShowsKey = "widget.quickAccess.trendingShows"
 
-    static func items() -> [QuickAccessWidgetItem] {
-        WidgetCodableStorage.items(forKey: dataKey)
+    static func trendingMedia() -> [QuickAccessWidgetItem] {
+        WidgetCodableStorage.items(forKey: trendingMediaKey)
     }
 
-    static func publish(_ items: [QuickAccessWidgetItem]) {
-        WidgetCodableStorage.publish(items, forKey: dataKey)
+    static func trendingMovies() -> [QuickAccessWidgetItem] {
+        WidgetCodableStorage.items(forKey: trendingMoviesKey)
+    }
+
+    static func trendingShows() -> [QuickAccessWidgetItem] {
+        WidgetCodableStorage.items(forKey: trendingShowsKey)
+    }
+
+    static func publishTrendingMedia(_ items: [QuickAccessWidgetItem]) {
+        WidgetCodableStorage.publish(items, forKey: trendingMediaKey)
+    }
+
+    static func publishTrendingMovies(_ items: [QuickAccessWidgetItem]) {
+        WidgetCodableStorage.publish(items, forKey: trendingMoviesKey)
+    }
+
+    static func publishTrendingShows(_ items: [QuickAccessWidgetItem]) {
+        WidgetCodableStorage.publish(items, forKey: trendingShowsKey)
     }
 }
 
