@@ -318,7 +318,7 @@ private struct WatchingControlWidgetEntryView: View {
                      controlSize: controlSize,
                      foregroundStyle: .red.opacity(cancelIsEnabled ? 0.9 : 0.35),
                      backgroundStyle: .red.opacity(cancelIsEnabled ? 0.2 : 0.08),
-                     intent: CancelWatchingControlWidgetIntent())
+                     intent: CancelWatchingControlWidgetIntent(media: entry.item))
             .disabled(!cancelIsEnabled)
     }
 

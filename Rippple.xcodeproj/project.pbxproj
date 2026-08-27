@@ -85,6 +85,8 @@
 		0A6D801330AF000000000013 /* WatchingControlWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801230AF000000000012 /* WatchingControlWidget.swift */; };
 		0A6D801530AF000000000015 /* WatchingControlWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */; };
 		0A6D801630AF000000000016 /* WatchingControlWidgetActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */; };
+		0A7E901130B1000000000011 /* WidgetIntentNotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A7E901030B1000000000010 /* WidgetIntentNotificationsManager.swift */; };
+		0A7E901230B1000000000012 /* WidgetIntentNotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A7E901030B1000000000010 /* WidgetIntentNotificationsManager.swift */; };
 		0FA34C9B2F3D11B700E5A1C2 /* UpcomingLabelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA34C9B2F3D11B700E5A1C3 /* UpcomingLabelManager.swift */; };
 		3A020B9720D3B64B0081FA3E /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A020B9620D3B64B0081FA3E /* SearchViewController.swift */; };
 		3A020B9920D3DE070081FA3E /* SearchResultsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A020B9820D3DE070081FA3E /* SearchResultsViewController.swift */; };
@@ -660,6 +662,7 @@
 		0A6D800130AE000000000001 /* QuickAccessWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAccessWidget.swift; sourceTree = "<group>"; };
 		0A6D801230AF000000000012 /* WatchingControlWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchingControlWidget.swift; sourceTree = "<group>"; };
 		0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchingControlWidgetActionIntent.swift; sourceTree = "<group>"; };
+		0A7E901030B1000000000010 /* WidgetIntentNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetIntentNotificationsManager.swift; sourceTree = "<group>"; };
 		0FA34C9B2F3D11B700E5A1C3 /* UpcomingLabelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingLabelManager.swift; sourceTree = "<group>"; };
 		3A020B9620D3B64B0081FA3E /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		3A020B9820D3DE070081FA3E /* SearchResultsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsViewController.swift; sourceTree = "<group>"; };
@@ -1929,6 +1932,7 @@
 				0A6D800130AE000000000001 /* QuickAccessWidget.swift */,
 				0A6D801230AF000000000012 /* WatchingControlWidget.swift */,
 				0A6D801430AF000000000014 /* WatchingControlWidgetActionIntent.swift */,
+				0A7E901030B1000000000010 /* WidgetIntentNotificationsManager.swift */,
 				0A4E701130A6000000000001 /* UpcomingWidget.swift */,
 				0A4E700330A1000000000003 /* ToWatchWidgetActionIntent.swift */,
 				3A171BA228857A34005EEDA9 /* SingleWidget.swift */,
@@ -3182,6 +3186,7 @@
 				0A6D800230AE000000000002 /* QuickAccessWidget.swift in Sources */,
 				0A6D801330AF000000000013 /* WatchingControlWidget.swift in Sources */,
 				0A6D801530AF000000000015 /* WatchingControlWidgetActionIntent.swift in Sources */,
+				0A7E901130B1000000000011 /* WidgetIntentNotificationsManager.swift in Sources */,
 				0A4E701230A6000000000002 /* UpcomingWidget.swift in Sources */,
 				0A4E700430A1000000000004 /* ToWatchWidgetActionIntent.swift in Sources */,
 				3AD15D0C287D9A3300FD0B2F /* WidgetModel.swift in Sources */,
@@ -3396,6 +3401,7 @@
 				0A1B2C3D4E5F60718293A402 /* AppIntents.swift in Sources */,
 				0A4E700530A1000000000005 /* ToWatchWidgetActionIntent.swift in Sources */,
 				0A6D801630AF000000000016 /* WatchingControlWidgetActionIntent.swift in Sources */,
+				0A7E901230B1000000000012 /* WidgetIntentNotificationsManager.swift in Sources */,
 				3A7B6DB7234641EF0014A0D8 /* MediaCollectionViewCell.swift in Sources */,
 				3A2E11E42897C65E00BA1713 /* ProgressManager.swift in Sources */,
 				3A5D8FA3292E0B4D001E6BA5 /* CollaborationsViewController.swift in Sources */,

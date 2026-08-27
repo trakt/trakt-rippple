@@ -97,18 +97,28 @@ final class NotificationCenterManager: NSObject {
     }
 
     private func save(latestNotifications: [UNNotification]) {
-        let newNotifications = latestNotifications.map { notification in
-            RipppleNotification(identifier: notification.request.identifier,
-                                title: notification.request.content.title,
-                                subtitle: notification.request.content.subtitle,
-                                body: notification.request.content.body,
-                                date: notification.date,
-                                link: (notification.request.content.userInfo["link"] as? String) ?? nil,
-                                versionToCheck: (notification.request.content.userInfo["version-check"] as? Int) ?? nil)
+        let notificationsToDiscard = latestNotifications.filter { notification in
+            notification.request.content.userInfo[RipppleNotificationUserInfoKey.isTransient] as? Bool == true
+                || WidgetIntentNotificationMetadata.matches(identifier: notification.request.identifier)
+        }
+        let discardedIdentifiers = Set(notificationsToDiscard.map(\.request.identifier))
+        let newNotifications = latestNotifications.compactMap { notification -> RipppleNotification? in
+            guard !discardedIdentifiers.contains(notification.request.identifier) else { return nil }
+            return RipppleNotification(identifier: notification.request.identifier,
+                                       title: notification.request.content.title,
+                                       subtitle: notification.request.content.subtitle,
+                                       body: notification.request.content.body,
+                                       date: notification.date,
+                                       link: (notification.request.content.userInfo["link"] as? String) ?? nil,
+                                       versionToCheck: (notification.request.content.userInfo["version-check"] as? Int) ?? nil)
         }
         guard var notifications = notifications else {
             notifications = newNotifications
             return
+        }
+        notifications.removeAll {
+            discardedIdentifiers.contains($0.identifier)
+                || WidgetIntentNotificationMetadata.matches(identifier: $0.identifier)
         }
         for notification in newNotifications.sorted(by: { $0.date > $1.date }) {
             if notifications.contains(notification) {

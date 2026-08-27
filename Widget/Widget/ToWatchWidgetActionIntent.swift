@@ -62,11 +62,41 @@ private func performToWatchWidgetAction(_ action: ToWatchWidgetAction,
                                         media: ToWatchWidgetMedia,
                                         actionHandler: ToWatchWidgetActionHandler,
                                         refresh: @Sendable () async -> Void) async throws {
-    try Task.checkCancellation()
-    try await actionHandler.performAction(action, media)
+    let notificationAction: WidgetIntentNotificationsManager.Action
+    switch action {
+    case .none:
+        return
+    case .checkIn:
+        notificationAction = .checkIn(media.notificationMedia)
+    case .markWatched:
+        notificationAction = .markWatched(media.notificationMedia)
+    }
+    let notification = WidgetIntentNotificationsManager.shared.start(action: notificationAction)
 
-    try Task.checkCancellation()
-    await refresh()
+    do {
+        try Task.checkCancellation()
+        try await actionHandler.performAction(action, media)
+
+        try Task.checkCancellation()
+        await refresh()
+        WidgetIntentNotificationsManager.shared.succeed(notification)
+    } catch {
+        WidgetIntentNotificationsManager.shared.fail(notification, error: error)
+        throw error
+    }
+}
+
+private extension ToWatchWidgetMedia {
+    var notificationMedia: WidgetIntentNotificationsManager.Media {
+        switch self {
+        case .episode(let episode):
+            return WidgetIntentNotificationsManager.Media(description: "\(episode.showTitle) · \(episode.localizedEpisodeNumber)",
+                                                          deeplink: episode.episodeDeeplink)
+        case .movie(let movie):
+            return WidgetIntentNotificationsManager.Media(description: movie.title,
+                                                          deeplink: movie.deeplink)
+        }
+    }
 }
 
 @available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *)

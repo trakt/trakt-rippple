@@ -97,6 +97,17 @@ enum RipppleIntentError: Error, CustomLocalizedStringResourceConvertible {
     }
 }
 
+extension RipppleIntentError: WidgetIntentNotificationFailureProviding {
+    var widgetIntentNotificationFailure: WidgetIntentNotificationsManager.Failure {
+        switch self {
+        case .checkInAlreadyInProgress:
+            return .checkInAlreadyInProgress
+        default:
+            return .generic
+        }
+    }
+}
+
 // MARK: - Service
 
 private enum RipppleIntentService {
