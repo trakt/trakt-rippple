@@ -16,48 +16,50 @@ import WidgetKit
 
 final class LiveActivityManager {
     private let disposeBag = DisposeBag()
+    private var currentImageIdentifier: String?
+    private var imageRequestIdentifier: String?
 
     private init() {}
 
     func setup() {
-        // just to make sure no activity are running when we restart the app
-        Task {
-            await self.stopActivity()
-        }
-
-        WatchingManager.shared.onWatchingItemChangedReceiver.listen { [weak self] _ in
+        WatchingManager.shared.onWatchingItemChangedReceiver.listen { [weak self] watchingItem, _ in
             guard let self = self else { return }
-            if let watchingItem = WatchingManager.shared.watchingItem {
+            if let watchingItem = watchingItem {
+                let imageMedia: MediaModel
+                let widgetModel: WidgetModel
                 if let movie = watchingItem.movie {
-                    movie.mediaModel.posterURL(targetSize: CGSize(width: 200, height: 300)) { [weak self] url in
-                        guard let self = self else { return }
-                        self.fetchImageAndSetActivity(widgetModel: WidgetModel(label: "Now Watching",
-                                                                               title: movie.title,
-                                                                               subtitle: (movie.releaseYear != nil) ? "\(movie.releaseYear!)" : "",
-                                                                               behind: nil,
-                                                                               redacted: false,
-                                                                               deeplink: movie.mediaModel.deeplink,
-                                                                               progress: WatchingManager.shared.progress,
-                                                                               runtime: Int(watchingItem.expireDate.timeIntervalSinceReferenceDate - watchingItem.startDate.timeIntervalSinceReferenceDate),
-                                                                               endDate: watchingItem.expireDate),
-                                                      url: url)
-                    }
+                    imageMedia = movie.mediaModel
+                    widgetModel = WidgetModel(label: "Now Watching",
+                                              title: movie.title,
+                                              subtitle: movie.releaseYear.map(String.init) ?? "",
+                                              behind: nil,
+                                              redacted: false,
+                                              deeplink: imageMedia.deeplink,
+                                              progress: WatchingManager.shared.progress,
+                                              runtime: Int(watchingItem.expireDate.timeIntervalSinceReferenceDate - watchingItem.startDate.timeIntervalSinceReferenceDate),
+                                              endDate: watchingItem.expireDate)
                 } else if let show = watchingItem.show {
-                    show.mediaModel.posterURL(targetSize: CGSize(width: 200, height: 300)) { [weak self] url in
-                        guard let self = self else { return }
-                        self.fetchImageAndSetActivity(widgetModel: WidgetModel(label: "Now Watching",
-                                                                               title: show.title,
-                                                                               subtitle: watchingItem.episode?.localizedEpisodeNumber,
-                                                                               behind: nil,
-                                                                               redacted: false,
-                                                                               deeplink: watchingItem.episode?.mediaModel(given: show).deeplink,
-                                                                               progress: WatchingManager.shared.progress,
-                                                                               runtime: Int(watchingItem.expireDate.timeIntervalSinceReferenceDate - watchingItem.startDate.timeIntervalSinceReferenceDate),
-                                                                               endDate: watchingItem.expireDate),
-                                                      url: url)
-                    }
+                    imageMedia = show.mediaModel
+                    widgetModel = WidgetModel(label: "Now Watching",
+                                              title: show.title,
+                                              subtitle: watchingItem.episode?.localizedEpisodeNumber,
+                                              behind: nil,
+                                              redacted: false,
+                                              deeplink: watchingItem.episode?.mediaModel(given: show).deeplink,
+                                              progress: WatchingManager.shared.progress,
+                                              runtime: Int(watchingItem.expireDate.timeIntervalSinceReferenceDate - watchingItem.startDate.timeIntervalSinceReferenceDate),
+                                              endDate: watchingItem.expireDate)
+                } else {
+                    return
                 }
+                Task {
+                    await self.ensureActivity(model: widgetModel)
+                }
+                self.requestImageIfNeeded(for: imageMedia, widgetModel: widgetModel)
             } else {
+                self.currentImageIdentifier = nil
+                self.imageRequestIdentifier = nil
+                self.clearCachedImages()
                 Task {
                     await self.stopActivity()
                 }
@@ -75,61 +77,82 @@ final class LiveActivityManager {
 
         onUserLoggedOutReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.poster")
-            UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.thumb")
-            UserDefaults(suiteName: "group.tv.trakt.rippple")!.synchronize()
+            self.currentImageIdentifier = nil
+            self.imageRequestIdentifier = nil
+            self.clearCachedImages()
             Task {
                 await self.stopActivity()
             }
         }.disposed(by: disposeBag)
     }
 
-    private func fetchImageAndSetActivity(widgetModel: WidgetModel, url: URL?) {
-        DispatchQueue.main.async {
-            let scale = AppManager.shared.scale
-            DispatchQueue.global(qos: .background).async {
-                if let url = url {
-                    do {
-                        let data = try Data(contentsOf: url)
-                        if let image = UIImage(data: data) {
-                            let poster = self.downscaleImage(image: image,
-                                                             toSize: CGSize(width: 60, height: 60 * 1.5),
-                                                             scale: scale)
-                            UserDefaults(suiteName: "group.tv.trakt.rippple")!.setValue(poster.jpegData(compressionQuality: 1.0), forKey: "LiveActivityManager.poster")
+    private func requestImageIfNeeded(for media: MediaModel, widgetModel: WidgetModel) {
+        guard let identifier = media.deeplink?.absoluteString else { return }
+        currentImageIdentifier = identifier
 
-                            let thumb = self.downscaleImage(image: image,
-                                                            toSize: CGSize(width: 28, height: 28 * 1.5),
-                                                            scale: scale)
-                            UserDefaults(suiteName: "group.tv.trakt.rippple")!.setValue(thumb.jpegData(compressionQuality: 1.0), forKey: "LiveActivityManager.thumb")
-                        } else {
-                            UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.poster")
-                            UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.thumb")
-                        }
-                        DispatchQueue.main.async {
-                            Task {
-                                await self.startActivity(model: widgetModel)
-                            }
-                        }
-                    } catch {
-                        UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.poster")
-                        UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.thumb")
-                        DispatchQueue.main.async {
-                            Task {
-                                await self.startActivity(model: widgetModel)
-                            }
-                        }
-                    }
-                } else {
-                    UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.poster")
-                    UserDefaults(suiteName: "group.tv.trakt.rippple")!.removeObject(forKey: "LiveActivityManager.thumb")
-                    DispatchQueue.main.async {
-                        Task {
-                            await self.startActivity(model: widgetModel)
-                        }
-                    }
+        let defaults = UserDefaults(suiteName: "group.tv.trakt.rippple")!
+        let hasCachedImage = defaults.data(forKey: "LiveActivityManager.poster") != nil &&
+            defaults.data(forKey: "LiveActivityManager.thumb") != nil &&
+            defaults.string(forKey: "LiveActivityManager.imageIdentifier") == identifier
+        guard hasCachedImage == false, imageRequestIdentifier == nil else { return }
+
+        clearCachedImages()
+        imageRequestIdentifier = identifier
+        media.posterURL(targetSize: CGSize(width: 200, height: 300)) { [weak self] url in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                guard self.imageRequestIdentifier == identifier else { return }
+                guard let url = url else {
+                    self.imageRequestIdentifier = nil
+                    return
+                }
+                self.fetchImageAndUpdateActivity(widgetModel: widgetModel,
+                                                 url: url,
+                                                 identifier: identifier)
+            }
+        }
+    }
+
+    private func fetchImageAndUpdateActivity(widgetModel: WidgetModel, url: URL, identifier: String) {
+        let scale = AppManager.shared.scale
+
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let self = self else { return }
+            let image = (try? Data(contentsOf: url)).flatMap(UIImage.init(data:))
+            let poster = image.map {
+                self.downscaleImage(image: $0,
+                                    toSize: CGSize(width: 60, height: 60 * 1.5),
+                                    scale: scale)
+            }
+            let thumb = image.map {
+                self.downscaleImage(image: $0,
+                                    toSize: CGSize(width: 28, height: 28 * 1.5),
+                                    scale: scale)
+            }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                guard self.imageRequestIdentifier == identifier else { return }
+                self.imageRequestIdentifier = nil
+                guard self.currentImageIdentifier == identifier else { return }
+                guard let poster = poster, let thumb = thumb else { return }
+
+                let defaults = UserDefaults(suiteName: "group.tv.trakt.rippple")!
+                defaults.setValue(poster.jpegData(compressionQuality: 1.0), forKey: "LiveActivityManager.poster")
+                defaults.setValue(thumb.jpegData(compressionQuality: 1.0), forKey: "LiveActivityManager.thumb")
+                defaults.setValue(identifier, forKey: "LiveActivityManager.imageIdentifier")
+                Task {
+                    await self.refreshActivity(model: widgetModel)
                 }
             }
         }
+    }
+
+    private func clearCachedImages() {
+        let defaults = UserDefaults(suiteName: "group.tv.trakt.rippple")!
+        defaults.removeObject(forKey: "LiveActivityManager.poster")
+        defaults.removeObject(forKey: "LiveActivityManager.thumb")
+        defaults.removeObject(forKey: "LiveActivityManager.imageIdentifier")
     }
 
     private func downscaleImage(image: UIImage, toSize targetSize: CGSize, scale: CGFloat = 1.0) -> UIImage {
@@ -176,9 +199,15 @@ final class LiveActivityManager {
 
     static let shared = LiveActivityManager()
 
-    private func startActivity(model: WidgetModel) async {
-        for activity in Activity<RipppleLiveActivityAttributes>.activities {
-            await activity.end(nil, dismissalPolicy: .immediate)
+    private func ensureActivity(model: WidgetModel) async {
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            print("Live Activities are disabled")
+            return
+        }
+
+        if Activity<RipppleLiveActivityAttributes>.activities.isEmpty == false {
+            await refreshActivity(model: model)
+            return
         }
 
         do {
@@ -201,7 +230,7 @@ final class LiveActivityManager {
              */
             print("Live Activity started...")
         } catch {
-            print("Error requesting Live Activity \(error.localizedDescription)")
+            print("Error requesting Live Activity: \(error)")
         }
     }
 
@@ -217,6 +246,14 @@ final class LiveActivityManager {
         }
     }
 
+    private func refreshActivity(model: WidgetModel) async {
+        let state = RipppleLiveActivityAttributes.LiveActivityStatus(entry: model)
+        let content = ActivityContent(state: state, staleDate: model.endDate)
+        for activity in Activity<RipppleLiveActivityAttributes>.activities {
+            await activity.update(content)
+        }
+    }
+
     private func stopActivity() async {
         for activity in Activity<RipppleLiveActivityAttributes>.activities {
             await activity.end(nil, dismissalPolicy: .immediate)
@@ -225,7 +262,7 @@ final class LiveActivityManager {
 
     func stopActivityIfNeeded() async {
         for activity in Activity<RipppleLiveActivityAttributes>.activities {
-            if let endDate = activity.content.state.entry.endDate, endDate >= .now {
+            if let endDate = activity.content.state.entry.endDate, endDate <= .now {
                 await activity.end(nil, dismissalPolicy: .immediate)
             }
         }

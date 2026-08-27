@@ -97,15 +97,14 @@ final class NotificationCenterManager: NSObject {
     }
 
     private func save(latestNotifications: [UNNotification]) {
-        let newNotifications = latestNotifications.compactMap { notification -> RipppleNotification? in
-            guard notification.request.identifier != ToWatchWidgetStorage.actionNotificationIdentifier else { return nil }
-            return RipppleNotification(identifier: notification.request.identifier,
-                                       title: notification.request.content.title,
-                                       subtitle: notification.request.content.subtitle,
-                                       body: notification.request.content.body,
-                                       date: notification.date,
-                                       link: (notification.request.content.userInfo["link"] as? String) ?? nil,
-                                       versionToCheck: (notification.request.content.userInfo["version-check"] as? Int) ?? nil)
+        let newNotifications = latestNotifications.map { notification in
+            RipppleNotification(identifier: notification.request.identifier,
+                                title: notification.request.content.title,
+                                subtitle: notification.request.content.subtitle,
+                                body: notification.request.content.body,
+                                date: notification.date,
+                                link: (notification.request.content.userInfo["link"] as? String) ?? nil,
+                                versionToCheck: (notification.request.content.userInfo["version-check"] as? Int) ?? nil)
         }
         guard var notifications = notifications else {
             notifications = newNotifications

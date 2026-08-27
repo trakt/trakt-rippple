@@ -8,9 +8,6 @@
 
 import AppIntents
 import Foundation
-#if DEBUG || targetEnvironment(simulator)
-import UserNotifications
-#endif
 import WidgetKit
 
 enum ToWatchWidgetContent: String, AppEnum {
@@ -61,136 +58,19 @@ struct ToWatchWidgetActionHandler {
     let refreshMovies: @Sendable () async -> Void
 }
 
-#if DEBUG || targetEnvironment(simulator)
-private actor ToWatchWidgetNotificationManager {
-    enum State {
-        case loading
-        case success
-        case error
-    }
-
-    static let shared = ToWatchWidgetNotificationManager()
-
-    private static let timeToLive: Duration = .seconds(5)
-
-    private var expirationTask: _Concurrency.Task<Void, Never>?
-
-    func show(state: State, action: ToWatchWidgetAction, media: ToWatchWidgetMedia) async {
-        expirationTask?.cancel()
-
-        let notificationCenter = UNUserNotificationCenter.current()
-        let content = UNMutableNotificationContent()
-        content.title = "To Watch Widget"
-        content.body = body(for: state, action: action, media: media)
-        content.userInfo = ["link": deeplink(for: media).absoluteString]
-        content.interruptionLevel = .active
-
-        let request = UNNotificationRequest(identifier: ToWatchWidgetStorage.actionNotificationIdentifier,
-                                            content: content,
-                                            trigger: nil)
-        do {
-            try await notificationCenter.add(request)
-        } catch {
-            print("Unable to show To Watch widget notification: \(error)")
-        }
-
-        expirationTask = _Concurrency.Task {
-            try? await _Concurrency.Task.sleep(for: ToWatchWidgetNotificationManager.timeToLive)
-            guard !_Concurrency.Task.isCancelled else { return }
-            notificationCenter.removeDeliveredNotifications(withIdentifiers: [ToWatchWidgetStorage.actionNotificationIdentifier])
-        }
-    }
-
-    private func body(for state: State, action: ToWatchWidgetAction, media: ToWatchWidgetMedia) -> String {
-        let mediaDescription: String
-        switch media {
-        case .episode(let episode):
-            mediaDescription = "\(episode.showTitle) \(episode.localizedEpisodeNumber)"
-        case .movie(let movie):
-            mediaDescription = movie.title
-        }
-
-        switch (state, action) {
-        case (.loading, .checkIn):
-            return "Checking in to \(mediaDescription)…"
-        case (.success, .checkIn):
-            return "Checked in to \(mediaDescription)."
-        case (.error, .checkIn):
-            return "Couldn’t check in to \(mediaDescription)."
-        case (.loading, .markWatched):
-            return "Marking \(mediaDescription) watched…"
-        case (.success, .markWatched):
-            return "Marked \(mediaDescription) watched."
-        case (.error, .markWatched):
-            return "Couldn’t mark \(mediaDescription) watched."
-        case (_, .none):
-            return mediaDescription
-        }
-    }
-
-    private func deeplink(for media: ToWatchWidgetMedia) -> URL {
-        switch media {
-        case .episode(let episode):
-            return episode.episodeDeeplink
-        case .movie(let movie):
-            return movie.deeplink
-        }
-    }
-}
-#endif
-
-private func withToWatchWidgetActionNotifications(action: ToWatchWidgetAction,
-                                                  media: ToWatchWidgetMedia,
-                                                  operation: () async throws -> Void) async throws {
-    #if DEBUG || targetEnvironment(simulator)
-    await ToWatchWidgetNotificationManager.shared.show(state: .loading, action: action, media: media)
-    #endif
-    do {
-        try await operation()
-    } catch {
-        #if DEBUG || targetEnvironment(simulator)
-        await ToWatchWidgetNotificationManager.shared.show(state: .error, action: action, media: media)
-        #endif
-        throw error
-    }
-    #if DEBUG || targetEnvironment(simulator)
-    await ToWatchWidgetNotificationManager.shared.show(state: .success, action: action, media: media)
-    #endif
-}
-
 private func performToWatchWidgetAction(_ action: ToWatchWidgetAction,
                                         media: ToWatchWidgetMedia,
-                                        progress: Progress,
                                         actionHandler: ToWatchWidgetActionHandler,
                                         refresh: @Sendable () async -> Void) async throws {
-    progress.totalUnitCount = 2
-    switch (action, media) {
-    case (.checkIn, .episode(let episode)):
-        progress.localizedDescription = "Checking in to \(episode.showTitle) \(episode.localizedEpisodeNumber)"
-    case (.checkIn, .movie(let movie)):
-        progress.localizedDescription = "Checking in to \(movie.title)"
-    case (.markWatched, .episode(let episode)):
-        progress.localizedDescription = "Marking \(episode.showTitle) \(episode.localizedEpisodeNumber) watched"
-    case (.markWatched, .movie(let movie)):
-        progress.localizedDescription = "Marking \(movie.title) watched"
-    case (.none, _):
-        return
-    }
-    progress.localizedAdditionalDescription = "Updating Trakt"
-
     try Task.checkCancellation()
     try await actionHandler.performAction(action, media)
-    progress.completedUnitCount = 1
-    progress.localizedAdditionalDescription = "Refreshing To Watch"
 
     try Task.checkCancellation()
     await refresh()
-    progress.localizedAdditionalDescription = "Done"
-    progress.completedUnitCount = 2
 }
 
 @available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *)
-struct EpisodesToWatchRefreshWidgetActionIntent: LongRunningIntent, CancellableIntent, LiveActivityIntent {
+struct EpisodesToWatchRefreshWidgetActionIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Update Episode To Watch"
     static let isDiscoverable = false
     static var allowedExecutionTargets: IntentExecutionTargets {
@@ -241,22 +121,17 @@ struct EpisodesToWatchRefreshWidgetActionIntent: LongRunningIntent, CancellableI
                                            runtime: nil,
                                            behind: nil)
         let media = ToWatchWidgetMedia.episode(episode)
-        try await withToWatchWidgetActionNotifications(action: action, media: media) {
-            try await performBackgroundTask {
-                try await performToWatchWidgetAction(action,
-                                                     media: media,
-                                                     progress: progress,
-                                                     actionHandler: actionHandler) {
-                    await actionHandler.refreshEpisode(showTraktIdentifier)
-                }
-            } onCancel: { _ in }
+        try await performToWatchWidgetAction(action,
+                                             media: media,
+                                             actionHandler: actionHandler) {
+            await actionHandler.refreshEpisode(showTraktIdentifier)
         }
         return .result()
     }
 }
 
 @available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *)
-struct MoviesToWatchRefreshWidgetActionIntent: LongRunningIntent, CancellableIntent, LiveActivityIntent {
+struct MoviesToWatchRefreshWidgetActionIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Update Movie To Watch"
     static let isDiscoverable = false
     static var allowedExecutionTargets: IntentExecutionTargets {
@@ -296,15 +171,10 @@ struct MoviesToWatchRefreshWidgetActionIntent: LongRunningIntent, CancellableInt
                                        releaseYear: movieReleaseYear,
                                        runtime: nil)
         let media = ToWatchWidgetMedia.movie(movie)
-        try await withToWatchWidgetActionNotifications(action: action, media: media) {
-            try await performBackgroundTask {
-                try await performToWatchWidgetAction(action,
-                                                     media: media,
-                                                     progress: progress,
-                                                     actionHandler: actionHandler) {
-                    await actionHandler.refreshMovies()
-                }
-            } onCancel: { _ in }
+        try await performToWatchWidgetAction(action,
+                                             media: media,
+                                             actionHandler: actionHandler) {
+            await actionHandler.refreshMovies()
         }
         return .result()
     }

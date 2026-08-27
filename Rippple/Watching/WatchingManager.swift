@@ -74,7 +74,7 @@ final class WatchingManager {
         onUserLoggedOutReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.refreshWatchingTimer?.invalidate()
-            self.watchingItem = nil
+            self.updateWatchingItem(with: nil)
             self.progress = 0
         }.disposed(by: disposeBag)
 
@@ -102,12 +102,16 @@ final class WatchingManager {
     }
 
     func refreshWatching(with media: MediaModel?) {
-        if let media = media {
-            watchingItem = WatchingItem(media: media)
-        } else {
-            watchingItem = nil
-        }
+        updateWatchingItem(with: media.map { WatchingItem(media: $0) })
         refreshWatching()
+    }
+
+    func updateWatchingItem(with item: WatchingItem?, forceBroadcast: Bool = false) {
+        let previousItem = watchingItem
+        watchingItem = item
+        if forceBroadcast, previousItem == item {
+            onWatchingItemChangedTransmitter.broadcast((item, previousItem))
+        }
     }
 
     private func fetchWatching() {
@@ -139,7 +143,7 @@ final class WatchingManager {
 
                     print("Fetched watching")
                     DispatchQueue.main.async {
-                        self.updateWatchingItem(with: watchingItem)
+                        self.updateWatchingItem(with: watchingItem, forceBroadcast: true)
                     }
                 } catch {
                     print("Watching request JSON mapping failed! \(error)")
@@ -147,18 +151,6 @@ final class WatchingManager {
             case .failure(let error):
                 print("Watching request failure \(error)")
             }
-        }
-    }
-
-    private func updateWatchingItem(with item: WatchingItem?) {
-        guard let watchingItem = item else {
-            if watchingItem != nil {
-                watchingItem = nil
-            }
-            return
-        }
-        if self.watchingItem != watchingItem {
-            self.watchingItem = watchingItem
         }
     }
 }

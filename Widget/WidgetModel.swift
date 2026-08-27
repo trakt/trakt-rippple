@@ -182,7 +182,6 @@ private enum WidgetCodableStorage {
 
 enum ToWatchWidgetStorage {
     static let kind = "ToWatchWidget"
-    static let actionNotificationIdentifier = "ToWatchWidgetAction"
     static let episodeKey = "widget.episodesToWatch.list"
     static let movieKey = "widget.moviesToWatch.list"
 

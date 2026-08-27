@@ -11,9 +11,6 @@ import Foundation
 import Moya
 import Receiver
 import UIKit
-#if !targetEnvironment(macCatalyst)
-import ActivityKit
-#endif
 
 // MARK: - Navigation Intents
 
@@ -48,7 +45,6 @@ enum RipppleIntentError: Error, CustomLocalizedStringResourceConvertible {
     case noNextEpisode
     case noWatchedMedia
     case nothingCurrentlyWatching
-    case liveActivityRefreshFailed
     case watchlistRequiresMovieOrShow
     case watchedHistoryRequiresMovieOrEpisode
     case nextEpisodeRequiresShow
@@ -79,8 +75,6 @@ enum RipppleIntentError: Error, CustomLocalizedStringResourceConvertible {
             return "No watched movie or episode was found."
         case .nothingCurrentlyWatching:
             return "You aren’t currently checked in to a movie or episode."
-        case .liveActivityRefreshFailed:
-            return "Couldn’t update what you’re currently watching."
         case .watchlistRequiresMovieOrShow:
             return "Only movies and TV shows can be added to the watchlist."
         case .watchedHistoryRequiresMovieOrEpisode:
@@ -106,8 +100,6 @@ enum RipppleIntentError: Error, CustomLocalizedStringResourceConvertible {
 // MARK: - Service
 
 private enum RipppleIntentService {
-    private static let postPropagationDelay: Duration = .seconds(1)
-
     // MARK: Authentication
 
     private static func requireLoggedIn() throws {
@@ -311,30 +303,31 @@ private enum RipppleIntentService {
 
     // MARK: Check-In
 
-    static func checkIn(movie: MovieEntity) async throws {
-        try await checkIn(isEpisode: false) {
-            let movie: Movie = try await request(.movie(id: String(movie.traktIdentifier), extended: .full))
-            return CheckinItem(movie: movie)
-        }
+    static func checkIn(movie: MovieEntity) async throws -> MediaModel {
+        let movie: Movie = try await request(.movie(id: String(movie.traktIdentifier), extended: .full))
+        try await checkIn(isEpisode: false,
+                          item: CheckinItem(movie: movie))
+        return movie.mediaModel
     }
 
-    static func checkIn(episode: EpisodeEntity) async throws {
-        try await checkIn(isEpisode: true) {
-            let episode: Episode = try await request(.episode(id: String(episode.show.traktIdentifier),
-                                                              season: episode.season.number,
-                                                              episode: episode.episodeNumber))
-            return CheckinItem(episode: episode)
-        }
+    static func checkIn(episode: EpisodeEntity) async throws -> MediaModel {
+        async let episodeRequest: Episode = request(.episode(id: String(episode.show.traktIdentifier),
+                                                             season: episode.season.number,
+                                                             episode: episode.episodeNumber))
+        async let showRequest: Show = request(.show(id: String(episode.show.traktIdentifier), extended: .full))
+        let (episodeModel, showModel) = try await(episodeRequest, showRequest)
+
+        try await checkIn(isEpisode: true,
+                          item: CheckinItem(episode: episodeModel))
+        return .episode(episodeModel, showModel)
     }
 
-    private static func checkIn(isEpisode: Bool,
-                                item: () async throws -> CheckinItem) async throws {
+    private static func checkIn(isEpisode: Bool, item: CheckinItem) async throws {
         try requireLoggedIn()
 
         do {
-            let response = try await rawResponse(.checkin(item: await item()))
+            let response = try await rawResponse(.checkin(item: item))
             _ = try response.filterSuccessfulStatusCodes()
-            try await waitForPostPropagation()
         } catch let error as MoyaError {
             guard let statusCode = error.response?.statusCode,
                   let intentError = checkInError(for: statusCode, isEpisode: isEpisode) else {
@@ -360,7 +353,9 @@ private enum RipppleIntentService {
         let media = mediaEntity(for: watchingItem)
 
         try await performAuthenticated(.cancelCheckin)
-        try await waitForPostPropagation()
+        await MainActor.run {
+            WatchingManager.shared.updateWatchingItem(with: nil, forceBroadcast: true)
+        }
         if let media = media {
             await refreshActivityPunchcard(for: media)
         }
@@ -370,7 +365,6 @@ private enum RipppleIntentService {
 
     static func addToWatchlist(movie: MovieEntity) async throws {
         try await performAuthenticated(.addToWatchlist(item: await item(for: movie)))
-        try await waitForPostPropagation()
         await MainActor.run {
             WatchlistManager.shared.refresh()
         }
@@ -378,7 +372,6 @@ private enum RipppleIntentService {
 
     static func addToWatchlist(show: ShowEntity) async throws {
         try await performAuthenticated(.addToWatchlist(item: await item(for: show)))
-        try await waitForPostPropagation()
         await MainActor.run {
             WatchlistManager.shared.refresh()
         }
@@ -404,7 +397,6 @@ private enum RipppleIntentService {
         let model: Movie = try await request(.movie(id: String(movie.traktIdentifier), extended: .full))
         try await performAuthenticated(.addMovieToHistory(id: Int64(movie.traktIdentifier),
                                                           watchedAt: date))
-        try await waitForPostPropagation()
         return model.mediaModel
     }
 
@@ -419,7 +411,6 @@ private enum RipppleIntentService {
 
         try await performAuthenticated(.addEpisodeToHistory(id: Int64(episode.traktIdentifier),
                                                             watchedAt: date))
-        try await waitForPostPropagation()
         return .episode(episodeModel, showModel)
     }
 
@@ -452,42 +443,16 @@ private enum RipppleIntentService {
 
     // MARK: Live Activity
 
-    static func refreshLiveActivity(waitForActivity: Bool = true) async throws -> MediaEntity? {
+    static func refreshLiveActivity() async throws -> MediaEntity? {
         try requireLoggedIn()
-
-        #if !targetEnvironment(macCatalyst)
-        let existingActivityIdentifiers = Set(Activity<RipppleLiveActivityAttributes>.activities.map(\.id))
-        #endif
 
         let watchingItem = try await currentWatchingItem()
         let media = mediaEntity(for: watchingItem)
 
         await MainActor.run {
-            let previousItem = WatchingManager.shared.watchingItem
-            WatchingManager.shared.watchingItem = watchingItem
-            if previousItem == watchingItem {
-                WatchingManager.shared.onWatchingItemChangedTransmitter.broadcast((watchingItem, previousItem))
-            }
+            WatchingManager.shared.updateWatchingItem(with: watchingItem, forceBroadcast: true)
         }
-
-        #if targetEnvironment(macCatalyst)
         return media
-        #else
-        guard waitForActivity,
-              ActivityAuthorizationInfo().areActivitiesEnabled else { return media }
-
-        for _ in 0..<100 {
-            let activities = Activity<RipppleLiveActivityAttributes>.activities
-            if watchingItem == nil, activities.isEmpty {
-                return nil
-            }
-            if activities.contains(where: { existingActivityIdentifiers.contains($0.id) == false }) {
-                return media
-            }
-            try await _Concurrency.Task.sleep(nanoseconds: 100000000)
-        }
-        throw RipppleIntentError.liveActivityRefreshFailed
-        #endif
     }
 
     private static func mediaEntity(for item: WatchingItem?) -> MediaEntity? {
@@ -532,10 +497,6 @@ private enum RipppleIntentService {
     }
 
     // MARK: Networking
-
-    private static func waitForPostPropagation() async throws {
-        try await _Concurrency.Task.sleep(for: postPropagationDelay)
-    }
 
     private static func performAuthenticated(_ target: TraktAPIService) async throws {
         try requireLoggedIn()
@@ -1133,8 +1094,7 @@ struct MarkWatchedIntent: AppIntent {
 
     init() {}
 
-    init(media: MediaEntity,
-         watchedAt: Date? = nil) {
+    init(media: MediaEntity, watchedAt: Date? = nil) {
         self.media = media
         self.watchedAt = watchedAt
     }
@@ -1335,6 +1295,7 @@ struct CheckInIntent: LiveActivityIntent {
 
     func perform() async throws -> some IntentResult & ReturnsValue<MediaEntity> & ProvidesDialog {
         let checkedInMedia: MediaEntity
+        let checkedInModel: MediaModel
         let dialog: IntentDialog
         switch media.value {
         case .movie(let movie):
@@ -1342,7 +1303,7 @@ struct CheckInIntent: LiveActivityIntent {
                 try await requestConfirmation(actionName: .checkIn,
                                               dialog: "Check in to \(movie.title)?")
             }
-            try await RipppleIntentService.checkIn(movie: movie)
+            checkedInModel = try await RipppleIntentService.checkIn(movie: movie)
             checkedInMedia = media
             dialog = "Checked in to \(movie.title)."
         case .show(let show):
@@ -1351,7 +1312,7 @@ struct CheckInIntent: LiveActivityIntent {
                 try await requestConfirmation(actionName: .checkIn,
                                               dialog: "Check in to \(episode.show.title) \(episode.localizedEpisodeNumber)?")
             }
-            try await RipppleIntentService.checkIn(episode: episode)
+            checkedInModel = try await RipppleIntentService.checkIn(episode: episode)
             checkedInMedia = .episode(episode)
             dialog = "Checked in to \(episode.show.title) \(episode.localizedEpisodeNumber)."
         case .episode(let episode):
@@ -1359,16 +1320,14 @@ struct CheckInIntent: LiveActivityIntent {
                 try await requestConfirmation(actionName: .checkIn,
                                               dialog: "Check in to \(episode.show.title) \(episode.localizedEpisodeNumber)?")
             }
-            try await RipppleIntentService.checkIn(episode: episode)
+            checkedInModel = try await RipppleIntentService.checkIn(episode: episode)
             checkedInMedia = media
             dialog = "Checked in to \(episode.show.title) \(episode.localizedEpisodeNumber)."
         }
-        await RipppleIntentService.refreshActivityPunchcard(for: checkedInMedia)
-        do {
-            _ = try await RipppleIntentService.refreshLiveActivity()
-        } catch RipppleIntentError.liveActivityRefreshFailed {
-            print("Live Activity did not start before the check-in intent completed")
+        await MainActor.run {
+            WatchingManager.shared.updateWatchingItem(with: WatchingItem(media: checkedInModel), forceBroadcast: true)
         }
+        await RipppleIntentService.refreshActivityPunchcard(for: checkedInMedia)
         return .result(value: checkedInMedia, dialog: dialog)
     }
 }
@@ -1399,7 +1358,7 @@ extension ToWatchWidgetActionHandler {
 
 extension WatchingControlWidgetActionHandler {
     static let app = WatchingControlWidgetActionHandler {
-        let media = try await RipppleIntentService.refreshLiveActivity(waitForActivity: false)
+        let media = try await RipppleIntentService.refreshLiveActivity()
         if let media = media {
             let dates = await currentWatchingDates()
             await publishWatchingControlWidgetItem(media: media,
@@ -1416,7 +1375,6 @@ extension WatchingControlWidgetActionHandler {
         }
     } cancelCheckIn: {
         try await RipppleIntentService.cancelCheckIn()
-        _ = try await RipppleIntentService.refreshLiveActivity(waitForActivity: false)
         await publishWatchingControlWidgetItem(media: nil,
                                                state: .lastWatched,
                                                isCheckInActive: false,
@@ -1502,7 +1460,6 @@ struct CancelCheckInIntent: LiveActivityIntent {
             dialog: "Cancel the current check-in?"
         )
         try await RipppleIntentService.cancelCheckIn()
-        _ = try await RipppleIntentService.refreshLiveActivity()
         return .result(dialog: "Canceled the current check-in.")
     }
 }
