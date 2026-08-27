@@ -1161,6 +1161,25 @@ struct FetchLastWatchedMediaIntent: AppIntent {
 
 // MARK: - Rating Intents
 
+struct RatingOptionsProvider: DynamicOptionsProvider {
+    func results() async throws -> IntentItemCollection<Int> {
+        IntentItemCollection {
+            IntentItemSection(items: [
+                IntentItem(1, title: "1 - I fell asleep"),
+                IntentItem(2, title: "2 - Terrible"),
+                IntentItem(3, title: "3 - Bad"),
+                IntentItem(4, title: "4 - Poor"),
+                IntentItem(5, title: "5 - Meh"),
+                IntentItem(6, title: "6 - Fair"),
+                IntentItem(7, title: "7 - Good"),
+                IntentItem(8, title: "8 - Great"),
+                IntentItem(9, title: "9 - Superb"),
+                IntentItem(10, title: "10 - Masterpiece")
+            ])
+        }
+    }
+}
+
 struct RateMediaIntent: AppIntent {
     static let title: LocalizedStringResource = "Rate Media"
     static let description = IntentDescription("Rates a movie, TV show, or episode from 1 to 10.",
@@ -1173,8 +1192,9 @@ struct RateMediaIntent: AppIntent {
     var media: MediaEntity
 
     @Parameter(title: "Rating",
-               default: 10,
-               inclusiveRange: (1, 10))
+               inclusiveRange: (1, 10),
+               requestValueDialog: "How would you rate it?",
+               optionsProvider: RatingOptionsProvider())
     var rating: Int
 
     static var parameterSummary: some ParameterSummary {
