@@ -94,7 +94,7 @@ final class LiveActivityManager {
         let hasCachedImage = defaults.data(forKey: "LiveActivityManager.poster") != nil &&
             defaults.data(forKey: "LiveActivityManager.thumb") != nil &&
             defaults.string(forKey: "LiveActivityManager.imageIdentifier") == identifier
-        guard hasCachedImage == false, imageRequestIdentifier == nil else { return }
+        guard hasCachedImage == false, imageRequestIdentifier != identifier else { return }
 
         clearCachedImages()
         imageRequestIdentifier = identifier
