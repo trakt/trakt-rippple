@@ -29,12 +29,15 @@ enum WatchingControlWidgetAction: String, AppEnum {
 @available(iOS 27.0, *)
 struct WatchingControlWidgetConfigurationIntent: WidgetConfigurationIntent {
     static let title: LocalizedStringResource = "Watching Controls"
-    static let description = IntentDescription("Choose the action for the bottom-right button.")
+    static let description = IntentDescription("Configures the action performed by the bottom-right button in the Watching Controls widget.")
 
-    @Parameter(title: "Mode", default: WatchingControlWidgetAction.profile)
+    @Parameter(title: "Mode",
+               description: "The destination or action assigned to the bottom-right button.",
+               default: WatchingControlWidgetAction.profile)
     var action: WatchingControlWidgetAction
 
-    @Parameter(title: "Shortcut")
+    @Parameter(title: "Shortcut",
+               description: "The system shortcut to run when Mode is set to Shortcut.")
     var shortcut: SystemShortcut?
 
     static var parameterSummary: some ParameterSummary {

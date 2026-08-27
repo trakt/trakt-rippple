@@ -16,10 +16,11 @@ import UIKit
 
 struct OpenMediaIntent: OpenIntent {
     static let title: LocalizedStringResource = "Open Media"
-    static let description = IntentDescription("Opens a movie, TV show, or episode in Rippple.",
+    static let description = IntentDescription("Opens the selected movie, TV show, or episode in Rippple. This action does not return a value.",
                                                categoryName: "Navigation")
 
-    @Parameter(title: "Media")
+    @Parameter(title: "Media",
+               description: "The movie, TV show, or episode to open in Rippple.")
     var target: MediaEntity
 
     @MainActor
@@ -959,15 +960,17 @@ struct SearchMediaOptionsProvider: DynamicOptionsProvider {
 
 struct SearchMediaIntent: AppIntent {
     static let title: LocalizedStringResource = "Search Movies and TV Shows"
-    static let description = IntentDescription("Searches for movies or TV shows and displays them.",
+    static let description = IntentDescription("Searches Trakt for a title, lets you choose a movie or TV show from the matches, and returns the selected media for use in later actions.",
                                                categoryName: "Discover",
                                                resultValueName: "Media")
 
     @Parameter(title: "Search",
+               description: "The title or keywords to search for on Trakt.",
                requestValueDialog: "What do you want to search for?")
     var query: String
 
     @Parameter(title: "Media",
+               description: "The movie or TV show to return from the search results.",
                requestValueDialog: "Which movie or TV show?",
                optionsProvider: SearchMediaOptionsProvider())
     var media: MediaEntity
@@ -992,11 +995,12 @@ struct SearchMediaIntent: AppIntent {
 
 struct FetchTrendingMoviesIntent: AppIntent {
     static let title: LocalizedStringResource = "Get Trending Movies"
-    static let description = IntentDescription("Lets you choose a movie from the current Trakt trends.",
+    static let description = IntentDescription("Loads the movies currently trending on Trakt, lets you choose one, and returns the selected movie for use in later actions.",
                                                categoryName: "Discover",
                                                resultValueName: "Movie")
 
     @Parameter(title: "Movie",
+               description: "The movie to return from the current Trakt trends.",
                requestValueDialog: "Which trending movie?",
                optionsProvider: TrendingMovieMediaOptionsProvider())
     var media: MediaEntity
@@ -1011,11 +1015,12 @@ struct FetchTrendingMoviesIntent: AppIntent {
 
 struct FetchTrendingShowsIntent: AppIntent {
     static let title: LocalizedStringResource = "Get Trending TV Shows"
-    static let description = IntentDescription("Lets you choose a TV show from the current Trakt trends.",
+    static let description = IntentDescription("Loads the TV shows currently trending on Trakt, lets you choose one, and returns the selected show for use in later actions.",
                                                categoryName: "Discover",
                                                resultValueName: "TV Show")
 
     @Parameter(title: "TV Show",
+               description: "The TV show to return from the current Trakt trends.",
                requestValueDialog: "Which trending TV show?",
                optionsProvider: TrendingShowMediaOptionsProvider())
     var media: MediaEntity
@@ -1030,11 +1035,12 @@ struct FetchTrendingShowsIntent: AppIntent {
 
 struct FetchTrendingMediaIntent: AppIntent {
     static let title: LocalizedStringResource = "Get Trending Media"
-    static let description = IntentDescription("Lets you choose a movie or TV show from the current combined Trakt trends.",
+    static let description = IntentDescription("Loads the movies and TV shows currently trending on Trakt, lets you choose one, and returns the selected media for use in later actions.",
                                                categoryName: "Discover",
                                                resultValueName: "Media")
 
     @Parameter(title: "Media",
+               description: "The movie or TV show to return from the current Trakt trends.",
                requestValueDialog: "Which trending movie or TV show?",
                optionsProvider: TrendingMediaOptionsProvider())
     var media: MediaEntity
@@ -1055,11 +1061,12 @@ struct FetchTrendingMediaIntent: AppIntent {
 
 struct AddToWatchlistIntent: AppIntent {
     static let title: LocalizedStringResource = "Add to Watchlist"
-    static let description = IntentDescription("Adds a movie or TV show to your watchlist.",
+    static let description = IntentDescription("Adds the selected movie or TV show to your Trakt watchlist and returns the same media for use in later actions. Requires a signed-in Trakt account.",
                                                categoryName: "Watchlist",
                                                resultValueName: "Media")
 
     @Parameter(title: "Media",
+               description: "The movie or TV show to add. Episodes cannot be added to a Trakt watchlist.",
                requestValueDialog: "What would you like to add to your watchlist?",
                inputConnectionBehavior: .connectToPreviousIntentResult)
     var media: MediaEntity
@@ -1086,17 +1093,18 @@ struct AddToWatchlistIntent: AppIntent {
 
 struct MarkWatchedIntent: AppIntent {
     static let title: LocalizedStringResource = "Mark Watched"
-    static let description = IntentDescription("Adds a movie or episode to your watched history.",
+    static let description = IntentDescription("Adds the selected movie or episode to your Trakt watched history at the specified time and returns the same media for use in later actions. Requires a signed-in Trakt account.",
                                                categoryName: "History",
                                                resultValueName: "Media")
 
     @Parameter(title: "Media",
+               description: "The movie or episode to add to your watched history. TV shows must be marked one episode at a time.",
                requestValueDialog: "What did you watch?",
                inputConnectionBehavior: .connectToPreviousIntentResult)
     var media: MediaEntity
 
     @Parameter(title: "Watched At",
-               description: "Uses the current date and time when left empty.")
+               description: "The date and time the movie or episode was watched. Uses the current date and time when left empty.")
     var watchedAt: Date?
 
     static var parameterSummary: some ParameterSummary {
@@ -1139,7 +1147,7 @@ struct MarkWatchedIntent: AppIntent {
 
 struct FetchLastWatchedMediaIntent: AppIntent {
     static let title: LocalizedStringResource = "Get Last Watched Media"
-    static let description = IntentDescription("Gets your most recently watched movie or episode.",
+    static let description = IntentDescription("Gets and returns the most recent movie or episode in your Trakt watched history. This action has no input and requires a signed-in Trakt account.",
                                                categoryName: "History",
                                                resultValueName: "Media")
 
@@ -1182,16 +1190,18 @@ struct RatingOptionsProvider: DynamicOptionsProvider {
 
 struct RateMediaIntent: AppIntent {
     static let title: LocalizedStringResource = "Rate Media"
-    static let description = IntentDescription("Rates a movie, TV show, or episode from 1 to 10.",
+    static let description = IntentDescription("Rates the selected movie, TV show, or episode from 1 to 10 on Trakt and returns the same media for use in later actions. Requires a signed-in Trakt account.",
                                                categoryName: "Ratings",
                                                resultValueName: "Media")
 
     @Parameter(title: "Media",
+               description: "The movie, TV show, or episode to rate.",
                requestValueDialog: "What would you like to rate?",
                inputConnectionBehavior: .connectToPreviousIntentResult)
     var media: MediaEntity
 
     @Parameter(title: "Rating",
+               description: "Your Trakt rating from 1 (lowest) to 10 (highest).",
                inclusiveRange: (1, 10),
                requestValueDialog: "How would you rate it?",
                optionsProvider: RatingOptionsProvider())
@@ -1222,11 +1232,12 @@ struct RateMediaIntent: AppIntent {
 
 struct FetchMoviesToWatchIntent: AppIntent {
     static let title: LocalizedStringResource = "Get Movies to Watch"
-    static let description = IntentDescription("Lets you choose from the movies currently displayed in Rippple's Movies to Watch list.",
+    static let description = IntentDescription("Lets you choose from the movies currently shown in Rippple's Movies to Watch list and returns the selected movie for use in later actions. Requires a signed-in Trakt account.",
                                                categoryName: "Movies",
                                                resultValueName: "Movie")
 
     @Parameter(title: "Movie",
+               description: "The movie to return. When left empty, the action asks you to choose one when it runs.",
                optionsProvider: MoviesToWatchMediaOptionsProvider())
     var media: MediaEntity?
 
@@ -1247,11 +1258,12 @@ struct FetchMoviesToWatchIntent: AppIntent {
 
 struct FetchEpisodesToWatchIntent: AppIntent {
     static let title: LocalizedStringResource = "Get Episodes to Watch"
-    static let description = IntentDescription("Lets you choose from the episodes currently displayed in Rippple's Episodes to Watch list.",
+    static let description = IntentDescription("Lets you choose from the episodes currently shown in Rippple's Episodes to Watch list and returns the selected episode for use in later actions. Requires a signed-in Trakt account.",
                                                categoryName: "Episodes",
                                                resultValueName: "Episode")
 
     @Parameter(title: "Episode",
+               description: "The episode to return. When left empty, the action asks you to choose one when it runs.",
                optionsProvider: EpisodesToWatchMediaOptionsProvider())
     var media: MediaEntity?
 
@@ -1272,11 +1284,12 @@ struct FetchEpisodesToWatchIntent: AppIntent {
 
 struct FetchNextEpisodeIntent: AppIntent {
     static let title: LocalizedStringResource = "Get Next Episode"
-    static let description = IntentDescription("Fetches the next episode to watch for a TV show.",
+    static let description = IntentDescription("Finds and returns the next unwatched episode of the selected TV show according to your Trakt history. Requires a signed-in Trakt account.",
                                                categoryName: "Episodes",
                                                resultValueName: "Episode")
 
     @Parameter(title: "TV Show",
+               description: "The TV show whose next unwatched episode should be returned.",
                requestValueDialog: "Which TV show?",
                inputConnectionBehavior: .connectToPreviousIntentResult,
                optionsProvider: TrendingShowMediaOptionsProvider())
@@ -1301,13 +1314,14 @@ struct FetchNextEpisodeIntent: AppIntent {
 
 struct CheckInIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Check In"
-    static let description = IntentDescription("Checks in to a movie, episode, or the next episode of a TV show.",
+    static let description = IntentDescription("Starts a Trakt check-in for the selected movie or episode. When given a TV show, it checks in to the next unwatched episode. Returns the movie or episode that was checked in and requires a signed-in Trakt account.",
                                                categoryName: "Check-In",
                                                resultValueName: "Media")
 
     private var requestsConfirmation = true
 
     @Parameter(title: "Media",
+               description: "The movie or episode to check in to, or a TV show whose next unwatched episode should be used.",
                requestValueDialog: "What would you like to check in to?",
                inputConnectionBehavior: .connectToPreviousIntentResult,
                optionsProvider: TrendingMediaOptionsProvider())
@@ -1478,7 +1492,7 @@ private func publishWatchingControlWidgetItem(media: MediaEntity?,
 
 struct CancelCheckInIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Cancel Current Check-In"
-    static let description = IntentDescription("Cancels the current Trakt check-in.",
+    static let description = IntentDescription("Asks for confirmation, then cancels your current Trakt check-in. This action has no input and does not return a value. Requires a signed-in Trakt account.",
                                                categoryName: "Check-In")
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -1497,7 +1511,7 @@ struct CancelCheckInIntent: LiveActivityIntent {
 
 struct RefreshLiveActivityIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "What Am I Currently Watching?"
-    static let description = IntentDescription("Checks Trakt for what you're currently watching.",
+    static let description = IntentDescription("Checks Trakt and returns the movie or episode from your active check-in. This action has no input and requires a signed-in Trakt account.",
                                                categoryName: "Check-In",
                                                resultValueName: "Currently Watching")
 

@@ -13,12 +13,16 @@ import WidgetKit
 @available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *)
 struct ToWatchWidgetConfigurationIntent: WidgetConfigurationIntent {
     static let title: LocalizedStringResource = "To Watch"
-    static let description = IntentDescription("Choose whether to show episodes or movies and the action shown beside each item.")
+    static let description = IntentDescription("Configures whether the widget shows episodes or movies and which action appears beside each item.")
 
-    @Parameter(title: "Content", default: ToWatchWidgetContent.episodes)
+    @Parameter(title: "Content",
+               description: "The type of items to show in the widget.",
+               default: ToWatchWidgetContent.episodes)
     var content: ToWatchWidgetContent
 
-    @Parameter(title: "Action", default: ToWatchWidgetAction.checkIn)
+    @Parameter(title: "Action",
+               description: "The button action shown beside each movie or episode.",
+               default: ToWatchWidgetAction.checkIn)
     var action: ToWatchWidgetAction
 
     init() {}

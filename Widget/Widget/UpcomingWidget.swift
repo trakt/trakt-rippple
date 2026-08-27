@@ -12,9 +12,11 @@ import WidgetKit
 
 struct UpcomingWidgetConfigurationIntent: WidgetConfigurationIntent {
     static let title: LocalizedStringResource = "Upcoming"
-    static let description = IntentDescription("Choose whether to show upcoming episodes or movies.")
+    static let description = IntentDescription("Configures whether the widget shows upcoming episodes or upcoming movies.")
 
-    @Parameter(title: "Content", default: ToWatchWidgetContent.episodes)
+    @Parameter(title: "Content",
+               description: "The type of upcoming releases to show in the widget.",
+               default: ToWatchWidgetContent.episodes)
     var content: ToWatchWidgetContent
 
     init() {}

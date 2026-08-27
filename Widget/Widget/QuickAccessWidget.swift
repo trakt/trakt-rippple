@@ -26,9 +26,11 @@ enum QuickAccessWidgetContent: String, AppEnum {
 
 struct QuickAccessWidgetConfigurationIntent: WidgetConfigurationIntent {
     static let title: LocalizedStringResource = "Search"
-    static let description = IntentDescription("Choose the media shown below the search field.")
+    static let description = IntentDescription("Configures the media list shown below the search field in the Quick Access widget.")
 
-    @Parameter(title: "Content", default: QuickAccessWidgetContent.trendingMedia)
+    @Parameter(title: "Content",
+               description: "The type of trending media to show in the widget.",
+               default: QuickAccessWidgetContent.trendingMedia)
     var content: QuickAccessWidgetContent
 
     init() {}
