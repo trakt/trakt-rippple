@@ -108,7 +108,7 @@ final class WidgetIntentNotificationsManager {
         case (.checkIn, .loading):
             return "Checking in…"
         case (.checkIn, .success):
-            return "Now watching"
+            return "Checked in"
         case (.checkIn, .failure(.checkInAlreadyInProgress)):
             return "You’re already checked in"
         case (.checkIn, .failure(.generic)):
@@ -126,11 +126,11 @@ final class WidgetIntentNotificationsManager {
         case (.refreshCurrentlyWatching, .failure):
             return "Couldn’t refresh"
         case (.cancelCheckIn, .loading):
-            return "Ending check-in…"
+            return "Canceling check-in…"
         case (.cancelCheckIn, .success):
-            return "Check-in ended"
+            return "Check-in canceled"
         case (.cancelCheckIn, .failure):
-            return "Couldn’t end check-in"
+            return "Couldn’t cancel check-in"
         }
     }
 
@@ -141,7 +141,7 @@ final class WidgetIntentNotificationsManager {
         case (.checkIn(let media), .success):
             return "You’re checked in to \(media.description)."
         case (.checkIn(let media), .failure(.checkInAlreadyInProgress)):
-            return "End your current check-in before starting \(media.description)."
+            return "Cancel your current check-in before checking in to \(media.description)."
         case (.checkIn(let media), .failure(.generic)):
             return "Something went wrong while checking in to \(media.description). Please try again."
         case (.markWatched(let media), .loading):
@@ -153,16 +153,16 @@ final class WidgetIntentNotificationsManager {
         case (.refreshCurrentlyWatching, .loading):
             return "Checking for your latest activity."
         case (.refreshCurrentlyWatching, .success):
-            return "Currently Watching now matches your latest activity."
+            return "Your latest activity is now up to date."
         case (.refreshCurrentlyWatching, .failure):
-            return "Something went wrong while updating Currently Watching. Please try again."
+            return "Something went wrong while refreshing your latest activity. Please try again."
         case (.cancelCheckIn(let media), .loading):
-            return media.map { "Ending your check-in to \($0.description)." } ?? "Ending your current check-in."
+            return media.map { "Canceling your check-in to \($0.description)." } ?? "Canceling your current check-in."
         case (.cancelCheckIn(let media), .success):
-            return media.map { "Your check-in to \($0.description) has ended." } ?? "Your current check-in has ended."
+            return media.map { "Your check-in to \($0.description) has been canceled." } ?? "Your check-in has been canceled."
         case (.cancelCheckIn(let media), .failure):
-            return media.map { "Something went wrong while ending your check-in to \($0.description). Please try again." }
-                ?? "Something went wrong while ending your current check-in. Please try again."
+            return media.map { "Something went wrong while canceling your check-in to \($0.description). Please try again." }
+                ?? "Something went wrong while canceling your check-in. Please try again."
         }
     }
 
