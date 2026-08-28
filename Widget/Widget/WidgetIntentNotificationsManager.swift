@@ -46,10 +46,13 @@ final class WidgetIntentNotificationsManager {
     struct Notification {
         fileprivate let identifier: String
         fileprivate let action: Action
+        fileprivate let shouldDeliver: Bool
     }
 
     static let shared = WidgetIntentNotificationsManager()
 
+    private static let defaults = UserDefaults(suiteName: "group.tv.trakt.rippple")!
+    private static let notificationsEnabledKey = "WidgetIntentNotificationsManager.notificationsEnabled"
     private static let widgetReloadDeliveryDelay: TimeInterval = 1.0
 
     private enum State {
@@ -60,9 +63,21 @@ final class WidgetIntentNotificationsManager {
 
     private init() {}
 
+    var notificationsEnabled: Bool {
+        get {
+            WidgetIntentNotificationsManager.defaults.bool(forKey: WidgetIntentNotificationsManager.notificationsEnabledKey)
+        }
+        set {
+            WidgetIntentNotificationsManager.defaults.set(newValue,
+                                                          forKey: WidgetIntentNotificationsManager.notificationsEnabledKey)
+            WidgetIntentNotificationsManager.defaults.synchronize()
+        }
+    }
+
     func start(action: Action) -> Notification {
         let notification = Notification(identifier: "\(WidgetIntentNotificationMetadata.identifierPrefix)\(UUID().uuidString)",
-                                        action: action)
+                                        action: action,
+                                        shouldDeliver: notificationsEnabled)
         update(notification, state: .loading)
         return notification
     }
@@ -82,6 +97,8 @@ final class WidgetIntentNotificationsManager {
     private func update(_ notification: Notification,
                         state: State,
                         trigger: UNNotificationTrigger? = nil) {
+        guard notification.shouldDeliver else { return }
+
         let content = UNMutableNotificationContent()
         content.title = title(for: notification.action, state: state)
         content.body = body(for: notification.action, state: state)

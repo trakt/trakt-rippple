@@ -94,6 +94,10 @@ struct NotificationSettingsView: View {
             toggleSection(title: "📢 Activity",
                           footer: "Delivered by realtime push notifications.",
                           settings: [.activityNewFollower])
+
+            toggleSection(title: "🔔 Widgets",
+                          footer: "Get status notifications for actions performed from widgets. Delivered locally on this device.",
+                          settings: [.widgetActionUpdates])
         }
         .navigationTitle("Notifications")
         .onAppear {
@@ -168,6 +172,7 @@ private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
     case commentNewReply
     case commentNewMention
     case activityNewFollower
+    case widgetActionUpdates
 
     var id: Self {
         self
@@ -223,6 +228,8 @@ private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
             return "New Mention"
         case .activityNewFollower:
             return "New Follower"
+        case .widgetActionUpdates:
+            return "Widget Action Notifications"
         }
     }
 
@@ -306,6 +313,8 @@ private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
                 return ActivityNotificationsManager.shared.commentNewMention
             case .activityNewFollower:
                 return ActivityNotificationsManager.shared.activityNewFollower
+            case .widgetActionUpdates:
+                return WidgetIntentNotificationsManager.shared.notificationsEnabled
             }
         }
         nonmutating set {
@@ -375,6 +384,8 @@ private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
                 ActivityNotificationsManager.shared.commentNewMention = newValue
             case .activityNewFollower:
                 ActivityNotificationsManager.shared.activityNewFollower = newValue
+            case .widgetActionUpdates:
+                WidgetIntentNotificationsManager.shared.notificationsEnabled = newValue
             }
         }
     }
