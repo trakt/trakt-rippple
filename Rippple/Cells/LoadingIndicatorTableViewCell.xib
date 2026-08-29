@@ -30,7 +30,9 @@
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
+                    <constraint firstItem="gc1-vw-Ry5" firstAttribute="top" relation="greaterThanOrEqual" secondItem="bSc-nZ-GkX" secondAttribute="top" constant="25" id="9yh-HH-aVD"/>
                     <constraint firstItem="gc1-vw-Ry5" firstAttribute="width" secondItem="gc1-vw-Ry5" secondAttribute="height" multiplier="1:1" id="NzQ-rE-Qhj"/>
+                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="gc1-vw-Ry5" secondAttribute="bottom" constant="25" id="QbY-gL-WIt"/>
                     <constraint firstItem="gc1-vw-Ry5" firstAttribute="centerX" secondItem="bSc-nZ-GkX" secondAttribute="centerX" id="dXg-Gx-7EV"/>
                     <constraint firstItem="gc1-vw-Ry5" firstAttribute="centerY" secondItem="bSc-nZ-GkX" secondAttribute="centerY" id="eDp-w2-EY8"/>
                 </constraints>
