@@ -80,6 +80,19 @@ enum AppIconIdentifier: String, Hashable, CaseIterable {
     }
 
     fileprivate func previewAssetName(for appearance: AppIconPreviewAppearance) -> String {
+        if appearance == .clear {
+            switch self {
+            case .red, .orange, .yellow, .green, .mint, .teal, .cyan, .blue, .indigo, .purple, .pink, .brown:
+                return AppIconIdentifier.original.previewAssetName(for: appearance)
+            case .graphite:
+                return AppIconIdentifier.monochrome.previewAssetName(for: appearance)
+            case .ghost:
+                return AppIconIdentifier.shadow.previewAssetName(for: appearance)
+            default:
+                break
+            }
+        }
+
         return "app_icon_preview_\(rawValue)_\(appearance.rawValue)"
     }
 }

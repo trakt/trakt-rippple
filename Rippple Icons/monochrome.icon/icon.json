@@ -1,4 +1,7 @@
 {
+  "features" : [
+    "refractivity"
+  ],
   "fill" : "system-light",
   "groups" : [
     {
@@ -9,7 +12,7 @@
           "fill-specializations" : [
             {
               "value" : {
-                "solid" : "display-p3:0.17561,0.17561,0.17561,1.00000"
+                "solid" : "extended-gray:0.00000,1.00000"
               }
             },
             {
@@ -32,7 +35,7 @@
           "position" : {
             "scale" : 1.5,
             "translation-in-points" : [
-              0,
+              2,
               0
             ]
           }
@@ -48,19 +51,19 @@
       },
       "refractivity" : {
         "depth" : 0,
-        "enabled" : false,
-        "strength" : 0
+        "enabled" : true,
+        "strength" : 0.426171875
       },
       "shadow" : {
         "kind" : "neutral",
-        "opacity" : 0.3
+        "opacity" : 0.5
       },
       "specular" : true,
       "translucency-specializations" : [
         {
           "value" : {
             "enabled" : true,
-            "value" : 0.2
+            "value" : 0.5
           }
         },
         {
@@ -87,7 +90,7 @@
           "fill-specializations" : [
             {
               "value" : {
-                "solid" : "display-p3:0.17561,0.17561,0.17561,1.00000"
+                "solid" : "extended-gray:0.00000,1.00000"
               }
             },
             {
@@ -107,7 +110,7 @@
           "hidden" : false,
           "image-name" : "Layer 2.png",
           "name" : "Layer 2",
-          "opacity" : 0.4,
+          "opacity" : 0.5,
           "position" : {
             "scale" : 1.18,
             "translation-in-points" : [
@@ -126,19 +129,19 @@
       },
       "refractivity" : {
         "depth" : 0,
-        "enabled" : false,
-        "strength" : 0
+        "enabled" : true,
+        "strength" : 0.426171875
       },
       "shadow" : {
         "kind" : "neutral",
-        "opacity" : 0.3
+        "opacity" : 0.5
       },
       "specular" : true,
       "translucency-specializations" : [
         {
           "value" : {
             "enabled" : true,
-            "value" : 0.2
+            "value" : 0.5
           }
         },
         {
@@ -166,7 +169,7 @@
           "fill-specializations" : [
             {
               "value" : {
-                "solid" : "display-p3:0.17561,0.17561,0.17561,1.00000"
+                "solid" : "extended-gray:0.00000,1.00000"
               }
             },
             {
@@ -205,19 +208,19 @@
       },
       "refractivity" : {
         "depth" : 0,
-        "enabled" : false,
-        "strength" : 0
+        "enabled" : true,
+        "strength" : 0.426171875
       },
       "shadow" : {
         "kind" : "neutral",
-        "opacity" : 0.3
+        "opacity" : 0.5
       },
       "specular" : true,
       "translucency-specializations" : [
         {
           "value" : {
             "enabled" : true,
-            "value" : 0.2
+            "value" : 0.5
           }
         },
         {
