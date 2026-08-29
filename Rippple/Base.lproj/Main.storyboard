@@ -722,11 +722,12 @@ Be the fist to add one.</string>
                             <nil key="highlightedColor"/>
                         </label>
                     </subviews>
+                    <viewLayoutGuide key="safeArea" id="fA6-tf-zg8"/>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
-                        <constraint firstItem="PaM-qm-tEq" firstAttribute="leading" secondItem="pqv-FP-HNM" secondAttribute="leadingMargin" constant="16" id="UBf-Gd-v8B"/>
+                        <constraint firstItem="PaM-qm-tEq" firstAttribute="leading" secondItem="fA6-tf-zg8" secondAttribute="leading" constant="16" id="UBf-Gd-v8B"/>
                         <constraint firstItem="PaM-qm-tEq" firstAttribute="centerY" secondItem="pqv-FP-HNM" secondAttribute="centerY" id="ZVJ-PD-X3D"/>
-                        <constraint firstAttribute="trailingMargin" secondItem="PaM-qm-tEq" secondAttribute="trailing" constant="16" id="iCK-Cq-OiF"/>
+                        <constraint firstItem="fA6-tf-zg8" firstAttribute="trailing" secondItem="PaM-qm-tEq" secondAttribute="trailing" constant="16" id="iCK-Cq-OiF"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Yga-Yh-pM3" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
@@ -745,10 +746,11 @@ Be the fist to add one.</string>
                             </userDefinedRuntimeAttributes>
                         </view>
                     </subviews>
+                    <viewLayoutGuide key="safeArea" id="C3R-Uc-CeN"/>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
                         <constraint firstItem="YYb-IP-2xB" firstAttribute="centerY" secondItem="Yga-Yh-pM3" secondAttribute="centerY" id="57F-Z1-BDb"/>
-                        <constraint firstItem="YYb-IP-2xB" firstAttribute="centerX" secondItem="Yga-Yh-pM3" secondAttribute="centerXWithinMargins" id="HkD-6s-BqX"/>
+                        <constraint firstItem="YYb-IP-2xB" firstAttribute="centerX" secondItem="C3R-Uc-CeN" secondAttribute="centerX" id="HkD-6s-BqX"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="pjW-5J-LZF" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
@@ -776,11 +778,12 @@ Be the fist to add one.</string>
                             </subviews>
                         </stackView>
                     </subviews>
+                    <viewLayoutGuide key="safeArea" id="rV9-TB-Byb"/>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
-                        <constraint firstAttribute="leadingMargin" secondItem="i5h-qH-Axg" secondAttribute="leading" constant="-16" id="PMG-xF-VXh"/>
+                        <constraint firstItem="i5h-qH-Axg" firstAttribute="leading" secondItem="rV9-TB-Byb" secondAttribute="leading" constant="16" id="PMG-xF-VXh"/>
                         <constraint firstItem="i5h-qH-Axg" firstAttribute="centerY" secondItem="pjW-5J-LZF" secondAttribute="centerY" id="SGC-SR-wE2"/>
-                        <constraint firstAttribute="trailingMargin" secondItem="i5h-qH-Axg" secondAttribute="trailing" constant="16" id="tSn-O0-g4p"/>
+                        <constraint firstItem="rV9-TB-Byb" firstAttribute="trailing" secondItem="i5h-qH-Axg" secondAttribute="trailing" constant="16" id="tSn-O0-g4p"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" id="RAA-JY-vRM" userLabel="Placeholder Header View">
@@ -1222,9 +1225,9 @@ Keeping things private for private users...</string>
                     <viewLayoutGuide key="safeArea" id="gMM-I9-Vrs"/>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
-                        <constraint firstItem="Rpq-dt-Epf" firstAttribute="leading" secondItem="uX4-bT-g65" secondAttribute="leading" constant="16" id="QhY-Xh-C6K"/>
+                        <constraint firstItem="Rpq-dt-Epf" firstAttribute="leading" secondItem="gMM-I9-Vrs" secondAttribute="leading" constant="16" id="QhY-Xh-C6K"/>
                         <constraint firstItem="Rpq-dt-Epf" firstAttribute="centerY" secondItem="uX4-bT-g65" secondAttribute="centerY" id="Sti-er-a48"/>
-                        <constraint firstAttribute="trailing" secondItem="Rpq-dt-Epf" secondAttribute="trailing" constant="16" id="jt7-l6-CLr"/>
+                        <constraint firstItem="gMM-I9-Vrs" firstAttribute="trailing" secondItem="Rpq-dt-Epf" secondAttribute="trailing" constant="16" id="jt7-l6-CLr"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Jza-G9-B5R" userLabel="Loading View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
@@ -1247,7 +1250,7 @@ Keeping things private for private users...</string>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
                         <constraint firstItem="hof-mt-jAq" firstAttribute="centerY" secondItem="Jza-G9-B5R" secondAttribute="centerY" id="6pf-po-dlP"/>
-                        <constraint firstItem="hof-mt-jAq" firstAttribute="centerX" secondItem="Jza-G9-B5R" secondAttribute="centerX" id="AZX-W4-6Wz"/>
+                        <constraint firstItem="hof-mt-jAq" firstAttribute="centerX" secondItem="whL-uV-ahl" secondAttribute="centerX" id="AZX-W4-6Wz"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="EmZ-6J-FPR" userLabel="Error View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
@@ -3562,8 +3565,8 @@ Keeping things private for private users...</string>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
                         <constraint firstItem="IzG-TQ-Bu7" firstAttribute="centerY" secondItem="fnv-rv-YQB" secondAttribute="centerY" id="RUd-gX-YbN"/>
-                        <constraint firstAttribute="trailing" secondItem="IzG-TQ-Bu7" secondAttribute="trailing" constant="16" id="wIO-G0-mGM"/>
-                        <constraint firstItem="IzG-TQ-Bu7" firstAttribute="leading" secondItem="fnv-rv-YQB" secondAttribute="leading" constant="16" id="yUg-OR-wCJ"/>
+                        <constraint firstItem="LgH-a4-XL2" firstAttribute="trailing" secondItem="IzG-TQ-Bu7" secondAttribute="trailing" constant="16" id="wIO-G0-mGM"/>
+                        <constraint firstItem="IzG-TQ-Bu7" firstAttribute="leading" secondItem="LgH-a4-XL2" secondAttribute="leading" constant="16" id="yUg-OR-wCJ"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="VJY-hS-PHg" userLabel="Loading View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
@@ -3586,7 +3589,7 @@ Keeping things private for private users...</string>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
                         <constraint firstItem="jVg-Gd-zLe" firstAttribute="centerY" secondItem="VJY-hS-PHg" secondAttribute="centerY" id="UhY-Ky-IRd"/>
-                        <constraint firstItem="jVg-Gd-zLe" firstAttribute="centerX" secondItem="VJY-hS-PHg" secondAttribute="centerX" id="vQn-8H-Gru"/>
+                        <constraint firstItem="jVg-Gd-zLe" firstAttribute="centerX" secondItem="0v0-eu-laH" secondAttribute="centerX" id="vQn-8H-Gru"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="ot4-oJ-t2h" userLabel="Error View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
@@ -3691,9 +3694,9 @@ Keeping things private for private users...</string>
                     <viewLayoutGuide key="safeArea" id="cn7-OO-KYX"/>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
-                        <constraint firstItem="rIe-FN-Voe" firstAttribute="leading" secondItem="iRj-p4-Sa2" secondAttribute="leading" constant="16" id="Qif-6x-fb4"/>
+                        <constraint firstItem="rIe-FN-Voe" firstAttribute="leading" secondItem="cn7-OO-KYX" secondAttribute="leading" constant="16" id="Qif-6x-fb4"/>
                         <constraint firstItem="rIe-FN-Voe" firstAttribute="centerY" secondItem="iRj-p4-Sa2" secondAttribute="centerY" id="XAB-IS-c62"/>
-                        <constraint firstAttribute="trailing" secondItem="rIe-FN-Voe" secondAttribute="trailing" constant="16" id="ytt-Mr-V4A"/>
+                        <constraint firstItem="cn7-OO-KYX" firstAttribute="trailing" secondItem="rIe-FN-Voe" secondAttribute="trailing" constant="16" id="ytt-Mr-V4A"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="0pi-Wy-dbf" userLabel="Loading View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
@@ -3716,7 +3719,7 @@ Keeping things private for private users...</string>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
                         <constraint firstItem="XiJ-cx-Jgm" firstAttribute="centerY" secondItem="0pi-Wy-dbf" secondAttribute="centerY" id="5L6-RW-iur"/>
-                        <constraint firstItem="XiJ-cx-Jgm" firstAttribute="centerX" secondItem="0pi-Wy-dbf" secondAttribute="centerX" id="auk-Ew-GWn"/>
+                        <constraint firstItem="XiJ-cx-Jgm" firstAttribute="centerX" secondItem="NGB-65-cmn" secondAttribute="centerX" id="auk-Ew-GWn"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="fpy-Lh-Spv" userLabel="Error View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
@@ -3820,8 +3823,8 @@ Keeping things private for private users...</string>
                     <viewLayoutGuide key="safeArea" id="xeP-tl-6EA"/>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
-                        <constraint firstAttribute="trailing" secondItem="ADi-o5-qpv" secondAttribute="trailing" constant="16" id="WmQ-nC-LUo"/>
-                        <constraint firstItem="ADi-o5-qpv" firstAttribute="leading" secondItem="LWd-1l-c8L" secondAttribute="leading" constant="16" id="ZUY-H5-9I1"/>
+                        <constraint firstItem="xeP-tl-6EA" firstAttribute="trailing" secondItem="ADi-o5-qpv" secondAttribute="trailing" constant="16" id="WmQ-nC-LUo"/>
+                        <constraint firstItem="ADi-o5-qpv" firstAttribute="leading" secondItem="xeP-tl-6EA" secondAttribute="leading" constant="16" id="ZUY-H5-9I1"/>
                         <constraint firstItem="ADi-o5-qpv" firstAttribute="centerY" secondItem="LWd-1l-c8L" secondAttribute="centerY" id="cSk-gM-0QZ"/>
                     </constraints>
                 </view>
@@ -3844,7 +3847,7 @@ Keeping things private for private users...</string>
                     <viewLayoutGuide key="safeArea" id="MBT-4Z-3vZ"/>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
-                        <constraint firstItem="1j1-NE-XPB" firstAttribute="centerX" secondItem="XXd-fb-NMq" secondAttribute="centerX" id="Guk-CP-Eky"/>
+                        <constraint firstItem="1j1-NE-XPB" firstAttribute="centerX" secondItem="MBT-4Z-3vZ" secondAttribute="centerX" id="Guk-CP-Eky"/>
                         <constraint firstItem="1j1-NE-XPB" firstAttribute="centerY" secondItem="XXd-fb-NMq" secondAttribute="centerY" id="q81-OB-KCC"/>
                     </constraints>
                 </view>
@@ -4606,7 +4609,7 @@ Keeping things private for private users...</string>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
                         <constraint firstItem="yoB-a2-5qp" firstAttribute="centerY" secondItem="vH5-4h-DlR" secondAttribute="centerY" id="ONd-Qu-Ptw"/>
-                        <constraint firstItem="yoB-a2-5qp" firstAttribute="centerX" secondItem="vH5-4h-DlR" secondAttribute="centerX" id="vMg-Bp-MOQ"/>
+                        <constraint firstItem="yoB-a2-5qp" firstAttribute="centerX" secondItem="eWh-UT-RZy" secondAttribute="centerX" id="vMg-Bp-MOQ"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="K7w-D1-43R" userLabel="Error View" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
