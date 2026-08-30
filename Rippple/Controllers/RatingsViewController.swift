@@ -6,7 +6,6 @@
 //  Copyright © Trakt. All rights reserved.
 //
 
-import Moya
 import NVActivityIndicatorView
 import Receiver
 import UIKit
@@ -71,7 +70,7 @@ final class RatingsViewController: UITableViewController {
         }
     }
 
-    private var cancellable: Cancellable?
+    private var fetchTask: Task<Void, Never>?
 
     private let contextMenu = ContextMenuHelper()
 
@@ -125,9 +124,7 @@ final class RatingsViewController: UITableViewController {
     }
 
     deinit {
-        if let cancellable = cancellable {
-            cancellable.cancel()
-        }
+        fetchTask?.cancel()
     }
 
     /// Error Management
@@ -318,9 +315,7 @@ final class RatingsViewController: UITableViewController {
     @IBAction func unwindFromCommentComposer(segue: UIStoryboardSegue) {}
 
     private func reset() {
-        if let cancellable = cancellable {
-            cancellable.cancel()
-        }
+        fetchTask?.cancel()
         ratedItems = nil
 
         dataSource.apply(loadingSnapshot(), animatingDifferences: false)
@@ -578,7 +573,9 @@ final class RatingsViewController: UITableViewController {
     }
 
     func fetchRatings() {
-        cancellable = TraktAPIProvider.provider.request(service, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+        guard case .rated(let slug, let type, let extended, _) = service else { return }
+        fetchTask?.cancel()
+        fetchTask = TraktAPIProvider.fetchAllRatedItems(slug: slug, type: type, extended: extended) { [weak self] result in
             guard let self = self else { return }
 
             defer {
@@ -589,28 +586,13 @@ final class RatingsViewController: UITableViewController {
             }
 
             switch result {
-            case .success(let moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let rated = try response.map([RatedItem].self, using: TraktAPIProvider.decoder)
-                    DispatchQueue.main.async {
-                        self.ratedItems = rated
-                        self.applyRatingsSnapshot(for: rated, animatingDifferences: false)
-                    }
-                } catch {
-                    print("Comments request JSON mapping failed! \(error)")
-
-                    var snapshot = NSDiffableDataSourceSnapshot<String, Wrapper>()
-                    snapshot.appendSections(["error"])
-                    DispatchQueue.main.async {
-                        self.ratedItems = nil
-                        self.error = error
-                        self.dataSource.apply(snapshot, animatingDifferences: false)
-                    }
+            case .success(let rated):
+                DispatchQueue.main.async {
+                    self.ratedItems = rated
+                    self.applyRatingsSnapshot(for: rated, animatingDifferences: false)
                 }
             case .failure(let error):
-                print("Comments request failure \(error)")
+                print("Ratings request failure \(error)")
 
                 var snapshot = NSDiffableDataSourceSnapshot<String, Wrapper>()
                 snapshot.appendSections(["error"])
