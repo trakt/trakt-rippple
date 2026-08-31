@@ -143,7 +143,7 @@ final class WatchingManager {
 
                     print("Fetched watching")
                     DispatchQueue.main.async {
-                        self.updateWatchingItem(with: watchingItem, forceBroadcast: true)
+                        self.updateWatchingItem(with: watchingItem)
                     }
                 } catch {
                     print("Watching request JSON mapping failed! \(error)")
