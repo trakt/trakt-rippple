@@ -259,6 +259,13 @@ class SidebarViewController: UIViewController {
 
     private func addNavigationButtons() {
         let profileButton = ProfileButton()
+        #if targetEnvironment(macCatalyst)
+        profileButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            profileButton.widthAnchor.constraint(equalToConstant: 24),
+            profileButton.heightAnchor.constraint(equalToConstant: 24)
+        ])
+        #endif
         let profileAction = UIAction(handler: { [weak self] _ in
             guard let self = self else { return }
             let profileViewController = UIStoryboard(name: "Profile", bundle: nil).instantiateInitialViewController()!
