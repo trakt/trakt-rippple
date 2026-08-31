@@ -1525,15 +1525,15 @@ struct CancelCheckInIntent: LiveActivityIntent {
 }
 
 struct RefreshLiveActivityIntent: LiveActivityIntent {
-    static let title: LocalizedStringResource = "What Am I Currently Watching?"
-    static let description = IntentDescription("Checks Trakt and returns the movie or episode from your active check-in. This action has no input and requires a signed-in Trakt account.",
-                                               categoryName: "Check-In",
+    static let title: LocalizedStringResource = "Refresh App Data"
+    static let description = IntentDescription("Refreshes your watched activity, To Watch, calendar, upcoming, and currently watching data throughout the app and its widgets, then returns the media from your active check-in. This action has no input and requires a signed-in Trakt account.",
+                                               categoryName: "Data",
                                                resultValueName: "Currently Watching")
 
     func perform() async throws -> some IntentResult & ReturnsValue<MediaEntity> & ProvidesDialog {
-        async let mediaRefresh = RipppleIntentService.refreshLiveActivity()
+        async let currentlyWatchingRefresh = RipppleIntentService.refreshLiveActivity()
         async let widgetDataRefresh: Void = RipppleIntentService.refreshWidgetData()
-        let (refreshedMedia, _) = try await(mediaRefresh, widgetDataRefresh)
+        let (refreshedMedia, _) = try await(currentlyWatchingRefresh, widgetDataRefresh)
         guard let media = refreshedMedia else {
             throw RipppleIntentError.nothingCurrentlyWatching
         }
@@ -1541,11 +1541,11 @@ struct RefreshLiveActivityIntent: LiveActivityIntent {
         let dialog: IntentDialog
         switch media.value {
         case .movie(let movie):
-            dialog = "You're currently watching \(movie.title)."
+            dialog = "Refreshed your app data. You're currently watching \(movie.title)."
         case .show(let show):
-            dialog = "You're currently watching \(show.title)."
+            dialog = "Refreshed your app data. You're currently watching \(show.title)."
         case .episode(let episode):
-            dialog = "You're currently watching \(episode.show.title) \(episode.localizedEpisodeNumber)."
+            dialog = "Refreshed your app data. You're currently watching \(episode.show.title) \(episode.localizedEpisodeNumber)."
         }
         return .result(value: media, dialog: dialog)
     }
@@ -1623,11 +1623,11 @@ struct RipppleAppShortcuts: AppShortcutsProvider {
 
         AppShortcut(intent: RefreshLiveActivityIntent(),
                     phrases: [
-                        "What am I currently watching in \(.applicationName)",
-                        "Show what I'm watching in \(.applicationName)"
+                        "Refresh my data in \(.applicationName)",
+                        "Update my app data in \(.applicationName)"
                     ],
-                    shortTitle: "Currently Watching",
-                    systemImageName: "play.circle")
+                    shortTitle: "Refresh Data",
+                    systemImageName: "arrow.clockwise")
 
         AppShortcut(intent: SearchMediaIntent(),
                     phrases: [
