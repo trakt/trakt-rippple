@@ -467,6 +467,19 @@ private enum RipppleIntentService {
         return media
     }
 
+    @MainActor
+    static func refreshWidgetData() async throws {
+        async let moviesRefresh: Void = SyncWatchedManager.shared.refreshImmediately(type: .movies)
+        async let showsRefresh: Void = SyncWatchedManager.shared.refreshImmediately(type: .shows)
+        async let episodesRefresh: Void = SyncWatchedManager.shared.refreshImmediately(type: .episodes)
+        _ = await(moviesRefresh, showsRefresh, episodesRefresh)
+        WidgetManager.shared.refreshActivityPunchcard()
+
+        EpisodeToWatchManager.shared.forcedUserRefresh()
+        MovieToWatchManager.shared.forcedUserRefresh()
+        try await CalendarManager.shared.refresh()
+    }
+
     private static func mediaEntity(for item: WatchingItem?) -> MediaEntity? {
         if let movie = item?.movie,
            let entity = MovieEntity(movie: movie) {
@@ -1403,7 +1416,9 @@ extension ToWatchWidgetActionHandler {
 
 extension WatchingControlWidgetActionHandler {
     static let app = WatchingControlWidgetActionHandler {
-        let media = try await RipppleIntentService.refreshLiveActivity()
+        async let mediaRefresh = RipppleIntentService.refreshLiveActivity()
+        async let widgetDataRefresh: Void = RipppleIntentService.refreshWidgetData()
+        let (media, _) = try await(mediaRefresh, widgetDataRefresh)
         if let media = media {
             let dates = await currentWatchingDates()
             await publishWatchingControlWidgetItem(media: media,
@@ -1516,7 +1531,10 @@ struct RefreshLiveActivityIntent: LiveActivityIntent {
                                                resultValueName: "Currently Watching")
 
     func perform() async throws -> some IntentResult & ReturnsValue<MediaEntity> & ProvidesDialog {
-        guard let media = try await RipppleIntentService.refreshLiveActivity() else {
+        async let mediaRefresh = RipppleIntentService.refreshLiveActivity()
+        async let widgetDataRefresh: Void = RipppleIntentService.refreshWidgetData()
+        let (refreshedMedia, _) = try await(mediaRefresh, widgetDataRefresh)
+        guard let media = refreshedMedia else {
             throw RipppleIntentError.nothingCurrentlyWatching
         }
 

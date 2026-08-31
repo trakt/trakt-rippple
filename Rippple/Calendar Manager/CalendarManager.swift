@@ -253,6 +253,10 @@ final class CalendarManager {
             .removingDuplicates()
     }
 
+    func refresh() async throws {
+        try await reload(force: true)
+    }
+
     @discardableResult
     private func reload(referenceDate: Date = .now, force: Bool = false) async throws -> CalendarData {
         if force == false, let cachedData = cachedData {

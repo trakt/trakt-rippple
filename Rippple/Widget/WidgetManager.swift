@@ -42,18 +42,18 @@ final class WidgetManager {
             guard let self = self else { return }
             WatchingControlWidgetStorage.publishProfileAvatarURL(settings?.user.images?.avatar.full)
             self.updateLastWatched()
-            self.updateActivityPunchcard()
+            self.refreshActivityPunchcard()
             WidgetCenter.shared.reloadTimelines(ofKind: WatchingControlWidgetStorage.kind)
         }.disposed(by: disposeBag)
 
         onSyncWatchedMoviesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.updateActivityPunchcard()
+            self.refreshActivityPunchcard()
         }.disposed(by: disposeBag)
 
         onSyncWatchedEpisodesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.updateActivityPunchcard()
+            self.refreshActivityPunchcard()
         }.disposed(by: disposeBag)
 
         onUserLoggedOutReceiver.listen { _ in
@@ -450,7 +450,7 @@ final class WidgetManager {
         return nil
     }
 
-    private func updateActivityPunchcard() {
+    func refreshActivityPunchcard() {
         ActivityPunchcardWidgetStorage.publish(SyncWatchedManager.shared.activityCountsByDay())
         WidgetCenter.shared.reloadTimelines(ofKind: ActivityPunchcardWidgetStorage.kind)
     }
