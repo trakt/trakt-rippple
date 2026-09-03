@@ -7,6 +7,7 @@
 //
 
 import AppIntents
+import CoreTransferable
 import Foundation
 import Moya
 import Receiver
@@ -16,11 +17,11 @@ import UIKit
 
 struct OpenMediaIntent: OpenIntent {
     static let title: LocalizedStringResource = "Open Media"
-    static let description = IntentDescription("Opens the selected movie, TV show, or episode in Rippple. This action does not return a value.",
+    static let description = IntentDescription("Opens the selected movie, TV show, season, or episode in Rippple. This action does not return a value.",
                                                categoryName: "Navigation")
 
     @Parameter(title: "Media",
-               description: "The movie, TV show, or episode to open in Rippple.")
+               description: "The movie, TV show, season, or episode to open in Rippple.")
     var target: MediaEntity
 
     @MainActor
@@ -39,7 +40,9 @@ struct OpenMediaIntent: OpenIntent {
 enum RipppleIntentError: Error, CustomLocalizedStringResourceConvertible {
     case notLoggedIn
     case checkInAlreadyInProgress
+    case checkInRequiresMovieShowOrEpisode
     case episodeCheckInUnavailable
+    case mediaUnavailable
     case movieCheckInUnavailable
     case noMoviesToWatch
     case noEpisodesToWatch
@@ -62,8 +65,12 @@ enum RipppleIntentError: Error, CustomLocalizedStringResourceConvertible {
             return "Sign in to Rippple first."
         case .checkInAlreadyInProgress:
             return "A Trakt check-in is already in progress."
+        case .checkInRequiresMovieShowOrEpisode:
+            return "Only movies, TV shows, and episodes can be checked in."
         case .episodeCheckInUnavailable:
             return "This episode can’t be checked in yet. It may not have aired."
+        case .mediaUnavailable:
+            return "This media is no longer available on Trakt."
         case .movieCheckInUnavailable:
             return "This movie can’t be checked in yet. It may not have been released."
         case .noMoviesToWatch:
@@ -77,9 +84,9 @@ enum RipppleIntentError: Error, CustomLocalizedStringResourceConvertible {
         case .nothingCurrentlyWatching:
             return "You aren’t currently checked in to a movie or episode."
         case .watchlistRequiresMovieOrShow:
-            return "Only movies and TV shows can be added to the watchlist."
+            return "This action only supports adding movies and TV shows to the watchlist."
         case .watchedHistoryRequiresMovieOrEpisode:
-            return "Only movies and episodes can be marked watched."
+            return "This action only supports marking movies and episodes watched."
         case .nextEpisodeRequiresShow:
             return "Choose a TV show to get its next episode."
         case .trendingMediaRequiresMovieOrShow:
@@ -401,6 +408,14 @@ private enum RipppleIntentService {
         return WatchlistedItem(show: show)
     }
 
+    private static func season(for entity: SeasonEntity) async throws -> Season {
+        let seasons: [Season] = try await request(.seasons(id: Int64(entity.show.traktIdentifier)))
+        guard let season = seasons.first(where: { $0.number == entity.number }) else {
+            throw RipppleIntentError.mediaUnavailable
+        }
+        return season
+    }
+
     // MARK: History
 
     static func markWatched(movie: MovieEntity, at date: Date) async throws -> MediaModel {
@@ -433,7 +448,7 @@ private enum RipppleIntentService {
             type = .movies
         case .episode:
             type = .episodes
-        case .show:
+        case .show, .season:
             return
         }
         await SyncWatchedManager.shared.refreshImmediately(type: type)
@@ -451,6 +466,14 @@ private enum RipppleIntentService {
 
     static func rate(episode: EpisodeEntity, rating: Int) async throws {
         try await performAuthenticated(.rateEpisode(id: Int64(episode.traktIdentifier), rating: rating))
+    }
+
+    static func rate(season: SeasonEntity, rating: Int) async throws {
+        let seasonModel = try await RipppleIntentService.season(for: season)
+        guard let identifier = seasonModel.identifiers.trakt else {
+            throw RipppleIntentError.mediaUnavailable
+        }
+        try await performAuthenticated(.rateSeason(id: identifier, rating: rating))
     }
 
     // MARK: Live Activity
@@ -818,6 +841,7 @@ struct EpisodeEntityQuery: EntityQuery {
 enum MediaEntityType: String, AppEnum {
     case movie
     case show
+    case season
     case episode
 
     static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Media Type")
@@ -825,6 +849,7 @@ enum MediaEntityType: String, AppEnum {
     static let caseDisplayRepresentations: [MediaEntityType: DisplayRepresentation] = [
         .movie: "Movie",
         .show: "Show",
+        .season: "Season",
         .episode: "Episode"
     ]
 }
@@ -833,6 +858,7 @@ struct MediaEntity: AppEntity {
     fileprivate enum Value {
         case movie(MovieEntity)
         case show(ShowEntity)
+        case season(SeasonEntity)
         case episode(EpisodeEntity)
     }
 
@@ -852,6 +878,10 @@ struct MediaEntity: AppEntity {
         MediaEntity(value: .show(show), type: .show)
     }
 
+    static func season(_ season: SeasonEntity) -> MediaEntity {
+        MediaEntity(value: .season(season), type: .season)
+    }
+
     static func episode(_ episode: EpisodeEntity) -> MediaEntity {
         MediaEntity(value: .episode(episode), type: .episode)
     }
@@ -861,12 +891,36 @@ struct MediaEntity: AppEntity {
         self.type = type
     }
 
+    init?(mediaModel: MediaModel) {
+        switch mediaModel {
+        case .movie(let movie):
+            guard let movie = MovieEntity(movie: movie) else { return nil }
+            self = .movie(movie)
+        case .show(let show):
+            guard let show = ShowEntity(show: show) else { return nil }
+            self = .show(show)
+        case .season(let season, let show):
+            guard let season = SeasonEntity(number: season.number, show: show) else { return nil }
+            self = .season(season)
+        case .episode(let episode, let show):
+            guard let episode = EpisodeEntity(episode: episode, show: show) else { return nil }
+            self = .episode(episode)
+        case .showProgress(let show, _):
+            guard let show = ShowEntity(show: show) else { return nil }
+            self = .show(show)
+        case .list:
+            return nil
+        }
+    }
+
     var id: String {
         switch value {
         case .movie(let movie):
             return "movie:\(movie.id)"
         case .show(let show):
             return "show:\(show.id)"
+        case .season(let season):
+            return "season:\(season.id)"
         case .episode(let episode):
             return "episode:\(episode.id)"
         }
@@ -878,6 +932,8 @@ struct MediaEntity: AppEntity {
             return movie.displayRepresentation
         case .show(let show):
             return show.displayRepresentation
+        case .season(let season):
+            return season.displayRepresentation
         case .episode(let episode):
             return episode.displayRepresentation
         }
@@ -889,9 +945,44 @@ struct MediaEntity: AppEntity {
             return URL(string: "ripl://movies/\(movie.traktIdentifier)")!
         case .show(let show):
             return URL(string: "ripl://shows/\(show.traktIdentifier)")!
+        case .season(let season):
+            return URL(string: "ripl://shows/\(season.show.traktIdentifier)/seasons/\(season.number)")!
         case .episode(let episode):
             return URL(string: "ripl://shows/\(episode.show.traktIdentifier)/seasons/\(episode.season.number)/episodes/\(episode.episodeNumber)")!
         }
+    }
+
+    fileprivate var transferableText: String {
+        switch value {
+        case .movie(let movie):
+            return movie.year.map { "\(movie.title) (\($0))" } ?? movie.title
+        case .show(let show):
+            return show.title
+        case .season(let season):
+            return "\(season.show.title), season \(season.number)"
+        case .episode(let episode):
+            return "\(episode.show.title), \(episode.localizedEpisodeNumber): \(episode.title)"
+        }
+    }
+}
+
+extension MediaEntity: Transferable {
+    static var transferRepresentation: some TransferRepresentation {
+        ProxyRepresentation(exporting: \.transferableText)
+    }
+}
+
+extension UIViewController {
+    func updateMediaUserActivity(with media: MediaModel?) {
+        guard let media = media,
+              let entity = MediaEntity(mediaModel: media) else {
+            view.userActivity = nil
+            return
+        }
+
+        let activity = NSUserActivity(activityType: "tv.trakt.rippple.viewing-media")
+        activity.appEntityIdentifier = EntityIdentifier(for: entity)
+        view.userActivity = activity
     }
 }
 
@@ -909,6 +1000,8 @@ struct MediaEntityQuery: EntityStringQuery {
             case "show":
                 guard let identifier = Int(components[1]) else { continue }
                 try entities.append(contentsOf: await RipppleIntentService.shows(with: [identifier]).map(MediaEntity.show))
+            case "season":
+                try entities.append(contentsOf: await RipppleIntentService.seasons(with: [components[1]]).map(MediaEntity.season))
             case "episode":
                 try entities.append(contentsOf: await RipppleIntentService.episodes(with: [components[1]]).map(MediaEntity.episode))
             default:
@@ -998,7 +1091,7 @@ struct SearchMediaIntent: AppIntent {
             return .result(value: media, dialog: "Selected \(movie.title).")
         case .show(let show):
             return .result(value: media, dialog: "Selected \(show.title).")
-        case .episode:
+        case .season, .episode:
             throw RipppleIntentError.searchRequiresMovieOrShow
         }
     }
@@ -1064,7 +1157,7 @@ struct FetchTrendingMediaIntent: AppIntent {
             return .result(value: media, dialog: "Selected \(movie.title).")
         case .show(let show):
             return .result(value: media, dialog: "Selected \(show.title).")
-        case .episode:
+        case .season, .episode:
             throw RipppleIntentError.trendingMediaRequiresMovieOrShow
         }
     }
@@ -1079,7 +1172,7 @@ struct AddToWatchlistIntent: AppIntent {
                                                resultValueName: "Media")
 
     @Parameter(title: "Media",
-               description: "The movie or TV show to add. Episodes cannot be added to a Trakt watchlist.",
+               description: "The movie or TV show to add with this action.",
                requestValueDialog: "What would you like to add to your watchlist?",
                inputConnectionBehavior: .connectToPreviousIntentResult)
     var media: MediaEntity
@@ -1096,7 +1189,7 @@ struct AddToWatchlistIntent: AppIntent {
         case .show(let show):
             try await RipppleIntentService.addToWatchlist(show: show)
             return .result(value: media, dialog: "Added \(show.title) to your watchlist.")
-        case .episode:
+        case .season, .episode:
             throw RipppleIntentError.watchlistRequiresMovieOrShow
         }
     }
@@ -1142,7 +1235,7 @@ struct MarkWatchedIntent: AppIntent {
         case .episode(let episode):
             model = try await RipppleIntentService.markWatched(episode: episode, at: watchedAt)
             dialog = "Marked \(episode.show.title) \(episode.localizedEpisodeNumber) watched."
-        case .show:
+        case .show, .season:
             throw RipppleIntentError.watchedHistoryRequiresMovieOrEpisode
         }
         await refreshAppData(afterMarking: model)
@@ -1173,6 +1266,9 @@ struct FetchLastWatchedMediaIntent: AppIntent {
         case .show(let show):
             return .result(value: media,
                            dialog: "Last watched: \(show.title).")
+        case .season(let season):
+            return .result(value: media,
+                           dialog: "Last watched: season \(season.number) of \(season.show.title).")
         case .episode(let episode):
             return .result(value: media,
                            dialog: "Last watched: \(episode.show.title) \(episode.localizedEpisodeNumber).")
@@ -1203,12 +1299,12 @@ struct RatingOptionsProvider: DynamicOptionsProvider {
 
 struct RateMediaIntent: AppIntent {
     static let title: LocalizedStringResource = "Rate Media"
-    static let description = IntentDescription("Rates the selected movie, TV show, or episode from 1 to 10 on Trakt and returns the same media for use in later actions. Requires a signed-in Trakt account.",
+    static let description = IntentDescription("Rates the selected movie, TV show, season, or episode from 1 to 10 on Trakt and returns the same media for use in later actions. Requires a signed-in Trakt account.",
                                                categoryName: "Ratings",
                                                resultValueName: "Media")
 
     @Parameter(title: "Media",
-               description: "The movie, TV show, or episode to rate.",
+               description: "The movie, TV show, season, or episode to rate.",
                requestValueDialog: "What would you like to rate?",
                inputConnectionBehavior: .connectToPreviousIntentResult)
     var media: MediaEntity
@@ -1233,6 +1329,9 @@ struct RateMediaIntent: AppIntent {
         case .show(let show):
             try await RipppleIntentService.rate(show: show, rating: rating)
             dialog = "Rated \(show.title) \(rating) out of 10."
+        case .season(let season):
+            try await RipppleIntentService.rate(season: season, rating: rating)
+            dialog = "Rated season \(season.number) of \(season.show.title) \(rating) out of 10."
         case .episode(let episode):
             try await RipppleIntentService.rate(episode: episode, rating: rating)
             dialog = "Rated \(episode.show.title) \(episode.localizedEpisodeNumber) \(rating) out of 10."
@@ -1381,6 +1480,8 @@ struct CheckInIntent: LiveActivityIntent {
             checkedInModel = try await RipppleIntentService.checkIn(episode: episode)
             checkedInMedia = media
             dialog = "Checked in to \(episode.show.title) \(episode.localizedEpisodeNumber)."
+        case .season:
+            throw RipppleIntentError.checkInRequiresMovieShowOrEpisode
         }
         await MainActor.run {
             WatchingManager.shared.updateWatchingItem(with: WatchingItem(media: checkedInModel), forceBroadcast: true)
@@ -1499,6 +1600,8 @@ private func publishWatchingControlWidgetItem(media: MediaEntity?,
                                          isCheckInActive: isCheckInActive,
                                          checkInStartDate: checkInStartDate,
                                          checkInEndDate: checkInEndDate)
+    case .season:
+        item = nil
     case nil:
         item = nil
     }
@@ -1544,6 +1647,8 @@ struct RefreshLiveActivityIntent: LiveActivityIntent {
             dialog = "Refreshed your app data. You're currently watching \(movie.title)."
         case .show(let show):
             dialog = "Refreshed your app data. You're currently watching \(show.title)."
+        case .season:
+            throw RipppleIntentError.nothingCurrentlyWatching
         case .episode(let episode):
             dialog = "Refreshed your app data. You're currently watching \(episode.show.title) \(episode.localizedEpisodeNumber)."
         }
@@ -1557,21 +1662,13 @@ struct RipppleAppShortcuts: AppShortcutsProvider {
     static let shortcutTileColor: ShortcutTileColor = .purple
 
     static var appShortcuts: [AppShortcut] {
-        AppShortcut(intent: FetchTrendingMoviesIntent(),
+        AppShortcut(intent: OpenMediaIntent(),
                     phrases: [
-                        "Get trending movies in \(.applicationName)",
-                        "Show trending movies in \(.applicationName)"
+                        "Open this in \(.applicationName)",
+                        "Open media in \(.applicationName)"
                     ],
-                    shortTitle: "Trending Movies",
-                    systemImageName: "film")
-
-        AppShortcut(intent: FetchTrendingShowsIntent(),
-                    phrases: [
-                        "Get trending TV shows in \(.applicationName)",
-                        "Show trending TV shows in \(.applicationName)"
-                    ],
-                    shortTitle: "Trending TV Shows",
-                    systemImageName: "tv")
+                    shortTitle: "Open Media",
+                    systemImageName: "arrow.up.forward.app")
 
         AppShortcut(intent: FetchTrendingMediaIntent(),
                     phrases: [
@@ -1583,11 +1680,28 @@ struct RipppleAppShortcuts: AppShortcutsProvider {
 
         AppShortcut(intent: AddToWatchlistIntent(),
                     phrases: [
+                        "Add this to my watchlist in \(.applicationName)",
                         "Add media to my watchlist in \(.applicationName)",
                         "Add something to my watchlist in \(.applicationName)"
                     ],
                     shortTitle: "Add to Watchlist",
                     systemImageName: "bookmark")
+
+        AppShortcut(intent: MarkWatchedIntent(),
+                    phrases: [
+                        "Mark this as watched in \(.applicationName)",
+                        "Mark media as watched in \(.applicationName)"
+                    ],
+                    shortTitle: "Mark Watched",
+                    systemImageName: "checkmark.circle")
+
+        AppShortcut(intent: RateMediaIntent(),
+                    phrases: [
+                        "Rate this in \(.applicationName)",
+                        "Rate media in \(.applicationName)"
+                    ],
+                    shortTitle: "Rate Media",
+                    systemImageName: "star")
 
         AppShortcut(intent: FetchEpisodesToWatchIntent(),
                     phrases: [
@@ -1599,6 +1713,7 @@ struct RipppleAppShortcuts: AppShortcutsProvider {
 
         AppShortcut(intent: FetchNextEpisodeIntent(),
                     phrases: [
+                        "Get the next episode for this show in \(.applicationName)",
                         "Get my next episode in \(.applicationName)",
                         "Find the next episode in \(.applicationName)"
                     ],
@@ -1607,6 +1722,7 @@ struct RipppleAppShortcuts: AppShortcutsProvider {
 
         AppShortcut(intent: CheckInIntent(),
                     phrases: [
+                        "Check in to this with \(.applicationName)",
                         "Check in with \(.applicationName)",
                         "Start a check-in in \(.applicationName)"
                     ],
@@ -1620,14 +1736,6 @@ struct RipppleAppShortcuts: AppShortcutsProvider {
                     ],
                     shortTitle: "Cancel Check-In",
                     systemImageName: "stop.circle")
-
-        AppShortcut(intent: RefreshLiveActivityIntent(),
-                    phrases: [
-                        "Refresh my data in \(.applicationName)",
-                        "Update my app data in \(.applicationName)"
-                    ],
-                    shortTitle: "Refresh Data",
-                    systemImageName: "arrow.clockwise")
 
         AppShortcut(intent: SearchMediaIntent(),
                     phrases: [

@@ -431,6 +431,16 @@ final class CommentsViewController: UITableViewController {
         errorLabel.maximumContentSizeCategory = .large
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        if case .media(let media) = coordinator.type! {
+            updateMediaUserActivity(with: media)
+        } else {
+            updateMediaUserActivity(with: nil)
+        }
+    }
+
     private func showNewCommentComposer(for media: MediaModel) {
         if UserManager.shared.currentUser == nil {
             onNeedsToShowLoginTransmitter.broadcast(true)

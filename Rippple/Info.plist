@@ -64,6 +64,7 @@
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>MediaTypeIntent</string>
+		<string>tv.trakt.rippple.viewing-media</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
