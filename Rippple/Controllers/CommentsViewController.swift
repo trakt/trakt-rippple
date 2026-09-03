@@ -256,6 +256,8 @@ final class CommentsViewController: UITableViewController {
         precondition(coordinator != nil)
 
         navigationItem.style = .browser
+        // This controller can be embedded, where UIKit's scroll-view lookup is ambiguous.
+        setContentScrollView(tableView, for: .top)
 
         tableView.allowsFocus = false
         tableView.separatorStyle = .none
