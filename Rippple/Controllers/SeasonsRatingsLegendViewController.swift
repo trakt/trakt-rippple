@@ -28,15 +28,17 @@ final class SeasonsRatingsLegendViewController: UITableViewController {
         super.viewDidLoad()
 
         if let sheet = navigationController?.sheetPresentationController {
-            sheet.detents = [.medium()]
+            sheet.detents = [.medium(), .large()]
+            sheet.selectedDetentIdentifier = .medium
+            sheet.largestUndimmedDetentIdentifier = .medium
         }
 
         for ratingChartLabel in ratingChartLabels {
             ratingChartLabel.layer.cornerRadius = ViewRadius.medium.rawValue
             ratingChartLabel.layer.cornerCurve = .continuous
             ratingChartLabel.clipsToBounds = true
-            ratingChartLabel.layer.borderColor = ratingChartLabel.backgroundColor?.darker().cgColor
-            ratingChartLabel.layer.borderWidth = 0.5
+            ratingChartLabel.layer.borderColor = UIColor.tertiarySystemFill.cgColor
+            ratingChartLabel.layer.borderWidth = 1
             ratingChartLabel.maximumContentSizeCategory = .extraExtraExtraLarge
         }
     }

@@ -74,8 +74,8 @@ final class SeasonsRatingsContentCollectionViewCell: UICollectionViewCell {
         label.layer.cornerRadius = ViewRadius.medium.rawValue
         label.layer.cornerCurve = .continuous
         label.clipsToBounds = true
-        label.layer.borderColor = UIColor(asset: .shadow).cgColor
-        label.layer.borderWidth = 0.5
+        label.layer.borderColor = UIColor.tertiarySystemFill.cgColor
+        label.layer.borderWidth = 1
 
         contentView.addSubview(label)
 
@@ -90,9 +90,9 @@ final class SeasonsRatingsContentCollectionViewCell: UICollectionViewCell {
             label.topAnchor.constraint(equalTo: contentView.topAnchor),
             label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
-            progress.leadingAnchor.constraint(equalTo: label.leadingAnchor, constant: 5),
-            progress.trailingAnchor.constraint(equalTo: label.trailingAnchor, constant: -5),
-            progress.bottomAnchor.constraint(equalTo: label.bottomAnchor, constant: -3),
+            progress.leadingAnchor.constraint(equalTo: label.leadingAnchor, constant: 12),
+            progress.trailingAnchor.constraint(equalTo: label.trailingAnchor, constant: -12),
+            progress.bottomAnchor.constraint(equalTo: label.bottomAnchor, constant: -6),
             progress.heightAnchor.constraint(equalToConstant: 3.0)
         ])
 

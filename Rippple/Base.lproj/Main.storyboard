@@ -1929,9 +1929,9 @@ No cast, no crew. Is this even a thing 🤔</string>
                                             <rect key="frame" x="0.0" y="0.0" width="374" height="71"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="3" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dMH-V3-wkg">
+                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="9.7" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dMH-V3-wkg">
                                                     <rect key="frame" x="20" y="15" width="60" height="40"/>
-                                                    <color key="backgroundColor" systemColor="systemRedColor"/>
+                                                    <color key="backgroundColor" red="0.255" green="0.412" blue="0.88200000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="40" id="h32-b0-ePk"/>
                                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="zSN-lo-6av"/>
@@ -1940,7 +1940,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="Less than 4" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xs6-oR-pwt">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="9.5–10 · Masterpiece" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xs6-oR-pwt">
                                                     <rect key="frame" x="88" y="15" width="266" height="41"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="40" id="tQu-6m-0cY"/>
@@ -1967,9 +1967,9 @@ No cast, no crew. Is this even a thing 🤔</string>
                                             <rect key="frame" x="0.0" y="0.0" width="374" height="71"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="5" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZW7-0A-DAW">
+                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="9.2" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZW7-0A-DAW">
                                                     <rect key="frame" x="20" y="15" width="60" height="40"/>
-                                                    <color key="backgroundColor" systemColor="systemOrangeColor"/>
+                                                    <color key="backgroundColor" red="0.10000000000000001" green="0.45000000000000001" blue="0.25" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="40" id="Duj-fX-aDL"/>
                                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="GhX-mi-kCS"/>
@@ -1978,7 +1978,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="Between 4 and 6" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wca-r9-Tla">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="9.0–9.4 · Amazing" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wca-r9-Tla">
                                                     <rect key="frame" x="88" y="15" width="266" height="41"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="40" id="Jv4-dh-l4h"/>
@@ -2005,9 +2005,9 @@ No cast, no crew. Is this even a thing 🤔</string>
                                             <rect key="frame" x="0.0" y="0.0" width="374" height="71"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="7" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WlG-aW-dHI">
+                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="8.5" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WlG-aW-dHI">
                                                     <rect key="frame" x="20" y="15" width="60" height="40"/>
-                                                    <color key="backgroundColor" systemColor="systemYellowColor"/>
+                                                    <color key="backgroundColor" systemColor="systemGreenColor"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="40" id="C94-rB-IVS"/>
                                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="M31-JS-orj"/>
@@ -2016,7 +2016,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="Between 6 and 8" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="en4-aN-n1M">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="8.0–8.9 · Great" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="en4-aN-n1M">
                                                     <rect key="frame" x="88" y="15" width="266" height="41"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="40" id="xSY-2d-lYM"/>
@@ -2043,9 +2043,9 @@ No cast, no crew. Is this even a thing 🤔</string>
                                             <rect key="frame" x="0.0" y="0.0" width="374" height="71"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="8" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pwQ-tz-Jv3">
+                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="7.5" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pwQ-tz-Jv3">
                                                     <rect key="frame" x="20" y="15" width="60" height="40"/>
-                                                    <color key="backgroundColor" systemColor="systemGreenColor"/>
+                                                    <color key="backgroundColor" systemColor="systemYellowColor"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="N84-Hy-Qmy"/>
                                                         <constraint firstAttribute="height" constant="40" id="Ydz-mU-Klq"/>
@@ -2054,7 +2054,7 @@ No cast, no crew. Is this even a thing 🤔</string>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="8 and above" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="awE-Nh-YUP">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="7.0–7.9 · Good" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="awE-Nh-YUP">
                                                     <rect key="frame" x="88" y="15" width="266" height="41"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="40" id="nBc-1X-WHs"/>
@@ -2074,12 +2074,126 @@ No cast, no crew. Is this even a thing 🤔</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="AvG-Rt-Cel" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
+                                        <rect key="frame" x="20" y="302" width="374" height="71"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="AvG-Rt-Cel" id="AvG-Rt-Con">
+                                            <rect key="frame" x="0.0" y="0.0" width="374" height="71"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="6.5" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AvG-Rt-Swt">
+                                                    <rect key="frame" x="20" y="15" width="60" height="40"/>
+                                                    <color key="backgroundColor" systemColor="systemOrangeColor"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="40" id="AvG-Rt-Hgt"/>
+                                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="AvG-Rt-Wid"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="6.0–6.9 · Average" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AvG-Rt-Des">
+                                                    <rect key="frame" x="88" y="15" width="266" height="41"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="40" id="AvG-Ds-Hgt"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="AvG-Rt-Swt" firstAttribute="top" secondItem="AvG-Rt-Con" secondAttribute="topMargin" id="AvG-Sw-Top"/>
+                                                <constraint firstItem="AvG-Rt-Swt" firstAttribute="leading" secondItem="AvG-Rt-Con" secondAttribute="leadingMargin" id="AvG-Sw-Led"/>
+                                                <constraint firstItem="AvG-Rt-Des" firstAttribute="top" secondItem="AvG-Rt-Con" secondAttribute="topMargin" id="AvG-Ds-Top"/>
+                                                <constraint firstItem="AvG-Rt-Des" firstAttribute="leading" secondItem="AvG-Rt-Swt" secondAttribute="trailing" constant="8" symbolic="YES" id="AvG-Ds-Led"/>
+                                                <constraint firstItem="AvG-Rt-Des" firstAttribute="trailing" secondItem="AvG-Rt-Con" secondAttribute="trailingMargin" id="AvG-Ds-Tra"/>
+                                                <constraint firstAttribute="bottomMargin" secondItem="AvG-Rt-Des" secondAttribute="bottom" id="AvG-Ds-Bot"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="Bad-Rt-Cel" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
+                                        <rect key="frame" x="20" y="373" width="374" height="71"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Bad-Rt-Cel" id="Bad-Rt-Con">
+                                            <rect key="frame" x="0.0" y="0.0" width="374" height="71"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="5.5" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bad-Rt-Swt">
+                                                    <rect key="frame" x="20" y="15" width="60" height="40"/>
+                                                    <color key="backgroundColor" systemColor="systemRedColor"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="40" id="Bad-Rt-Hgt"/>
+                                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="Bad-Rt-Wid"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="5.0–5.9 · Bad" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bad-Rt-Des">
+                                                    <rect key="frame" x="88" y="15" width="266" height="41"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="40" id="Bad-Ds-Hgt"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="Bad-Rt-Swt" firstAttribute="top" secondItem="Bad-Rt-Con" secondAttribute="topMargin" id="Bad-Sw-Top"/>
+                                                <constraint firstItem="Bad-Rt-Swt" firstAttribute="leading" secondItem="Bad-Rt-Con" secondAttribute="leadingMargin" id="Bad-Sw-Led"/>
+                                                <constraint firstItem="Bad-Rt-Des" firstAttribute="top" secondItem="Bad-Rt-Con" secondAttribute="topMargin" id="Bad-Ds-Top"/>
+                                                <constraint firstItem="Bad-Rt-Des" firstAttribute="leading" secondItem="Bad-Rt-Swt" secondAttribute="trailing" constant="8" symbolic="YES" id="Bad-Ds-Led"/>
+                                                <constraint firstItem="Bad-Rt-Des" firstAttribute="trailing" secondItem="Bad-Rt-Con" secondAttribute="trailingMargin" id="Bad-Ds-Tra"/>
+                                                <constraint firstAttribute="bottomMargin" secondItem="Bad-Rt-Des" secondAttribute="bottom" id="Bad-Ds-Bot"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="Trs-Rt-Cel" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
+                                        <rect key="frame" x="20" y="444" width="374" height="71"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Trs-Rt-Cel" id="Trs-Rt-Con">
+                                            <rect key="frame" x="0.0" y="0.0" width="374" height="71"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="4.0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Trs-Rt-Swt">
+                                                    <rect key="frame" x="20" y="15" width="60" height="40"/>
+                                                    <color key="backgroundColor" systemColor="systemBrownColor"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="40" id="Trs-Rt-Hgt"/>
+                                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="Trs-Rt-Wid"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="Below 5 · Trash" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Trs-Rt-Des">
+                                                    <rect key="frame" x="88" y="15" width="266" height="41"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="40" id="Trs-Ds-Hgt"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="Trs-Rt-Swt" firstAttribute="top" secondItem="Trs-Rt-Con" secondAttribute="topMargin" id="Trs-Sw-Top"/>
+                                                <constraint firstItem="Trs-Rt-Swt" firstAttribute="leading" secondItem="Trs-Rt-Con" secondAttribute="leadingMargin" id="Trs-Sw-Led"/>
+                                                <constraint firstItem="Trs-Rt-Des" firstAttribute="top" secondItem="Trs-Rt-Con" secondAttribute="topMargin" id="Trs-Ds-Top"/>
+                                                <constraint firstItem="Trs-Rt-Des" firstAttribute="leading" secondItem="Trs-Rt-Swt" secondAttribute="trailing" constant="8" symbolic="YES" id="Trs-Ds-Led"/>
+                                                <constraint firstItem="Trs-Rt-Des" firstAttribute="trailing" secondItem="Trs-Rt-Con" secondAttribute="trailingMargin" id="Trs-Ds-Tra"/>
+                                                <constraint firstAttribute="bottomMargin" secondItem="Trs-Rt-Des" secondAttribute="bottom" id="Trs-Ds-Bot"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
                                 </cells>
                             </tableViewSection>
                             <tableViewSection id="ckK-s0-O9w">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="yjw-Pc-Q8k" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
-                                        <rect key="frame" x="20" y="338" width="374" height="71"/>
+                                        <rect key="frame" x="20" y="551" width="374" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="yjw-Pc-Q8k" id="MT5-TR-WeC">
                                             <rect key="frame" x="0.0" y="0.0" width="374" height="71"/>
@@ -2137,6 +2251,9 @@ No cast, no crew. Is this even a thing 🤔</string>
                         <outletCollection property="ratingChartLabels" destination="ZW7-0A-DAW" collectionClass="NSMutableArray" id="k6r-79-emb"/>
                         <outletCollection property="ratingChartLabels" destination="WlG-aW-dHI" collectionClass="NSMutableArray" id="w3s-Yp-WBA"/>
                         <outletCollection property="ratingChartLabels" destination="pwQ-tz-Jv3" collectionClass="NSMutableArray" id="Dry-Dv-gaU"/>
+                        <outletCollection property="ratingChartLabels" destination="AvG-Rt-Swt" collectionClass="NSMutableArray" id="AvG-Rt-Out"/>
+                        <outletCollection property="ratingChartLabels" destination="Bad-Rt-Swt" collectionClass="NSMutableArray" id="Bad-Rt-Out"/>
+                        <outletCollection property="ratingChartLabels" destination="Trs-Rt-Swt" collectionClass="NSMutableArray" id="Trs-Rt-Out"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="o74-zp-7Nk" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -4699,6 +4816,9 @@ Keeping things private for private users...</string>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBrownColor">
+            <color red="0.63529411764705879" green="0.51764705882352946" blue="0.36862745098039218" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGreenColor">
             <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
