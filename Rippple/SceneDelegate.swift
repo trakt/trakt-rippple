@@ -39,34 +39,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             window.tintColor = UIColor(asset: .globalTint)
         }
 
-        // Get URL components from the incoming user activity.
-        guard let userActivity = connectionOptions.userActivities.first,
-              userActivity.activityType == NSUserActivityTypeBrowsingWeb,
-              let incomingURL = userActivity.webpageURL else {
-            return
-        }
-
-        if DeeplinkManager.shared.registerDeeplink(url: incomingURL) {
-            if SessionManager.shared.isLoggedIn,
-               DeeplinkManager.shared.shouldOpenDeeplink() {
-                UIApplication.shared.switchToDeeplink()
-            }
+        if let userActivity = connectionOptions.userActivities.first {
+            handleUserActivity(userActivity)
         }
     }
 
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
-        // Get URL components from the incoming user activity.
-        guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
-              let incomingURL = userActivity.webpageURL else {
-            return
-        }
-
-        if DeeplinkManager.shared.registerDeeplink(url: incomingURL) {
-            if SessionManager.shared.isLoggedIn,
-               DeeplinkManager.shared.shouldOpenDeeplink() {
-                UIApplication.shared.switchToDeeplink()
-            }
-        }
+        handleUserActivity(userActivity)
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -130,12 +109,30 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         for URLContext in URLContexts {
             // we take the first deeplink that looks like a deeplink or continue
             print("register in SceneDelegate")
-            if DeeplinkManager.shared.registerDeeplink(url: URLContext.url) {
-                if SessionManager.shared.isLoggedIn,
-                   DeeplinkManager.shared.shouldOpenDeeplink() {
-                    UIApplication.shared.switchToDeeplink()
-                }
-            }
+            handleDeeplink(URLContext.url)
+        }
+    }
+
+    private func handleUserActivity(_ userActivity: NSUserActivity) {
+        let incomingURL: URL?
+        switch userActivity.activityType {
+        case NSUserActivityTypeBrowsingWeb:
+            incomingURL = userActivity.webpageURL
+        case viewingMediaUserActivityType:
+            incomingURL = userActivity.targetContentIdentifier.flatMap(URL.init(string:))
+        default:
+            return
+        }
+
+        guard let incomingURL = incomingURL else { return }
+        handleDeeplink(incomingURL)
+    }
+
+    private func handleDeeplink(_ url: URL) {
+        if DeeplinkManager.shared.registerDeeplink(url: url),
+           SessionManager.shared.isLoggedIn,
+           DeeplinkManager.shared.shouldOpenDeeplink() {
+            UIApplication.shared.switchToDeeplink()
         }
     }
 

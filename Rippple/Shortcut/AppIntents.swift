@@ -13,6 +13,8 @@ import Moya
 import Receiver
 import UIKit
 
+let viewingMediaUserActivityType = "tv.trakt.rippple.viewing-media"
+
 // MARK: - Navigation Intents
 
 struct OpenMediaIntent: OpenIntent {
@@ -980,7 +982,9 @@ extension UIViewController {
             return
         }
 
-        let activity = NSUserActivity(activityType: "tv.trakt.rippple.viewing-media")
+        let activity = NSUserActivity(activityType: viewingMediaUserActivityType)
+        activity.title = entity.transferableText
+        activity.targetContentIdentifier = entity.deeplinkURL.absoluteString
         activity.appEntityIdentifier = EntityIdentifier(for: entity)
         view.userActivity = activity
     }
