@@ -42,6 +42,7 @@ final class WidgetManager {
             guard let self = self else { return }
             WatchingControlWidgetStorage.publishProfileAvatarURL(settings?.user.images?.avatar.full)
             self.updateLastWatched()
+            self.updateTrendingMedia()
             self.refreshActivityPunchcard()
             WidgetCenter.shared.reloadTimelines(ofKind: WatchingControlWidgetStorage.kind)
         }.disposed(by: disposeBag)
@@ -342,6 +343,7 @@ final class WidgetManager {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     let mediaItems = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
                     let widgetItems = mediaItems.compactMap { WidgetManager.quickAccessWidgetItem(from: $0) }
+                    guard !widgetItems.isEmpty else { return }
                     publish(widgetItems)
                     WidgetCenter.shared.reloadTimelines(ofKind: QuickAccessWidgetStorage.kind)
                 } catch {
@@ -465,6 +467,7 @@ final class WidgetManager {
     }
 
     private func storeEpisodesToWatchWidget(models: [MediaModel]) {
+        guard SessionManager.shared.isLoggedIn else { return }
         let episodes = models.compactMap(episodeToWatchWidgetModel)
         ToWatchWidgetStorage.publish(episodes)
         WidgetCenter.shared.reloadTimelines(ofKind: ToWatchWidgetStorage.kind)
@@ -497,6 +500,7 @@ final class WidgetManager {
     }
 
     private func storeMoviesToWatchWidget(models: [MediaModel]) {
+        guard SessionManager.shared.isLoggedIn else { return }
         let movies = models.compactMap { model -> ToWatchWidgetMovie? in
             guard let movie = model.movie,
                   let movieTraktIdentifier = movie.identifiers.trakt.flatMap(Int.init(exactly:)) else { return nil }

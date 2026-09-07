@@ -628,6 +628,10 @@ struct TraktItemLoader {
     }
 
     func loadMediaItem(from url: URL) async -> TraktItem? {
+        await loadMediaItems(from: url)?.first
+    }
+
+    func loadMediaItems(from url: URL) async -> [TraktItem]? {
         do {
             var request = URLRequest(url: url)
             request.httpMethod = "GET"
@@ -635,9 +639,11 @@ struct TraktItemLoader {
             request.setValue("2", forHTTPHeaderField: "trakt-api-version")
             request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
 
-            let (data, _) = try await session.data(for: request)
+            let (data, response) = try await session.data(for: request)
+            guard let response = response as? HTTPURLResponse,
+                  (200..<300).contains(response.statusCode) else { return nil }
             let decoder = JSONDecoder()
-            return try decoder.decode([TraktItem].self, from: data).first
+            return try decoder.decode([TraktItem].self, from: data)
         } catch {
             return nil
         }

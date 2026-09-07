@@ -57,7 +57,30 @@ struct QuickAccessWidgetProvider: AppIntentTimelineProvider {
 
     func timeline(for configuration: QuickAccessWidgetConfigurationIntent,
                   in context: Context) async -> Timeline<QuickAccessWidgetEntry> {
-        Timeline(entries: [await entry(for: configuration, family: context.family)], policy: .never)
+        let path: String
+        let publish: ([QuickAccessWidgetItem]) -> Void
+        switch configuration.content {
+        case .trendingMedia: (path, publish) = ("media", QuickAccessWidgetStorage.publishTrendingMedia)
+        case .trendingMovies: (path, publish) = ("movies", QuickAccessWidgetStorage.publishTrendingMovies)
+        case .trendingShows: (path, publish) = ("shows", QuickAccessWidgetStorage.publishTrendingShows)
+        }
+        if let url = URL(string: "\(TraktAPIConfiguration.baseURL)/\(path)/trending?extended=full&page=1&limit=5"),
+           let mediaItems = await TraktItemLoader().loadMediaItems(from: url) {
+            let items = mediaItems.compactMap { item -> QuickAccessWidgetItem? in
+                guard let ids = item.movie?.ids ?? item.show?.ids,
+                      let identifier = Int(exactly: ids.trakt),
+                      let title = item.movie?.title ?? item.show?.title,
+                      let deeplink = URL(string: "ripl://\(item.movie != nil ? "movies" : "shows")/\(identifier)") else { return nil }
+                return QuickAccessWidgetItem(traktIdentifier: identifier,
+                                             tmdbIdentifier: Int(exactly: ids.tmdb),
+                                             tmdbMediaType: item.movie != nil ? "movie" : "tv",
+                                             title: title,
+                                             deeplink: deeplink)
+            }
+            if !items.isEmpty { publish(items) }
+        }
+        return Timeline(entries: [await entry(for: configuration, family: context.family)],
+                        policy: .after(.now.addingTimeInterval(6 * 60 * 60)))
     }
 
     private func entry(for configuration: QuickAccessWidgetConfigurationIntent,

@@ -169,12 +169,16 @@ private enum WidgetCodableStorage {
     private static let defaults = UserDefaults(suiteName: "group.tv.trakt.rippple")!
 
     static func items<Item: Decodable>(forKey key: String) -> [Item] {
-        guard let data = defaults.data(forKey: key) else { return [] }
-        return (try? JSONDecoder().decode([Item].self, from: data)) ?? []
+        snapshot(forKey: key) ?? []
+    }
+
+    static func snapshot<Item: Decodable>(forKey key: String) -> [Item]? {
+        guard let data = defaults.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode([Item].self, from: data)
     }
 
     static func publish<Item: Codable & Equatable>(_ items: [Item], forKey key: String) {
-        guard items != self.items(forKey: key),
+        guard items != snapshot(forKey: key),
               let data = try? JSONEncoder().encode(items) else { return }
         defaults.set(data, forKey: key)
     }
@@ -185,12 +189,12 @@ enum ToWatchWidgetStorage {
     static let episodeKey = "widget.episodesToWatch.list"
     static let movieKey = "widget.moviesToWatch.list"
 
-    static func episodes() -> [ToWatchWidgetEpisode] {
-        WidgetCodableStorage.items(forKey: episodeKey)
+    static func episodes() -> [ToWatchWidgetEpisode]? {
+        WidgetCodableStorage.snapshot(forKey: episodeKey)
     }
 
-    static func movies() -> [ToWatchWidgetMovie] {
-        WidgetCodableStorage.items(forKey: movieKey)
+    static func movies() -> [ToWatchWidgetMovie]? {
+        WidgetCodableStorage.snapshot(forKey: movieKey)
     }
 
     static func publish(_ episodes: [ToWatchWidgetEpisode]) {
