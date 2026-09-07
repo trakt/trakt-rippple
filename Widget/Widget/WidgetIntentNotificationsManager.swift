@@ -97,7 +97,12 @@ final class WidgetIntentNotificationsManager {
     private func update(_ notification: Notification,
                         state: State,
                         trigger: UNNotificationTrigger? = nil) {
-        guard notification.shouldDeliver else { return }
+        switch state {
+        case .loading, .success:
+            guard notification.shouldDeliver else { return }
+        case .failure:
+            break
+        }
 
         let content = UNMutableNotificationContent()
         content.title = title(for: notification.action, state: state)
@@ -158,28 +163,28 @@ final class WidgetIntentNotificationsManager {
         case (.checkIn(let media), .success):
             return "You’re checked in to \(media.description)."
         case (.checkIn(let media), .failure(.checkInAlreadyInProgress)):
-            return "Cancel your current check-in before checking in to \(media.description)."
+            return "Open Rippple to cancel your current check-in before checking in to \(media.description)."
         case (.checkIn(let media), .failure(.generic)):
-            return "Something went wrong while checking in to \(media.description). Please try again."
+            return "Something went wrong while checking in to \(media.description). Open Rippple to try again from the app."
         case (.markWatched(let media), .loading):
             return "Marking \(media.description) as watched."
         case (.markWatched(let media), .success):
             return "\(media.description) is now in your watched history."
         case (.markWatched(let media), .failure):
-            return "Something went wrong while adding \(media.description) to your watched history. Please try again."
+            return "Something went wrong while adding \(media.description) to your watched history. Open Rippple to try again from the app."
         case (.refreshCurrentlyWatching, .loading):
             return "Checking for your latest activity."
         case (.refreshCurrentlyWatching, .success):
             return "Your latest activity is now up to date."
         case (.refreshCurrentlyWatching, .failure):
-            return "Something went wrong while refreshing your latest activity. Please try again."
+            return "Something went wrong while refreshing your latest activity. Open Rippple to try again from the app."
         case (.cancelCheckIn(let media), .loading):
             return media.map { "Canceling your check-in to \($0.description)." } ?? "Canceling your current check-in."
         case (.cancelCheckIn(let media), .success):
             return media.map { "Your check-in to \($0.description) has been canceled." } ?? "Your check-in has been canceled."
         case (.cancelCheckIn(let media), .failure):
-            return media.map { "Something went wrong while canceling your check-in to \($0.description). Please try again." }
-                ?? "Something went wrong while canceling your check-in. Please try again."
+            return media.map { "Something went wrong while canceling your check-in to \($0.description). Open Rippple to try again from the app." }
+                ?? "Something went wrong while canceling your check-in. Open Rippple to try again from the app."
         }
     }
 

@@ -96,7 +96,7 @@ struct NotificationSettingsView: View {
                           settings: [.activityNewFollower])
 
             toggleSection(title: "🔔 Widgets",
-                          footer: "Get status notifications for actions performed from widgets. Delivered locally on this device.",
+                          footer: "Get progress and success notifications for widget actions. Failures are always reported so you can open Rippple to try again. Delivered locally on this device.",
                           settings: [.widgetActionUpdates])
         }
         .navigationTitle("Notifications")
