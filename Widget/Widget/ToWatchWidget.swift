@@ -67,6 +67,40 @@ struct ToWatchWidgetEntry: TimelineEntry {
     let configuration: ToWatchWidgetConfigurationIntent
     let items: [ToWatchWidgetItem]
     let posters: [String: UIImage]
+    let emptyState: ToWatchWidgetEmptyState
+}
+
+enum ToWatchWidgetEmptyState {
+    case signedOut
+    case notSynced
+    case caughtUp
+
+    var title: String {
+        switch self {
+        case .signedOut: return "You’re signed out"
+        case .notSynced: return "Not synced yet"
+        case .caughtUp: return "You’re all caught up"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .signedOut: return "person.crop.circle"
+        case .notSynced: return "arrow.triangle.2.circlepath"
+        case .caughtUp: return "checkmark.circle.fill"
+        }
+    }
+
+    func description(for content: ToWatchWidgetContent) -> String {
+        switch self {
+        case .signedOut:
+            return "Sign in with Trakt to see your To Watch."
+        case .notSynced:
+            return "Open Rippple to sync your To Watch."
+        case .caughtUp:
+            return content == .episodes ? "No episodes are waiting to be watched." : "No movies are waiting to be watched."
+        }
+    }
 }
 
 @available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *)
@@ -89,28 +123,39 @@ struct ToWatchWidgetProvider: AppIntentTimelineProvider {
 
     private func placeholderEntry(for configuration: ToWatchWidgetConfigurationIntent,
                                   family: WidgetFamily) -> ToWatchWidgetEntry {
-        ToWatchWidgetEntry(date: .now,
-                           configuration: configuration,
-                           items: Array(storedItems(for: configuration.content).prefix(rowCount(for: family))),
-                           posters: [:])
+        let storedItems = storedItems(for: configuration.content)
+        return ToWatchWidgetEntry(date: .now,
+                                  configuration: configuration,
+                                  items: Array((storedItems ?? []).prefix(rowCount(for: family))),
+                                  posters: [:],
+                                  emptyState: emptyState(for: storedItems))
     }
 
     private func entry(for configuration: ToWatchWidgetConfigurationIntent,
                        family: WidgetFamily) async -> ToWatchWidgetEntry {
-        let items = Array(storedItems(for: configuration.content).prefix(rowCount(for: family)))
+        let storedItems = storedItems(for: configuration.content)
+        let state = emptyState(for: storedItems)
+        let items = Array((storedItems ?? []).prefix(rowCount(for: family)))
         let posters = await loadPosters(for: items)
         return ToWatchWidgetEntry(date: .now,
                                   configuration: configuration,
                                   items: items,
-                                  posters: posters)
+                                  posters: posters,
+                                  emptyState: state)
     }
 
-    private func storedItems(for content: ToWatchWidgetContent) -> [ToWatchWidgetItem] {
+    private func emptyState(for items: [ToWatchWidgetItem]?) -> ToWatchWidgetEmptyState {
+        guard KeychainStore.accessToken() != nil else { return .signedOut }
+        return items == nil ? .notSynced : .caughtUp
+    }
+
+    private func storedItems(for content: ToWatchWidgetContent) -> [ToWatchWidgetItem]? {
+        guard KeychainStore.accessToken() != nil else { return nil }
         switch content {
         case .episodes:
-            return ToWatchWidgetStorage.episodes().map(ToWatchWidgetItem.episode)
+            return ToWatchWidgetStorage.episodes()?.map(ToWatchWidgetItem.episode)
         case .movies:
-            return ToWatchWidgetStorage.movies().map(ToWatchWidgetItem.movie)
+            return ToWatchWidgetStorage.movies()?.map(ToWatchWidgetItem.movie)
         }
     }
 
@@ -179,14 +224,14 @@ private struct ToWatchWidgetEntryView: View {
 
     private var emptyState: some View {
         HStack(spacing: 10) {
-            Image(systemName: "checkmark.circle.fill")
+            Image(systemName: entry.emptyState.systemImage)
                 .font(.title3)
                 .foregroundStyle(usesSystemRendering ? Color.primary : WidgetTint.color)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 1) {
-                Text("You’re all caught up")
+                Text(entry.emptyState.title)
                     .font(.headline)
-                Text(entry.configuration.content == .episodes ? "No episodes are waiting to be watched." : "No movies are waiting to be watched.")
+                Text(entry.emptyState.description(for: entry.configuration.content))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -195,6 +240,7 @@ private struct ToWatchWidgetEntryView: View {
         .padding(.horizontal, 10)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
+        .accessibilityHint("Open Rippple")
     }
 
     private var usesSystemRendering: Bool {
@@ -403,4 +449,36 @@ private func rowCount(for family: WidgetFamily) -> Int {
         return 6
     }
     return family == .systemLarge ? 4 : 2
+}
+
+@available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *)
+struct ToWatchWidget_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            emptyState(.caughtUp, content: .episodes)
+                .previewDisplayName("Episodes · Caught up")
+            emptyState(.signedOut, content: .episodes)
+                .previewDisplayName("Episodes · Signed out")
+            emptyState(.notSynced, content: .episodes)
+                .previewDisplayName("Episodes · Not synced")
+            emptyState(.caughtUp, content: .movies)
+                .previewDisplayName("Movies · Caught up")
+            emptyState(.signedOut, content: .movies)
+                .previewDisplayName("Movies · Signed out")
+            emptyState(.notSynced, content: .movies)
+                .previewDisplayName("Movies · Not synced")
+        }
+    }
+
+    private static func emptyState(_ state: ToWatchWidgetEmptyState,
+                                   content: ToWatchWidgetContent) -> some View {
+        let configuration = ToWatchWidgetConfigurationIntent()
+        configuration.content = content
+        return ToWatchWidgetEntryView(entry: ToWatchWidgetEntry(date: .now,
+                                                                configuration: configuration,
+                                                                items: [],
+                                                                posters: [:],
+                                                                emptyState: state))
+            .previewContext(WidgetPreviewContext(family: .systemMedium))
+    }
 }
