@@ -26,8 +26,16 @@ private struct ActivityPunchcardWidgetProvider: TimelineProvider {
 
     func getTimeline(in context: Context,
                      completion: @escaping (Timeline<ActivityPunchcardWidgetEntry>) -> Void) {
-        completion(Timeline(entries: [entry(activityCounts: ActivityPunchcardWidgetStorage.activityCounts())],
-                            policy: .never))
+        let currentEntry = entry(activityCounts: ActivityPunchcardWidgetStorage.activityCounts())
+        let calendar = Calendar.current
+        var entries = [currentEntry]
+        if let nextDay = calendar.date(byAdding: .day,
+                                       value: 1,
+                                       to: calendar.startOfDay(for: currentEntry.date)) {
+            entries.append(ActivityPunchcardWidgetEntry(date: nextDay,
+                                                        activityCounts: currentEntry.activityCounts))
+        }
+        completion(Timeline(entries: entries, policy: .atEnd))
     }
 
     private func entry(activityCounts: [Date: Int]) -> ActivityPunchcardWidgetEntry {
