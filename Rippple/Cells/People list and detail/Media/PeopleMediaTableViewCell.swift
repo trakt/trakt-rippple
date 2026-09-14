@@ -13,7 +13,7 @@ protocol PeopleMediaTableViewCellDelegate: AnyObject {
     func cell(_ cell: PeopleMediaTableViewCell, action: PeopleMediaTableViewCell.Action)
 }
 
-final class PeopleMediaTableViewCell: UITableViewCell {
+final class PeopleMediaTableViewCell: TintedCanvasTableViewCell {
     enum Action {
 //        case showAll
         case showCast(Cast)

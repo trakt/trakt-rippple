@@ -10,7 +10,7 @@ import LRUCache
 import Receiver
 import UIKit
 
-class CommentsBrowseTableViewCell: UITableViewCell {
+class CommentsBrowseTableViewCell: TintedCanvasTableViewCell {
     private struct CacheEntry {
         let items: [HistoryItem]
         let expirationDate: Date
@@ -37,6 +37,7 @@ class CommentsBrowseTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
 
+        collectionView.backgroundColor = .ripppleViewBackground
         collectionView.allowsFocus = false
         collectionView.delegate = self
 

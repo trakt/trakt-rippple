@@ -329,7 +329,7 @@ enum TraktAPIService {
 
     case ratings(type: TraktObjectType)
 
-    case rated(slug: String = "me", type: RatedMediaType?, extended: Extended?)
+    case rated(slug: String = "me", type: RatedMediaType?, extended: Extended?, pageInfo: PageInfo = PageInfo.firstPage(with: 1000))
 
     case rateMovie(id: Int64, rating: Int)
     case rateShow(id: Int64, rating: Int)
@@ -748,7 +748,7 @@ extension TraktAPIService: AuthorizedTargetType {
             default:
                 fatalError("Other types not managed by ratings method")
             }
-        case .rated(let slug, let type, _):
+        case .rated(let slug, let type, _, _):
             return "/users/\(slug)/ratings/\(type ?? .all)"
         case .rateMovie:
             return "/sync/ratings"
@@ -1506,12 +1506,16 @@ extension TraktAPIService: AuthorizedTargetType {
         case .ratings:
             return .requestParameters(parameters: ["extended": "all"],
                                       encoding: URLEncoding.default)
-        case .rated(_, _, let extended):
+        case .rated(_, _, let extended, let pageInfo):
             if let extended = extended {
-                return .requestParameters(parameters: ["extended": extended.rawValue],
+                return .requestParameters(parameters: ["extended": extended.rawValue,
+                                                       "page": "\(pageInfo.page)",
+                                                       "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             } else {
-                return .requestPlain
+                return .requestParameters(parameters: ["page": "\(pageInfo.page)",
+                                                       "limit": "\(pageInfo.limit)"],
+                                          encoding: URLEncoding.default)
             }
         case .rateMovie(let id, let rating):
             return .requestJSONEncodable(MoviesRating(movies: [Rating(rating: rating,

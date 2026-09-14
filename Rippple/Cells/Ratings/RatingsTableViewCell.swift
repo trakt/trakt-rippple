@@ -10,7 +10,7 @@ import Moya
 import Receiver
 import UIKit
 
-final class RatingsTableViewCell: UITableViewCell {
+final class RatingsTableViewCell: TintedCanvasTableViewCell {
     private let disposeBag = DisposeBag()
 
     @IBOutlet var rating: EFCountingLabel!

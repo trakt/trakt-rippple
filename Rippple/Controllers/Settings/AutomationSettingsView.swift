@@ -29,7 +29,7 @@ struct AutomationSettingsView: View {
     }
 
     var body: some View {
-        SwiftUI.List {
+        RipppleList {
             aboutSection
 
             automationSection(title: "Keep in Watchlist", isOn: $watchlistAddBack) {
@@ -121,7 +121,7 @@ struct AutomationSettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
         }.padding(10)
-            .background(.gray.opacity(0.1))
+            .background(Color(uiColor: .ripppleCalloutBackground))
             .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 

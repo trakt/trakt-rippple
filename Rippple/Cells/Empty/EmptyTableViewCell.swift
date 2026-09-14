@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class EmptyTableViewCell: UITableViewCell {
+final class EmptyTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var emoji: UILabel!
     @IBOutlet var title: UILabel!
     @IBOutlet var subtitle: UILabel!

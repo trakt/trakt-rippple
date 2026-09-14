@@ -913,7 +913,8 @@ final class PosterImageView: UIImageView {
                     guard let imageURL = ImagesManager.shared.imageURL(with: imagePath, with: self.size, for: .poster) else { return }
                     ImagesManager.shared.storeMoviePoster(with: imagePath, for: movie.identifiers)
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         if movie != self.movie { return }
                         self.setPosterImage(with: imageURL) { [weak self] in
                             guard let self = self else { return false }
@@ -989,7 +990,8 @@ final class PosterImageView: UIImageView {
                     guard let imageURL = ImagesManager.shared.imageURL(with: imagePath, with: self.size, for: .poster) else { return }
                     ImagesManager.shared.storeShowPoster(with: imagePath, for: show.identifiers)
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         if show != self.show { return }
                         self.setPosterImage(with: imageURL) { [weak self] in
                             guard let self = self else { return false }
@@ -1066,7 +1068,8 @@ final class PosterImageView: UIImageView {
                     guard let imageURL = ImagesManager.shared.imageURL(with: imagePath, with: self.size, for: .poster) else { return }
                     ImagesManager.shared.storeSeasonPoster(with: imagePath, for: season.0.identifiers, season: season.1.number)
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
                         self.setPosterImage(with: imageURL) { [weak self] in
                             guard let self = self else { return false }
@@ -1285,7 +1288,8 @@ final class BigPeopleProfileImageView: UIImageView {
                     guard let imageURL = ImagesManager.shared.imageURL(with: profile.filePath, with: self.size, for: .profile) else { return }
                     ImagesManager.shared.storePeopleImage(with: profile.filePath, for: person.ids)
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         if person.ids != self.person?.ids { return }
                         self.setProfileImage(with: imageURL) { [weak self] in
                             guard let self = self else { return false }
@@ -1782,7 +1786,8 @@ final class BackdropImageView: UIImageView {
                     guard let imageURL = ImagesManager.shared.imageURL(with: imagePath, with: self.size, for: .backdrop) else { return }
                     ImagesManager.shared.storeMovieBackdrop(with: imagePath, for: movie.identifiers)
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         if movie != self.media?.movie { return }
                         self.setBackdropImage(with: imageURL) { [weak self] in
                             guard let self = self else { return false }
@@ -1858,7 +1863,8 @@ final class BackdropImageView: UIImageView {
                     guard let imageURL = ImagesManager.shared.imageURL(with: imagePath, with: self.size, for: .backdrop) else { return }
                     ImagesManager.shared.storeShowBackdrop(with: imagePath, for: show.identifiers)
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         guard self.isCurrentShowBackdrop(for: show) else { return }
                         self.setBackdropImage(with: imageURL) { [weak self] in
                             guard let self = self else { return false }
@@ -1936,7 +1942,8 @@ final class BackdropImageView: UIImageView {
                     guard let imageURL = ImagesManager.shared.imageURL(with: imagePath, with: self.size, for: .backdrop) else { return }
                     ImagesManager.shared.storeEpisodeImage(with: imagePath, for: episode.identifiers)
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         guard self.isCurrentEpisodeBackdrop(for: episode) else { return }
                         self.setBackdropImage(with: imageURL,
                                               defaultTransitionDuration: 0.6) { [weak self] in
@@ -2072,7 +2079,8 @@ final class LogoImageView: UIImageView {
                     guard let imageURL = ImagesManager.shared.imageURL(with: imagePath, with: self.size, for: .logo) else { return }
                     ImagesManager.shared.storeMovieLogo(with: imagePath, for: movie.identifiers)
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         if movie != self.media?.movie { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,
@@ -2158,7 +2166,8 @@ final class LogoImageView: UIImageView {
                     guard let imageURL = ImagesManager.shared.imageURL(with: imagePath, with: self.size, for: .logo) else { return }
                     ImagesManager.shared.storeShowLogo(with: imagePath, for: show.identifiers)
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         if show != self.media?.show { return }
                         self.kf.setImage(with: imageURL,
                                          placeholder: nil,

@@ -78,6 +78,7 @@ final class PeopleChronologyTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        tableView.backgroundColor = .ripppleViewBackground
         tableView.allowsFocus = false
         tableView.separatorStyle = .none
         tableView.register(UINib(nibName: "MediaTableViewCell", bundle: nil), forCellReuseIdentifier: "media")

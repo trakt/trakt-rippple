@@ -14,7 +14,7 @@ protocol FollowersAndFriendsTableViewCellDelegate: AnyObject {
     func cell(_ cell: FollowersAndFriendsTableViewCell, action: FollowersAndFriendsTableViewCell.Action)
 }
 
-final class FollowersAndFriendsTableViewCell: UITableViewCell {
+final class FollowersAndFriendsTableViewCell: TintedCanvasTableViewCell {
     enum Action {
         case followers
         case following

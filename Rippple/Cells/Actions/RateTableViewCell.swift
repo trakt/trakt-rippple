@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class RateTableViewCell: UITableViewCell {
+final class RateTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var actionTitle: UILabel!
     @IBOutlet var actionEmoji: UILabel!
 

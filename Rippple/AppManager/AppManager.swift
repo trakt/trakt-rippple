@@ -17,6 +17,7 @@ import ActivityKit
 #endif
 
 import StoreKit
+import WidgetKit
 
 final class AppManager: NSObject, ASWebAuthenticationPresentationContextProviding {
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
@@ -51,12 +52,15 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
             }
         }
 
-        currentTint = RipppleTintColor(rawValue: UserDefaults(suiteName: "group.tv.trakt.rippple")!.integer(forKey: "AppManager.currentTint"))
+        currentTint = RipppleTintColor(rawValue: UserDefaults(suiteName: RipppleAppearanceDefaults.suiteName)!.integer(forKey: RipppleAppearanceDefaults.tintKey))
+        isTintedAppearanceEnabled = UserDefaults.standard.bool(forKey: RipppleAppearanceDefaults.tintedAppearanceKey)
         for windowScene in UIApplication.shared.connectedScenes {
-            if let windowScene = windowScene as? UIWindowScene {
-                windowScene.traitOverrides.ripppleTintColor = currentTint ?? .original
-                windowScene.windows.forEach { $0.tintColor = (currentTint ?? .original).color }
-            }
+            guard let windowScene = windowScene as? UIWindowScene,
+                  let sceneDelegate = windowScene.delegate as? SceneDelegate,
+                  let window = sceneDelegate.window else { continue }
+            windowScene.traitOverrides.ripppleTintColor = currentTint ?? .original
+            windowScene.traitOverrides.ripppleTintedAppearance = isTintedAppearanceEnabled
+            applyAppearance(to: window)
         }
 
         confettiWindow?.windowLevel = .statusBar + 1000
@@ -68,13 +72,41 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
                                                    object: nil,
                                                    queue: nil) { [weak self] notification in
             guard let self = self else { return }
-            if let window = notification.object as? UIWindow {
-                window.overrideUserInterfaceStyle = self.currentUserInterfaceStyle ?? .unspecified
-                window.traitOverrides.ripppleTintColor = currentTint ?? .original
-                window.tintColor = (currentTint ?? .original).color
-            }
+            guard let window = notification.object as? UIWindow,
+                  let sceneDelegate = window.windowScene?.delegate as? SceneDelegate,
+                  window === sceneDelegate.window else { return }
+            self.applyAppearance(to: window)
         }
     }
+
+    fileprivate func applyAppearance(to window: UIWindow) {
+        #if targetEnvironment(macCatalyst)
+        window.overrideUserInterfaceStyle = .unspecified
+        #else
+        window.overrideUserInterfaceStyle = currentUserInterfaceStyle ?? .unspecified
+        #endif
+        window.traitOverrides.ripppleTintColor = currentTint ?? .original
+        window.traitOverrides.ripppleTintedAppearance = isTintedAppearanceEnabled
+        window.backgroundColor = .ripppleViewBackground
+        window.tintColor = (currentTint ?? .original).color
+        #if targetEnvironment(macCatalyst)
+        if let rootViewController = window.rootViewController {
+            applyAppearance(to: rootViewController)
+        }
+        #endif
+    }
+
+    #if targetEnvironment(macCatalyst)
+    fileprivate func applyAppearance(to viewController: UIViewController) {
+        viewController.traitOverrides.ripppleTintColor = currentTint ?? .original
+        viewController.traitOverrides.ripppleTintedAppearance = isTintedAppearanceEnabled
+        viewController.viewIfLoaded?.tintColor = (currentTint ?? .original).color
+        viewController.children.forEach { applyAppearance(to: $0) }
+        if let presentedViewController = viewController.presentedViewController {
+            applyAppearance(to: presentedViewController)
+        }
+    }
+    #endif
 
     fileprivate var mainWindow: UIWindow?
 
@@ -98,9 +130,17 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
     fileprivate var currentTint: RipppleTintColor? {
         didSet {
             if let currentTint = currentTint {
-                UserDefaults(suiteName: "group.tv.trakt.rippple")!.set(currentTint.rawValue, forKey: "AppManager.currentTint")
+                UserDefaults(suiteName: RipppleAppearanceDefaults.suiteName)!.set(currentTint.rawValue,
+                                                                                  forKey: RipppleAppearanceDefaults.tintKey)
                 UserDefaults.standard.synchronize()
             }
+        }
+    }
+
+    fileprivate var isTintedAppearanceEnabled = false {
+        didSet {
+            UserDefaults.standard.set(isTintedAppearanceEnabled, forKey: RipppleAppearanceDefaults.tintedAppearanceKey)
+            UserDefaults.standard.synchronize()
         }
     }
 
@@ -303,14 +343,39 @@ public extension UIApplication {
         return AppManager.shared.currentTint ?? .original
     }
 
+    internal var isTintedAppearanceEnabled: Bool {
+        AppManager.shared.setup()
+        return AppManager.shared.isTintedAppearanceEnabled
+    }
+
     func setTintColor(tint: RipppleTintColor) {
         AppManager.shared.currentTint = tint
         for windowScene in UIApplication.shared.connectedScenes {
-            if let windowScene = windowScene as? UIWindowScene {
-                windowScene.traitOverrides.ripppleTintColor = tint
-                windowScene.windows.forEach { $0.tintColor = tint.color }
-            }
+            guard let windowScene = windowScene as? UIWindowScene,
+                  let sceneDelegate = windowScene.delegate as? SceneDelegate,
+                  let window = sceneDelegate.window else { continue }
+            windowScene.traitOverrides.ripppleTintColor = tint
+            AppManager.shared.applyAppearance(to: window)
         }
+        reloadTintedWidgetTimelines()
+    }
+
+    func setTintedAppearance(enabled: Bool) {
+        AppManager.shared.isTintedAppearanceEnabled = enabled
+        for windowScene in UIApplication.shared.connectedScenes {
+            guard let windowScene = windowScene as? UIWindowScene,
+                  let sceneDelegate = windowScene.delegate as? SceneDelegate,
+                  let window = sceneDelegate.window else { continue }
+            windowScene.traitOverrides.ripppleTintedAppearance = enabled
+            AppManager.shared.applyAppearance(to: window)
+        }
+        reloadTintedWidgetTimelines()
+    }
+
+    private func reloadTintedWidgetTimelines() {
+        WidgetCenter.shared.reloadTimelines(ofKind: ToWatchWidgetStorage.kind)
+        WidgetCenter.shared.reloadTimelines(ofKind: ActivityPunchcardWidgetStorage.kind)
+        WidgetCenter.shared.reloadTimelines(ofKind: WatchingControlWidgetStorage.kind)
     }
 
     func setDarkMode() {

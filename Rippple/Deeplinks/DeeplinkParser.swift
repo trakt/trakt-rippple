@@ -32,6 +32,7 @@ enum DeeplinkType: Equatable {
 
     case search(query: String?)
 
+    case toWatch
     case toWatchMovies
     case toWatchEpisodes
     case history
@@ -57,6 +58,7 @@ enum DeeplinkType: Equatable {
         case (.tmdbSeason(let left1, let left2), .tmdbSeason(let right1, let right2)): return left1 == right1 && left2 == right2
         case (.browseThisWeek, .browseThisWeek): return true
         case (.appIconSettings, .appIconSettings): return true
+        case (.toWatch, .toWatch): return true
         case (.toWatchMovies, .toWatchMovies): return true
         case (.toWatchEpisodes, .toWatchEpisodes): return true
         case (.history, .history): return true
@@ -192,12 +194,15 @@ final class DeeplinkParser {
         case "ripppleapp.writeas.com", "writeas.com", "write.as":
             return .browseThisWeek
         case "towatch":
-            // movies
-            // towatch/movies
+            // /towatch/movies
             if pathComponents.first == "movies" {
                 return DeeplinkType.toWatchMovies
             }
-            return DeeplinkType.toWatchEpisodes
+            // /towatch/episodes
+            if pathComponents.first == "episodes" {
+                return DeeplinkType.toWatchEpisodes
+            }
+            return DeeplinkType.toWatch
         case "history":
             return .history
         case "calendar":

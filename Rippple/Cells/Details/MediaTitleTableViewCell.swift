@@ -43,7 +43,7 @@ extension UIView {
     }
 }
 
-final class MediaTitleTableViewCell: UITableViewCell {
+final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
     private let disposeBag = DisposeBag()
 
     enum Action {
@@ -558,7 +558,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                 show.mediaModel.progress { [weak self] progress in
                     guard let self = self else { return }
                     if let progress = progress, let nextEpisode = progress.nextEpisodeToWatch {
-                        DispatchQueue.main.async { [self] in
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
                             self.mainActionButton.configuration?.titleAlignment = .center
                             self.mainActionButton.configuration?.title = "Next"
                             if let firstAired = nextEpisode.firstAired, firstAired > Date() {
@@ -588,7 +589,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
 
                                     let nextEpisode = try response.map(Episode.self, using: TraktAPIProvider.decoder)
 
-                                    DispatchQueue.main.async {
+                                    DispatchQueue.main.async { [weak self] in
+                                        guard let self = self else { return }
                                         self.mainActionButton.configuration?.titleAlignment = .center
                                         self.mainActionButton.configuration?.title = "Next"
                                         if let firstAired = nextEpisode.firstAired {
@@ -608,7 +610,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                         self.invalidateIntrinsicContentSize()
                                     }
                                 } catch {
-                                    DispatchQueue.main.async {
+                                    DispatchQueue.main.async { [weak self] in
+                                        guard let self = self else { return }
                                         self.mainActionButton.configuration?.title = "Track"
                                         self.mainActionButton.configuration?.image = UIImage(systemName: "play")
                                         self.mainActionButton.showsMenuAsPrimaryAction = true
@@ -626,7 +629,8 @@ final class MediaTitleTableViewCell: UITableViewCell {
                                     }
                                 }
                             case .failure:
-                                DispatchQueue.main.async {
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
                                     self.mainActionButton.configuration?.title = "Track"
                                     self.mainActionButton.configuration?.image = UIImage(systemName: "play")
                                     self.mainActionButton.showsMenuAsPrimaryAction = true

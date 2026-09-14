@@ -421,10 +421,6 @@ final class CollectionViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        while user == nil {
-            user = UserManager.shared.currentUser
-        }
-
         refreshControl?.isEnabled = false
 
         navigationItem.style = .browser
@@ -617,7 +613,11 @@ final class CollectionViewController: UITableViewController {
     }
 
     private func filterMenu() -> UIMenu {
-        let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
+        let deferredMenuElement = UIDeferredMenuElement.uncached { [weak self] completion in
+            guard let self = self else {
+                completion([])
+                return
+            }
             let movies = UIAction(title: "Movies", image: nil, state: self.currentFilter == .movies ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .movies

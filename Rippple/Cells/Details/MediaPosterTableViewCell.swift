@@ -10,7 +10,7 @@ import NVActivityIndicatorView
 import Receiver
 import UIKit
 
-final class MediaPosterTableViewCell: UITableViewCell {
+final class MediaPosterTableViewCell: TintedCanvasTableViewCell {
     let (posterDownloadResultTransmitter, posterDownloadResultReceiver) = Receiver<Bool>.make(with: .hot)
 
     var media: MediaModel! {

@@ -15,7 +15,7 @@ final class AppearanceViewController: UITableViewController {
     private let disposeBag = DisposeBag()
 
     @IBOutlet var tintColorButton: UIButton!
-    @IBOutlet var neverMinimizeTabBarSwitch: UISwitch!
+    @IBOutlet var tintedAppearanceSwitch: UISwitch!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,7 +26,7 @@ final class AppearanceViewController: UITableViewController {
         tintColorButton.setTitleColor(UIColor(asset: .globalTint), for: .focused)
         tintColorButton.setTitleColor(UIColor(asset: .globalTint), for: .highlighted)
 
-        neverMinimizeTabBarSwitch.isOn = UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize")
+        tintedAppearanceSwitch.isOn = UIApplication.shared.isTintedAppearanceEnabled
 
         updateButton()
 
@@ -34,10 +34,8 @@ final class AppearanceViewController: UITableViewController {
                                 action: #selector(updateButton))
     }
 
-    @IBAction private func neverMinimizeTabBarValueChanged(_ sender: UISwitch) {
-        UserDefaults.standard.set(sender.isOn, forKey: "MainTabBarController.neverMinimize")
-        UserDefaults.standard.synchronize()
-        neverMinimizeTabBarTransmitter.broadcast(sender.isOn)
+    @IBAction private func tintedAppearanceValueChanged(_ sender: UISwitch) {
+        UIApplication.shared.setTintedAppearance(enabled: sender.isOn)
     }
 
     @objc
@@ -50,7 +48,8 @@ final class AppearanceViewController: UITableViewController {
                                            backgroundColor: value.color)
             let action = UIAction(title: value.name.capitalized,
                                   image: image,
-                                  state: value == UIApplication.shared.currentTint ? .on : .off) { _ in
+                                  state: value == UIApplication.shared.currentTint ? .on : .off) { [weak self] _ in
+                guard let self = self else { return }
                 UIApplication.shared.setTintColor(tint: value)
                 self.updateButton()
             }
@@ -79,6 +78,10 @@ final class AppearanceViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        if section == 0 {
+            return "Apply the app tint color to backgrounds and cards."
+        }
+
         #if targetEnvironment(macCatalyst)
         if section == 1 {
             switch UIApplication.shared.currentUserInterfaceStyle {
@@ -105,13 +108,6 @@ final class AppearanceViewController: UITableViewController {
                 return "Once you start down the DARK path, forever will it dominate your destiny."
             @unknown default:
                 return "Always two there are, no more, no less."
-            }
-        } else if section == 3 {
-            switch UIDevice.current.userInterfaceIdiom {
-            case .pad:
-                return "Customize the bottom tab bar when Rippple is in a 'phone' kind of layout (eg in split view)."
-            default:
-                return nil
             }
         } else {
             return nil
@@ -125,7 +121,7 @@ final class AppearanceViewController: UITableViewController {
         } else if section == 0 {
             return "Tint Color"
         } else {
-            return UIDevice.current.userInterfaceIdiom == .phone || UIDevice.current.userInterfaceIdiom == .pad ? "Tab bar" : nil
+            return nil
         }
     }
 
@@ -133,17 +129,17 @@ final class AppearanceViewController: UITableViewController {
         #if targetEnvironment(macCatalyst)
         return 1
         #else
-        return 3
+        return 2
         #endif
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if section == 0 {
-            return 1
+            return 2
         } else if section == 1 {
             return 3
         } else {
-            return UIDevice.current.userInterfaceIdiom == .phone || UIDevice.current.userInterfaceIdiom == .pad ? 2 : 0
+            return 0
         }
     }
 

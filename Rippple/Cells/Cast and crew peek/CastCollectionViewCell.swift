@@ -33,6 +33,7 @@ final class CastCollectionViewCell: UICollectionViewCell {
         avatarContainer.layer.masksToBounds = true
         avatarContainer.layer.borderWidth = 1
         avatarContainer.layer.borderColor = UIColor.tertiarySystemFill.cgColor
+        avatarContainer.backgroundColor = .ripppleInsideGroupedCardBackground
 
         minimumContentSizeCategory = .extraSmall
         maximumContentSizeCategory = .large

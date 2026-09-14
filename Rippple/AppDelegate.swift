@@ -7,6 +7,7 @@
 //
 
 import AlamofireNetworkActivityIndicator
+import AppIntents
 import BackgroundTasks
 import NVActivityIndicatorView
 import Receiver
@@ -46,7 +47,38 @@ struct RipppleHostedView<Content: View>: View {
     let content: Content
 
     var body: some View {
-        content.toggleStyle(RipppleSwitchToggleStyle())
+        content
+            .toggleStyle(RipppleSwitchToggleStyle())
+    }
+}
+
+struct RipppleList<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        SwiftUI.List {
+            Group {
+                content
+            }
+            .listRowBackground(Color(uiColor: .ripppleGroupedCardBackground))
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color(uiColor: .ripppleGroupedViewBackground))
+    }
+}
+
+struct RipppleForm<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        Form {
+            Group {
+                content
+            }
+            .listRowBackground(Color(uiColor: .ripppleGroupedCardBackground))
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color(uiColor: .ripppleGroupedViewBackground))
     }
 }
 
@@ -64,6 +96,11 @@ class RipppleHostingController<Content: View>: UIHostingController<RipppleHosted
         return nil
     }
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .ripppleViewBackground
+    }
+
     func setRootView(_ rootView: Content) {
         self.rootView = RipppleHostedView(content: rootView)
     }
@@ -73,6 +110,13 @@ class RipppleHostingController<Content: View>: UIHostingController<RipppleHosted
 class AppDelegate: UIResponder, UIApplicationDelegate {
     private let disposeBag = DisposeBag()
     private var lastRegisteredPushInformation: PushInformationModel?
+
+    override init() {
+        super.init()
+        AppDependencyManager.shared.add(dependency: ToWatchWidgetActionHandler.app)
+        AppDependencyManager.shared.add(dependency: WatchingControlWidgetActionHandler.app)
+    }
+
     private lazy var debouncedRegisterForPushNotifications = Debouncer(delay: 1.0) { [weak self] in
         guard SessionManager.shared.isLoggedIn else { return }
         guard let self = self else { return }
@@ -146,6 +190,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                   "ManualRemoteNotificationsManager.blogPost": true,
                                                   "ToWatchViewController.currentType": 1,
                                                   "CountryManager.displayInLists": true,
+                                                  "AppManager.tintedAppearance": false,
                                                   "GeneralSettings.commentscount": 1])
 
         let dispatchGroup = DispatchGroup()
@@ -213,10 +258,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // DeeplinkManager.shared.registerDeeplink(url: URL(string: "ripl://search")!)
 
-        AppManager.shared.setup()
-
+        #if targetEnvironment(macCatalyst)
+        UIView.appearance().tintColor = UIColor(asset: .globalTint)
+        #else
         let view = UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self])
         view.tintColor = UIColor(asset: .globalTint)
+        #endif
+        AppManager.shared.setup()
 
         UISwitch.appearance().onTintColor = RipppleAppearance.switchTintColor
         UIProgressView.appearance().trackTintColor = UIColor(asset: .globalTint).withAlphaComponent(0.25)

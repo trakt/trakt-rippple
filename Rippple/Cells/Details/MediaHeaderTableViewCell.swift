@@ -12,7 +12,7 @@ protocol MediaHeaderTableViewCellDelegate: AnyObject {
     func cell(_ cell: MediaHeaderTableViewCell, action: MediaHeaderTableViewCell.Action)
 }
 
-final class MediaHeaderTableViewCell: UITableViewCell {
+final class MediaHeaderTableViewCell: TintedCanvasTableViewCell {
     enum Action {
         case presentEpisodeList
     }

@@ -31,6 +31,7 @@ final class AboutViewController: UITableViewController {
         case spoilers
         case notifications
         case appearance
+        case tabBar
         case appIcon
         case appIconBadge
         case whereToWatch
@@ -344,8 +345,13 @@ final class AboutViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        #if targetEnvironment(macCatalyst)
+        if AboutSection(rawValue: indexPath.section) == .settings, indexPath.row == SettingsSection.tabBar.rawValue {
+            cell.isHidden = true
+        }
+        #endif
         if case .premium = AboutSection(rawValue: indexPath.section) {
-            cell.contentConfiguration = UIHostingConfiguration {
+            cell.contentConfiguration = UIHostingConfiguration { [weak self] in
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         VStack(alignment: .leading) {
@@ -436,12 +442,18 @@ final class AboutViewController: UITableViewController {
                 #endif
             }
             cell.accessoryType = .none
+        } else if AboutSection(rawValue: indexPath.section) == .about, indexPath.row == 2 {
+            cell.imageView?.image = UIImage(systemName: "text.and.command.interface.window")
+                ?? UIImage(systemName: "text.and.command.macwindow")
         }
         return cell
     }
 
     #if targetEnvironment(macCatalyst)
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if AboutSection(rawValue: indexPath.section) == .settings, indexPath.row == SettingsSection.tabBar.rawValue {
+            return 0
+        }
         if case .premium = AboutSection(rawValue: indexPath.section) {
             return super.tableView(tableView, heightForRowAt: indexPath)
         }

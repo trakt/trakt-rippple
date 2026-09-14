@@ -12,7 +12,7 @@
         <scene sceneID="UjJ-ae-LvP">
             <objects>
                 <viewController id="3cJ-bp-xSA" customClass="EpisodePreviewViewController" customModule="Rippple" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="gaw-3v-lmA">
+                    <view key="view" contentMode="scaleToFill" id="gaw-3v-lmA" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>

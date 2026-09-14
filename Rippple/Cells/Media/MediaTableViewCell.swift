@@ -13,7 +13,7 @@ protocol MediaTableViewCellDelegate: AnyObject {
     func cell(_ cell: MediaTableViewCell, action: MediaTableViewCell.Action)
 }
 
-final class MediaTableViewCell: UITableViewCell {
+final class MediaTableViewCell: TintedCanvasTableViewCell {
     enum Action {
         case details
         case close

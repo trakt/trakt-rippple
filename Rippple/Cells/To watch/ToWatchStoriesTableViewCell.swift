@@ -10,7 +10,7 @@ import Foundation
 import Receiver
 import UIKit
 
-final class ToWatchStoriesTableViewCell: UITableViewCell {
+final class ToWatchStoriesTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var collectionView: UICollectionView!
 
     private enum Section: Hashable {

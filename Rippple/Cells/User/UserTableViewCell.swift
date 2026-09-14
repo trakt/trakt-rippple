@@ -11,7 +11,7 @@ import Moya
 import Receiver
 import UIKit
 
-final class UserTableViewCell: UITableViewCell {
+final class UserTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var fanartImageViewHeightConstraint: NSLayoutConstraint?
 
     @IBOutlet var nameLabel: UILabel!
@@ -68,7 +68,7 @@ final class UserTableViewCell: UITableViewCell {
                 avatarImageView.layer.shadowOffset = CGSize(width: 0, height: 0)
                 avatarImageView.layer.shadowPath = UIBezierPath(roundedRect: avatarImageView.bounds,
                                                                 cornerRadius: avatarImageView.layer.cornerRadius).cgPath
-                avatarImageView.backgroundColor = .tertiarySystemBackground
+                avatarImageView.backgroundColor = .ripppleTertiaryBackground
                 avatarImageView.clipsToBounds = true
 
                 maximumContentSizeCategory = .extraExtraLarge

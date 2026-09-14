@@ -14,7 +14,7 @@ protocol SeasonShowTableViewCellDelegate: AnyObject {
     func cell(_ cell: SeasonShowTableViewCell, action: SeasonShowTableViewCell.Action)
 }
 
-final class SeasonShowTableViewCell: UITableViewCell {
+final class SeasonShowTableViewCell: TintedCanvasTableViewCell {
     enum Action {
         case actions
     }
@@ -73,7 +73,7 @@ final class SeasonShowTableViewCell: UITableViewCell {
         backgroundView.backgroundColor = .clear
         selectedBackgroundView = backgroundView
         let multipleBackgroundView = UIView()
-        multipleBackgroundView.backgroundColor = .tertiarySystemBackground
+        multipleBackgroundView.backgroundColor = .ripppleTertiaryBackground
         multipleSelectionBackgroundView = multipleBackgroundView
 
         poster.layer.cornerRadius = ViewRadius.medium.rawValue

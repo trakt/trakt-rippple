@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class SearchTableViewCell: UITableViewCell {
+final class SearchTableViewCell: TintedCanvasTableViewCell {
     private var text: String!
     private var subtext: String?
     private var searchQuery: String?
@@ -112,10 +112,11 @@ final class SearchHeaderView: UITableViewHeaderFooterView {
         super.awakeFromNib()
 
         contentView.backgroundColor = .clear
-        backgroundColor = .clear
         button.titleLabel?.font = .preferredFont(forTextStyle: .subheadline)
 
-        backgroundConfiguration = nil
+        var background = UIBackgroundConfiguration.clear()
+        background.backgroundColor = .ripppleViewBackground
+        backgroundConfiguration = background
 
         maximumContentSizeCategory = .extraExtraLarge
     }

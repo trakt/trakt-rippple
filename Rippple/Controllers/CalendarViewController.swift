@@ -797,7 +797,7 @@ final class CalendarSettingsViewController: UIViewController {
         super.viewDidLoad()
 
         navigationController?.presentationController?.delegate = self
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .ripppleViewBackground
 
         myShows = UserDefaults.standard.bool(forKey: "CalendarSettings.myShows")
         filtersShowToWatch = UserDefaults.standard.bool(forKey: "CalendarSettings.filtersShowToWatch")
@@ -821,7 +821,7 @@ final class CalendarSettingsViewController: UIViewController {
 
         let hostingController = RipppleHostingController(rootView: settingsView)
         settingsHostingController = hostingController
-        hostingController.view.backgroundColor = .systemBackground
+        hostingController.view.backgroundColor = .ripppleViewBackground
         hostingController.view.frame = view.bounds
         hostingController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 
@@ -890,7 +890,7 @@ private struct CalendarSettingsSwiftUIView: View {
     @Binding var hideRecentlyWatchedMovies: Bool
 
     var body: some View {
-        Form {
+        RipppleForm {
             Section {
                 CalendarSettingsToggleRow(title: "Include Your Shows",
                                           subtitle: "Adds episodes from shows you watch or keep in your watchlist, plus individually watchlisted episodes.",

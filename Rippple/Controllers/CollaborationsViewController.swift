@@ -51,10 +51,6 @@ final class CollaborationsViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        while user == nil {
-            user = UserManager.shared.currentUser
-        }
-
         navigationItem.style = .browser
 
         if user.isCurrentUser {

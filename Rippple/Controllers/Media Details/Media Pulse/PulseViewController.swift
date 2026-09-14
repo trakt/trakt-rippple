@@ -134,7 +134,7 @@ final class PulseViewController: UITableViewController {
                                     shortTitle: "Remove",
                                     systemImageName: "trash.circle.fill",
                                     handler: { [weak self] in
-                                        guard let self else { return }
+                                        guard let self = self else { return }
 
                                         let confirmationAlertController = UIAlertController(title: "⚠️",
                                                                                             message: "Do you want to remove this from your watch history?",
@@ -143,7 +143,8 @@ final class PulseViewController: UITableViewController {
                                         let cancel = UIAlertAction(title: "Don't remove", style: .cancel)
                                         confirmationAlertController.addAction(cancel)
 
-                                        let delete = UIAlertAction(title: "Remove", style: .destructive) { _ in
+                                        let delete = UIAlertAction(title: "Remove", style: .destructive) { [weak self] _ in
+                                            guard let self = self else { return }
                                             guard let window = self.view.window else { return }
                                             window.isUserInteractionEnabled = false
 
@@ -276,7 +277,7 @@ final class PulseViewController: UITableViewController {
                                     shortTitle: "Delete",
                                     systemImageName: "trash.circle.fill",
                                     handler: { [weak self] in
-                                        guard let self else { return }
+                                        guard let self = self else { return }
 
                                         let confirmationAlertController = UIAlertController(title: "⚠️",
                                                                                             message: "Are you sure you want to delete this comment?",
@@ -286,7 +287,8 @@ final class PulseViewController: UITableViewController {
                                         confirmationAlertController.addAction(cancel)
 
                                         let delete = UIAlertAction(title: "Yes, Delete Comment",
-                                                                   style: .destructive) { _ in
+                                                                   style: .destructive) { [weak self] _ in
+                                            guard let self = self else { return }
                                             TraktAPIProvider.provider.request(.deleteComment(id: commentModel.comment.identifier),
                                                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                                                 guard let self else { return }
@@ -678,7 +680,8 @@ final class PulseViewController: UITableViewController {
         let removeAllWatch = UIAction(title: "Remove All Watch",
                                       image: UIImage(systemName: "minus.circle"),
                                       attributes: .destructive,
-                                      handler: { _ in
+                                      handler: { [weak self] _ in
+                                          guard let self = self else { return }
                                           let confirmationAlertController = UIAlertController(title: "⚠️",
                                                                                               message: "Are you sure you want to remove all watch?",
                                                                                               preferredStyle: .alert)
@@ -687,7 +690,8 @@ final class PulseViewController: UITableViewController {
                                           confirmationAlertController.addAction(cancel)
 
                                           let delete = UIAlertAction(title: "Yes, Remove All Watch",
-                                                                     style: .destructive) { _ in
+                                                                     style: .destructive) { [weak self] _ in
+                                              guard let self = self else { return }
                                               switch self.media! {
                                               case .movie(let movie):
                                                   TraktAPIProvider.provider.request(.removeMovieFromHistory(id: movie.identifiers.trakt!),

@@ -113,7 +113,7 @@ struct ReportView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
+            RipppleForm {
                 reassuranceSection
                 reasonSection
                 detailsSection

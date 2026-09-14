@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class SocialActivityCommentTableViewCell: UITableViewCell {
+final class SocialActivityCommentTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var card: CardView!
 
     @IBOutlet var titleLabel: UILabel!

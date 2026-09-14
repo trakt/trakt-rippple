@@ -10,7 +10,7 @@ import NVActivityIndicatorView
 import Receiver
 import UIKit
 
-final class MediaBackdropTableViewCell: UITableViewCell {
+final class MediaBackdropTableViewCell: TintedCanvasTableViewCell {
     let (backdropDownloadResultTransmitter, backdropDownloadResultReceiver) = Receiver<Bool>.make(with: .hot)
 
     var media: MediaModel! {

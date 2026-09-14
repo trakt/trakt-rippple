@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class PulsePreviewTableViewCell: UITableViewCell {
+final class PulsePreviewTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var card: CardView!
 
     @IBOutlet var pulseSymbol: UIImageView!

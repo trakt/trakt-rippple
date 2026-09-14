@@ -9,7 +9,7 @@
 import Kingfisher
 import UIKit
 
-final class SocialActivityTableViewCell: UITableViewCell {
+final class SocialActivityTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var card: CardView!
 
     @IBOutlet var titleLabel: UILabel!
@@ -98,7 +98,7 @@ final class SocialActivityTableViewCell: UITableViewCell {
             imageView.layer.borderWidth = avatarBorderWidth
             imageView.layer.zPosition = CGFloat(index)
             imageView.layer.borderColor = UIColor.tertiarySystemFill.cgColor
-            imageView.backgroundColor = .tertiarySystemBackground.withAlphaComponent(1.0)
+            imageView.backgroundColor = .ripppleTertiaryBackground.withAlphaComponent(1.0)
 
             let overflowLabel = UILabel()
             overflowLabel.translatesAutoresizingMaskIntoConstraints = false

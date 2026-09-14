@@ -234,24 +234,13 @@ private extension RatingsManager {
         if SessionManager.shared.isLoggedOut {
             return
         }
-        TraktAPIProvider.provider.request(.rated(slug: "me", type: .all, extended: nil),
-                                          callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+        TraktAPIProvider.fetchAllRatedItems(slug: "me", type: .all, extended: nil) { [weak self] result in
+            guard let self = self else { return }
             switch result {
-            case .success(let moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let rated = try response.map([RatedItem].self, using: TraktAPIProvider.decoder)
-
-                    DispatchQueue.main.async {
-                        self.rated = rated
-                        completion()
-                    }
-                } catch {
-                    print("Rated Items request JSON mapping failed! \(error)")
-                    DispatchQueue.main.async {
-                        completion()
-                    }
+            case .success(let rated):
+                DispatchQueue.main.async {
+                    self.rated = rated
+                    completion()
                 }
             case .failure(let error):
                 print("Rated Items request failure \(error)")

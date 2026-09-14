@@ -12,13 +12,13 @@
         <scene sceneID="pHx-xc-ioV">
             <objects>
                 <viewController id="xg1-qd-Kha" customClass="InitialViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="czj-GX-OeT">
+                    <view key="view" contentMode="scaleToFill" id="czj-GX-OeT" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VMr-x6-9UN" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
                                 <rect key="frame" x="132.5" y="248.5" width="110" height="110"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="VMr-x6-9UN" secondAttribute="height" multiplier="1:1" id="L97-yg-mtR"/>
                                     <constraint firstAttribute="width" constant="110" id="l5M-1Y-fOE"/>

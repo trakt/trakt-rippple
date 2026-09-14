@@ -67,6 +67,18 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
             searchViewController.searchQuery = query
             searchViewController.isDeeplink = true
         }
+
+        if let toWatchViewController = segue.destination as? ToWatchViewController {
+            _ = toWatchViewController.view
+            switch segue.identifier {
+            case "toWatchMovies":
+                toWatchViewController.currentType = .movies
+            case "toWatchEpisodes":
+                toWatchViewController.currentType = .episodes
+            default:
+                break
+            }
+        }
     }
 
     @IBSegueAction
@@ -282,8 +294,13 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                         let user = try response.map(User.self, using: TraktAPIProvider.decoder)
 
                         DispatchQueue.main.async {
-                            self.performSegue(withIdentifier: "deeplink",
-                                              sender: CommentsCoordinator.ListType.user(user))
+                            if user.isCurrentUser {
+                                let profileViewController = UIStoryboard(name: "Profile", bundle: nil).instantiateViewController(identifier: "ProfileViewController")
+                                self.navigationController?.pushViewController(profileViewController, animated: true)
+                            } else {
+                                self.performSegue(withIdentifier: "deeplink",
+                                                  sender: CommentsCoordinator.ListType.user(user))
+                            }
                         }
                     } catch {
                         DispatchQueue.main.async {
@@ -492,6 +509,8 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
             return
         case .browseThisWeek:
             performSegue(withIdentifier: "browse this week", sender: nil)
+        case .toWatch:
+            performSegue(withIdentifier: "toWatch", sender: nil)
         case .toWatchMovies:
             performSegue(withIdentifier: "toWatchMovies", sender: nil)
         case .toWatchEpisodes:
@@ -803,7 +822,8 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                         "AnticipatedNotificationsManager.anticipatedMovies",
                                         "Stinger.alert.type",
                                         "AppManager.currentUserInterfaceStyle",
-                                        "AppManager.currentTint"]
+                                        "AppManager.currentTint",
+                                        "AppManager.tintedAppearance"]
 
         let ubiquitousKeys: Set = ["ShelfManager.shelf",
                                    "EpisodeToWatchManager.pinnedShows",
@@ -869,6 +889,15 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                     UIApplication.shared.setTintColor(tint: tint)
                 }
                 print("[Migration Deeplink] \(key): \(tint.name) (RipppleTintColor), applied via setTintColor")
+                continue
+            }
+
+            if key == "AppManager.tintedAppearance" {
+                let enabled = valueString == "1" || valueString.lowercased() == "true"
+                DispatchQueue.main.async {
+                    UIApplication.shared.setTintedAppearance(enabled: enabled)
+                }
+                print("[Migration Deeplink] \(key): \(enabled) (Bool), applied via setTintedAppearance")
                 continue
             }
 

@@ -340,6 +340,11 @@ final class MovieToWatchManager {
             self.debouncedTransmit.call()
         }.disposed(by: disposeBag)
 
+        movieToWatchHideDuplicatesReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.debouncedTransmit.call()
+        }.disposed(by: disposeBag)
+
         calendarDataUpdatedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self, self.movies != nil else { return }
             print("MovieToWatchManager.debouncedRefreshProgress because calendar data updated")
@@ -385,6 +390,33 @@ final class MovieToWatchManager {
 
     func forcedUserRefresh() {
         debouncedForceRefresh.call()
+    }
+
+    @MainActor
+    func refreshProgressAfterWidgetAction() async {
+        guard SessionManager.shared.isLoggedIn, let movies = movies else { return }
+
+        status = .loading
+
+        let updateMoviesWatchedOperation = UpdateMoviesWatchedOperation(movies: movies)
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            updateMoviesWatchedOperation.completionBlock = {
+                continuation.resume()
+            }
+            operationQueue.addOperation(updateMoviesWatchedOperation)
+        }
+
+        guard !updateMoviesWatchedOperation.isCancelled else { return }
+
+        releaseInfoCache = updateMoviesWatchedOperation.releaseInfoByMovieId
+        mediaModels = updateMoviesWatchedOperation.mediaModels
+        futureMediaModels = updateMoviesWatchedOperation.futureMediaModels
+        debouncedTransmit.fireNow()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.main.async {
+                continuation.resume()
+            }
+        }
     }
 
     private func forceRefresh() {

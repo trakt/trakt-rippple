@@ -20,7 +20,7 @@ protocol CommentTableViewCellDelegate: AnyObject {
     func actionsMenu(for cell: CommentTableViewCell) -> UIMenu?
 }
 
-final class CommentTableViewCell: UITableViewCell {
+final class CommentTableViewCell: TintedCanvasTableViewCell {
     enum Action {
         case presentReplies
         case presentAuthor
@@ -111,6 +111,15 @@ final class CommentTableViewCell: UITableViewCell {
         CommentTableViewCell.dateFormatter.dateTimeStyle = .numeric
         CommentTableViewCell.dateFormatter.formattingContext = .listItem
         CommentTableViewCell.dateFormatter.locale = Locale(identifier: "en_US")
+
+        replyMicImageView?.image = UIImage(systemName: "microphone.dynamic.on.stand")
+            ?? UIImage(systemName: "music.microphone")
+
+        if let chatBubbleBackgroundImage = chatBubbleBackgroundImage {
+            chatBubbleBackgroundImage.image = chatBubbleBackgroundImage.image?.withRenderingMode(.alwaysTemplate)
+            chatBubbleBackgroundImage.tintColor = .ripppleCardBackground
+            chatBubbleBackgroundImage.tintAdjustmentMode = .normal
+        }
 
         if let poster = poster {
             poster.layer.cornerRadius = ViewRadius.medium.rawValue

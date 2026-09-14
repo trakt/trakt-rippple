@@ -9,7 +9,7 @@
 import Moya
 import UIKit
 
-final class StatsTableViewCell: UITableViewCell {
+final class StatsTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var watchers: EFCountingLabel!
     @IBOutlet var plays: EFCountingLabel!
     @IBOutlet var lists: EFCountingLabel!

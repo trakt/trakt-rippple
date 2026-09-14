@@ -56,7 +56,7 @@ struct OpenInSettingsView: View {
     }
 
     private var content: some View {
-        SwiftUI.List {
+        RipppleList {
             Section {
                 Text("Manage your \"Open In\" actions. Reorder built-in and custom actions for movie, show, season, and episode detail screens. Custom actions use a URL template with variables like \(OpenActionVariable.tmdbId.placeholder) or \(OpenActionVariable.title.placeholder).")
                     .font(.subheadline)
@@ -394,7 +394,7 @@ struct OpenInItemEditView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
+            RipppleForm {
                 Section {
                     HStack(spacing: 12) {
                         TextField("Name", text: $name, prompt: Text("What?"))

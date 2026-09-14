@@ -90,7 +90,7 @@ struct ShelfConfigView: View {
     var body: some View {
         NavigationStack(path: $router.navPath) {
             ZStack(alignment: .bottom) {
-                SwiftUI.List {
+                RipppleList {
                     Section {
                         ForEach(shelf, id: \.self) { row in
                             HStack {
@@ -180,7 +180,7 @@ struct ShelfConfigView: View {
                     Label("Add Rows", systemImage: "plus")
                         .padding([.trailing, .leading], 50)
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                        .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                 }.buttonStyle(.glassProminent)
                     .controlSize(.extraLarge)
                     .buttonBorderShape(.capsule)
@@ -254,7 +254,7 @@ struct ShelfRowConfigView: View {
     }
 
     var body: some View {
-        SwiftUI.List {
+        RipppleList {
             Section {
                 if row.filter.section != "in_review" {
                     TextField("Name", text: $name)
@@ -424,7 +424,7 @@ struct ShelfRowQuickConfigView: View {
 
     var body: some View {
         NavigationStack {
-            SwiftUI.List {
+            RipppleList {
                 Section {
                     TextField("Name", text: $name)
                         .task(id: $name.wrappedValue) {
@@ -787,7 +787,7 @@ struct SheetView: View {
 
     var body: some View {
         NavigationStack {
-            SwiftUI.List {
+            RipppleList {
                 Section {
                     HStack {
                         if watchlist.isShelved {

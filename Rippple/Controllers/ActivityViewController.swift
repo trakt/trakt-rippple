@@ -369,7 +369,7 @@ final class ActivityViewController: UITableViewController {
 
     private func configureFloatingButton() {
         backgroundButton = UIButton()
-        backgroundButton.backgroundColor = .systemBackground.withAlphaComponent(0.4)
+        backgroundButton.backgroundColor = .ripppleViewBackground.withAlphaComponent(0.4)
         backgroundButton.translatesAutoresizingMaskIntoConstraints = false
         backgroundButton.alpha = 0.0
         view.addSubview(backgroundButton)
@@ -385,7 +385,7 @@ final class ActivityViewController: UITableViewController {
         dateSelection = UICalendarSelectionSingleDate(delegate: self)
         calendarView.selectionBehavior = dateSelection
 
-        calendarView.backgroundColor = .tertiarySystemBackground
+        calendarView.backgroundColor = .ripppleTertiaryBackground
         calendarView.layer.borderColor = UIColor.secondarySystemBackground.cgColor
         calendarView.layer.borderWidth = 0.5
         calendarView.translatesAutoresizingMaskIntoConstraints = false
@@ -505,10 +505,6 @@ final class ActivityViewController: UITableViewController {
 
         configureFloatingButton()
 
-        while user == nil {
-            user = UserManager.shared.currentUser
-        }
-
         tableView.allowsFocus = false
         tableView.separatorStyle = .none
         tableView.register(UINib(nibName: "MediaTableViewCell", bundle: nil), forCellReuseIdentifier: "media")
@@ -626,7 +622,11 @@ final class ActivityViewController: UITableViewController {
     @IBAction func unwindFromCommentComposer(segue: UIStoryboardSegue) {}
 
     private func filterMenu() -> UIMenu {
-        let deferredMenuElement = UIDeferredMenuElement.uncached { completion in
+        let deferredMenuElement = UIDeferredMenuElement.uncached { [weak self] completion in
+            guard let self = self else {
+                completion([])
+                return
+            }
             let all = UIAction(title: "Everything", image: nil, state: self.currentFilter == .none ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .none
@@ -1058,7 +1058,7 @@ protocol ActivityHeaderTableViewCellDelegate: AnyObject {
     func action(for cell: ActivityHeaderTableViewCell)
 }
 
-final class ActivityHeaderTableViewCell: UITableViewCell {
+final class ActivityHeaderTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var title: UILabel!
     @IBOutlet var subtitle: UILabel?
     @IBOutlet var chevron: UIImageView?
@@ -1085,7 +1085,6 @@ final class ActivityHeaderTableViewCell: UITableViewCell {
         button?.contentHorizontalAlignment = .right
         selectionStyle = .none
 
-        backgroundColor = .clear
         title.textColor = .label
 
         maximumContentSizeCategory = .extraExtraExtraLarge

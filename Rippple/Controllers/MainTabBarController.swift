@@ -6,6 +6,7 @@
 //  Copyright © Trakt. All rights reserved.
 //
 
+import Kingfisher
 import Receiver
 import UIKit
 
@@ -39,6 +40,10 @@ final class MainTabBarController: UITabBarController {
     private var contextMenus = [TabBarContextMenuInteractionDelegate]()
 
     private let checkinView = CheckinView()
+
+    private var profileAvatarURL: URL?
+    private var profileAvatarDownloadTask: DownloadTask?
+    private var profileTabImage = UIImage(systemName: "person.crop.circle")
 
     private var tabStore: [Tab: UITab] {
         var store = [Tab: UITab]()
@@ -124,7 +129,7 @@ final class MainTabBarController: UITabBarController {
                                     StyledNavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "RatingsViewController"))
                                 })
         store[.profile] = UITab(title: "Profile",
-                                image: UIImage(systemName: "person.crop.circle"),
+                                image: profileTabImage,
                                 identifier: Tab.profile.rawValue,
                                 viewControllerProvider: { _ in
                                     UIStoryboard(name: "Profile", bundle: nil).instantiateInitialViewController()!
@@ -147,11 +152,10 @@ final class MainTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // tabBar.tintColor = .label
-
         updateTabBarMinimizeBehavior(neverMinimize: UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize"))
 
         updateTabBar(animated: false)
+        updateProfileTabImage(for: UserManager.shared.currentUser)
 
         if let userDefault = UserDefaults.standard.string(forKey: "MainTabBarController.selectedTab"),
            let tab = Tab(rawValue: userDefault),
@@ -165,9 +169,15 @@ final class MainTabBarController: UITabBarController {
             self.updateTabBar(animated: false)
         }.disposed(by: disposeBag)
 
+        onSettingsChangedReceiver.listen { [weak self] settings in
+            guard let self = self else { return }
+            self.updateProfileTabImage(for: settings?.user)
+        }.disposed(by: disposeBag)
+
         neverMinimizeTabBarReceiver.listen { [weak self] neverMinimize in
             guard let self = self else { return }
             self.updateTabBarMinimizeBehavior(neverMinimize: neverMinimize)
+            self.updateTabBarContextMenus()
         }.disposed(by: disposeBag)
 
         updateWatchingItem()
@@ -179,8 +189,52 @@ final class MainTabBarController: UITabBarController {
         delegate = self
     }
 
+    private func updateProfileTabImage(for user: User?) {
+        profileAvatarDownloadTask?.cancel()
+        let avatarURL = user?.images?.avatar.full
+        if avatarURL != profileAvatarURL {
+            setProfileTabImage(UIImage(systemName: "person.crop.circle"))
+        }
+        profileAvatarURL = avatarURL
+
+        guard let profileAvatarURL = profileAvatarURL else {
+            return
+        }
+
+        let size = CGSize(width: 28, height: 28)
+        let processor = RoundCornerImageProcessor(cornerRadius: size.height / 2.0,
+                                                  targetSize: size)
+        profileAvatarDownloadTask = KingfisherManager.shared.retrieveImage(with: profileAvatarURL,
+                                                                           options: [.scaleFactor(traitCollection.displayScale), .processor(processor)]) { [weak self] result in
+            guard case .success(let imageResult) = result else { return }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                guard self.profileAvatarURL == profileAvatarURL else { return }
+                self.setProfileTabImage(imageResult.image.withRenderingMode(.alwaysOriginal))
+            }
+        }
+    }
+
+    private func setProfileTabImage(_ image: UIImage?) {
+        profileTabImage = image
+        tabs.first(where: { $0.identifier == Tab.profile.rawValue })?.image = image
+    }
+
     private func updateTabBarMinimizeBehavior(neverMinimize: Bool) {
-        tabBarMinimizeBehavior = neverMinimize ? .never : .onScrollDown
+        if neverMinimize {
+            tabBarMinimizeBehavior = .never
+
+            if #available(iOS 27.0, *) {
+                prominentTabIdentifier = nil
+            }
+        } else {
+            tabBarMinimizeBehavior = .onScrollDown
+
+            if #available(iOS 27.0, *) {
+                prominentTabIdentifier = Tab.search.rawValue
+            }
+        }
     }
 
     private func updateWatchingItem() {
@@ -190,11 +244,6 @@ final class MainTabBarController: UITabBarController {
         } else {
             setBottomAccessory(nil, animated: true)
         }
-    }
-
-    func resetDefault() {
-        save(tabs: defaultTabBar)
-        updateTabBar(animated: true)
     }
 
     fileprivate func updateTabBar(animated: Bool) {
@@ -208,8 +257,13 @@ final class MainTabBarController: UITabBarController {
         }
         if tabs == self.tabs { return }
         setTabs(tabs, animated: animated)
+        updateTabBarContextMenus()
+    }
+
+    private func updateTabBarContextMenus() {
         contextMenus.removeAll()
-        for item in tabBar.items! {
+        guard let items = tabBar.items else { return }
+        for item in items {
             updateContextMenu(for: item)
         }
     }
@@ -222,7 +276,21 @@ final class MainTabBarController: UITabBarController {
         guard let currentIndex = tabBar.items!.firstIndex(of: item) else { return }
         var tabPositions = customTabs
         if let control = item.value(forKey: "view") as? UIControl {
-            var manageActions = [UIAction]()
+            for interaction in control.interactions where interaction.isKind(of: UIContextMenuInteraction.self) {
+                control.removeInteraction(interaction)
+            }
+            if tabPositions[safe: currentIndex] == .search,
+               UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize") == false {
+                return
+            }
+
+            let customizeTabs = UIAction(title: "Customize Tabs",
+                                         image: UIImage(systemName: "slider.horizontal.3"),
+                                         handler: { [weak self] _ in
+                                             guard let self = self else { return }
+                                             self.showTabBarCustomization()
+                                         })
+            var manageActions = [customizeTabs]
             switch tabPositions[safe: currentIndex] {
             case .purchase:
                 break
@@ -257,7 +325,7 @@ final class MainTabBarController: UITabBarController {
                                       })
                 manageActions.append(remove)
             case .search:
-                return
+                break
             case .profile:
                 let remove = UIAction(title: "Remove Profile",
                                       image: UIImage(systemName: "xmark.circle"),
@@ -384,18 +452,8 @@ final class MainTabBarController: UITabBarController {
                 return
             }
 
-            if tabPositions != defaultTabBar {
-                let reset = UIAction(title: "Reset Default Tabs",
-                                     image: UIImage(systemName: "arrow.counterclockwise"),
-                                     handler: { [weak self] _ in
-                                         guard let self = self else { return }
-                                         self.save(tabs: self.defaultTabBar)
-                                     })
-                manageActions.append(reset)
-            }
-
             var swapActions = [UIAction]()
-            for (position, tab) in tabPositions.enumerated() {
+            for (position, tab) in tabPositions.enumerated() where tabPositions[safe: currentIndex] != .search {
                 if position == currentIndex { continue }
                 switch tab {
                 case .purchase:
@@ -530,7 +588,6 @@ final class MainTabBarController: UITabBarController {
                     swapActions.append(swapAction)
                 }
             }
-
             var replaceActions = [UIAction]()
             for tab in Tab.allCases {
                 if tabPositions.contains(tab) { continue }
@@ -703,20 +760,53 @@ final class MainTabBarController: UITabBarController {
                                                                                         UIMenu(options: .displayInline, children: replaceActions)]),
                                                                 for: self)
             contextMenus.append(delegate)
-            for interaction in control.interactions where interaction.isKind(of: UIContextMenuInteraction.self) {
-                control.removeInteraction(interaction)
-            }
             let interaction = UIContextMenuInteraction(delegate: delegate)
             control.addInteraction(interaction)
         }
     }
 
+    func showTabBarCustomization() {
+        let storyboard = UIStoryboard(name: "Profile", bundle: nil)
+        guard let viewController = storyboard.instantiateViewController(withIdentifier: "TabBarCustomization") as? TabBarCustomizationViewController else { return }
+
+        let navigationController = StyledNavigationController(rootViewController: viewController)
+        viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close,
+                                                                          target: self,
+                                                                          action: #selector(dismissTabBarCustomization))
+        present(navigationController, animated: true)
+    }
+
+    @objc
+    private func dismissTabBarCustomization() {
+        dismiss(animated: true)
+    }
+
     private func save(tabs: [Tab]) {
+        let tabs = tabsAddingBrowseIfNeeded(tabs)
         if let encoded = try? JSONEncoder().encode(tabs) {
             UserDefaults.standard.set(encoded, forKey: "MainTabBarController.tab.positions")
+            UserDefaults.standard.set(encoded, forKey: tabCustomizationStoreKey(for: tabs))
             UserDefaults.standard.synchronize()
             UISelectionFeedbackGenerator().selectionChanged()
         }
+    }
+
+    private func tabsAddingBrowseIfNeeded(_ tabs: [Tab]) -> [Tab] {
+        guard tabs.contains(.search),
+              tabs.contains(where: { $0 != .search }) == false else { return tabs }
+        return tabs + [.browse]
+    }
+
+    private func tabCustomizationStoreKey(for tabs: [Tab]) -> String {
+        let modeStorageKey: String
+        if tabs == [.browse] {
+            modeStorageKey = "onePage"
+        } else if UserDefaults.standard.bool(forKey: "MainTabBarController.neverMinimize") {
+            modeStorageKey = "island"
+        } else {
+            modeStorageKey = "default"
+        }
+        return "TabBarCustomizationViewController.tab.positions.\(modeStorageKey)"
     }
 
     private var customTabs: [Tab] {
@@ -790,6 +880,13 @@ extension MainTabBarController: UITabBarControllerDelegate {
             } else if tab.identifier == Tab.calendar.rawValue {
                 if let navigationController = viewController as? UINavigationController, let calendarViewController = navigationController.topViewController as? CalendarViewController {
                     calendarViewController.scrollToClosestToNow(animated: true)
+                }
+            } else if tab.identifier == Tab.search.rawValue {
+                if shouldScrollToTop(view: viewController.view) {
+                    scrollToTop(view: viewController.view)
+                } else if let navigationController = viewController as? UINavigationController,
+                          let searchViewController = navigationController.topViewController as? SearchViewController {
+                    searchViewController.focusSearchField()
                 }
             } else if tab.identifier == Tab.browse.rawValue {
                 if shouldScrollToTop(view: viewController.view) {
@@ -881,7 +978,7 @@ private final class TabBarContextMenuInteractionDelegate: NSObject, UIContextMen
 
         tabBarController.updateTabBar(animated: true)
 
-        if tabBarController.tabBar.window == nil { return nil }
+        guard view.window != nil else { return nil }
 
         let parameters = UIPreviewParameters()
         return UITargetedPreview(view: view, parameters: parameters)

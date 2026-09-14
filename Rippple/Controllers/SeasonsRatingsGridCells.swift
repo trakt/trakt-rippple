@@ -16,8 +16,8 @@ final class SeasonsRatingsHeaderCollectionViewCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        backgroundColor = .systemBackground
-        contentView.backgroundColor = .systemBackground
+        backgroundColor = .ripppleViewBackground
+        contentView.backgroundColor = .ripppleViewBackground
 
         label.translatesAutoresizingMaskIntoConstraints = false
         label.adjustsFontForContentSizeCategory = true
@@ -25,7 +25,7 @@ final class SeasonsRatingsHeaderCollectionViewCell: UICollectionViewCell {
         label.font = UIFont.preferredFont(forTextStyle: .subheadline, compatibleWith: nil)
         label.textAlignment = .center
         label.textColor = .secondaryLabel
-        label.backgroundColor = .systemBackground
+        label.backgroundColor = .ripppleViewBackground
 
         contentView.addSubview(label)
 
@@ -63,7 +63,7 @@ final class SeasonsRatingsContentCollectionViewCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        backgroundColor = .systemBackground
+        backgroundColor = .ripppleViewBackground
         contentView.backgroundColor = .clear
 
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -74,8 +74,8 @@ final class SeasonsRatingsContentCollectionViewCell: UICollectionViewCell {
         label.layer.cornerRadius = ViewRadius.medium.rawValue
         label.layer.cornerCurve = .continuous
         label.clipsToBounds = true
-        label.layer.borderColor = UIColor(asset: .shadow).cgColor
-        label.layer.borderWidth = 0.5
+        label.layer.borderColor = UIColor.tertiarySystemFill.cgColor
+        label.layer.borderWidth = 1
 
         contentView.addSubview(label)
 
@@ -90,9 +90,9 @@ final class SeasonsRatingsContentCollectionViewCell: UICollectionViewCell {
             label.topAnchor.constraint(equalTo: contentView.topAnchor),
             label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
-            progress.leadingAnchor.constraint(equalTo: label.leadingAnchor, constant: 5),
-            progress.trailingAnchor.constraint(equalTo: label.trailingAnchor, constant: -5),
-            progress.bottomAnchor.constraint(equalTo: label.bottomAnchor, constant: -3),
+            progress.leadingAnchor.constraint(equalTo: label.leadingAnchor, constant: 12),
+            progress.trailingAnchor.constraint(equalTo: label.trailingAnchor, constant: -12),
+            progress.bottomAnchor.constraint(equalTo: label.bottomAnchor, constant: -6),
             progress.heightAnchor.constraint(equalToConstant: 3.0)
         ])
 
@@ -142,8 +142,8 @@ final class SeasonsRatingsEmptyCollectionViewCell: UICollectionViewCell {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = .systemBackground
-        contentView.backgroundColor = .systemBackground
+        backgroundColor = .ripppleViewBackground
+        contentView.backgroundColor = .ripppleViewBackground
         maximumContentSizeCategory = .extraExtraExtraLarge
         isAccessibilityElement = false
     }

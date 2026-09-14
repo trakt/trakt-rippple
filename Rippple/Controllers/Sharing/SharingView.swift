@@ -26,7 +26,7 @@ struct SharingView: View {
     var body: some View {
         NavigationView {
             ZStack(alignment: .bottomTrailing) {
-                Form {
+                RipppleForm {
                     Section {
                         Toggle(isOn: $enableText) {
                             Text("Include Text")

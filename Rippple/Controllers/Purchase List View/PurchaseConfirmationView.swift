@@ -121,7 +121,7 @@ struct PurchaseConfirmationView: View {
                     Text(showOverlay ? "Loading..." : "Confirm")
                         .padding([.trailing, .leading], 50)
                         .bold()
-                        .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white)
+                        .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
                 }.buttonStyle(.borderedProminent)
                     .controlSize(.extraLarge)
                     .buttonBorderShape(.capsule)
@@ -168,8 +168,6 @@ struct PurchaseConfirmationView: View {
 }
 
 struct PurchaseOptionView: View {
-    @Environment(\.colorScheme) var colorScheme
-
     var chosen: Bool
     var title: LocalizedStringKey
     var subtitle: LocalizedStringKey
@@ -183,7 +181,7 @@ struct PurchaseOptionView: View {
                         .symbolRenderingMode(.palette)
                         .resizable()
                         .frame(width: 25, height: 25)
-                        .foregroundStyle(UIColor(asset: .globalTint).isLight == true ? .black : .white, Color(UIColor(asset: .globalTint)))
+                        .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel), Color(UIColor(asset: .globalTint)))
                 } else {
                     Image(systemName: "circle")
                         .resizable()
@@ -202,7 +200,7 @@ struct PurchaseOptionView: View {
                     .font(.title3)
                     .bold()
             }.padding()
-        }.background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.systemBackground))
+        }.background(Color(uiColor: .ripppleCardBackground))
             .cornerRadius(15)
             .overlay {
                 RoundedRectangle(cornerRadius: 15)

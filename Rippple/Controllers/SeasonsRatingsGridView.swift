@@ -153,7 +153,7 @@ final class SeasonsRatingsGridView: UIView {
     }
 
     private func configure() {
-        backgroundColor = .systemBackground
+        backgroundColor = .ripppleViewBackground
 
         configureCornerView()
         configureCollectionView(topHeaderCollectionView)
@@ -208,12 +208,12 @@ final class SeasonsRatingsGridView: UIView {
     }
 
     private func configureCornerView() {
-        cornerView.backgroundColor = .systemBackground
+        cornerView.backgroundColor = .ripppleViewBackground
         cornerView.isAccessibilityElement = false
     }
 
     private func configureCollectionView(_ collectionView: UICollectionView) {
-        collectionView.backgroundColor = .systemBackground
+        collectionView.backgroundColor = .ripppleViewBackground
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.showsHorizontalScrollIndicator = false

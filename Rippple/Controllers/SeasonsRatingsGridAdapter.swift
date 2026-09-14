@@ -31,7 +31,7 @@ struct SeasonsRatingsCellViewModel {
 
     static let empty = SeasonsRatingsCellViewModel(text: nil,
                                                    textColor: .label,
-                                                   backgroundColor: .systemBackground,
+                                                   backgroundColor: .ripppleViewBackground,
                                                    progress: nil,
                                                    accessibilityLabel: nil)
 }
@@ -161,7 +161,7 @@ final class SeasonsRatingsGridAdapter {
                                                 episode: Episode) -> SeasonsRatingsCellViewModel {
         guard let firstAired = episode.firstAired else {
             return SeasonsRatingsCellViewModel(text: "...",
-                                               textColor: viewModel.textColor,
+                                               textColor: .white,
                                                backgroundColor: .lightGray,
                                                progress: nil,
                                                accessibilityLabel: accessibilityLabel(for: episode,
@@ -171,7 +171,7 @@ final class SeasonsRatingsGridAdapter {
 
         guard firstAired <= Date.now else {
             return SeasonsRatingsCellViewModel(text: "...",
-                                               textColor: viewModel.textColor,
+                                               textColor: .white,
                                                backgroundColor: .lightGray,
                                                progress: nil,
                                                accessibilityLabel: accessibilityLabel(for: episode,
@@ -196,14 +196,20 @@ final class SeasonsRatingsGridAdapter {
     }
 
     private func color(for rating: Double) -> UIColor {
-        if rating < 4 {
-            return .systemRed
-        } else if rating < 6 {
-            return .systemOrange
-        } else if rating < 8 {
-            return .systemYellow
-        } else {
+        if rating >= 9.5 {
+            return UIColor(red: 0.255, green: 0.412, blue: 0.882, alpha: 1.0)
+        } else if rating >= 9 {
+            return UIColor(red: 0.10, green: 0.45, blue: 0.25, alpha: 1.0)
+        } else if rating >= 8 {
             return .systemGreen
+        } else if rating >= 7 {
+            return .systemYellow
+        } else if rating >= 6 {
+            return .systemOrange
+        } else if rating >= 5 {
+            return .systemRed
+        } else {
+            return .systemBrown
         }
     }
 

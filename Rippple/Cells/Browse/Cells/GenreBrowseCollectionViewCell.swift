@@ -18,7 +18,7 @@ final class GenreBrowseCollectionViewCell: UICollectionViewCell {
 
         backgroundContainer.layer.cornerRadius = backgroundContainer.bounds.height / 2.0
         backgroundContainer.layer.masksToBounds = true
-        backgroundContainer.backgroundColor = UIColor.secondarySystemBackground
+        backgroundContainer.backgroundColor = UIColor.ripppleSecondaryBackground
         backgroundContainer.layer.borderWidth = 1
         backgroundContainer.layer.borderColor = UIColor.tertiarySystemFill.cgColor
 

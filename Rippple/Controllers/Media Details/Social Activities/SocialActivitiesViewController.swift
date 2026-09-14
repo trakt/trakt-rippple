@@ -97,6 +97,7 @@ final class SocialActivitiesViewController: UITableViewController {
         navigationItem.subtitle = media.mediaTitle
         navigationItem.largeTitleDisplayMode = .never
 
+        tableView.backgroundColor = .ripppleViewBackground
         tableView.allowsFocus = false
         tableView.separatorStyle = .none
         tableView.contentInset = UIEdgeInsets(top: 4, left: 0, bottom: 20, right: 0)

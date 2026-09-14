@@ -226,6 +226,7 @@ final class ListProgressViewController: UITableViewController {
         navigationItem.title = list.name.emojiUnescapedString
         navigationItem.subtitle = "To Watch"
 
+        tableView.backgroundColor = .ripppleViewBackground
         tableView.allowsFocus = false
         tableView.keyboardDismissMode = .onDrag
         tableView.separatorStyle = .none

@@ -11,39 +11,6 @@ import ActivityKit
 import SwiftUI
 import WidgetKit
 
-private var appTint: Color {
-    switch UserDefaults(suiteName: "group.tv.trakt.rippple")!.integer(forKey: "AppManager.currentTint") {
-    case 0:
-        return .purple
-    case 1:
-        return .red
-    case 2:
-        return .orange
-    case 3:
-        return .yellow
-    case 4:
-        return .green
-    case 5:
-        return .mint
-    case 6:
-        return .teal
-    case 7:
-        return .cyan
-    case 8:
-        return .blue
-    case 9:
-        return .indigo
-    case 10:
-        return .pink
-    case 11:
-        return .brown
-    case 12:
-        return .white
-    default:
-        return .purple
-    }
-}
-
 @available(iOS 18.0, *)
 struct RipppleLiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
@@ -95,7 +62,7 @@ struct RipppleLiveActivityWidget: Widget {
                                      currentValueLabel: { EmptyView() })
                             .progressViewStyle(.circular)
                             .frame(width: 30, height: 30)
-                            .tint(appTint)
+                            .tint(WidgetTint.color)
 
                     }.padding([.leading, .trailing, .bottom], 5)
                 }
@@ -115,7 +82,7 @@ struct RipppleLiveActivityWidget: Widget {
                              currentValueLabel: { EmptyView() })
                     .progressViewStyle(.circular)
                     .frame(width: 24, height: 24)
-                    .tint(appTint)
+                    .tint(WidgetTint.color)
             } minimal: {
                 let progress = context.state.entry
                 ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
@@ -124,7 +91,7 @@ struct RipppleLiveActivityWidget: Widget {
                              currentValueLabel: { EmptyView() })
                     .progressViewStyle(.circular)
                     .frame(width: 22, height: 22)
-                    .tint(appTint)
+                    .tint(WidgetTint.color)
             }.widgetURL(context.state.entry.deeplink)
         }.supplementalActivityFamilies([.small])
     }
@@ -251,7 +218,7 @@ struct SmallLiveActivityView: View {
                                      label: { EmptyView() },
                                      currentValueLabel: { EmptyView() })
                             .progressViewStyle(.circular)
-                            .tint(appTint)
+                            .tint(WidgetTint.color)
                             .frame(width: 18, height: 18)
                     }
                 }

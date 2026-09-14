@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class SeasonTableViewCell: UITableViewCell {
+final class SeasonTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var seasonTitleLabel: UILabel!
     @IBOutlet var commentsLabel: CommentCountLabel!
 

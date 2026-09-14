@@ -550,7 +550,7 @@ final class ZoomableScrollView: UIScrollView {
     private func configureAppearance(isLogo: Bool) {
         if isLogo {
             imageView.backgroundColor = .clear
-            backgroundColor = .secondarySystemBackground
+            backgroundColor = .ripppleSecondaryBackground
             imageView.layer.shadowColor = UIColor.black.cgColor
             imageView.layer.shadowOffset = FullScreenImageViewController.Constants.shadowOffset
             imageView.layer.shadowRadius = FullScreenImageViewController.Constants.shadowRadius

@@ -15,7 +15,7 @@ protocol RelatedMediaTableViewCellDelegate: AnyObject {
     func cell(_ cell: RelatedMediaTableViewCell, action: RelatedMediaTableViewCell.Action)
 }
 
-final class RelatedMediaTableViewCell: UITableViewCell {
+final class RelatedMediaTableViewCell: TintedCanvasTableViewCell {
     enum Action {
         case showMedia(MediaModel)
         case getMoreWithVIP

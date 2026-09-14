@@ -256,6 +256,8 @@ final class CommentsViewController: UITableViewController {
         precondition(coordinator != nil)
 
         navigationItem.style = .browser
+        // This controller can be embedded, where UIKit's scroll-view lookup is ambiguous.
+        setContentScrollView(tableView, for: .top)
 
         tableView.allowsFocus = false
         tableView.separatorStyle = .none
@@ -429,6 +431,21 @@ final class CommentsViewController: UITableViewController {
 
         footnoteLabel.maximumContentSizeCategory = .large
         errorLabel.maximumContentSizeCategory = .large
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        if case .media(let media) = coordinator.type! {
+            updateMediaUserActivity(with: media)
+        } else {
+            updateMediaUserActivity(with: nil)
+        }
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        updateMediaUserActivity(with: nil)
     }
 
     private func showNewCommentComposer(for media: MediaModel) {
@@ -780,7 +797,7 @@ extension CommentsViewController {
 
         TraktAPIProvider.fetchActivityDates(slug: user.slug,
                                             startDate: startDate,
-                                            endDate: endDate) { result in
+                                            endDate: endDate) { [weak self] result in
             var activityCounts = [Date: Int]()
             switch result {
             case .success(let activityDates):

@@ -373,6 +373,11 @@ final class EpisodeToWatchManager {
             self.debouncedTransmit.call()
         }.disposed(by: disposeBag)
 
+        episodeToWatchHideDuplicatesReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.debouncedTransmit.call()
+        }.disposed(by: disposeBag)
+
         episodeToWatchBingeableOnlyReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.debouncedTransmit.call()
@@ -406,6 +411,36 @@ final class EpisodeToWatchManager {
 
     func forcedUserRefresh() {
         debouncedForceRefresh.call()
+    }
+
+    @MainActor
+    func refreshProgress(forShowWithTraktIdentifier showTraktIdentifier: Int64) async {
+        if let show = mediaModels.compactMap(\.show).first(where: {
+            $0.identifiers.trakt == showTraktIdentifier
+        }) {
+            status = .loading
+            ProgressManager.shared.resetCache(for: show)
+
+            let operation = UpdateShowProgressOperation(shows: [show], mediaModels: mediaModels)
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                operation.completionBlock = {
+                    continuation.resume()
+                }
+                operationQueue.addOperation(operation)
+            }
+
+            status = .content
+            if !operation.isCancelled {
+                mediaModels = operation.mediaModels
+            }
+        }
+
+        debouncedTransmit.fireNow()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.main.async {
+                continuation.resume()
+            }
+        }
     }
 
     private func forceRefresh() {
@@ -1015,15 +1050,11 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
         for show in shows {
             progressDispatchGroup.enter()
             _Concurrency.Task {
-                if let showProgress = await show.mediaModel.progress() {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        if self.isCancelled { return }
-                        showProgressMap[show] = showProgress
-                        self.progressDispatchGroup.leave()
-                    }
-                } else {
-                    self.progressDispatchGroup.leave()
+                let showProgress = await show.mediaModel.progress()
+                DispatchQueue.main.async {
+                    defer { self.progressDispatchGroup.leave() }
+                    guard !self.isCancelled, let showProgress = showProgress else { return }
+                    self.showProgressMap[show] = showProgress
                 }
             }
         }
@@ -1207,11 +1238,10 @@ private class UpdateShowProgressOperation: Operation, @unchecked Sendable {
             let progressDispatchGroup = progressDispatchGroup
             _Concurrency.Task {
                 let showProgress = await show.mediaModel.progress()
-                DispatchQueue.main.async { [weak self] in
+                DispatchQueue.main.async {
                     defer { progressDispatchGroup.leave() }
-                    guard let self = self else { return }
                     guard !self.isCancelled, let showProgress = showProgress else { return }
-                    showProgressMap[show] = showProgress
+                    self.showProgressMap[show] = showProgress
                 }
             }
         }

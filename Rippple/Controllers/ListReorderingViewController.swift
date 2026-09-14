@@ -132,6 +132,7 @@ final class ListReorderingViewController: UITableViewController {
                                                             target: self,
                                                             action: #selector(doneTapped))
 
+        tableView.backgroundColor = .ripppleViewBackground
         tableView.separatorStyle = .none
         tableView.keyboardDismissMode = .onDrag
         tableView.allowsSelection = false

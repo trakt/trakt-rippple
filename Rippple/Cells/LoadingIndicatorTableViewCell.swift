@@ -9,7 +9,7 @@
 import NVActivityIndicatorView
 import UIKit
 
-final class LoadingIndicatorTableViewCell: UITableViewCell {
+final class LoadingIndicatorTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var activityIndicator: NVActivityIndicatorView!
 
     override func awakeFromNib() {

@@ -13,7 +13,7 @@ protocol MediaMoreTableViewCellDelegate: AnyObject {
     func cell(_ cell: MediaMoreTableViewCell, didSelect season: Season)
 }
 
-final class MediaMoreTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollectionViewDelegate {
+final class MediaMoreTableViewCell: TintedCanvasTableViewCell, UICollectionViewDataSource, UICollectionViewDelegate {
     private let disposeBag = DisposeBag()
 
     @IBOutlet var title: UILabel!
@@ -280,8 +280,7 @@ final class MediaMoreTableViewCell: UITableViewCell, UICollectionViewDataSource,
 
         do {
             let result: [Season] = try await withCheckedThrowingContinuation { continuation in
-                TraktAPIProvider.provider.request(.seasons(id: showId), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-                    guard let self = self else { return }
+                TraktAPIProvider.provider.request(.seasons(id: showId), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                     switch result {
                     case .success(let moyaResponse):
                         do {

@@ -9,7 +9,7 @@
 import Moya
 import UIKit
 
-final class MultipleWatchTableViewCell: UITableViewCell {
+final class MultipleWatchTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var mainLabel: UILabel!
     @IBOutlet var secondaryLabel: UILabel!
 

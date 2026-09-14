@@ -359,7 +359,7 @@ extension MarkWatchedActionViewController {
         } else if indexPath.row == 2 {
             // Unknown
             datePicker?.date = Date(timeIntervalSince1970: 0)
-            dateActionLabel?.text = "Unknonwn"
+            dateActionLabel?.text = "Unknown"
             date = datePicker?.date
         }
 

@@ -43,6 +43,7 @@ final class MediaViewController: UITableViewController {
     var media: MediaModel! {
         didSet {
             if isViewLoaded {
+                updateMediaUserActivity(with: media)
                 updateDatasource()
             }
         }
@@ -795,6 +796,7 @@ final class MediaViewController: UITableViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        updateMediaUserActivity(with: media)
 
         if let navigationController = navigationController, media.episode != nil {
             let index = navigationController.viewControllers.count - 2
@@ -806,6 +808,11 @@ final class MediaViewController: UITableViewController {
                 navigationController.setViewControllers(controllers, animated: false)
             }
         }
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        updateMediaUserActivity(with: nil)
     }
 
     private func loadFullMovie() {

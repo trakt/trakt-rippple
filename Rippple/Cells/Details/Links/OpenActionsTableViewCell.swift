@@ -14,7 +14,7 @@ protocol OpenInRowTableViewCellDelegate: AnyObject {
     func openInRowCellDidTapSettings(_ cell: OpenActionsTableViewCell)
 }
 
-final class OpenActionsTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+final class OpenActionsTableViewCell: TintedCanvasTableViewCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     weak var delegate: OpenInRowTableViewCellDelegate?
 
     @IBOutlet var titleLabel: UILabel!
@@ -102,7 +102,7 @@ final class OpenActionsTableViewCell: UITableViewCell, UICollectionViewDataSourc
         let entry = openInEntries[indexPath.item]
 
         return UIContextMenuConfiguration(identifier: nil,
-                                          previewProvider: nil) { _ in
+                                          previewProvider: nil) { [weak self] _ in
             let openAction = UIAction(title: "Open",
                                       image: UIImage(systemName: "safari")) { [weak self] _ in
                 guard let self = self else { return }
@@ -152,7 +152,7 @@ final class OpenInActionCollectionViewCell: UICollectionViewCell {
         v.layer.cornerCurve = .continuous
         v.layer.borderWidth = 1
         v.layer.borderColor = UIColor.quaternarySystemFill.cgColor
-        v.backgroundColor = .tertiarySystemBackground
+        v.backgroundColor = .ripppleTertiaryBackground
         return v
     }()
 

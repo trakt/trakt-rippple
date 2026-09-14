@@ -12,7 +12,7 @@ protocol LinkTableViewCellDelegate: AnyObject {
     func cell(_ cell: LinkTableViewCell, action: LinkTableViewCell.Action)
 }
 
-final class LinkTableViewCell: UITableViewCell {
+final class LinkTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var title: UILabel!
     @IBOutlet var linkImage: UIImageView!
 

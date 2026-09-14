@@ -10,7 +10,7 @@ import Moya
 import Receiver
 import UIKit
 
-final class StandardListTableViewCell: UITableViewCell {
+final class StandardListTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var title: UILabel!
 
     @IBOutlet var card: CardView!
