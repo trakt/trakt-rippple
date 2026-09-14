@@ -119,7 +119,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         case NSUserActivityTypeBrowsingWeb:
             incomingURL = userActivity.webpageURL
         case viewingMediaUserActivityType:
-            incomingURL = userActivity.targetContentIdentifier.flatMap(URL.init(string:))
+            incomingURL = (userActivity.userInfo?[viewingMediaUserActivityURLKey] as? String).flatMap(URL.init(string:))
+                ?? userActivity.targetContentIdentifier.flatMap(URL.init(string:))
         default:
             return
         }

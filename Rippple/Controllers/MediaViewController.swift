@@ -810,6 +810,11 @@ final class MediaViewController: UITableViewController {
         }
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        updateMediaUserActivity(with: nil)
+    }
+
     private func loadFullMovie() {
         guard let movie = media.movie else { fatalError("Media should be a Movie") }
         TraktAPIProvider.provider.request(TraktAPIService.movie(id: movie.identifiers.traktIdOrSlug, extended: .full),

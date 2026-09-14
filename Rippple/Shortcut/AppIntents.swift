@@ -14,6 +14,7 @@ import Receiver
 import UIKit
 
 let viewingMediaUserActivityType = "tv.trakt.rippple.viewing-media"
+let viewingMediaUserActivityURLKey = "mediaURL"
 
 // MARK: - Navigation Intents
 
@@ -976,17 +977,27 @@ extension MediaEntity: Transferable {
 
 extension UIViewController {
     func updateMediaUserActivity(with media: MediaModel?) {
+        guard isViewLoaded else { return }
+        view.userActivity?.invalidate()
+        view.userActivity = nil
+        view.appEntityIdentifier = nil
+
         guard let media = media,
+              view.window != nil,
               let entity = MediaEntity(mediaModel: media) else {
-            view.userActivity = nil
             return
         }
 
         let activity = NSUserActivity(activityType: viewingMediaUserActivityType)
         activity.title = entity.transferableText
         activity.targetContentIdentifier = entity.deeplinkURL.absoluteString
+        activity.addUserInfoEntries(from: [viewingMediaUserActivityURLKey: entity.deeplinkURL.absoluteString])
+        activity.requiredUserInfoKeys = [viewingMediaUserActivityURLKey]
+        activity.isEligibleForHandoff = true
         activity.appEntityIdentifier = EntityIdentifier(for: entity)
+        view.appEntityIdentifier = EntityIdentifier(for: entity)
         view.userActivity = activity
+        activity.becomeCurrent()
     }
 }
 

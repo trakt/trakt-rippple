@@ -443,6 +443,11 @@ final class CommentsViewController: UITableViewController {
         }
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        updateMediaUserActivity(with: nil)
+    }
+
     private func showNewCommentComposer(for media: MediaModel) {
         if UserManager.shared.currentUser == nil {
             onNeedsToShowLoginTransmitter.broadcast(true)
