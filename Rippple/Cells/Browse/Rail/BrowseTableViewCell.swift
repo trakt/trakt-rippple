@@ -910,24 +910,8 @@ extension BrowseTableViewCell: UICollectionViewDragDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        let poster: PosterImageView?
-        let previewCell: UICollectionViewCell?
-        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
-            poster = cell.poster
-            previewCell = cell
-        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
-            poster = cell.poster
-            previewCell = cell
-        } else {
-            poster = nil
-            previewCell = nil
-        }
-        guard let poster, let previewCell else { return nil }
-
-        let parameters = UIDragPreviewParameters()
-        parameters.backgroundColor = .clear
-        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.bounds, to: previewCell), cornerRadius: poster.layer.cornerRadius)
-        return parameters
+        guard let cell = collectionView.cellForItem(at: indexPath), let source = cell as? MediaDragSource else { return nil }
+        return UIDragItem.dragPreviewParameters(from: source.dragPreviewView, in: cell)
     }
 }
 

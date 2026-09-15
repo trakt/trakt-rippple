@@ -1747,6 +1747,8 @@ protocol MediaDragSource: AnyObject {
 
 extension UIDragItem {
     private static let mediaTypeIdentifier = "tv.trakt.rippple.dragged-media"
+    private static let dragPreviewMaximumDimension: CGFloat = 150
+    private static let dragPreviewCornerRadius = ViewRadius.large.rawValue
 
     static func mediaItems(from source: MediaDragSource?) -> [UIDragItem] {
         guard let source = source, let media = source.dragMedia else { return [] }
@@ -1777,18 +1779,29 @@ extension UIDragItem {
         }
     }
 
+    static func dragPreviewParameters(from view: UIView?, in container: UIView) -> UIDragPreviewParameters? {
+        guard let view = view, !view.bounds.isEmpty else { return nil }
+        let scale = max(view.bounds.width, view.bounds.height) / UIDragItem.dragPreviewMaximumDimension
+        let parameters = UIDragPreviewParameters()
+        parameters.backgroundColor = .clear
+        parameters.visiblePath = UIBezierPath(roundedRect: view.convert(view.bounds, to: container),
+                                              cornerRadius: UIDragItem.dragPreviewCornerRadius * scale)
+        return parameters
+    }
+
     func setDragPreview(from view: UIView?) {
-        #if targetEnvironment(macCatalyst)
-        guard let view = view, !view.bounds.isEmpty else { return }
-        let bounds = CGRect(origin: .zero, size: view.bounds.size)
-        let path = UIBezierPath(roundedRect: bounds, cornerRadius: view.layer.cornerRadius)
+        guard let view = view as? UIImageView, let sourceImage = view.image,
+              sourceImage.size.width > 0, sourceImage.size.height > 0 else { return }
+        let scale = UIDragItem.dragPreviewMaximumDimension / max(sourceImage.size.width, sourceImage.size.height)
+        let size = CGSize(width: sourceImage.size.width * scale, height: sourceImage.size.height * scale)
+        let bounds = CGRect(origin: .zero, size: size)
+        let path = UIBezierPath(roundedRect: bounds, cornerRadius: UIDragItem.dragPreviewCornerRadius)
         let format = UIGraphicsImageRendererFormat()
         format.opaque = false
         format.scale = view.traitCollection.displayScale
-        let image = UIGraphicsImageRenderer(size: bounds.size, format: format).image { context in
+        let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in
             path.addClip()
-            context.cgContext.translateBy(x: -view.bounds.minX, y: -view.bounds.minY)
-            view.layer.render(in: context.cgContext)
+            sourceImage.draw(in: bounds)
         }
         let parameters = UIDragPreviewParameters()
         parameters.backgroundColor = .clear
@@ -1796,6 +1809,7 @@ extension UIDragItem {
         previewProvider = {
             UIDragPreview(view: UIImageView(image: image), parameters: parameters)
         }
+        #if targetEnvironment(macCatalyst)
         if let data = image.pngData() {
             itemProvider.previewImageHandler = { completion, _, _ in
                 completion?(data as NSData, nil)

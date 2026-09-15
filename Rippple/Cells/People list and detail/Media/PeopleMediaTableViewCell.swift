@@ -172,12 +172,7 @@ extension PeopleMediaTableViewCell: UICollectionViewDragDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? MediaCollectionViewCell else { return nil }
-        let poster = cell.posterImageView!
-
-        let parameters = UIDragPreviewParameters()
-        parameters.backgroundColor = .clear
-        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.bounds, to: cell), cornerRadius: poster.layer.cornerRadius)
-        return parameters
+        guard let cell = collectionView.cellForItem(at: indexPath), let source = cell as? MediaDragSource else { return nil }
+        return UIDragItem.dragPreviewParameters(from: source.dragPreviewView, in: cell)
     }
 }

@@ -248,14 +248,14 @@ extension ListReorderingViewController: UITableViewDragDelegate, UITableViewDrop
         let itemProvider = NSItemProvider(object: NSString(string: String(watchlistItem.id)))
         let dragItem = UIDragItem(itemProvider: itemProvider)
         dragItem.localObject = watchlistItem
-        dragItem.previewProvider = { [weak tableView] in
-            guard let tableView,
-                  let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell else { return nil }
-            let parameters = UIDragPreviewParameters()
-            parameters.backgroundColor = .clear
-            return UIDragPreview(view: cell.contentView, parameters: parameters)
-        }
+        let source = tableView.cellForRow(at: indexPath) as? MediaDragSource
+        dragItem.setDragPreview(from: source?.dragPreviewView)
         return [dragItem]
+    }
+
+    func tableView(_ tableView: UITableView, dragPreviewParametersForRowAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+        guard let cell = tableView.cellForRow(at: indexPath), let source = cell as? MediaDragSource else { return nil }
+        return UIDragItem.dragPreviewParameters(from: source.dragPreviewView, in: cell)
     }
 
     func tableView(_ tableView: UITableView, canHandle session: UIDropSession) -> Bool {

@@ -841,11 +841,18 @@ extension ImageBrowserViewController: UICollectionViewDragDelegate {
         return dragItems(at: indexPath)
     }
 
+    func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+        guard let cell = collectionView.cellForItem(at: indexPath) else { return nil }
+        return UIDragItem.dragPreviewParameters(from: dragImageView(at: indexPath), in: cell)
+    }
+
+    private func dragImageView(at indexPath: IndexPath) -> UIImageView? {
+        let cell = collectionView.cellForItem(at: indexPath)
+        return (cell as? ImageBrowserCell)?.imageView ?? (cell as? LogoImageBrowserCell)?.imageView
+    }
+
     private func dragItems(at indexPath: IndexPath) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) else { return [] }
-        let imageView = (cell as? ImageBrowserCell)?.imageView
-            ?? (cell as? LogoImageBrowserCell)?.imageView
-        guard let image = imageView?.image else { return [] }
+        guard let imageView = dragImageView(at: indexPath), let image = imageView.image else { return [] }
 
         let item = UIDragItem(itemProvider: NSItemProvider(object: image))
         item.setDragPreview(from: imageView)

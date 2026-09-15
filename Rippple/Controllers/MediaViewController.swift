@@ -1235,13 +1235,8 @@ extension MediaViewController: UITableViewDragDelegate {
     }
 
     func tableView(_ tableView: UITableView, dragPreviewParametersForRowAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        guard let cell = tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell,
-              let poster = cell.posterImageView else { return nil }
-
-        let parameters = UIDragPreviewParameters()
-        parameters.backgroundColor = .clear
-        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.bounds, to: cell), cornerRadius: poster.layer.cornerRadius)
-        return parameters
+        guard let cell = tableView.cellForRow(at: indexPath), let source = cell as? MediaDragSource else { return nil }
+        return UIDragItem.dragPreviewParameters(from: source.dragPreviewView, in: cell)
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {

@@ -235,13 +235,8 @@ extension CustomTableView: UITableViewDragDelegate {
     }
 
     func tableView(_ tableView: UITableView, dragPreviewParametersForRowAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        guard let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell else { return nil }
-        let poster = cell.poster!
-
-        let parameters = UIDragPreviewParameters()
-        parameters.backgroundColor = .clear
-        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.bounds, to: cell), cornerRadius: poster.layer.cornerRadius)
-        return parameters
+        guard let cell = tableView.cellForRow(at: indexPath), let source = cell as? MediaDragSource else { return nil }
+        return UIDragItem.dragPreviewParameters(from: source.dragPreviewView, in: cell)
     }
 }
 
