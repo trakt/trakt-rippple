@@ -28,6 +28,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     static let mediaUserInfoKey = "media"
+    private static let sourceWindowHeightKey = "sourceWindowHeight"
+    private static let sourceWindowCenterXKey = "sourceWindowCenterX"
 
     private(set) var standaloneMedia: MediaModel?
 
@@ -42,7 +44,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         guard let windowScene = (scene as? UIWindowScene) else { return }
 
-        switch WindowMode(configurationName: session.configuration.name) {
+        let windowMode = WindowMode(configurationName: session.configuration.name)
+        switch windowMode {
         case .main:
             break
         case .profile:
@@ -69,7 +72,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let titlebar = windowScene.titlebar {
             titlebar.titleVisibility = .visible
         }
-        windowScene.sizeRestrictions?.minimumSize = CGSize(width: 480, height: 550)
+        windowScene.sizeRestrictions?.minimumSize = CGSize(width: 400, height: 500)
+        if let activityType = windowMode.activityType,
+           let activity = connectionOptions.userActivities.first(where: { $0.activityType == activityType }) {
+            let sourceHeight = activity.userInfo?[SceneDelegate.sourceWindowHeightKey] as? Double
+            let sourceCenterX = activity.userInfo?[SceneDelegate.sourceWindowCenterXKey] as? Double
+            DispatchQueue.main.async { [weak windowScene] in
+                guard let windowScene = windowScene else { return }
+                var frame = windowScene.effectiveGeometry.systemFrame
+                frame.size = CGSize(width: 420, height: sourceHeight.map { CGFloat($0) } ?? frame.height)
+                if let sourceCenterX = sourceCenterX {
+                    frame.origin.x = CGFloat(sourceCenterX) - frame.width / 2
+                }
+                windowScene.requestGeometryUpdate(.Mac(systemFrame: frame)) { error in
+                    print("Unable to set initial window size: \(error.localizedDescription)")
+                }
+            }
+        }
         #endif
 
         handleURLContexts(URLContexts: connectionOptions.urlContexts)
@@ -110,6 +129,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let activity = NSUserActivity(activityType: activityType)
         activity.title = title
         activity.userInfo = userInfo
+        #if targetEnvironment(macCatalyst)
+        if let frame = window?.windowScene?.effectiveGeometry.systemFrame,
+           frame.height.isFinite, frame.height > 0, frame.midX.isFinite {
+            activity.addUserInfoEntries(from: [SceneDelegate.sourceWindowHeightKey: Double(frame.height),
+                                               SceneDelegate.sourceWindowCenterXKey: Double(frame.midX)])
+        }
+        #endif
         let options = UIScene.ActivationRequestOptions()
         options.requestingScene = window?.windowScene
         UIApplication.shared.activateSceneSession(for: UISceneSessionActivationRequest(userActivity: activity, options: options)) { [weak window] error in
