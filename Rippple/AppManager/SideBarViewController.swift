@@ -217,24 +217,19 @@ class SidebarViewController: UIViewController {
         if indexPath.section == 3 {
             // if it's a list, we check the number of lists
             if indexPath.row <= lists.count {
-                collectionView(collectionView,
-                               didSelectItemAt: indexPath)
+                selectItem(at: indexPath, allowsReselection: false)
             } else {
-                collectionView(collectionView,
-                               didSelectItemAt: IndexPath(row: 3, section: 0))
+                selectItem(at: IndexPath(row: 3, section: 0), allowsReselection: false)
             }
         } else if indexPath.section == 4 {
             // if it's a liked list, we check the number of likedLists
             if indexPath.row <= likedLists.count {
-                collectionView(collectionView,
-                               didSelectItemAt: indexPath)
+                selectItem(at: indexPath, allowsReselection: false)
             } else {
-                collectionView(collectionView,
-                               didSelectItemAt: IndexPath(row: 3, section: 0))
+                selectItem(at: IndexPath(row: 3, section: 0), allowsReselection: false)
             }
         } else {
-            collectionView(collectionView,
-                           didSelectItemAt: IndexPath(row: row, section: section))
+            selectItem(at: IndexPath(row: row, section: section), allowsReselection: false)
         }
     }
 
@@ -498,6 +493,10 @@ extension SidebarViewController: UICollectionViewDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        selectItem(at: indexPath, allowsReselection: true)
+    }
+
+    private func selectItem(at indexPath: IndexPath, allowsReselection: Bool) {
         defer {
             UserDefaults.standard.synchronize()
         }
@@ -509,7 +508,9 @@ extension SidebarViewController: UICollectionViewDelegate {
             guard secondaryViewControllers.indices.contains(indexPath.row) else { return }
             if let navigationController = splitViewController?.viewController(for: column) as? UINavigationController,
                navigationController == secondaryViewControllers[indexPath.row] {
-                handleReselection(of: navigationController, secondaryViewControllerIndex: indexPath.row)
+                if allowsReselection {
+                    handleReselection(of: navigationController, secondaryViewControllerIndex: indexPath.row)
+                }
             } else {
                 setSupplementaryView(index: indexPath.row)
             }
@@ -518,7 +519,9 @@ extension SidebarViewController: UICollectionViewDelegate {
             guard secondaryViewControllers.indices.contains(secondaryViewControllerIndex) else { return }
             if let navigationController = splitViewController?.viewController(for: column) as? UINavigationController,
                navigationController == secondaryViewControllers[secondaryViewControllerIndex] {
-                handleReselection(of: navigationController, secondaryViewControllerIndex: secondaryViewControllerIndex)
+                if allowsReselection {
+                    handleReselection(of: navigationController, secondaryViewControllerIndex: secondaryViewControllerIndex)
+                }
             } else {
                 setSupplementaryView(index: secondaryViewControllerIndex)
             }
