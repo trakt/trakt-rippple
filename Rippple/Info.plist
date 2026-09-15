@@ -82,6 +82,14 @@
 					<key>UISceneStoryboardFile</key>
 					<string>Initial</string>
 				</dict>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Profile Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Initial</string>
+				</dict>
 			</array>
 		</dict>
 	</dict>

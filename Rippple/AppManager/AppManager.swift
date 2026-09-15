@@ -418,6 +418,15 @@ public extension UIApplication {
     func switchToMainApp() {
         AppManager.shared.setup()
         for window in AppManager.shared.windows where !(window.rootViewController is UISplitViewController) {
+            if window.windowScene?.session.configuration.name == SceneDelegate.profileConfigurationName {
+                if (window.rootViewController as? UINavigationController)?.viewControllers.first is ProfileViewController {
+                    continue
+                }
+                let profileViewController = UIStoryboard(name: "Profile", bundle: nil).instantiateViewController(identifier: "ProfileViewController")
+                let navigationController = StyledNavigationController(rootViewController: profileViewController)
+                window.setRootViewController(navigationController, options: TransitionOptions(direction: .fade, style: .easeInOut))
+                continue
+            }
             showMainApp(in: window)
         }
 

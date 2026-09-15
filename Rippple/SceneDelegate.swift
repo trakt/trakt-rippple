@@ -9,6 +9,9 @@
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+    static let profileActivityType = "tv.trakt.rippple.profile-window"
+    static let profileConfigurationName = "Profile Configuration"
+
     private var inactiveTimestamp = Date()
 
     var window: UIWindow?
@@ -19,6 +22,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
 
         guard let windowScene = (scene as? UIWindowScene) else { return }
+
+        if session.configuration.name == SceneDelegate.profileConfigurationName {
+            scene.title = "Your Profile"
+        }
 
         #if targetEnvironment(macCatalyst)
         if let titlebar = windowScene.titlebar {

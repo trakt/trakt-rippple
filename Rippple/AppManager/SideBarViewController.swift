@@ -273,6 +273,24 @@ class SidebarViewController: UIViewController {
             UISelectionFeedbackGenerator().selectionChanged()
         })
         profileButton.addAction(profileAction, for: .touchUpInside)
+        if UIApplication.shared.supportsMultipleScenes {
+            profileButton.menu = UIMenu(children: [UIAction(title: "Open in New Window", image: UIImage(systemName: "macwindow.badge.plus")) { [weak self] _ in
+                guard let self = self else { return }
+                guard SessionManager.shared.isLoggedIn else { return }
+                let activity = NSUserActivity(activityType: SceneDelegate.profileActivityType)
+                activity.title = "Your Profile"
+                let options = UIScene.ActivationRequestOptions()
+                options.requestingScene = self.view.window?.windowScene
+                UIApplication.shared.activateSceneSession(for: UISceneSessionActivationRequest(userActivity: activity, options: options)) { [weak self] error in
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        let alert = UIAlertController(title: "Unable to Open Window", message: error.localizedDescription, preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "OK", style: .default))
+                        self.present(alert, animated: true)
+                    }
+                }
+            }])
+        }
         profileButton.setImage(UIImage(imageLiteralResourceName: "bg_placeholder_avatar_small"), for: .normal)
         let profileBarButtonItem = UIBarButtonItem(customView: profileButton)
         #if targetEnvironment(macCatalyst)

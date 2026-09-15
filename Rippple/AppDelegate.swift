@@ -135,6 +135,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.removePushInformation(endpointARN: endpointARN)
     }
 
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        let isProfileWindow = options.userActivities.contains { $0.activityType == SceneDelegate.profileActivityType }
+        let configurationName = isProfileWindow ? SceneDelegate.profileConfigurationName : "Default Configuration"
+        return UISceneConfiguration(name: configurationName, sessionRole: connectingSceneSession.role)
+    }
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
 
