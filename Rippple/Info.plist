@@ -109,5 +109,18 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>tv.trakt.rippple.dragged-media</string>
+			<key>UTTypeDescription</key>
+			<string>Rippple Media</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

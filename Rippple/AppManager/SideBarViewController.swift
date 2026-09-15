@@ -701,10 +701,7 @@ extension SidebarViewController: UICollectionViewDropDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {
-        for item in session.items where item.itemProvider.canLoadObject(ofClass: NSURL.self) {
-            return true
-        }
-        return false
+        return !session.items.isEmpty && session.items.allSatisfy { $0.hasMedia }
     }
 
     func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
@@ -712,26 +709,12 @@ extension SidebarViewController: UICollectionViewDropDelegate {
             visibleCell.isSelected = false
         }
         guard let destinationIndexPath = destinationIndexPath else { return UICollectionViewDropProposal(operation: .cancel) }
-        if destinationIndexPath.row == 0 {
-            return UICollectionViewDropProposal(operation: .cancel)
-        }
-        if destinationIndexPath.section == 0 {
-            return UICollectionViewDropProposal(operation: .cancel)
-        }
-        if destinationIndexPath.section == 1 {
-            return UICollectionViewDropProposal(operation: .cancel)
-        }
-
-        // Watched (can't drop)
-        if destinationIndexPath.section == 2 && destinationIndexPath.row == 4 {
-            return UICollectionViewDropProposal(operation: .cancel)
-        }
-        // Collaborations (can't drop)
-        if destinationIndexPath.section == 2 && destinationIndexPath.row == 5 {
-            return UICollectionViewDropProposal(operation: .cancel)
-        }
-        // Liked Lists section header row (can't drop)
-        if destinationIndexPath.section == 4 && destinationIndexPath.row == 0 {
+        switch destinationIndexPath.section {
+        case 2:
+            guard (1...3).contains(destinationIndexPath.row) else { return UICollectionViewDropProposal(operation: .cancel) }
+        case 3:
+            guard lists.indices.contains(destinationIndexPath.row - 1) else { return UICollectionViewDropProposal(operation: .cancel) }
+        default:
             return UICollectionViewDropProposal(operation: .cancel)
         }
 
@@ -746,20 +729,34 @@ extension SidebarViewController: UICollectionViewDropDelegate {
 
         guard let destinationIndexPath = coordinator.destinationIndexPath else { return }
 
-        if destinationIndexPath.section == 2 {
-            if destinationIndexPath.row == 1 {
-                addToWatchlist(models: coordinator.items.compactMap { $0.dragItem.localObject as? MediaModel })
-            } else if destinationIndexPath.row == 2 {
-                addToRecommendations(models: coordinator.items.compactMap { $0.dragItem.localObject as? MediaModel })
-            } else {
-                addToCollection(models: coordinator.items.compactMap { $0.dragItem.localObject as? MediaModel })
-            }
-        }
+        let list: List?
         if destinationIndexPath.section == 3 {
-            add(models: coordinator.items.compactMap { $0.dragItem.localObject as? MediaModel }, to: lists[destinationIndexPath.row - 1])
+            guard lists.indices.contains(destinationIndexPath.row - 1) else { return }
+            list = lists[destinationIndexPath.row - 1]
+        } else {
+            guard destinationIndexPath.section == 2, (1...3).contains(destinationIndexPath.row) else { return }
+            list = nil
         }
-        if destinationIndexPath.section == 4 {
-            // Do nothing, can't add to liked lists
+        let items = coordinator.items.map { $0.dragItem }
+
+        UIDragItem.loadMedia(from: items) { [weak self] result in
+            guard let self = self else { return }
+            do {
+                let models = try result.get()
+                guard !models.isEmpty, SessionManager.shared.isLoggedIn else { return }
+                if let list = list {
+                    self.add(models: models, to: list)
+                } else {
+                    switch destinationIndexPath.row {
+                    case 1: self.addToWatchlist(models: models)
+                    case 2: self.addToRecommendations(models: models)
+                    case 3: self.addToCollection(models: models)
+                    default: break
+                    }
+                }
+            } catch {
+                SwiftMessages.show(message: "Could not load dropped media", style: .error(error))
+            }
         }
     }
 

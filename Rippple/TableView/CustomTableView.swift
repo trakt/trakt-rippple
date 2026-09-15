@@ -227,25 +227,11 @@ class CustomTableView: TintedTableView {
 
 extension CustomTableView: UITableViewDragDelegate {
     func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        guard let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell else { return [] }
-        guard let media = cell.media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: tableView.cellForRow(at: indexPath) as? MediaDragSource)
     }
 
     func tableView(_ tableView: UITableView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-        guard let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell else { return [] }
-        guard let media = cell.media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: tableView.cellForRow(at: indexPath) as? MediaDragSource)
     }
 
     func tableView(_ tableView: UITableView, dragPreviewParametersForRowAt indexPath: IndexPath) -> UIDragPreviewParameters? {

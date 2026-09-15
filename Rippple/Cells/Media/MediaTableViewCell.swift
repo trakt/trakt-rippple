@@ -794,3 +794,13 @@ final class MediaTableViewCell: TintedCanvasTableViewCell {
         delegate.cell(self, action: .close)
     }
 }
+
+extension MediaTableViewCell: MediaDragSource {
+    var dragMedia: MediaModel? {
+        return media
+    }
+
+    var dragPreviewView: UIView? {
+        return poster
+    }
+}

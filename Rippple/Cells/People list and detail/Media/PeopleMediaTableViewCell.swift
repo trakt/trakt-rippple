@@ -164,77 +164,11 @@ extension PeopleMediaTableViewCell: UICollectionViewDataSource {
 
 extension PeopleMediaTableViewCell: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? MediaCollectionViewCell else { return [] }
-        var media: MediaModel?
-
-        if let cast = cell.cast {
-            if let show = cast.show {
-                media = show.mediaModel
-            }
-            if let movie = cast.movie {
-                media = movie.mediaModel
-            }
-        }
-        if let crew = cell.crew {
-            if let show = crew.show {
-                media = show.mediaModel
-            }
-            if let movie = crew.movie {
-                media = movie.mediaModel
-            }
-        }
-        if let knownFor = cell.mediaItem {
-            if let show = knownFor.show {
-                media = show.mediaModel
-            }
-            if let movie = knownFor.movie {
-                media = movie.mediaModel
-            }
-        }
-        guard let media = media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? MediaCollectionViewCell else { return [] }
-        var media: MediaModel?
-
-        if let cast = cell.cast {
-            if let show = cast.show {
-                media = show.mediaModel
-            }
-            if let movie = cast.movie {
-                media = movie.mediaModel
-            }
-        }
-        if let crew = cell.crew {
-            if let show = crew.show {
-                media = show.mediaModel
-            }
-            if let movie = crew.movie {
-                media = movie.mediaModel
-            }
-        }
-        if let knownFor = cell.mediaItem {
-            if let show = knownFor.show {
-                media = show.mediaModel
-            }
-            if let movie = knownFor.movie {
-                media = movie.mediaModel
-            }
-        }
-        guard let media = media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {

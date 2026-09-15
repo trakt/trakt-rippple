@@ -148,3 +148,15 @@ final class MediaCollectionViewCell: UICollectionViewCell {
         additionalInfoLabel.isHidden = false
     }
 }
+
+extension MediaCollectionViewCell: MediaDragSource {
+    var dragMedia: MediaModel? {
+        return mediaItem?.movie?.mediaModel ?? mediaItem?.show?.mediaModel
+            ?? crew?.movie?.mediaModel ?? crew?.show?.mediaModel
+            ?? cast?.movie?.mediaModel ?? cast?.show?.mediaModel
+    }
+
+    var dragPreviewView: UIView? {
+        return posterImageView
+    }
+}

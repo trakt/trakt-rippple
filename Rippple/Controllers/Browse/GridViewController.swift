@@ -570,25 +570,11 @@ final class GridViewController: UICollectionViewController {
 
 extension GridViewController: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell else { return [] }
-        guard let media = cell.media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell else { return [] }
-        guard let media = cell.media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {

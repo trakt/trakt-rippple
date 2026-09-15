@@ -902,39 +902,11 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
 
 extension BrowseTableViewCell: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        let media: MediaModel?
-        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
-            media = cell.media
-        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
-            media = cell.media
-        } else {
-            media = nil
-        }
-        guard let media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-        let media: MediaModel?
-        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
-            media = cell.media
-        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
-            media = cell.media
-        } else {
-            media = nil
-        }
-        guard let media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {

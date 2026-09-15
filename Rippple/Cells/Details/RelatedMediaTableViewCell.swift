@@ -399,18 +399,13 @@ extension RelatedMediaTableViewCell: UICollectionViewDragDelegate {
 
         let parameters = UIDragPreviewParameters()
         parameters.backgroundColor = .clear
-        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.bounds, to: cell),
+        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.frame, to: cell),
                                               cornerRadius: poster.layer.cornerRadius)
         return parameters
     }
 
     private func dragItems(at indexPath: IndexPath) -> [UIDragItem] {
         guard relatedMedia.indices.contains(indexPath.item) else { return [] }
-        let media = relatedMedia[indexPath.item]
-        guard let url = media.traktWebsiteMediaLink else { return [] }
-
-        let dragItem = UIDragItem(itemProvider: NSItemProvider(object: url as NSURL))
-        dragItem.localObject = media
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 }

@@ -401,45 +401,11 @@ extension ListTableViewCell: UICollectionViewDelegate {
 
 extension ListTableViewCell: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? ListMediaCollectionViewCell else { return [] }
-        guard let item = cell.item else { return [] }
-
-        var media: MediaModel?
-
-        if let movie = item.movie {
-            media = movie.mediaModel
-        } else if let show = item.show {
-            media = show.mediaModel
-        }
-
-        guard let media = media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? ListMediaCollectionViewCell else { return [] }
-        guard let item = cell.item else { return [] }
-
-        var media: MediaModel?
-
-        if let movie = item.movie {
-            media = movie.mediaModel
-        } else if let show = item.show {
-            media = show.mediaModel
-        }
-
-        guard let media = media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
