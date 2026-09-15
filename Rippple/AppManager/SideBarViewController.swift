@@ -705,9 +705,6 @@ extension SidebarViewController: UICollectionViewDropDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
-        for visibleCell in collectionView.visibleCells {
-            visibleCell.isSelected = false
-        }
         guard let destinationIndexPath = destinationIndexPath else { return UICollectionViewDropProposal(operation: .cancel) }
         switch destinationIndexPath.section {
         case 2:
@@ -718,15 +715,10 @@ extension SidebarViewController: UICollectionViewDropDelegate {
             return UICollectionViewDropProposal(operation: .cancel)
         }
 
-        collectionView.cellForItem(at: destinationIndexPath)?.isSelected = true
-        return UICollectionViewDropProposal(operation: .copy)
+        return UICollectionViewDropProposal(operation: .copy, intent: .insertIntoDestinationIndexPath)
     }
 
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
-        for visibleCell in collectionView.visibleCells {
-            visibleCell.isSelected = false
-        }
-
         guard let destinationIndexPath = coordinator.destinationIndexPath else { return }
 
         let list: List?
