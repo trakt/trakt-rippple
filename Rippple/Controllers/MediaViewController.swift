@@ -1223,84 +1223,25 @@ extension MediaViewController {
 
 extension MediaViewController: UITableViewDragDelegate {
     func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell {
-            guard let image = cell.posterImageView.image else { return [] }
-            guard let media = cell.media else { return [] }
-
-            let provider = NSItemProvider(object: image)
-            let item = UIDragItem(itemProvider: provider)
-            item.localObject = media
-
-            return [item]
-        }
-
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaTitleTableViewCell {
-            guard let media = cell.media else { return [] }
-
-            let textProvider = NSItemProvider(object: media.mediaTitle as NSString)
-            let textItem = UIDragItem(itemProvider: textProvider)
-            textItem.localObject = media
-
-            if let traktURL = media.traktWebsiteMediaLink {
-                let linkProvider = NSItemProvider(object: traktURL as NSURL)
-                let linkItem = UIDragItem(itemProvider: linkProvider)
-                linkItem.localObject = media
-                return [textItem, linkItem]
-            }
-
-            return [textItem]
-        }
-
-        return []
+        return dragItems(at: indexPath)
     }
 
     func tableView(_ tableView: UITableView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell {
-            guard let image = cell.posterImageView.image else { return [] }
+        return dragItems(at: indexPath)
+    }
 
-            let provider = NSItemProvider(object: image)
-            let item = UIDragItem(itemProvider: provider)
-            item.localObject = image
-
-            return [item]
-        }
-
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaTitleTableViewCell {
-            guard let media = cell.media else { return [] }
-
-            let textProvider = NSItemProvider(object: media.mediaTitle as NSString)
-            let textItem = UIDragItem(itemProvider: textProvider)
-            textItem.localObject = media
-
-            if let traktURL = media.traktWebsiteMediaLink {
-                let linkProvider = NSItemProvider(object: traktURL as NSURL)
-                let linkItem = UIDragItem(itemProvider: linkProvider)
-                linkItem.localObject = media
-                return [textItem, linkItem]
-            }
-
-            return [textItem]
-        }
-
-        return []
+    private func dragItems(at indexPath: IndexPath) -> [UIDragItem] {
+        return UIDragItem.mediaItems(from: tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell)
     }
 
     func tableView(_ tableView: UITableView, dragPreviewParametersForRowAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell {
-            let parameters = UIDragPreviewParameters()
-            parameters.backgroundColor = .clear
-            parameters.visiblePath = UIBezierPath(roundedRect: cell.cardView.frame, cornerRadius: cell.cardView.layer.cornerRadius)
-            return parameters
-        }
+        guard let cell = tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell,
+              let poster = cell.posterImageView else { return nil }
 
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaTitleTableViewCell {
-            let parameters = UIDragPreviewParameters()
-            parameters.backgroundColor = .clear
-            parameters.visiblePath = UIBezierPath(roundedRect: cell.cardView.frame, cornerRadius: cell.cardView.layer.cornerRadius)
-            return parameters
-        }
-
-        return nil
+        let parameters = UIDragPreviewParameters()
+        parameters.backgroundColor = .clear
+        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.bounds, to: cell), cornerRadius: poster.layer.cornerRadius)
+        return parameters
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {

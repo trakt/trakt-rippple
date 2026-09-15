@@ -87,3 +87,13 @@ final class MediaPosterTableViewCell: TintedCanvasTableViewCell {
         }
     }
 }
+
+extension MediaPosterTableViewCell: MediaDragSource {
+    var dragMedia: MediaModel? {
+        return media
+    }
+
+    var dragPreviewView: UIView? {
+        return posterImageView
+    }
+}

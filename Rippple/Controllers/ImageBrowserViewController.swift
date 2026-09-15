@@ -58,6 +58,7 @@ final class ImageBrowserViewController: UIViewController {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.backgroundColor = .ripppleViewBackground
         collectionView.delegate = self
+        collectionView.dragDelegate = self
         collectionView.register(ImageBrowserCell.self, forCellWithReuseIdentifier: ImageBrowserCell.reuseIdentifier)
         collectionView.register(LogoImageBrowserCell.self, forCellWithReuseIdentifier: LogoImageBrowserCell.reuseIdentifier)
         collectionView.register(EmptyCollectionViewCell.self, forCellWithReuseIdentifier: EmptyCollectionViewCell.reuseIdentifier)
@@ -128,6 +129,11 @@ final class ImageBrowserViewController: UIViewController {
         setupCloseButton()
         setupUI()
         loadImages()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        collectionView.dragInteractionEnabled = UserDefaults.standard.bool(forKey: "GeneralSettings.dragging")
     }
 
     // MARK: - Setup
@@ -822,6 +828,29 @@ extension ImageBrowserViewController: UICollectionViewDelegate {
          return UITargetedPreview(view: previewView, parameters: UIPreviewParameters())
      }
       */
+}
+
+// MARK: - UICollectionViewDragDelegate
+
+extension ImageBrowserViewController: UICollectionViewDragDelegate {
+    func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        return dragItems(at: indexPath)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
+        return dragItems(at: indexPath)
+    }
+
+    private func dragItems(at indexPath: IndexPath) -> [UIDragItem] {
+        guard let cell = collectionView.cellForItem(at: indexPath) else { return [] }
+        let imageView = (cell as? ImageBrowserCell)?.imageView
+            ?? (cell as? LogoImageBrowserCell)?.imageView
+        guard let image = imageView?.image else { return [] }
+
+        let item = UIDragItem(itemProvider: NSItemProvider(object: image))
+        item.setDragPreview(from: imageView)
+        return [item]
+    }
 }
 
 // MARK: - Zoom Transition
