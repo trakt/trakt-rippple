@@ -272,7 +272,7 @@ final class CastTableViewCell: TintedCanvasTableViewCell {
         if isLoading {
             snapshot.appendSections([.placeholder])
             snapshot.appendItems([.placeholder(0), .placeholder(1), .placeholder(2), .placeholder(3)], toSection: .placeholder)
-            dataSource.apply(snapshot, animatingDifferences: true)
+            dataSource.apply(snapshot, animatingDifferences: false)
             return
         }
 
@@ -280,7 +280,7 @@ final class CastTableViewCell: TintedCanvasTableViewCell {
         if error != nil {
             snapshot.appendSections([.placeholder])
             snapshot.appendItems([.placeholder(0), .placeholder(1), .placeholder(2), .placeholder(3)], toSection: .placeholder)
-            dataSource.apply(snapshot, animatingDifferences: true)
+            dataSource.apply(snapshot, animatingDifferences: false)
             return
         }
 
@@ -293,7 +293,7 @@ final class CastTableViewCell: TintedCanvasTableViewCell {
         if !hasCast, !hasCrew {
             snapshot.appendSections([.placeholder])
             snapshot.appendItems([.placeholder(0), .placeholder(1), .placeholder(2), .placeholder(3)], toSection: .placeholder)
-            dataSource.apply(snapshot, animatingDifferences: true)
+            dataSource.apply(snapshot, animatingDifferences: false)
             return
         }
 
@@ -310,7 +310,7 @@ final class CastTableViewCell: TintedCanvasTableViewCell {
             snapshot.appendItems(items, toSection: .crew)
         }
 
-        dataSource.apply(snapshot, animatingDifferences: true)
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 
     @IBAction func showAll(_ sender: Any) {
