@@ -116,6 +116,7 @@ final class GridViewController: UICollectionViewController {
 
         collectionView.allowsFocus = false
         collectionView.dragDelegate = self
+        collectionView.dropDelegate = self
 
         collectionView?.dragInteractionEnabled = UserDefaults.standard.bool(forKey: "GeneralSettings.dragging")
 
@@ -566,6 +567,14 @@ final class GridViewController: UICollectionViewController {
             }
         }
     }
+}
+
+extension GridViewController: UICollectionViewDropDelegate {
+    func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {
+        return false
+    }
+
+    func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {}
 }
 
 extension GridViewController: UICollectionViewDragDelegate {
