@@ -414,7 +414,7 @@ extension ListTableViewCell: UICollectionViewDragDelegate {
 
         let parameters = UIDragPreviewParameters()
         parameters.backgroundColor = .clear
-        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.frame, to: cell), cornerRadius: poster.layer.cornerRadius)
+        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.bounds, to: cell), cornerRadius: poster.layer.cornerRadius)
         return parameters
     }
 }

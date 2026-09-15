@@ -1766,6 +1766,7 @@ extension UIDragItem {
         default: transferableMedia = media
         }
         localObject = media
+        setDragPreview(from: previewView)
         itemProvider.registerDataRepresentation(forTypeIdentifier: UIDragItem.mediaTypeIdentifier, visibility: .all) { completion in
             do {
                 try completion(JSONEncoder().encode(transferableMedia), nil)
@@ -1774,6 +1775,33 @@ extension UIDragItem {
             }
             return nil
         }
+    }
+
+    func setDragPreview(from view: UIView?) {
+        #if targetEnvironment(macCatalyst)
+        guard let view = view, !view.bounds.isEmpty else { return }
+        let bounds = CGRect(origin: .zero, size: view.bounds.size)
+        let path = UIBezierPath(roundedRect: bounds, cornerRadius: view.layer.cornerRadius)
+        let format = UIGraphicsImageRendererFormat()
+        format.opaque = false
+        format.scale = view.traitCollection.displayScale
+        let image = UIGraphicsImageRenderer(size: bounds.size, format: format).image { context in
+            path.addClip()
+            context.cgContext.translateBy(x: -view.bounds.minX, y: -view.bounds.minY)
+            view.layer.render(in: context.cgContext)
+        }
+        let parameters = UIDragPreviewParameters()
+        parameters.backgroundColor = .clear
+        parameters.visiblePath = path
+        previewProvider = {
+            UIDragPreview(view: UIImageView(image: image), parameters: parameters)
+        }
+        if let data = image.pngData() {
+            itemProvider.previewImageHandler = { completion, _, _ in
+                completion?(data as NSData, nil)
+            }
+        }
+        #endif
     }
 
     var hasMedia: Bool {
