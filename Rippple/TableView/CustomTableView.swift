@@ -244,3 +244,45 @@ extension CustomTableView: UITableViewDragDelegate {
         return parameters
     }
 }
+
+// MARK: - Media drops
+
+final class MediaTableViewDropDelegate: NSObject, UITableViewDropDelegate {
+    private let canDrop: () -> Bool
+    private let onDrop: ([MediaModel]) -> Void
+
+    init(canDrop: @escaping () -> Bool, onDrop: @escaping ([MediaModel]) -> Void) {
+        self.canDrop = canDrop
+        self.onDrop = onDrop
+        super.init()
+    }
+
+    func tableView(_ tableView: UITableView, canHandle session: UIDropSession) -> Bool {
+        guard !tableView.hasActiveDrag else { return false }
+        return SessionManager.shared.isLoggedIn && canDrop()
+            && !session.items.isEmpty && session.items.allSatisfy { $0.hasMedia }
+    }
+
+    func tableView(_ tableView: UITableView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UITableViewDropProposal {
+        return UITableViewDropProposal(operation: self.tableView(tableView, canHandle: session) ? .copy : .cancel)
+    }
+
+    func tableView(_ tableView: UITableView, performDropWith coordinator: UITableViewDropCoordinator) {
+        guard self.tableView(tableView, canHandle: coordinator.session),
+              coordinator.items.allSatisfy({ $0.sourceIndexPath == nil }) else { return }
+        let userSlug = UserManager.shared.currentUser?.slug
+        UIDragItem.loadMedia(from: coordinator.items.map { $0.dragItem }) { [weak self] result in
+            guard let self = self else { return }
+            guard SessionManager.shared.isLoggedIn,
+                  UserManager.shared.currentUser?.slug == userSlug,
+                  self.canDrop() else { return }
+            switch result {
+            case .success(let models):
+                guard !models.isEmpty else { return }
+                self.onDrop(models)
+            case .failure(let error):
+                SwiftMessages.show(message: "Could not load dropped media", style: .error(error))
+            }
+        }
+    }
+}

@@ -539,7 +539,7 @@ final class ListViewController: UITableViewController {
         tableView.register(UINib(nibName: "ListStatsTableViewCell", bundle: nil), forCellReuseIdentifier: "stats")
         tableView.dragInteractionEnabled = UserDefaults.standard.bool(forKey: "GeneralSettings.dragging")
         tableView.dragDelegate = tableView as? CustomTableView
-        tableView.dropDelegate = nil
+        tableView.dropDelegate = mediaDropDelegate
 
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.header])
@@ -997,6 +997,14 @@ final class ListViewController: UITableViewController {
         guard currentSorting == .lastWatched, watchlistItems != nil else { return }
         updateDatasource()
     }
+
+    private lazy var mediaDropDelegate = MediaTableViewDropDelegate(canDrop: { [weak self] in
+        guard let self = self else { return false }
+        return self.isListEditable && self.list.identifiers.trakt != nil
+    }, onDrop: { [weak self] models in
+        guard let self = self else { return }
+        models.forEach { $0.add(to: self.list) }
+    })
 
     private var isListEditable: Bool {
         list.user.isCurrentUser || CollaborationsManager.shared.collaborations.contains(list)
