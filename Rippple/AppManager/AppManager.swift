@@ -27,14 +27,11 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
     static let shared = AppManager()
     func setup() {
         // Means setup has already been done!
-        if mainWindow != nil { return }
+        if isSetUp { return }
 
         // This should only happen if something starts the AppManager too soon
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let sceneDelegate = windowScene.delegate as? SceneDelegate,
-              let window = sceneDelegate.window else { return }
-
-        mainWindow = window
+        guard mainWindow != nil else { return }
+        isSetUp = true
 
         currentUserInterfaceStyle = UIUserInterfaceStyle(rawValue: UserDefaults.standard.integer(forKey: "AppManager.currentUserInterfaceStyle"))
         if let currentUserInterfaceStyle = currentUserInterfaceStyle {
@@ -108,7 +105,17 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
     }
     #endif
 
-    fileprivate var mainWindow: UIWindow?
+    private var isSetUp = false
+
+    fileprivate var windows: [UIWindow] {
+        return UIApplication.shared.connectedScenes.compactMap { ($0.delegate as? SceneDelegate)?.window }
+    }
+
+    fileprivate var mainWindow: UIWindow? {
+        return windows.first { $0.isKeyWindow && $0.windowScene?.activationState == .foregroundActive }
+            ?? windows.first { $0.windowScene?.activationState == .foregroundActive }
+            ?? windows.first
+    }
 
     fileprivate var confettiWindow: UIWindow? {
         return UIApplication.shared.connectedScenes
@@ -409,11 +416,17 @@ public extension UIApplication {
     }
 
     func switchToMainApp() {
-        if AppManager.shared.mainAppIsDisplayed == true {
-            // we already are on the Main app
-            return
+        AppManager.shared.setup()
+        for window in AppManager.shared.windows where !(window.rootViewController is UISplitViewController) {
+            showMainApp(in: window)
         }
 
+        if DeeplinkManager.shared.shouldOpenDeeplink() {
+            switchToDeeplink()
+        }
+    }
+
+    private func showMainApp(in window: UIWindow) {
         let compactViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController()!
 
         let splitViewController = SplitViewController(style: .doubleColumn)
@@ -435,32 +448,33 @@ public extension UIApplication {
         splitViewController.setViewController(compactViewController, for: .compact)
 
         let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
-        AppManager.shared.setup()
-        AppManager.shared.mainWindow?.setRootViewController(splitViewController, options: transitionOptions)
-
-        if DeeplinkManager.shared.shouldOpenDeeplink() {
-            switchToDeeplink()
-        }
+        window.setRootViewController(splitViewController, options: transitionOptions)
     }
 
     func switchToLogin() {
         SessionManager.shared.logout()
         UserManager.shared.logout()
 
-        let login = UIStoryboard(name: "Login", bundle: nil).instantiateInitialViewController()!
-        let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
+        showLoginInAllWindows()
+    }
+
+    @discardableResult
+    private func showLoginInAllWindows() -> UIViewController? {
         AppManager.shared.setup()
-        AppManager.shared.mainWindow?.setRootViewController(login, options: transitionOptions)
+        let mainWindow = AppManager.shared.mainWindow
+        for window in AppManager.shared.windows {
+            let login = UIStoryboard(name: "Login", bundle: nil).instantiateInitialViewController()!
+            let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
+            window.setRootViewController(login, options: transitionOptions)
+        }
+        return mainWindow?.rootViewController
     }
 
     func switchToLogin401() {
         SessionManager.shared.logout()
         UserManager.shared.logout()
 
-        let login = UIStoryboard(name: "Login", bundle: nil).instantiateInitialViewController()!
-        let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
-        AppManager.shared.setup()
-        AppManager.shared.mainWindow?.setRootViewController(login, options: transitionOptions)
+        guard let login = showLoginInAllWindows() else { return }
 
         let alertController = UIAlertController(title: "Logged Out",
                                                 message: "You have been automatically logged out of Trakt. You must sign in to Trakt again.\nRebooting your device may help if the problem persists.",
@@ -476,10 +490,7 @@ public extension UIApplication {
         SessionManager.shared.logout()
         UserManager.shared.logout()
 
-        let login = UIStoryboard(name: "Login", bundle: nil).instantiateInitialViewController()!
-        let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
-        AppManager.shared.setup()
-        AppManager.shared.mainWindow?.setRootViewController(login, options: transitionOptions)
+        guard let login = showLoginInAllWindows() else { return }
 
         let alertController = UIAlertController(title: "Locked User Account",
                                                 message: "Please contact Trakt support (forums.trakt.tv) so they can unlock your account.",

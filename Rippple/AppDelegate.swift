@@ -406,7 +406,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let menuConfiguration = UIMainMenuSystem.Configuration()
 
         menuConfiguration.findingConfiguration.style = .search
-        menuConfiguration.newScenePreference = .removed
+        menuConfiguration.newScenePreference = .included
         menuConfiguration.documentPreference = .removed
         menuConfiguration.printingPreference = .removed
         menuConfiguration.findingPreference = .included
