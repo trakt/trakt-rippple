@@ -136,9 +136,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        let isProfileWindow = options.userActivities.contains { $0.activityType == SceneDelegate.profileActivityType }
-        let configurationName = isProfileWindow ? SceneDelegate.profileConfigurationName : "Default Configuration"
-        return UISceneConfiguration(name: configurationName, sessionRole: connectingSceneSession.role)
+        let mode = [SceneDelegate.WindowMode.media, .profile].first { mode in
+            options.userActivities.contains { $0.activityType == mode.activityType }
+        } ?? .main
+        return UISceneConfiguration(name: mode.rawValue, sessionRole: connectingSceneSession.role)
+    }
+
+    func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
+        for session in sceneSessions {
+            SceneDelegate.discardMediaWindow(for: session)
+        }
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {

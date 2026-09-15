@@ -9,8 +9,27 @@
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-    static let profileActivityType = "tv.trakt.rippple.profile-window"
-    static let profileConfigurationName = "Profile Configuration"
+    enum WindowMode: String {
+        case main = "Default Configuration"
+        case profile = "Profile Configuration"
+        case media = "Media Configuration"
+
+        init(configurationName: String?) {
+            self = WindowMode(rawValue: configurationName ?? "") ?? .main
+        }
+
+        var activityType: String? {
+            switch self {
+            case .main: return nil
+            case .profile: return "tv.trakt.rippple.profile-window"
+            case .media: return "tv.trakt.rippple.media-window"
+            }
+        }
+    }
+
+    static let mediaUserInfoKey = "media"
+
+    private(set) var standaloneMedia: MediaModel?
 
     private var inactiveTimestamp = Date()
 
@@ -23,8 +42,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         guard let windowScene = (scene as? UIWindowScene) else { return }
 
-        if session.configuration.name == SceneDelegate.profileConfigurationName {
+        switch WindowMode(configurationName: session.configuration.name) {
+        case .main:
+            break
+        case .profile:
             scene.title = "Your Profile"
+        case .media:
+            if let activity = connectionOptions.userActivities.first(where: { $0.activityType == WindowMode.media.activityType }),
+               let data = activity.userInfo?[SceneDelegate.mediaUserInfoKey] as? Data,
+               let media = try? JSONDecoder().decode(MediaModel.self, from: data) {
+                standaloneMedia = media
+                do {
+                    let url = SceneDelegate.mediaWindowURL(for: session)
+                    try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+                    try data.write(to: url, options: .atomic)
+                } catch {
+                    print("Unable to save media window: \(error.localizedDescription)")
+                }
+            } else if let data = try? Data(contentsOf: SceneDelegate.mediaWindowURL(for: session)) {
+                standaloneMedia = try? JSONDecoder().decode(MediaModel.self, from: data)
+            }
+            scene.title = standaloneMedia?.mediaTitle ?? "Media"
         }
 
         #if targetEnvironment(macCatalyst)
@@ -53,6 +91,39 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
         handleUserActivity(userActivity)
+    }
+
+    static func discardMediaWindow(for session: UISceneSession) {
+        guard WindowMode(configurationName: session.configuration.name) == .media else { return }
+        try? FileManager.default.removeItem(at: SceneDelegate.mediaWindowURL(for: session))
+    }
+
+    private static func mediaWindowURL(for session: UISceneSession) -> URL {
+        return URL.applicationSupportDirectory
+            .appending(path: "media-windows", directoryHint: .isDirectory)
+            .appending(path: session.persistentIdentifier)
+            .appendingPathExtension("json")
+    }
+
+    static func openWindow(_ mode: WindowMode, title: String, userInfo: [String: Any]? = nil, from window: UIWindow?) {
+        guard UIApplication.shared.supportsMultipleScenes, let activityType = mode.activityType else { return }
+        let activity = NSUserActivity(activityType: activityType)
+        activity.title = title
+        activity.userInfo = userInfo
+        let options = UIScene.ActivationRequestOptions()
+        options.requestingScene = window?.windowScene
+        UIApplication.shared.activateSceneSession(for: UISceneSessionActivationRequest(userActivity: activity, options: options)) { [weak window] error in
+            DispatchQueue.main.async { [weak window] in
+                guard let window = window else { return }
+                let alert = UIAlertController(title: "Unable to Open Window", message: error.localizedDescription, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                var presenter = window.rootViewController
+                while let presented = presenter?.presentedViewController {
+                    presenter = presented
+                }
+                presenter?.present(alert, animated: true)
+            }
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

@@ -235,6 +235,7 @@ final class MediaViewController: UITableViewController {
     }
 
     var isDeeplink = false
+    var isStandaloneWindow = false
 
     private enum Section: Int {
         case content
@@ -494,7 +495,7 @@ final class MediaViewController: UITableViewController {
             break
         }
 
-        if navigationController?.viewControllers.first == self || isDeeplink {
+        if !isStandaloneWindow, navigationController?.viewControllers.first == self || isDeeplink {
             navigationController?.isNavigationBarHidden = false
             navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close,
                                                                target: self,

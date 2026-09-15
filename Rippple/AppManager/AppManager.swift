@@ -418,16 +418,31 @@ public extension UIApplication {
     func switchToMainApp() {
         AppManager.shared.setup()
         for window in AppManager.shared.windows where !(window.rootViewController is UISplitViewController) {
-            if window.windowScene?.session.configuration.name == SceneDelegate.profileConfigurationName {
-                if (window.rootViewController as? UINavigationController)?.viewControllers.first is ProfileViewController {
-                    continue
-                }
-                let profileViewController = UIStoryboard(name: "Profile", bundle: nil).instantiateViewController(identifier: "ProfileViewController")
-                let navigationController = StyledNavigationController(rootViewController: profileViewController)
-                window.setRootViewController(navigationController, options: TransitionOptions(direction: .fade, style: .easeInOut))
+            let rootViewController = (window.rootViewController as? UINavigationController)?.viewControllers.first
+            let viewController: UIViewController
+            switch SceneDelegate.WindowMode(configurationName: window.windowScene?.session.configuration.name) {
+            case .main:
+                showMainApp(in: window)
                 continue
+            case .profile:
+                guard !(rootViewController is ProfileViewController) else { continue }
+                viewController = UIStoryboard(name: "Profile", bundle: nil).instantiateViewController(identifier: "ProfileViewController")
+            case .media:
+                guard !(rootViewController is MediaViewController) else { continue }
+                if let media = (window.windowScene?.delegate as? SceneDelegate)?.standaloneMedia {
+                    let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as! MediaViewController
+                    mediaViewController.media = media
+                    mediaViewController.isStandaloneWindow = true
+                    viewController = mediaViewController
+                } else {
+                    viewController = UIViewController()
+                    var configuration = UIContentUnavailableConfiguration.empty()
+                    configuration.text = "Unable to Restore Media"
+                    configuration.secondaryText = "Open the media in a new window again."
+                    viewController.contentUnavailableConfiguration = configuration
+                }
             }
-            showMainApp(in: window)
+            window.setRootViewController(StyledNavigationController(rootViewController: viewController), options: TransitionOptions(direction: .fade, style: .easeInOut))
         }
 
         if DeeplinkManager.shared.shouldOpenDeeplink() {

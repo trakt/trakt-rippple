@@ -1500,9 +1500,23 @@ class ContextMenuHelper: NSObject {
             }
         }
 
+        var children: [UIMenuElement] = actions
+        if UIApplication.shared.supportsMultipleScenes,
+           let data = try? JSONEncoder().encode(media) {
+            let newWindow = UIAction(title: "New Window", image: UIImage(systemName: "macwindow.badge.plus")) { [weak self] _ in
+                guard let self = self else { return }
+                SceneDelegate.openWindow(.media,
+                                         title: media.mediaTitle,
+                                         userInfo: [SceneDelegate.mediaUserInfoKey: data],
+                                         from: self.controller?.view.window ?? self.cell?.window)
+            }
+            children = [UIMenu(options: .displayInline, children: [newWindow]),
+                        UIMenu(options: .displayInline, children: actions)]
+        }
+
         return UIMenu(title: "Open In",
                       image: UIImage(systemName: "arrow.up.forward"),
-                      children: actions)
+                      children: children)
     }
 
     private func openIn(_ url: URL) {
