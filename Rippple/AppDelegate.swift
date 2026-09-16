@@ -380,31 +380,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         CalendarManager.shared.setup()
 
         BGTaskScheduler.shared.register(forTaskWithIdentifier: "tv.trakt.towatch.refresh", using: nil) { task in
-            #if !targetEnvironment(macCatalyst)
-            Task {
+            Task { @MainActor in
+                #if !targetEnvironment(macCatalyst)
                 await LiveActivityManager.shared.stopActivityIfNeeded()
-            }
-            #endif
+                #endif
 
-            // If purchase not active or badge turned off, complete quickly
-            guard UserDefaults.standard.integer(forKey: "Badge.mode") >= 1 else {
-                // Reschedule next refresh
-                AppManager.shared.scheduleNewBackgroundRefresh()
+                // If purchase not active or badge turned off, complete quickly
+                guard UserDefaults.standard.integer(forKey: "Badge.mode") >= 1 else {
+                    // Reschedule next refresh
+                    AppManager.shared.scheduleNewBackgroundRefresh()
 
-                task.setTaskCompleted(success: true)
+                    task.setTaskCompleted(success: true)
 
-                return
-            }
+                    return
+                }
 
-            MovieToWatchManager.shared.forcedUserRefresh()
-            EpisodeToWatchManager.shared.forcedUserRefresh()
+                MovieToWatchManager.shared.forcedUserRefresh()
+                EpisodeToWatchManager.shared.forcedUserRefresh()
 
-            let timeout: DispatchTime = .now() + 20
-            DispatchQueue.global(qos: .utility).asyncAfter(deadline: timeout) {
-                // Reschedule next refresh
-                AppManager.shared.scheduleNewBackgroundRefresh()
+                let timeout: DispatchTime = .now() + 20
+                DispatchQueue.global(qos: .utility).asyncAfter(deadline: timeout) {
+                    // Reschedule next refresh
+                    AppManager.shared.scheduleNewBackgroundRefresh()
 
-                task.setTaskCompleted(success: true)
+                    task.setTaskCompleted(success: true)
+                }
             }
         }
 

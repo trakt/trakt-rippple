@@ -220,14 +220,6 @@ final class LiveActivityManager {
                                      content: content)
 
             await AppManager.shared.scheduleNewBackgroundRefresh()
-            /*
-             let activity = try Activity<RipppleLiveActivityAttributes>.request(attributes: pizzaDeliveryAttributes,
-                                                                             contentState: initialContentState)
-             if let endDate = model.endDate {
-                 await activity.end(using: initialContentState,
-                                    dismissalPolicy: .after(endDate))
-             }
-             */
             print("Live Activity started...")
         } catch {
             print("Error requesting Live Activity: \(error)")

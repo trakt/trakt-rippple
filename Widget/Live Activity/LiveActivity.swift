@@ -15,12 +15,11 @@ import WidgetKit
 struct RipppleLiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: RipppleLiveActivityAttributes.self) { context in
-            ActivityWidgetEntryView(progress: context.state.entry)
+            ActivityWidgetEntryView(progress: context.state.entry, isStale: context.isStale)
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.center) {
                     let progress = context.state.entry
-                    // let width: CGFloat = 20
                     HStack(alignment: .bottom) {
                         if let data = UserDefaults(suiteName: "group.tv.trakt.rippple")!.data(forKey: "LiveActivityManager.poster"), let uiImage = UIImage(data: data) {
                             if let deeplink = context.state.entry.deeplink, deeplink.path().localizedStandardContains("episodes") == true {
@@ -41,7 +40,7 @@ struct RipppleLiveActivityWidget: Widget {
                         }
                         VStack(alignment: .leading, spacing: 1.0) {
                             if let label = progress.label {
-                                Text(label)
+                                Text(context.isStale ? "Last Watched" : label)
                                     .font(.caption.uppercaseSmallCaps())
                             }
                             if let title = progress.title {
@@ -56,13 +55,15 @@ struct RipppleLiveActivityWidget: Widget {
                             }
                         }
                         Spacer()
-                        ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
-                                     countsDown: false,
-                                     label: { EmptyView() },
-                                     currentValueLabel: { EmptyView() })
-                            .progressViewStyle(.circular)
-                            .frame(width: 30, height: 30)
-                            .tint(WidgetTint.color)
+                        if context.isStale == false {
+                            ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
+                                         countsDown: false,
+                                         label: { EmptyView() },
+                                         currentValueLabel: { EmptyView() })
+                                .progressViewStyle(.circular)
+                                .frame(width: 30, height: 30)
+                                .tint(WidgetTint.color)
+                        }
 
                     }.padding([.leading, .trailing, .bottom], 5)
                 }
@@ -76,22 +77,29 @@ struct RipppleLiveActivityWidget: Widget {
                 }
             } compactTrailing: {
                 let progress = context.state.entry
-                ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
-                             countsDown: false,
-                             label: { EmptyView() },
-                             currentValueLabel: { EmptyView() })
-                    .progressViewStyle(.circular)
-                    .frame(width: 24, height: 24)
-                    .tint(WidgetTint.color)
+                if context.isStale == false {
+                    ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
+                                 countsDown: false,
+                                 label: { EmptyView() },
+                                 currentValueLabel: { EmptyView() })
+                        .progressViewStyle(.circular)
+                        .frame(width: 24, height: 24)
+                        .tint(WidgetTint.color)
+                }
             } minimal: {
                 let progress = context.state.entry
-                ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
-                             countsDown: false,
-                             label: { EmptyView() },
-                             currentValueLabel: { EmptyView() })
-                    .progressViewStyle(.circular)
-                    .frame(width: 22, height: 22)
-                    .tint(WidgetTint.color)
+                if context.isStale {
+                    Image(systemName: "checkmark")
+                        .accessibilityLabel("Last Watched")
+                } else {
+                    ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
+                                 countsDown: false,
+                                 label: { EmptyView() },
+                                 currentValueLabel: { EmptyView() })
+                        .progressViewStyle(.circular)
+                        .frame(width: 22, height: 22)
+                        .tint(WidgetTint.color)
+                }
             }.widgetURL(context.state.entry.deeplink)
         }.supplementalActivityFamilies([.small])
     }
@@ -102,21 +110,23 @@ struct ActivityWidgetEntryView: View {
     @Environment(\.activityFamily) var activityFamily
 
     var progress: WidgetModel
+    var isStale: Bool
 
     var body: some View {
         switch activityFamily {
         case .small:
-            SmallLiveActivityView(progress: progress)
+            SmallLiveActivityView(progress: progress, isStale: isStale)
         case .medium:
-            MediumLiveActivityView(progress: progress)
+            MediumLiveActivityView(progress: progress, isStale: isStale)
         @unknown default:
-            MediumLiveActivityView(progress: progress)
+            MediumLiveActivityView(progress: progress, isStale: isStale)
         }
     }
 }
 
 struct MediumLiveActivityView: View {
     var progress: WidgetModel
+    var isStale: Bool
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -140,7 +150,7 @@ struct MediumLiveActivityView: View {
                 }
                 VStack(alignment: .leading) {
                     if let label = progress.label {
-                        Text(label)
+                        Text(isStale ? "Last Watched" : label)
                             .font(.caption.uppercaseSmallCaps())
                     }
                     if let title = progress.title {
@@ -155,13 +165,15 @@ struct MediumLiveActivityView: View {
                     }
                 }
                 Spacer()
-                ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
-                             countsDown: false,
-                             label: { EmptyView() },
-                             currentValueLabel: { EmptyView() })
-                    .progressViewStyle(.circular)
-                    .frame(width: 30, height: 30)
-                    .tint(.primary)
+                if isStale == false {
+                    ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
+                                 countsDown: false,
+                                 label: { EmptyView() },
+                                 currentValueLabel: { EmptyView() })
+                        .progressViewStyle(.circular)
+                        .frame(width: 30, height: 30)
+                        .tint(.primary)
+                }
             }.padding()
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
             .widgetURL(progress.deeplink)
@@ -170,6 +182,7 @@ struct MediumLiveActivityView: View {
 
 struct SmallLiveActivityView: View {
     var progress: WidgetModel
+    var isStale: Bool
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -188,16 +201,11 @@ struct SmallLiveActivityView: View {
                             .aspectRatio(contentMode: .fit)
                             .clipShape(RoundedRectangle(cornerRadius: 9))
                     }
-                } /* else {
-                    Rectangle()
-                        .fill(.blue)
-                        .aspectRatio(50/75, contentMode: .fit)
-                        .clipShape(RoundedRectangle(cornerRadius: 9))
-                 } */
+                }
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: 0)
                     if let label = progress.label {
-                        Text(label)
+                        Text(isStale ? "Last Watched" : label)
                             .font(.caption.uppercaseSmallCaps())
                     }
                     if let title = progress.title {
@@ -213,13 +221,15 @@ struct SmallLiveActivityView: View {
                                 .fontWeight(.light)
                         }
                         Spacer(minLength: 0)
-                        ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
-                                     countsDown: false,
-                                     label: { EmptyView() },
-                                     currentValueLabel: { EmptyView() })
-                            .progressViewStyle(.circular)
-                            .tint(WidgetTint.color)
-                            .frame(width: 18, height: 18)
+                        if isStale == false {
+                            ProgressView(timerInterval: progress.endDate!.addingTimeInterval(Double(-progress.runtime!))...progress.endDate!,
+                                         countsDown: false,
+                                         label: { EmptyView() },
+                                         currentValueLabel: { EmptyView() })
+                                .progressViewStyle(.circular)
+                                .tint(WidgetTint.color)
+                                .frame(width: 18, height: 18)
+                        }
                     }
                 }
             }
