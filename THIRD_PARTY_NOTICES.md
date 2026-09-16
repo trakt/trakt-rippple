@@ -82,8 +82,9 @@ If you update dependencies, update their requirements, resolved files, and the v
 
 - **SFSymbols** (`SFSymbols`)
   - **Description**: Swift access to SF Symbols metadata.
-  - **Source**: https://github.com/simonbs/SFSymbols
-  - **Pinned version**: `1.6.0`
+  - **Source (fork used in this project)**: https://github.com/kevincador/SFSymbols
+  - **Pinned revision**: `b7d88b020a533ab4eec30144a93ce34aab8081bc`
+  - **Upstream project**: https://github.com/simonbs/SFSymbols
 
 - **TinyStorage** (`TinyStorage`)
   - **Description**: Simple key-value storage wrapper for Swift.

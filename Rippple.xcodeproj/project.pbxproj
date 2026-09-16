@@ -4154,10 +4154,10 @@
 		};
 		09A1B2C12FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "SFSymbols" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/simonbs/SFSymbols.git";
+			repositoryURL = "https://github.com/kevincador/SFSymbols.git";
 			requirement = {
-				kind = exactVersion;
-				version = 1.6.0;
+				kind = revision;
+				revision = b7d88b020a533ab4eec30144a93ce34aab8081bc;
 			};
 		};
 		09A1B2C62FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "swift-html-entities" */ = {

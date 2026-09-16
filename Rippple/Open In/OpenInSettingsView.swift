@@ -362,6 +362,14 @@ struct OpenInItemEditView: View {
         "https://", "movie", "show", "series", "tv", "episode", "season", "search", "=", "&", "/", "?", "%20", "s"
     ]
 
+    private var suggestedSymbols: [String] {
+        let symbols = [
+            "arrow.up.forward", "link", "safari", "globe", "magnifyingglass", "play", "play.circle",
+            "play.rectangle", "play.diamond.fill", "film", "tv", "ticket", "star", "heart", "bookmark", "list.bullet"
+        ]
+        return [systemImageName] + symbols.filter { $0 != systemImageName }
+    }
+
     private var optionalSystemImageNameBinding: Binding<String?> {
         Binding<String?>(
             get: { systemImageName },
@@ -406,8 +414,12 @@ struct OpenInItemEditView: View {
                                 .foregroundStyle(Color(uiColor: UIColor(asset: .globalTint)))
                                 .frame(width: 32, height: 32)
                         }.buttonStyle(.plain)
-                            .sfSymbolPicker(isPresented: $isShowingSymbolPicker, selection: optionalSystemImageNameBinding)
+                            .sfSymbolPicker(isPresented: $isShowingSymbolPicker,
+                                            selection: optionalSystemImageNameBinding,
+                                            suggestedSymbols: suggestedSymbols)
                             .sfSymbolPickerForegroundStyle(Color(uiColor: UIColor(asset: .globalTint)))
+                            .sfSymbolPickerSelectionColor(Color(uiColor: UIColor(asset: .globalTint)))
+                            .sfSymbolPickerShowsSettingsMenu(false)
                     }
                 } header: {
                     Text("Open in...")

@@ -1,5 +1,5 @@
 {
-  "originHash" : "af78a6663614b226d183d618c25d7a058c502459d3befa36f7b00856b2b0cd8a",
+  "originHash" : "b1c39ac9359ff9df44de693f0ff02dcd97a7ad0ab155006fed3a6ad556070acf",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -101,10 +101,9 @@
     {
       "identity" : "sfsymbols",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/simonbs/SFSymbols.git",
+      "location" : "https://github.com/kevincador/SFSymbols.git",
       "state" : {
-        "revision" : "4105a1e14935578fbfd29533c326e13190ebaf94",
-        "version" : "1.6.0"
+        "revision" : "b7d88b020a533ab4eec30144a93ce34aab8081bc"
       }
     },
     {
