@@ -58,7 +58,9 @@ final class SeasonsRatingsContentCollectionViewCell: UICollectionViewCell {
     static let reuseIdentifier = String(describing: SeasonsRatingsContentCollectionViewCell.self)
 
     let label = UILabel()
-    private let progress = UIProgressView()
+    private let progress = UIView()
+    private let progressFill = UIView()
+    private var progressWidthConstraint: NSLayoutConstraint?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -80,9 +82,16 @@ final class SeasonsRatingsContentCollectionViewCell: UICollectionViewCell {
         contentView.addSubview(label)
 
         progress.translatesAutoresizingMaskIntoConstraints = false
-        progress.progressTintColor = .white
-        progress.trackTintColor = .white.withAlphaComponent(0.3)
+        // Keep the compact bar consistent when Catalyst uses native Mac control styling.
+        progress.backgroundColor = .white.withAlphaComponent(0.3)
+        progress.layer.cornerRadius = 1.5
+        progress.clipsToBounds = true
         label.addSubview(progress)
+
+        progressFill.translatesAutoresizingMaskIntoConstraints = false
+        progressFill.backgroundColor = .white
+        progressFill.layer.cornerRadius = 1.5
+        progress.addSubview(progressFill)
 
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
@@ -93,7 +102,11 @@ final class SeasonsRatingsContentCollectionViewCell: UICollectionViewCell {
             progress.leadingAnchor.constraint(equalTo: label.leadingAnchor, constant: 12),
             progress.trailingAnchor.constraint(equalTo: label.trailingAnchor, constant: -12),
             progress.bottomAnchor.constraint(equalTo: label.bottomAnchor, constant: -6),
-            progress.heightAnchor.constraint(equalToConstant: 3.0)
+            progress.heightAnchor.constraint(equalToConstant: 3.0),
+
+            progressFill.leadingAnchor.constraint(equalTo: progress.leadingAnchor),
+            progressFill.topAnchor.constraint(equalTo: progress.topAnchor),
+            progressFill.bottomAnchor.constraint(equalTo: progress.bottomAnchor)
         ])
 
         resetContent()
@@ -113,8 +126,7 @@ final class SeasonsRatingsContentCollectionViewCell: UICollectionViewCell {
         label.text = nil
         label.textColor = .white
         label.backgroundColor = .clear
-        progress.alpha = 0.0
-        progress.progress = 0.0
+        updateProgress(nil)
         accessibilityLabel = nil
         isAccessibilityElement = false
     }
@@ -124,16 +136,18 @@ final class SeasonsRatingsContentCollectionViewCell: UICollectionViewCell {
         label.textColor = viewModel.textColor
         label.backgroundColor = viewModel.backgroundColor
 
-        if let progressValue = viewModel.progress {
-            progress.alpha = 1.0
-            progress.progress = progressValue
-        } else {
-            progress.alpha = 0.0
-            progress.progress = 0.0
-        }
+        updateProgress(viewModel.progress)
 
         accessibilityLabel = viewModel.accessibilityLabel
         isAccessibilityElement = viewModel.accessibilityLabel != nil
+    }
+
+    private func updateProgress(_ value: Float?) {
+        progress.isHidden = value == nil
+        let fraction = min(max(value ?? 0, 0), 1)
+        progressWidthConstraint?.isActive = false
+        progressWidthConstraint = progressFill.widthAnchor.constraint(equalTo: progress.widthAnchor, multiplier: CGFloat(fraction))
+        progressWidthConstraint?.isActive = true
     }
 }
 

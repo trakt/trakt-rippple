@@ -281,7 +281,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         AppManager.shared.setup()
 
         UISwitch.appearance().onTintColor = RipppleAppearance.switchTintColor
-        UIProgressView.appearance().trackTintColor = UIColor(asset: .globalTint).withAlphaComponent(0.25)
         NVActivityIndicatorView.DEFAULT_COLOR = UIColor(asset: .globalTint)
 
         UserManager.shared.startManaging()
