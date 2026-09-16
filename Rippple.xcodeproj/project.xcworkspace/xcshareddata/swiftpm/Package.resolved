@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Alamofire/Alamofire.git",
       "state" : {
-        "revision" : "e938f8c66708e7352fc7e3512647fa54255b267a",
-        "version" : "5.11.2"
+        "revision" : "bda9ed57d72988a3a2ada33d824583541f86eac6",
+        "version" : "5.12.2"
       }
     },
     {
@@ -33,7 +33,6 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kevincador/Haring.git",
       "state" : {
-        "branch" : "master",
         "revision" : "6be308b9ad1280ee368b5821e51ea6a7d8ab61ca"
       }
     },
@@ -42,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/onevcat/Kingfisher.git",
       "state" : {
-        "revision" : "c152c1915f60c51e4afa0752656993ee5b3c63db",
-        "version" : "8.8.1"
+        "revision" : "be0d257b9bd47a4e6e1265fc8c237411825f107a",
+        "version" : "8.12.0"
       }
     },
     {
@@ -51,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nicklockwood/LRUCache.git",
       "state" : {
-        "revision" : "cb5b2bd0da83ad29c0bec762d39f41c8ad0eaf3e",
-        "version" : "1.2.1"
+        "revision" : "f0570e943ea4445d258113ba73f50cb2b7e564ac",
+        "version" : "1.3.0"
       }
     },
     {
@@ -87,7 +86,6 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kevincador/Receiver.git",
       "state" : {
-        "branch" : "master",
         "revision" : "0936928adb45df22794690ccc8ab370634136dc0"
       }
     },
@@ -105,8 +103,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/simonbs/SFSymbols.git",
       "state" : {
-        "revision" : "07c59068c52fb52c3a3223310a003b4ccd2a7a78",
-        "version" : "1.5.0"
+        "revision" : "4105a1e14935578fbfd29533c326e13190ebaf94",
+        "version" : "1.6.0"
       }
     },
     {
@@ -123,8 +121,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/christianselig/TinyStorage.git",
       "state" : {
-        "revision" : "c50eaa8d456a3c367108a13ecd864c8c30302be7",
-        "version" : "1.0.17"
+        "revision" : "50048313489327e539f7c6227c51d6c63b363e69",
+        "version" : "2.0.2"
       }
     },
     {

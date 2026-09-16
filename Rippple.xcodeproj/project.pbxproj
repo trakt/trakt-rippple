@@ -173,7 +173,6 @@
 		3A3BC691271DAF9B007ED8A6 /* SmartSearch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3A3BC690271DAF9B007ED8A6 /* SmartSearch.storyboard */; };
 		3A3BC693271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3BC692271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift */; };
 		3A3EA94C2DA91BE9004D55A8 /* TinyStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 3A3EA94B2DA91BE9004D55A8 /* TinyStorage */; };
-		3A3EA94F2DA949D5004D55A8 /* TinyStorage in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 3A3EA94D2DA949D5004D55A8 /* TinyStorage */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		3A3EA9542DA96087004D55A8 /* InfoCardTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A3EA9532DA96087004D55A8 /* InfoCardTableViewCell.xib */; };
 		3A3EA9562DA96096004D55A8 /* InfoCardTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3EA9552DA96096004D55A8 /* InfoCardTableViewCell.swift */; };
 		3A3FE6D021DD55FD00980245 /* MediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3FE6CF21DD55FD00980245 /* MediaViewController.swift */; };
@@ -563,7 +562,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				3A3EA94F2DA949D5004D55A8 /* TinyStorage in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4142,112 +4140,112 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SvenTiigi/YouTubePlayerKit.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
+				kind = exactVersion;
+				version = 2.0.5;
 			};
 		};
 		0970258B2EBE48B3005E91B4 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 8.6.1;
+				kind = exactVersion;
+				version = 8.12.0;
 			};
 		};
 		09A1B2C12FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "SFSymbols" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/simonbs/SFSymbols.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				kind = exactVersion;
+				version = 1.6.0;
 			};
 		};
 		09A1B2C62FB3C4D500E6F701 /* XCRemoteSwiftPackageReference "swift-html-entities" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Kitura/swift-html-entities.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.1;
+				kind = exactVersion;
+				version = 4.0.1;
 			};
 		};
 		09C0DEAB2FC1000000D00002 /* XCRemoteSwiftPackageReference "Receiver" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kevincador/Receiver.git";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = revision;
+				revision = 0936928adb45df22794690ccc8ab370634136dc0;
 			};
 		};
 		09C0DEAE2FC1100000D00005 /* XCRemoteSwiftPackageReference "Haring" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kevincador/Haring.git";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = revision;
+				revision = 6be308b9ad1280ee368b5821e51ea6a7d8ab61ca;
 			};
 		};
 		09F275CE2E055A670059D7CD /* XCRemoteSwiftPackageReference "LRUCache" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/nicklockwood/LRUCache.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.7;
+				kind = exactVersion;
+				version = 1.3.0;
 			};
 		};
 		3A3EA94A2DA91BE9004D55A8 /* XCRemoteSwiftPackageReference "TinyStorage" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/christianselig/TinyStorage.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.17;
+				kind = exactVersion;
+				version = 2.0.2;
 			};
 		};
 		3A8E8B212DBBB00C00D89756 /* XCRemoteSwiftPackageReference "Moya" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Moya/Moya.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 15.0.3;
+				kind = exactVersion;
+				version = 15.0.3;
 			};
 		};
 		3A8E8B242DBBB04E00D89756 /* XCRemoteSwiftPackageReference "AlamofireNetworkActivityIndicator" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/AlamofireNetworkActivityIndicator";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.1.0;
+				kind = exactVersion;
+				version = 3.1.0;
 			};
 		};
 		3A8E8B362DBBB68B00D89756 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.10.2;
+				kind = exactVersion;
+				version = 5.12.2;
 			};
 		};
 		3A8E8B3C2DBBB88D00D89756 /* XCRemoteSwiftPackageReference "NVActivityIndicatorView" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ninjaprox/NVActivityIndicatorView.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.2.0;
+				kind = exactVersion;
+				version = 5.2.0;
 			};
 		};
 		3A8E8B3F2DBBB8DD00D89756 /* XCRemoteSwiftPackageReference "toast-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/BastiaanJansen/toast-swift";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
+				kind = exactVersion;
+				version = 2.1.3;
 			};
 		};
 		3A8E8B512DBBCED600D89756 /* XCRemoteSwiftPackageReference "Emoji-Swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/safx/Emoji-Swift.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.3.0;
+				kind = exactVersion;
+				version = 0.4.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -4289,11 +4287,6 @@
 			productName = LRUCache;
 		};
 		3A3EA94B2DA91BE9004D55A8 /* TinyStorage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3A3EA94A2DA91BE9004D55A8 /* XCRemoteSwiftPackageReference "TinyStorage" */;
-			productName = TinyStorage;
-		};
-		3A3EA94D2DA949D5004D55A8 /* TinyStorage */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 3A3EA94A2DA91BE9004D55A8 /* XCRemoteSwiftPackageReference "TinyStorage" */;
 			productName = TinyStorage;
