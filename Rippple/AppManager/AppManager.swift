@@ -544,21 +544,28 @@ public extension UIApplication {
         present(alertController)
     }
 
-    func accountLimitExceeded() {
-        let alertController = UIAlertController(title: "Trakt Limit Reached",
-                                                message: "You have reach a limit imposed by Trakt. Upgrading to Track VIP may help. If you are VIP, you've just hit a hard limit.",
-                                                preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
-
-        alertController.addAction(UIAlertAction(title: "Get Trakt VIP", style: .default, handler: { _ in
-            if let url = URL(string: "https://app.trakt.tv/vip"),
-               UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
-            }
-        }))
-
+    internal func presentTraktLimits(limitReached: Bool = false) {
         AppManager.shared.setup()
-        present(alertController)
+        var presented = AppManager.shared.mainWindow?.rootViewController
+        while let controller = presented {
+            if controller is RipppleHostingController<TraktLimitsView> { return }
+            presented = controller.presentedViewController
+        }
+        let controller = RipppleHostingController(rootView: TraktLimitsView(limitReached: limitReached, close: {}))
+        controller.setRootView(TraktLimitsView(limitReached: limitReached, close: { [weak controller] in
+            guard let controller = controller else { return }
+            guard !controller.isBeingDismissed else { return }
+            controller.dismiss(animated: true)
+        }))
+        controller.modalPresentationStyle = .formSheet
+        controller.preferredContentSize = CGSize(width: 540, height: 700)
+        #if !targetEnvironment(macCatalyst)
+        if let sheet = controller.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        #endif
+        present(controller)
     }
 
     func comeBackToMainApp() {

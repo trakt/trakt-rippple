@@ -181,7 +181,7 @@ final class AboutViewController: UITableViewController {
         case .settings:
             return SettingsSection.allCases.count
         case .account:
-            return 3
+            return 4
         case .premium:
             return 1
         case .data:
@@ -219,10 +219,13 @@ final class AboutViewController: UITableViewController {
             if indexPath.row == 0 {
                 logoutFromTrakt()
                 tableView.deselectRow(at: indexPath, animated: true)
-            } else if indexPath.row == 1 {
+            } else if indexPath.row == 2 {
                 present(SFSafariViewController(url: URL(string: "https://status.trakt.tv")!),
                         animated: true,
                         completion: nil)
+                tableView.deselectRow(at: indexPath, animated: true)
+            } else if indexPath.row == 1 {
+                UIApplication.shared.presentTraktLimits()
                 tableView.deselectRow(at: indexPath, animated: true)
             } else {
                 if let url = URL(string: "https://app.trakt.tv/settings/advanced"), UIApplication.shared.canOpenURL(url) {
@@ -458,7 +461,7 @@ final class AboutViewController: UITableViewController {
             return super.tableView(tableView, heightForRowAt: indexPath)
         }
         if case .account = AboutSection(rawValue: indexPath.section) {
-            if indexPath.row == 2 {
+            if indexPath.row == 3 {
                 return super.tableView(tableView, heightForRowAt: indexPath)
             }
         }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CE9150000000000000000002 /* TraktLimitsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE9150000000000000000001 /* TraktLimitsView.swift */; };
 		09033ADE2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09033ADD2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift */; };
 		09060B962F2F96480069502F /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD13A72F6F2B4C00D1E2F3 /* Secrets.swift */; };
 		09060B972F2F997E0069502F /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD13A72F6F2B4C00D1E2F3 /* Secrets.swift */; };
@@ -583,6 +584,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CE9150000000000000000001 /* TraktLimitsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraktLimitsView.swift; sourceTree = "<group>"; };
 		09033ADD2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleChronologyTableViewController.swift; sourceTree = "<group>"; };
 		090676DB2F4EFBD60076ECA8 /* SECURITY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SECURITY.md; sourceTree = "<group>"; };
 		090676DC2F4EFDE40076ECA8 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
@@ -2560,6 +2562,7 @@
 				3AA735461FD82540004E0844 /* MainTabBarController.swift */,
 				3AAE0F971FECFECB001D6AAC /* StyledNavigationController.swift */,
 				3ACBB57C2198605400AD48E5 /* ComposeNavigationController.swift */,
+				CE9150000000000000000001 /* TraktLimitsView.swift */,
 				3A7063291FF2645500D3B2BB /* PurchaseViewController.swift */,
 				3A1449EF28CB8EA500404F52 /* PurchaseModalViewController.swift */,
 				3AD9329D1FB77932005289B5 /* ProfileViewController.swift */,
@@ -3529,6 +3532,7 @@
 				3A02D0602B49EB6000B6E51B /* DeepLinksView.swift in Sources */,
 				3AD9329C1FB7766C005289B5 /* LoginViewController.swift in Sources */,
 				3A7B6DAB234515EC0014A0D8 /* PeopleBioTableViewCell.swift in Sources */,
+				CE9150000000000000000002 /* TraktLimitsView.swift in Sources */,
 				3A17B2C72D311CD300043162 /* PurchaseWhyView.swift in Sources */,
 				3A383BF52567AE0900182477 /* TrendingNotificationsManager.swift in Sources */,
 				3A939B8E1FD28F7C00799552 /* PreviewViewController.swift in Sources */,

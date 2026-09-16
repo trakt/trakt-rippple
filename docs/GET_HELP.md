@@ -10,6 +10,10 @@ Rippple’s To Watch is like the “up next” or “continue watching” you ca
 
 You can think of it as your to-do list of movies or episodes to watch, from any source, organized by you. You can tell Rippple to use your Watchlist (or any other custom list) to build this list, hide, pin items, and more... making it very flexible.
 
+### Where can I see my Trakt account limits?
+
+Open **Account Limits** in the **Trakt** section of **Profile → Settings**. It’s available to free and Trakt VIP users. Rippple also opens this sheet when Trakt reports that an account limit has been reached.
+
 ### Why do some actions take a long time to complete?
 
 The Trakt API has rate limits. We respect those limits by avoiding unnecessary requests and retrying when needed.

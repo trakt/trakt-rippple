@@ -302,18 +302,7 @@ final class CustomListsViewController: UITableViewController {
     }
 
     @objc func VIPLimit() {
-        let alertController = UIAlertController(title: "Trakt Limit Reached",
-                                                message: "You are currently limited to \(UserManager.shared.currentUserListLimit) lists on Trakt. You can delete a custom list. Upgrading to Track VIP may also help. If you are VIP, you've just hit a hard limit.",
-                                                preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
-
-        alertController.addAction(UIAlertAction(title: "Get Trakt VIP", style: .default, handler: { _ in
-            if let url = URL(string: "https://app.trakt.tv/vip"),
-               UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
-            }
-        }))
-        present(alertController, animated: true)
+        UIApplication.shared.presentTraktLimits(limitReached: true)
     }
 
     private func restore() {
