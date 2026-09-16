@@ -32,6 +32,7 @@ private extension Comment {
         self.body = body
         self.containsSpoiler = containsSpoiler
         isReview = body.count > 200 ? true : false
+        gif = comment.gif
         language = comment.language
         parentIdentifier = comment.parentIdentifier
         createDate = comment.createDate
@@ -132,6 +133,16 @@ final class CommentComposerViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        if editedComment?.gif != nil {
+            commentTextView.isEditable = false
+            previewBarButtonItem.isEnabled = false
+            if !checkedOnlyOnceAlready {
+                showGIFEditingMessage()
+                checkedOnlyOnceAlready = true
+            }
+            return
+        }
+
         if !checkedOnlyOnceAlready {
             // new comment but we already have a comment for the user
             if editedComment == nil, let ownCommentItem = mediaModel.ownCommentItem {
@@ -146,7 +157,12 @@ final class CommentComposerViewController: UIViewController {
                 }
                 alertController.addAction(new)
 
-                let edit = UIAlertAction(title: "Edit previous", style: .default) { _ in
+                let edit = UIAlertAction(title: "Edit previous", style: .default) { [weak self] _ in
+                    guard let self = self else { return }
+                    guard ownCommentItem.comment.gif == nil else {
+                        self.showGIFEditingMessage()
+                        return
+                    }
                     self.editedComment = ownCommentItem.comment
                     self.title = "Edit"
                     self.commentTextView.text = ownCommentItem.comment.body
@@ -163,13 +179,21 @@ final class CommentComposerViewController: UIViewController {
         }
     }
 
+    private func showGIFEditingMessage() {
+        let alert = UIAlertController(title: "Comment with a GIF",
+                                      message: "Rippple can display GIFs, but cannot edit comments containing them yet. Please edit this comment on Trakt.",
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
     private func updateUIBasedOnWordCount() {
         // placeholderTextView.isHidden = !commentTextView.text.isEmpty
 
         isModalInPresentation = !commentTextView.text.isEmpty
 
         let wordCount = commentTextView.text.wordCount
-        previewBarButtonItem.isEnabled = wordCount >= 5
+        previewBarButtonItem.isEnabled = wordCount >= 5 && editedComment?.gif == nil
     }
 
     private func configureKeyboardNotifications() {
@@ -262,6 +286,10 @@ extension CommentComposerViewController {
     }
 
     @IBAction func preview(_ sender: UIBarButtonItem) {
+        guard editedComment?.gif == nil else {
+            showGIFEditingMessage()
+            return
+        }
         if UserManager.shared.currentUser == nil {
             dismiss(animated: true)
             onNeedsToShowLoginTransmitter.broadcast(true)

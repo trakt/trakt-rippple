@@ -45,6 +45,8 @@ final class CommentTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var commentCountLabel: CommentCountLabel!
     @IBOutlet var poster: PosterButton?
 
+    private let gifView = CommentGIFView()
+
     // Comment
     @IBOutlet var ratingAndSpoilerLabel: CommentMetadataLabel!
     @IBOutlet var commentLabel: LinkEnabledLabel!
@@ -106,6 +108,21 @@ final class CommentTableViewCell: TintedCanvasTableViewCell {
         super.awakeFromNib()
 
         contentView.autoresizingMask = .flexibleHeight
+        gifView.install(after: commentLabel, compact: false)
+        gifView.onHeightChanged = { [weak self] in
+            guard let self = self else { return }
+            var ancestor = self.superview
+            while let view = ancestor {
+                if let tableView = view as? UITableView {
+                    guard tableView.window != nil, !tableView.hasUncommittedUpdates else { return }
+                    UIView.performWithoutAnimation {
+                        tableView.performBatchUpdates(nil)
+                    }
+                    return
+                }
+                ancestor = view.superview
+            }
+        }
 
         CommentTableViewCell.dateFormatter.unitsStyle = .abbreviated
         CommentTableViewCell.dateFormatter.dateTimeStyle = .numeric
@@ -164,8 +181,16 @@ final class CommentTableViewCell: TintedCanvasTableViewCell {
         shareButton?.maximumContentSizeCategory = .extraExtraExtraLarge
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        gifView.reset()
+        commentLabel.attributedText = nil
+    }
+
     var commentModel: CommentModel! {
         didSet {
+            gifView.configure(with: commentModel)
+            commentLabel.isHidden = commentModel.comment.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             if commentModel.comment.parentIdentifier == 0 {
                 setupMedia()
                 setupRatingAndSpoiler()

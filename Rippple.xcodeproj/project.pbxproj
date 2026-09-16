@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10F10012F00000000000001 /* CommentGIFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10F10012F00000000000002 /* CommentGIFView.swift */; };
 		CE9150000000000000000002 /* TraktLimitsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE9150000000000000000001 /* TraktLimitsView.swift */; };
 		09033ADE2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09033ADD2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift */; };
 		09060B962F2F96480069502F /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD13A72F6F2B4C00D1E2F3 /* Secrets.swift */; };
@@ -582,6 +583,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A10F10012F00000000000002 /* CommentGIFView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentGIFView.swift; sourceTree = "<group>"; };
 		CE9150000000000000000001 /* TraktLimitsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraktLimitsView.swift; sourceTree = "<group>"; };
 		09033ADD2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleChronologyTableViewController.swift; sourceTree = "<group>"; };
 		090676DB2F4EFBD60076ECA8 /* SECURITY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SECURITY.md; sourceTree = "<group>"; };
@@ -1889,6 +1891,7 @@
 			isa = PBXGroup;
 			children = (
 				3AD932A31FB85D15005289B5 /* CommentTableViewCell.swift */,
+				A10F10012F00000000000002 /* CommentGIFView.swift */,
 				3A8273251FC1903A00CD25EC /* CommentTableViewCell.xib */,
 				3A0444B620E8F4520083F9CE /* OwnReplyTableViewCell.xib */,
 				3AE6FB351FC4641500DDF282 /* ReplyTableViewCell.xib */,
@@ -3427,6 +3430,7 @@
 				3A41DE8A25AAF8B5008F133A /* WatchedManager.swift in Sources */,
 				3AC0DE022DFE000100000001 /* SyncWatchedManager.swift in Sources */,
 				3AD932A41FB85D15005289B5 /* CommentTableViewCell.swift in Sources */,
+				A10F10012F00000000000001 /* CommentGIFView.swift in Sources */,
 				3A541CF32A606C0A00E1A153 /* CommentsBrowseTableViewCell.swift in Sources */,
 				3A44BF401FD2C6610026AADE /* InitialViewController.swift in Sources */,
 				3A26D34C2BD69269002EF98E /* ManualRemoteNotificationsManager.swift in Sources */,

@@ -39,6 +39,7 @@ final class CommentModel: Equatable, Hashable {
     let spoilerStrategy: SpoilerStrategy
 
     var commentAttributedString: NSAttributedString?
+    private(set) var hidesCommentMedia = true
     var commentWordCount: Int?
     var userAttributedString: NSAttributedString?
 
@@ -316,6 +317,7 @@ extension CommentModel {
             }
         }
 
+        hidesCommentMedia = markdownParser.spoilerStrategy == .hideAllSpoilers
         return markdownParser.parse(comment.body.htmlDecoded.emojiUnescapedString)
     }
 }

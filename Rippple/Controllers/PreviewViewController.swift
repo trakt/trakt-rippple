@@ -85,6 +85,7 @@ final class PreviewViewController: UIViewController {
     }
 
     @IBAction func send(_ sender: Any) {
+        guard commentModel.comment.gif == nil else { return }
         guard let window = view.window else { return }
         window.isUserInteractionEnabled = false
         showLoader()

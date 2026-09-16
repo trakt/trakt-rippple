@@ -683,6 +683,7 @@ struct Comment: Codable, Equatable, Hashable {
 
     let identifier: Int64
     let body: String
+    var gif: String? = nil
     let containsSpoiler: Bool
     let isReview: Bool
     let language: String?
@@ -698,6 +699,7 @@ struct Comment: Codable, Equatable, Hashable {
     enum CodingKeys: String, CodingKey {
         case identifier = "id"
         case body = "comment"
+        case gif
         case containsSpoiler = "spoiler"
         case isReview = "review"
         case language
@@ -954,6 +956,7 @@ struct SocialRating: Codable, Equatable, Hashable {
 struct SocialComment: Codable, Equatable, Hashable {
     let identifiers: Identifiers
     let body: String?
+    var gif: String? = nil
     let containsSpoiler: Bool
     let isReview: Bool
     let language: String?
@@ -963,6 +966,7 @@ struct SocialComment: Codable, Equatable, Hashable {
     enum CodingKeys: String, CodingKey {
         case identifiers = "ids"
         case body = "comment"
+        case gif
         case containsSpoiler = "spoiler"
         case isReview = "review"
         case language

@@ -11,6 +11,8 @@ import Receiver
 import UIKit
 
 final class MediaCommentsCollectionViewCell: UICollectionViewCell {
+    private let gifView = CommentGIFView()
+
     // Comment
     @IBOutlet var ratingAndSpoilerLabel: CommentMetadataLabel!
     @IBOutlet var commentLabel: UILabel!
@@ -50,6 +52,7 @@ final class MediaCommentsCollectionViewCell: UICollectionViewCell {
         super.awakeFromNib()
 
         contentView.autoresizingMask = .flexibleHeight
+        gifView.install(after: commentLabel, compact: true)
 
         if let avatarImageView = avatarImageView {
             avatarImageView.layer.cornerRadius = avatarImageView.bounds.height / 2.0
@@ -79,8 +82,15 @@ final class MediaCommentsCollectionViewCell: UICollectionViewCell {
         maximumContentSizeCategory = .large
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        gifView.reset()
+        commentLabel.attributedText = nil
+    }
+
     var commentModel: CommentModel! {
         didSet {
+            gifView.configure(with: commentModel)
             setupRatingAndSpoiler()
             setupComment()
             setupUser()

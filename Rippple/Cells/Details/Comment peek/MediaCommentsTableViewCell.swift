@@ -117,7 +117,7 @@ final class MediaCommentsTableViewCell: TintedCanvasTableViewCell {
         errorView.isHidden = true
         emptyView.isHidden = true
         collectionView.isHidden = false
-        heightLayoutContraint.constant = 210
+        heightLayoutContraint.constant = 220
         titleTopLayoutContraint.constant = 10
         titleBottomLayoutContraint.constant = 8
         invalidateIntrinsicContentSize()
