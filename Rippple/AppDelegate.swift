@@ -109,6 +109,7 @@ class RipppleHostingController<Content: View>: UIHostingController<RipppleHosted
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     private let disposeBag = DisposeBag()
+    private var backgroundRefresh: BackgroundRefresh?
     private var lastRegisteredPushInformation: PushInformationModel?
 
     override init() {
@@ -379,32 +380,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         CalendarManager.shared.setup()
 
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: "tv.trakt.towatch.refresh", using: nil) { task in
-            Task { @MainActor in
-                #if !targetEnvironment(macCatalyst)
-                await LiveActivityManager.shared.stopActivityIfNeeded()
-                #endif
-
-                // If purchase not active or badge turned off, complete quickly
-                guard UserDefaults.standard.integer(forKey: "Badge.mode") >= 1 else {
-                    // Reschedule next refresh
-                    AppManager.shared.scheduleNewBackgroundRefresh()
-
-                    task.setTaskCompleted(success: true)
-
-                    return
-                }
-
-                MovieToWatchManager.shared.forcedUserRefresh()
-                EpisodeToWatchManager.shared.forcedUserRefresh()
-
-                let timeout: DispatchTime = .now() + 20
-                DispatchQueue.global(qos: .utility).asyncAfter(deadline: timeout) {
-                    // Reschedule next refresh
-                    AppManager.shared.scheduleNewBackgroundRefresh()
-
-                    task.setTaskCompleted(success: true)
-                }
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: "tv.trakt.towatch.refresh", using: .main) { [weak self] task in
+            MainActor.assumeIsolated {
+                guard let self = self else { return }
+                let refresh = BackgroundRefresh(task: task)
+                self.backgroundRefresh = refresh
+                refresh.start()
             }
         }
 
@@ -674,5 +655,72 @@ extension AppDelegate {
            DeeplinkManager.shared.shouldOpenDeeplink() {
             UIApplication.shared.switchToDeeplink()
         }
+    }
+}
+
+@MainActor
+private final class BackgroundRefresh {
+    private var task: BGTask?
+    private var cleanupTask: Task<Void, Never>?
+    private var remainingRefreshes = 2
+    private var refreshSucceeded = true
+
+    init(task: BGTask) {
+        self.task = task
+    }
+
+    func start() {
+        task?.expirationHandler = { [weak self] in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.finish(success: false)
+            }
+        }
+
+        cleanupTask = Task { [weak self] in
+            guard let self = self else { return }
+            #if !targetEnvironment(macCatalyst)
+            await LiveActivityManager.shared.stopActivityIfNeeded()
+            #endif
+            guard self.task != nil else { return }
+
+            guard SessionManager.shared.isLoggedIn,
+                  UserDefaults.standard.integer(forKey: "Badge.mode") >= 1 else {
+                self.finish(success: true)
+                return
+            }
+
+            MovieToWatchManager.shared.refreshForBackgroundTask { [weak self] success in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.refreshCompleted(success: success)
+                }
+            }
+            EpisodeToWatchManager.shared.refreshForBackgroundTask { [weak self] success in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.refreshCompleted(success: success)
+                }
+            }
+        }
+    }
+
+    private func refreshCompleted(success: Bool) {
+        guard task != nil else { return }
+        refreshSucceeded = refreshSucceeded && success
+        remainingRefreshes -= 1
+        if remainingRefreshes == 0 {
+            finish(success: refreshSucceeded)
+        }
+    }
+
+    private func finish(success: Bool) {
+        guard let task = task else { return }
+        self.task = nil
+        task.expirationHandler = nil
+        cleanupTask?.cancel()
+        cleanupTask = nil
+        AppManager.shared.scheduleNewBackgroundRefresh()
+        task.setTaskCompleted(success: success)
     }
 }

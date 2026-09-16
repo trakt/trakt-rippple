@@ -419,9 +419,14 @@ final class MovieToWatchManager {
         }
     }
 
-    private func forceRefresh() {
+    func refreshForBackgroundTask(completion: @escaping @Sendable (Bool) -> Void) {
+        forceRefresh(completion: completion)
+    }
+
+    private func forceRefresh(completion: (@Sendable (Bool) -> Void)? = nil) {
         if SessionManager.shared.isLoggedOut {
             print("MovieToWatchManager.forceRefresh stop because NOT logged in")
+            completion?(false)
             return
         }
 
@@ -430,18 +435,40 @@ final class MovieToWatchManager {
         print("MovieToWatchManager.forceRefresh START")
 
         let updateMoviesOperation = UpdateMoviesOperation(pinnedMovies: PinnedMoviesManager.shared.pinnedMovies)
-        updateMoviesOperation.completionBlock = {
-            if updateMoviesOperation.isCancelled { return }
+        updateMoviesOperation.completionBlock = { [weak self] in
+            guard let self = self else {
+                completion?(false)
+                return
+            }
+            if updateMoviesOperation.isCancelled {
+                completion?(false)
+                return
+            }
             let movies = updateMoviesOperation.movies
             let updateMoviesWatchedOperation = UpdateMoviesWatchedOperation(movies: movies)
-            updateMoviesWatchedOperation.completionBlock = {
-                if updateMoviesWatchedOperation.isCancelled { return }
-                self.movies = movies
-                self.moviesInList = updateMoviesOperation.moviesInList
-                self.releaseInfoCache = updateMoviesWatchedOperation.releaseInfoByMovieId
-                self.mediaModels = updateMoviesWatchedOperation.mediaModels
-                self.futureMediaModels = updateMoviesWatchedOperation.futureMediaModels
-                print("MovieToWatchManager.forceRefresh STOP")
+            updateMoviesWatchedOperation.completionBlock = { [weak self] in
+                if updateMoviesWatchedOperation.isCancelled {
+                    completion?(false)
+                    return
+                }
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self, !updateMoviesWatchedOperation.isCancelled, SessionManager.shared.isLoggedIn else {
+                        completion?(false)
+                        return
+                    }
+                    self.movies = movies
+                    self.moviesInList = updateMoviesOperation.moviesInList
+                    self.releaseInfoCache = updateMoviesWatchedOperation.releaseInfoByMovieId
+                    self.mediaModels = updateMoviesWatchedOperation.mediaModels
+                    self.futureMediaModels = updateMoviesWatchedOperation.futureMediaModels
+                    if let completion = completion {
+                        self.debouncedTransmit.fireNow()
+                        DispatchQueue.main.async {
+                            completion(updateMoviesOperation.completedSuccessfully && updateMoviesWatchedOperation.completedSuccessfully)
+                        }
+                    }
+                    print("MovieToWatchManager.forceRefresh STOP")
+                }
             }
             self.operationQueue.addOperation(updateMoviesWatchedOperation)
         }
@@ -485,6 +512,21 @@ extension Movie {
 }
 
 private class UpdateMoviesOperation: Operation, @unchecked Sendable {
+    private let resultLock = NSLock()
+    private var sourceFetchFailed = false
+
+    fileprivate var completedSuccessfully: Bool {
+        resultLock.lock()
+        defer { resultLock.unlock() }
+        return !isCancelled && !sourceFetchFailed
+    }
+
+    private func recordSourceFetchFailure() {
+        resultLock.lock()
+        sourceFetchFailed = true
+        resultLock.unlock()
+    }
+
     private let moviesDispatchGroup = DispatchGroup()
     private var cancellables = [Cancellable?]()
 
@@ -629,6 +671,7 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
                     self.moviesInList.append(MovieToWatchGroup(name: "Watchlisted", order: 1, shows: Set(movies)))
                 }
             case .failure(let error):
+                self.recordSourceFetchFailure()
                 print("fetchWatchlistedMovies (towatch) request failure \(error)")
             }
         }
@@ -655,6 +698,7 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
                     self.moviesInList.append(MovieToWatchGroup(name: "Favorites", order: 2, shows: Set(movies)))
                 }
             case .failure(let error):
+                self.recordSourceFetchFailure()
                 print("fetchRecommendedMovies (towatch) request failure \(error)")
             }
         }
@@ -681,6 +725,7 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
                     self.moviesInList.append(MovieToWatchGroup(name: "Collected", order: 3, shows: Set(movies)))
                 }
             case .failure(let error):
+                self.recordSourceFetchFailure()
                 print("fetchCollectedMovies (towatch) request failure \(error)")
             }
         }
@@ -706,6 +751,7 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
                     self.moviesInList.append(MovieToWatchGroup(name: list.name, order: order, shows: Set(movies)))
                 }
             case .failure(let error):
+                self.recordSourceFetchFailure()
                 print("fetchMoviesforlist (towatch) request failure \(error)")
             }
         }
@@ -745,9 +791,11 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
                         self.moviesInList.append(MovieToWatchGroup(name: smartSearch.name ?? "Smart Search", order: order, shows: Set(movies)))
                     }
                 } catch {
+                    self.recordSourceFetchFailure()
                     print("fetchMovies for Smart Search (towatch) request JSON mapping failed! \(error)")
                 }
             case .failure(let error):
+                self.recordSourceFetchFailure()
                 print("fetchMovies for Smart Search (towatch) request failure \(error)")
             }
         }
@@ -756,6 +804,21 @@ private class UpdateMoviesOperation: Operation, @unchecked Sendable {
 }
 
 private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
+    private let resultLock = NSLock()
+    private var sourceFetchFailed = false
+
+    fileprivate var completedSuccessfully: Bool {
+        resultLock.lock()
+        defer { resultLock.unlock() }
+        return !isCancelled && !sourceFetchFailed
+    }
+
+    private func recordSourceFetchFailure() {
+        resultLock.lock()
+        sourceFetchFailed = true
+        resultLock.unlock()
+    }
+
     private let watchedDispatchGroup = DispatchGroup()
     private let releaseCallbackQueue = DispatchQueue(label: "Movie to-watch release info callback queue")
 
@@ -916,9 +979,11 @@ private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
                             self.releaseInfoByMovieId[traktId] = releaseInfo
                         }
                     } catch {
+                        self.recordSourceFetchFailure()
                         print("MovieToWatchManager fetchMovieReleases request JSON mapping failed! \(error)")
                     }
                 case .failure(let error):
+                    self.recordSourceFetchFailure()
                     print("MovieToWatchManager fetchMovieReleases request failure \(error)")
                 }
             }

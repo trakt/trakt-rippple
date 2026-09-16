@@ -443,9 +443,14 @@ final class EpisodeToWatchManager {
         }
     }
 
-    private func forceRefresh() {
+    func refreshForBackgroundTask(completion: @escaping @Sendable (Bool) -> Void) {
+        forceRefresh(completion: completion)
+    }
+
+    private func forceRefresh(completion: (@Sendable (Bool) -> Void)? = nil) {
         if SessionManager.shared.isLoggedOut {
             print("EpisodeToWatchManager.forceRefresh stop because NOT logged in")
+            completion?(false)
             return
         }
 
@@ -455,24 +460,46 @@ final class EpisodeToWatchManager {
         print("EpisodeToWatchManager.forceRefresh START")
 
         let updateShowsOperation = UpdateShowsOperation(pinnedShows: PinnedShowsManager.shared.pinnedShows)
-        updateShowsOperation.completionBlock = {
+        updateShowsOperation.completionBlock = { [weak self] in
+            guard let self = self else {
+                completion?(false)
+                return
+            }
             guard updateShowsOperation.completedSuccessfully else {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
                     self.status = .content
                     print("EpisodeToWatchManager.forceRefresh preserving the last complete result because a source failed")
                 }
+                completion?(false)
                 return
             }
 
             let shows = updateShowsOperation.shows
             let updateShowsProgressOperation = UpdateShowsProgressOperation(shows: shows)
-            updateShowsProgressOperation.completionBlock = {
-                self.shows = updateShowsOperation.shows
-                self.showsInList = updateShowsOperation.showsInList
-                self.mediaModels = updateShowsProgressOperation.mediaModels
-                self.futureMediaModels = updateShowsProgressOperation.futureMediaModels
-                self.fallbackRetryDetection(generation: fallbackRetryGeneration)
-                print("EpisodeToWatchManager.forceRefresh STOP")
+            updateShowsProgressOperation.completionBlock = { [weak self] in
+                guard !updateShowsProgressOperation.isCancelled else {
+                    completion?(false)
+                    return
+                }
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self, !updateShowsProgressOperation.isCancelled, SessionManager.shared.isLoggedIn else {
+                        completion?(false)
+                        return
+                    }
+                    self.shows = updateShowsOperation.shows
+                    self.showsInList = updateShowsOperation.showsInList
+                    self.mediaModels = updateShowsProgressOperation.mediaModels
+                    self.futureMediaModels = updateShowsProgressOperation.futureMediaModels
+                    self.fallbackRetryDetection(generation: fallbackRetryGeneration)
+                    if let completion = completion {
+                        self.debouncedTransmit.fireNow()
+                        DispatchQueue.main.async {
+                            completion(updateShowsProgressOperation.completedSuccessfully)
+                        }
+                    }
+                    print("EpisodeToWatchManager.forceRefresh STOP")
+                }
             }
             self.operationQueue.addOperation(updateShowsProgressOperation)
         }
@@ -961,6 +988,21 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
 }
 
 private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
+    private let resultLock = NSLock()
+    private var sourceFetchFailed = false
+
+    fileprivate var completedSuccessfully: Bool {
+        resultLock.lock()
+        defer { resultLock.unlock() }
+        return !isCancelled && !sourceFetchFailed
+    }
+
+    private func recordSourceFetchFailure() {
+        resultLock.lock()
+        sourceFetchFailed = true
+        resultLock.unlock()
+    }
+
     private let progressDispatchGroup = DispatchGroup()
 
     private var cancellables = [Cancellable?]()
@@ -1053,7 +1095,11 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
                 let showProgress = await show.mediaModel.progress()
                 DispatchQueue.main.async {
                     defer { self.progressDispatchGroup.leave() }
-                    guard !self.isCancelled, let showProgress = showProgress else { return }
+                    guard !self.isCancelled else { return }
+                    guard let showProgress = showProgress else {
+                        self.recordSourceFetchFailure()
+                        return
+                    }
                     self.showProgressMap[show] = showProgress
                 }
             }
@@ -1100,9 +1146,11 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
                             .sorted { ($0.1.nextEpisodeToWatch!.firstAired!, $0.0.title) < ($1.1.nextEpisodeToWatch!.firstAired!, $1.0.title) }
                             .map { MediaModel.showProgress($0.key, $0.value) }
                     } catch {
+                        self.recordSourceFetchFailure()
                         print("showsCalendar request JSON mapping failed! \(error)")
                     }
                 case .failure(let error):
+                    self.recordSourceFetchFailure()
                     print("showsCalendar request failure \(error)")
                 }
             }
