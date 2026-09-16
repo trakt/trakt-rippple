@@ -58,6 +58,11 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var certificationLabel: UILabel!
 
     @IBOutlet var certificationBorderView: UIView!
+    @IBOutlet private var certificationButton: UIButton!
+
+    private let parentalGuideIndicators = ParentalGuideIndicatorsView()
+    private var parentalGuideRequest: Cancellable?
+    private var parentalGuideRequestID = UUID()
 
     @IBOutlet var ratingsStack: UIView!
     @IBOutlet var rottenTomatoesCriticsRating: EFCountingLabel!
@@ -83,6 +88,7 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
     }
 
     deinit {
+        parentalGuideRequest?.cancel()
         cancelCancellable()
     }
 
@@ -118,6 +124,17 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
                                 action: #selector(configureView))
         registerForTraitChanges([UITraitPreferredContentSizeCategory.self],
                                 action: #selector(updateQuickActionButtonMinimumHeightsForTraitChanges))
+
+        if let stack = certificationLabel.superview as? UIStackView {
+            stack.insertArrangedSubview(parentalGuideIndicators, at: 2)
+            stack.alignment = .center
+            stack.isLayoutMarginsRelativeArrangement = true
+            stack.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 3, bottom: 0, trailing: 3)
+        }
+        certificationLabel.adjustsFontForContentSizeCategory = true
+        certificationButton.accessibilityLabel = "Certifications and parental guide"
+        certificationButton.accessibilityHint = "Show age ratings and content guidance"
+        certificationLabel.isAccessibilityElement = false
 
         certificationBorderView.layer.borderWidth = 0.8
         certificationBorderView.layer.borderColor = UIColor.secondaryLabel.cgColor
@@ -228,8 +245,9 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
     var media: MediaModel? {
         didSet {
             if oldValue == media { return }
+            guard let media = media else { return }
             genreLabel.isRedactedByDefault = false
-            switch media! {
+            switch media {
             case .movie(let movie):
                 if let genres = movie.genres {
                     genreLabel.text = genres.joined(separator: ", ").capitalized
@@ -328,10 +346,55 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
             case .showProgress:
                 fatalError()
             }
+            updateParentalGuide()
             debouncedUpdateQuickActions.fireNow()
 
             updateRuntimeDisplay()
         }
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        parentalGuideRequest?.cancel()
+        parentalGuideRequestID = UUID()
+        parentalGuideIndicators.configure(guide: nil)
+        media = nil
+    }
+
+    private func updateParentalGuide() {
+        parentalGuideRequest?.cancel()
+        parentalGuideRequestID = UUID()
+        let requestID = parentalGuideRequestID
+        let target = ParentalGuideTarget(media: media)
+        parentalGuideIndicators.configure(guide: nil)
+        parentalGuideIndicators.isHiddenInStackView = target == nil
+        certificationButton.isHidden = target == nil
+        guard let target = target else { return }
+
+        certificationLabel.isHiddenInStackView = false
+        certificationLabel.superview?.isHiddenInStackView = false
+        certificationBorderView.isHiddenInStackView = false
+        ratingsStack.isHiddenInStackView = false
+        if certificationLabel.text?.isEmpty != false {
+            certificationLabel.text = "NR"
+        }
+        updateParentalGuideAccessibility(guide: nil)
+        guard TraktAPIProvider.source.token != nil else { return }
+        parentalGuideRequest = TraktAPIProvider.provider.request(.parentalGuide(target: target), callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
+            let guide = try? result.get().filterSuccessfulStatusCodes().map(ParentalGuide.self, using: TraktAPIProvider.decoder)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.parentalGuideRequestID == requestID else { return }
+                self.parentalGuideIndicators.configure(guide: guide)
+                self.updateParentalGuideAccessibility(guide: guide)
+            }
+        }
+    }
+
+    private func updateParentalGuideAccessibility(guide: ParentalGuide?) {
+        let categories = ParentalGuide.Category.allCases.map { category in
+            "\(category.title): \(guide?.severity(for: category)?.title ?? "Unknown")"
+        }
+        certificationButton.accessibilityValue = ([certificationLabel.text ?? "Not rated"] + categories).joined(separator: ", ")
     }
 
     private func updateSeasonMetadata() {

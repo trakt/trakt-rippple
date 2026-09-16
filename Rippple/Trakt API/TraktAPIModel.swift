@@ -1680,6 +1680,80 @@ struct Genre: Codable {
     let slug: String
 }
 
+struct ParentalGuide: Decodable {
+    struct Entry: Decodable {
+        let category: String
+        let severity: String
+    }
+
+    enum Category: String, CaseIterable {
+        case nudity = "NUDITY"
+        case violence = "VIOLENCE"
+        case profanity = "PROFANITY"
+        case alcohol = "ALCOHOL"
+        case frightening = "FRIGHTENING"
+
+        var title: String {
+            switch self {
+            case .nudity:
+                return "Sex & Nudity"
+            case .violence:
+                return "Violence & Gore"
+            case .profanity:
+                return "Profanity"
+            case .alcohol:
+                return "Alcohol, Drugs & Smoking"
+            case .frightening:
+                return "Frightening & Intense Scenes"
+            }
+        }
+    }
+
+    enum Severity: String {
+        case none = "NONE"
+        case mild = "MILD"
+        case moderate = "MODERATE"
+        case severe = "SEVERE"
+
+        var title: String {
+            return rawValue.capitalized
+        }
+    }
+
+    let guide: [Entry]
+
+    func severity(for category: Category) -> Severity? {
+        guard let entry = guide.first(where: { $0.category == category.rawValue }) else { return nil }
+        return Severity(rawValue: entry.severity)
+    }
+}
+
+struct ParentalGuideTarget {
+    enum MediaType: String {
+        case movie
+        case show
+    }
+
+    let type: MediaType
+    let slug: String
+
+    init?(media: MediaModel?) {
+        let identifiers: Identifiers
+        switch media {
+        case .movie(let movie):
+            type = .movie
+            identifiers = movie.identifiers
+        case .show(let show):
+            type = .show
+            identifiers = show.identifiers
+        default:
+            return nil
+        }
+        guard let slug = identifiers.slug ?? identifiers.trakt.map({ String($0) }), !slug.isEmpty else { return nil }
+        self.slug = slug
+    }
+}
+
 struct CertificationsCounties: Codable {
     let us: [Certification]
 }

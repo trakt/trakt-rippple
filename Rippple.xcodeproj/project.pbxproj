@@ -530,6 +530,7 @@
 		A1C000000000000000000211 /* peace.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000111 /* peace.icon */; };
 		A1C000000000000000000212 /* purple.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000112 /* purple.icon */; };
 		A1C000000000000000000213 /* graphite.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1C000000000000000000113 /* graphite.icon */; };
+		F7A100000000000000000006 /* ParentalGuideViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A100000000000000000005 /* ParentalGuideViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1114,6 +1115,7 @@
 		A1C000000000000000000111 /* peace.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = peace.icon; sourceTree = "<group>"; };
 		A1C000000000000000000112 /* purple.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = purple.icon; sourceTree = "<group>"; };
 		A1C000000000000000000113 /* graphite.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = graphite.icon; sourceTree = "<group>"; };
+		F7A100000000000000000005 /* ParentalGuideViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ParentalGuideViews.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1300,6 +1302,7 @@
 		3A02D04E2B41B6E400B6E51B /* Certifications */ = {
 			isa = PBXGroup;
 			children = (
+				F7A100000000000000000005 /* ParentalGuideViews.swift */,
 				3A02D04F2B41B6F600B6E51B /* CertificationTableViewCell.swift */,
 				3A02D0512B41B70000B6E51B /* CertificationTableViewCell.xib */,
 			);
@@ -3360,6 +3363,7 @@
 				3A0D036D2C9DB3DE00D0DDD7 /* AppIconChooserView.swift in Sources */,
 				3A72F3BE2B023B5B00AB9383 /* PinnedShowsManager.swift in Sources */,
 				3A2AAD2A2806CA570055FCD8 /* WatchedViewController.swift in Sources */,
+				F7A100000000000000000006 /* ParentalGuideViews.swift in Sources */,
 				3A02D04D2B41B35000B6E51B /* CertificationsViewController.swift in Sources */,
 				3AD8FDC429F45E6A006A26EC /* NotificationCenterViewController.swift in Sources */,
 				3A8E05A624793BCD006B5B13 /* MovieNotificationsManager.swift in Sources */,

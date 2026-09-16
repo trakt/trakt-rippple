@@ -470,6 +470,7 @@ enum TraktAPIService {
     case deleteNotes(id: Int64)
 
     case certifications(type: CertificationType)
+    case parentalGuide(target: ParentalGuideTarget)
 
     case lastActivities
 
@@ -521,6 +522,9 @@ extension TraktAPIService: AuthorizedTargetType {
 //            return .successCodes
 //        }
 
+        if case .parentalGuide = self {
+            return .customCodes([200, 204, 401, 404])
+        }
         return .customCodes([200, 201, 204, 401, 409])
     }
 
@@ -982,6 +986,9 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/notes/\(id)"
         case .deleteNotes(let id):
             return "/notes/\(id)"
+        case .parentalGuide(let target):
+            let slug = target.slug.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) ?? target.slug
+            return "/v3/media/\(target.type.rawValue)/\(slug)/info/16/version/1"
         case .certifications(let type):
             return "/certifications/\(type)"
         case .lastActivities:
@@ -1230,7 +1237,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .put
         case .deleteNotes:
             return .delete
-        case .certifications:
+        case .certifications, .parentalGuide:
             return .get
         case .lastActivities:
             return .get
@@ -1972,6 +1979,9 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: JSONEncoding.default)
         case .deleteNotes:
             return .requestPlain
+        case .parentalGuide:
+            return .requestParameters(parameters: ["locale": Locale.preferredLanguages.first ?? "en"],
+                                      encoding: URLEncoding.default)
         case .certifications:
             return .requestPlain
         case .lastActivities:
