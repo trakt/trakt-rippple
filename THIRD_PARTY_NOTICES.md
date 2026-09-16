@@ -13,6 +13,7 @@ If you add, remove, or migrate dependencies, please update this file.
 - **SwiftFormat** (`SwiftFormat`)
   - **Description**: Tool to format and lint Swift source code.
   - **Source**: https://github.com/nicklockwood/SwiftFormat
+  - **Pinned version**: `0.63.0`
 
 ## Swift Package Manager dependencies
 

@@ -155,9 +155,9 @@ struct OpenInSettingsView: View {
                                }, onDelete: {
                                    deleteCustomAction(id: state.action.id)
                                })
-            #if targetEnvironment(macCatalyst)
+                               #if targetEnvironment(macCatalyst)
                                .frame(minWidth: 620, minHeight: 720)
-            #endif
+                               #endif
         }
     }
 

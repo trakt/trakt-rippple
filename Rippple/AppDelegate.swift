@@ -497,7 +497,7 @@ extension AppDelegate {
         guard SessionManager.shared.isLoggedIn else { return }
 
         let tokenParts = deviceToken.map { data -> String in
-            return String(format: "%02.2hhx", data)
+            String(format: "%02.2hhx", data)
         }
 
         let latestToken = tokenParts.joined()
