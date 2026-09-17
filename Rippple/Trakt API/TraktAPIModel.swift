@@ -1195,14 +1195,24 @@ struct Ratings: Codable {
     let imdb: IMDbRatings
     let metascore: MetascoreRatings
     let tmdb: TMDbRatings
+    let letterboxd: ExternalRatings?
+    let mal: ExternalRatings?
 
     enum CodingKeys: String, CodingKey {
         case trakt
+        case letterboxd
+        case mal
         case rottenTomatoes = "rotten_tomatoes"
         case imdb
         case metascore
         case tmdb
     }
+}
+
+struct ExternalRatings: Codable {
+    let rating: Float?
+    let votes: Int?
+    let link: URL?
 }
 
 struct MetascoreRatings: Codable {

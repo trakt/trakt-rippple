@@ -462,6 +462,104 @@
                                                     </stackView>
                                                 </subviews>
                                             </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="mal-000">
+                                                <rect key="frame" x="467.5" y="13" width="102" height="50"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mal-001">
+                                                        <rect key="frame" x="0.0" y="0.0" width="8" height="50"/>
+                                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="8" id="mal-002"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" preferredBehavioralStyle="pad" translatesAutoresizingMaskIntoConstraints="NO" id="mal-003">
+                                                        <rect key="frame" x="14" y="5" width="40" height="40"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="40" id="mal-004"/>
+                                                            <constraint firstAttribute="width" secondItem="mal-003" secondAttribute="height" multiplier="1:1" id="mal-005"/>
+                                                        </constraints>
+                                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                        <state key="normal" backgroundImage="myanimelist_logo"/>
+                                                    </button>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="mal-007">
+                                                        <rect key="frame" x="60" y="7.5" width="42" height="35"/>
+                                                        <subviews>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="firstBaseline" translatesAutoresizingMaskIntoConstraints="NO" id="mal-008">
+                                                                <rect key="frame" x="0.0" y="0.0" width="42" height="20.5"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="--" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mal-009" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="25" height="20.5"/>
+                                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="/10" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mal-010" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="25" y="4.5" width="17" height="14.5"/>
+                                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
+                                                            </stackView>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="votes" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mal-011" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="20.5" width="42" height="14.5"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="letterboxd-000">
+                                                <rect key="frame" x="467.5" y="13" width="102" height="50"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="letterboxd-001">
+                                                        <rect key="frame" x="0.0" y="0.0" width="8" height="50"/>
+                                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="8" id="letterboxd-002"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" preferredBehavioralStyle="pad" translatesAutoresizingMaskIntoConstraints="NO" id="letterboxd-003">
+                                                        <rect key="frame" x="14" y="5" width="40" height="40"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="40" id="letterboxd-004"/>
+                                                            <constraint firstAttribute="width" secondItem="letterboxd-003" secondAttribute="height" multiplier="1:1" id="letterboxd-005"/>
+                                                        </constraints>
+                                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                        <state key="normal" backgroundImage="letterboxd_logo"/>
+                                                    </button>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="letterboxd-007">
+                                                        <rect key="frame" x="60" y="7.5" width="42" height="35"/>
+                                                        <subviews>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="firstBaseline" translatesAutoresizingMaskIntoConstraints="NO" id="letterboxd-008">
+                                                                <rect key="frame" x="0.0" y="0.0" width="42" height="20.5"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="--" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="letterboxd-009" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="25" height="20.5"/>
+                                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="/5" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="letterboxd-010" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                        <rect key="frame" x="25" y="4.5" width="17" height="14.5"/>
+                                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
+                                                            </stackView>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="votes" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="letterboxd-011" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="20.5" width="42" height="14.5"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                            </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="Ay3-KR-bDP">
                                                 <rect key="frame" x="575.5" y="13" width="158" height="50"/>
                                                 <subviews>
@@ -638,6 +736,14 @@
                 </constraints>
             </tableViewCellContentView>
             <connections>
+                <outlet property="malStack" destination="mal-000" id="mal-outlet-Stack"/>
+                <outlet property="malImage" destination="mal-003" id="mal-outlet-Image"/>
+                <outlet property="malRating" destination="mal-009" id="mal-outlet-Rating"/>
+                <outlet property="malVotes" destination="mal-011" id="mal-outlet-Votes"/>
+                <outlet property="letterboxdStack" destination="letterboxd-000" id="letterboxd-outlet-Stack"/>
+                <outlet property="letterboxdImage" destination="letterboxd-003" id="letterboxd-outlet-Image"/>
+                <outlet property="letterboxdRating" destination="letterboxd-009" id="letterboxd-outlet-Rating"/>
+                <outlet property="letterboxdVotes" destination="letterboxd-011" id="letterboxd-outlet-Votes"/>
                 <outlet property="imdbImage" destination="zlv-Fl-yhF" id="xWO-Eb-RGU"/>
                 <outlet property="imdbRating" destination="Joo-Ka-Lgo" id="6fQ-sw-fRH"/>
                 <outlet property="imdbStack" destination="apk-nn-c8l" id="mNH-b9-avM"/>
@@ -697,6 +803,8 @@
     </objects>
     <resources>
         <image name="chevron.up.chevron.down" catalog="system" width="109" height="128"/>
+        <image name="letterboxd_logo" width="500" height="500"/>
+        <image name="myanimelist_logo" width="192" height="192"/>
         <image name="imdb_logo" width="512" height="512"/>
         <image name="metacritic_logo_orange" width="40" height="40"/>
         <image name="rotten_tomatoes_certified_fresh" width="528" height="528"/>

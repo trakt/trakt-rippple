@@ -41,6 +41,7 @@ This file applies to the whole repository. Keep changes simple, focused, and con
 - Do not introduce direct `URLSession` calls in views or controllers. Use Alamofire directly only inside the existing Moya session, monitor, and retry infrastructure.
 - Choose provider variants deliberately; authentication, caching, rating monitoring, and debug logging differ. Treat API data as fallible: filter status codes, surface failures, guard identifiers and indices, and avoid new force unwraps for remote data.
 - Run network and decoding work off the main thread, then return to the main thread for UI or UI-observed state. In files importing Moya, `_Concurrency.Task` avoids the `Moya.Task` name collision.
+- Before applying an asynchronous response to a reusable cell or controller, prefer checking existing model identity over adding a request UUID. Capture the requested media (for example, `let requestedMedia = media`), then guard on the main thread with `guard let self = self, self.media == requestedMedia else { return }`. Keep request cancellation, but do not rely on it alone: a response may already be queued. Use a separate request identifier only when overlapping requests for the same media require the latest response to win or model identity is insufficient.
 
 ### Persistence and caching
 

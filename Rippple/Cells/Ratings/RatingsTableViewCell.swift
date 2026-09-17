@@ -53,6 +53,18 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var tmdbVotes: EFCountingLabel!
     @IBOutlet var tmdbImage: UIButton!
 
+    @IBOutlet var letterboxdStack: UIStackView!
+
+    @IBOutlet var letterboxdRating: EFCountingLabel!
+    @IBOutlet var letterboxdVotes: EFCountingLabel!
+    @IBOutlet var letterboxdImage: UIButton!
+
+    @IBOutlet var malStack: UIStackView!
+
+    @IBOutlet var malRating: EFCountingLabel!
+    @IBOutlet var malVotes: EFCountingLabel!
+    @IBOutlet var malImage: UIButton!
+
     private let votesFormatter: NumberFormatter = .init()
 
     override func awakeFromNib() {
@@ -60,63 +72,30 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
 
         votesFormatter.numberStyle = .decimal
 
-        rating.method = .easeInOut
+        for label in countingLabels {
+            label.method = .easeInOut
+        }
+        for label in [votes, imdbVotes, tmdbVotes, letterboxdVotes, malVotes] {
+            label?.formatBlock = { [weak self] value in
+                guard let self = self else { return "0 vote" }
+                return "\(self.votesFormatter.string(from: NSNumber(value: Int(value))) ?? "0") \(value > 1 ? "votes" : "vote")"
+            }
+        }
         rating.format = "%d"
-
-        votes.method = .easeInOut
-        votes.formatBlock = { [weak self] value in
-            guard let self = self else { return "0 vote" }
-            return "\(self.votesFormatter.string(from: NSNumber(value: Int(value))) ?? "0") \(value > 1 ? "votes" : "vote")"
+        for label in [rottenTomatoesCriticsRating, rottenTomatoesAudienceRating, metacriticRating, tmdbRating] {
+            label?.formatBlock = { value in
+                String(format: "%02d", Int(value))
+            }
         }
-
-        rottenTomatoesCriticsRating.method = .easeInOut
-        rottenTomatoesCriticsRating.formatBlock = { value in
-            String(format: "%02d", Int(value))
-        }
-
-        rottenTomatoesAudienceRating.method = .easeInOut
-        rottenTomatoesAudienceRating.formatBlock = { value in
-            String(format: "%02d", Int(value))
-        }
-
-        imdbRating.method = .easeInOut
         imdbRating.format = "%.1f"
-
-        imdbVotes.method = .easeInOut
-        imdbVotes.formatBlock = { [weak self] value in
-            guard let self = self else { return "0 vote" }
-            return "\(self.votesFormatter.string(from: NSNumber(value: Int(value))) ?? "0") \(value > 1 ? "votes" : "vote")"
+        for label in [letterboxdRating, malRating] {
+            label?.format = "%.2f"
         }
-
-        metacriticRating.method = .easeInOut
-        metacriticRating.formatBlock = { value in
-            String(format: "%02d", Int(value))
-        }
-
-        tmdbRating.method = .easeInOut
-        tmdbRating.formatBlock = { value in
-            String(format: "%02d", Int(value * 10))
-        }
-
-        tmdbVotes.method = .easeInOut
-        tmdbVotes.formatBlock = { [weak self] value in
-            guard let self = self else { return "0 vote" }
-            return "\(self.votesFormatter.string(from: NSNumber(value: Int(value))) ?? "0") \(value > 1 ? "votes" : "vote")"
-        }
-
-        rottenTomatoesCriticsStack.isHidden = true
-        rottenTomatoesAudienceStack.isHidden = true
-        imdbStack.isHidden = true
-        metacriticStack.isHidden = true
-        tmdbStack.isHidden = true
+        resetRatings()
 
         for bar in distributionBars {
             bar.backgroundColor = #colorLiteral(red: 0.737254902, green: 0.7333333333, blue: 0.7568627451, alpha: 1)
             bar.layer.cornerRadius = bar.layer.frame.size.width / 2.0
-        }
-
-        for constant in distributionHeightConstant {
-            constant.constant = 0.0
         }
 
         RatingsManager.shared.onRatedItemsChangedReceiver.listen { [weak self] _ in
@@ -143,6 +122,8 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
     var media: MediaModel? {
         didSet {
             guard let media = media else {
+                cancelCancellable()
+                resetRatings()
                 return
             }
             rateAction.menu = media.rateMenu
@@ -208,10 +189,12 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
         }
     }
 
-    private func update(with media: MediaModel?) {
+    private func update(with media: MediaModel) {
+        resetRatings()
         rating.text = "0"
+        votes.isHidden = false
         votes.text = "Loading..."
-        switch media! {
+        switch media {
         case .movie(let movie):
             cancellable = fetchRatingsFor(type: .movie(movieId: movie.identifiers.trakt!))
         case .show(let show):
@@ -230,16 +213,10 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
         }
     }
 
-    private func updateRatingWith(rating: Float) {
-        self.rating.countFromCurrentValueTo(CGFloat(round(rating * 10.0)), withDuration: 0.7)
-    }
-
-    private func updateVotesWith(votes: Int) {
-        self.votes.countFromCurrentValueTo(CGFloat(votes), withDuration: 0.7)
-    }
-
     private func updateDistributionWith(distribution: RatingDistribution) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(100)) {
+        let requestedMedia = media
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(100)) { [weak self] in
+            guard let self = self, self.media == requestedMedia else { return }
             let values = [distribution.one,
                           distribution.two,
                           distribution.three,
@@ -255,7 +232,8 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
                 UIView.animate(withDuration: 0.7,
                                delay: 0,
                                options: [.curveEaseInOut, .allowUserInteraction],
-                               animations: {
+                               animations: { [weak self] in
+                                   guard let self = self else { return }
                                    for constant in self.distributionHeightConstant {
                                        let votes = values[Int(constant.identifier!)! - 1]
                                        let proportion = CGFloat(votes) / CGFloat(max)
@@ -276,170 +254,203 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
         }
     }
 
-    private func fetchRatingsFor(type: TraktObjectType) -> Cancellable {
-        rottenTomatoesAudienceRating.text = "--"
-        rottenTomatoesCriticsRating.text = "--"
-        return TraktAPIProvider.provider.request(.ratings(type: type), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        media = nil
+    }
 
-                    let ratings = try response.map(Ratings.self, using: TraktAPIProvider.decoder)
+    private var countingLabels: [EFCountingLabel] {
+        [rating, votes, rottenTomatoesCriticsRating, rottenTomatoesAudienceRating,
+         imdbRating, imdbVotes, metacriticRating, tmdbRating, tmdbVotes,
+         letterboxdRating, letterboxdVotes, malRating, malVotes]
+    }
 
-                    DispatchQueue.main.async {
-                        self.updateRatingWith(rating: ratings.trakt.rating)
-                        self.updateVotesWith(votes: ratings.trakt.votes)
-                        self.updateDistributionWith(distribution: ratings.trakt.distribution)
-                        if let rating = ratings.rottenTomatoes.rating {
-                            self.rottenTomatoesCriticsStack.isHidden = false
-
-                            self.rottenTomatoesCriticsRating.countFromCurrentValueTo(CGFloat(rating),
-                                                                                     withDuration: 0.7)
-                            var configuration = UIButton.Configuration.plain()
-                            configuration.cornerStyle = .fixed
-                            configuration.background.imageContentMode = .scaleAspectFit
-                            if let state = ratings.rottenTomatoes.state {
-                                switch state {
-                                case "fresh":
-                                    configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesFresh)
-                                case "certified":
-                                    configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesCertifiedFresh)
-                                case "rotten":
-                                    configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesRotten)
-                                default:
-                                    // Fallback
-                                    if rating >= 75 {
-                                        // certified fresh
-                                        configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesCertifiedFresh)
-                                    } else if rating >= 60 {
-                                        // fresh
-                                        configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesFresh)
-                                    } else {
-                                        // rotten
-                                        configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesRotten)
-                                    }
-                                }
-                            }
-                            self.rottentTomatoesCriticsImage.configuration = configuration
-                            if let url = ratings.rottenTomatoes.link {
-                                self.rottentTomatoesCriticsImage.addAction(UIAction(handler: { _ in
-                                    UIApplication.shared.open(url)
-                                }), for: .touchUpInside)
-                            }
-                        } else {
-                            self.rottenTomatoesCriticsRating.text = "--"
-                        }
-                        if let userRating = ratings.rottenTomatoes.userRating {
-                            self.rottenTomatoesAudienceStack.isHidden = false
-
-                            self.rottenTomatoesAudienceRating.countFromCurrentValueTo(CGFloat(userRating),
-                                                                                      withDuration: 0.7)
-                            var configuration = UIButton.Configuration.plain()
-                            configuration.cornerStyle = .fixed
-                            configuration.background.imageContentMode = .scaleAspectFit
-                            if let state = ratings.rottenTomatoes.userState {
-                                switch state {
-                                case "upright":
-                                    configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesPositiveAudience)
-                                case "certified":
-                                    configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesVerifiedHot)
-                                case "spilled":
-                                    configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesNegativeAudience)
-                                default:
-                                    // Fallback
-                                    if userRating >= 90 {
-                                        // verified hot
-                                        configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesVerifiedHot)
-                                    } else if userRating >= 60 {
-                                        // upright
-                                        configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesPositiveAudience)
-                                    } else {
-                                        // spilled
-                                        configuration.background.image = UIImage(resource: ImageResource.rottenTomatoesNegativeAudience)
-                                    }
-                                }
-                            }
-                            self.rottenTomatoesAudienceImage.configuration = configuration
-                            if let url = ratings.rottenTomatoes.link {
-                                self.rottenTomatoesAudienceImage.addAction(UIAction(handler: { _ in
-                                    UIApplication.shared.open(url)
-                                }), for: .touchUpInside)
-                            }
-                        } else {
-                            self.rottenTomatoesAudienceRating.text = "--"
-                        }
-                        if let imdbRating = ratings.imdb.rating, let imdbVotes = ratings.imdb.votes {
-                            self.imdbStack.isHidden = false
-
-                            self.imdbRating.countFromCurrentValueTo(CGFloat(imdbRating),
-                                                                    withDuration: 0.7)
-                            self.imdbVotes.countFromCurrentValueTo(CGFloat(imdbVotes),
-                                                                   withDuration: 0.7)
-                            if let url = ratings.imdb.link {
-                                self.imdbImage.addAction(UIAction(handler: { _ in
-                                    UIApplication.shared.open(url)
-                                }), for: .touchUpInside)
-                            }
-                        } else {
-                            self.imdbRating.text = "--"
-                        }
-                        if let metascore = ratings.metascore.rating {
-                            self.metacriticStack.isHidden = false
-
-                            self.metacriticRating.countFromCurrentValueTo(CGFloat(metascore),
-                                                                          withDuration: 0.7)
-                            var configuration = UIButton.Configuration.plain()
-                            configuration.cornerStyle = .fixed
-                            configuration.background.imageContentMode = .scaleAspectFit
-                            if metascore <= 19 {
-                                self.metacriticLabel.text = "Overwhelming Dislike"
-                                configuration.background.image = UIImage(resource: ImageResource.metacriticLogoRed)
-                            } else if metascore <= 39 {
-                                self.metacriticLabel.text = "Generally Unfavorable"
-                                configuration.background.image = UIImage(resource: ImageResource.metacriticLogoRed)
-                            } else if metascore <= 60 {
-                                self.metacriticLabel.text = "Mixed or Average"
-                                configuration.background.image = UIImage(resource: ImageResource.metacriticLogoOrange)
-                            } else if metascore <= 80 {
-                                self.metacriticLabel.text = "Generally Favorable"
-                                configuration.background.image = UIImage(resource: ImageResource.metacriticLogoGreen)
-                            } else {
-                                self.metacriticLabel.text = "Universal Acclaim"
-                                configuration.background.image = UIImage(resource: ImageResource.metacriticLogoGreen)
-                            }
-                            self.metacriticImage.configuration = configuration
-                            if let url = ratings.metascore.link {
-                                self.metacriticImage.addAction(UIAction(handler: { _ in
-                                    UIApplication.shared.open(url)
-                                }), for: .touchUpInside)
-                            }
-                        } else {
-                            self.metacriticRating.text = "--"
-                            self.metacriticLabel.text = ""
-                        }
-                        if let tmdbRating = ratings.tmdb.rating, let tmdbVotes = ratings.tmdb.votes {
-                            self.tmdbStack.isHidden = false
-
-                            self.tmdbRating.countFromCurrentValueTo(CGFloat(tmdbRating),
-                                                                    withDuration: 0.7)
-                            self.tmdbVotes.countFromCurrentValueTo(CGFloat(tmdbVotes),
-                                                                   withDuration: 0.7)
-                            if let url = ratings.tmdb.link {
-                                self.tmdbImage.addAction(UIAction(handler: { _ in
-                                    UIApplication.shared.open(url)
-                                }), for: .touchUpInside)
-                            }
-                        } else {
-                            self.tmdbRating.text = "--"
-                        }
-                    }
-                } catch {
-                    print("Ratings request JSON mapping failed! \(error)")
+    private func resetRatings() {
+        for stack in [rottenTomatoesCriticsStack, rottenTomatoesAudienceStack, imdbStack,
+                      malStack, letterboxdStack, metacriticStack, tmdbStack] {
+            stack?.isHidden = true
+        }
+        for button in [rottentTomatoesCriticsImage, rottenTomatoesAudienceImage, imdbImage,
+                       malImage, letterboxdImage, metacriticImage, tmdbImage] {
+            button?.enumerateEventHandlers { action, _, event, _ in
+                if let action = action {
+                    button?.removeAction(action, for: event)
                 }
-            case .failure(let error):
-                print("Ratings request failure \(error)")
+            }
+        }
+        for label in countingLabels {
+            label.countFrom(0, to: 0, withDuration: 0)
+            label.text = nil
+            label.accessibilityValue = nil
+        }
+        metacriticLabel.text = nil
+        for constant in distributionHeightConstant {
+            constant.constant = 0
+        }
+    }
+
+    @discardableResult
+    private func updateRating(_ value: Float?, label: EFCountingLabel, name: String, maximum: Float) -> Bool {
+        guard let value = value, value.isFinite, (0...maximum).contains(value) else { return false }
+        label.countFrom(0, to: CGFloat(value), withDuration: 0.7)
+        label.accessibilityLabel = "\(name) rating"
+        let formattedValue = label.formatBlock?(CGFloat(value)) ?? (label.format.contains("%d")
+            ? String(format: label.format, Int(value))
+            : String(format: label.format, Double(value)))
+        label.accessibilityValue = "\(formattedValue) out of \(Int(maximum))"
+        return true
+    }
+
+    private func updateVotes(_ count: Int?, label: EFCountingLabel) {
+        label.isHidden = true
+        guard let count = count, count >= 0 else { return }
+        label.isHidden = false
+        label.countFrom(0, to: CGFloat(count), withDuration: 0.7)
+    }
+
+    private func updateExternalRating(_ value: Float?, count: Int? = nil, link: URL?, stack: UIStackView,
+                                      rating: EFCountingLabel, votes: EFCountingLabel? = nil,
+                                      image: UIButton, name: String, maximum: Float) {
+        guard updateRating(value, label: rating, name: name, maximum: maximum) else { return }
+        stack.isHidden = false
+        if let votes = votes {
+            updateVotes(count, label: votes)
+        }
+        image.accessibilityLabel = name
+        image.isUserInteractionEnabled = false
+        guard let link = link else { return }
+        let resolvedURL = link.scheme == nil ? URL(string: "https://\(link.absoluteString)") : link
+        guard let url = resolvedURL, let scheme = url.scheme?.lowercased(),
+              ["https", "http"].contains(scheme), url.host != nil else { return }
+        image.isUserInteractionEnabled = true
+        image.addAction(UIAction { _ in
+            UIApplication.shared.open(url)
+        }, for: .touchUpInside)
+    }
+
+    private func updateRatings(_ ratings: Ratings) {
+        updateRating(round(ratings.trakt.rating * 10), label: rating, name: "Trakt", maximum: 100)
+        updateVotes(ratings.trakt.votes, label: votes)
+        updateDistributionWith(distribution: ratings.trakt.distribution)
+
+        updateExternalRating(ratings.rottenTomatoes.rating.map { Float($0) }, link: ratings.rottenTomatoes.link,
+                             stack: rottenTomatoesCriticsStack, rating: rottenTomatoesCriticsRating,
+                             image: rottentTomatoesCriticsImage, name: "Rotten Tomatoes critics", maximum: 100)
+        updateExternalRating(ratings.rottenTomatoes.userRating.map { Float($0) }, link: ratings.rottenTomatoes.link,
+                             stack: rottenTomatoesAudienceStack, rating: rottenTomatoesAudienceRating,
+                             image: rottenTomatoesAudienceImage, name: "Rotten Tomatoes audience", maximum: 100)
+        updateExternalRating(ratings.imdb.rating, count: ratings.imdb.votes, link: ratings.imdb.link,
+                             stack: imdbStack, rating: imdbRating, votes: imdbVotes,
+                             image: imdbImage, name: "IMDb", maximum: 10)
+        updateExternalRating(ratings.mal?.rating, count: ratings.mal?.votes, link: ratings.mal?.link,
+                             stack: malStack, rating: malRating, votes: malVotes,
+                             image: malImage, name: "MyAnimeList", maximum: 10)
+        updateExternalRating(ratings.letterboxd?.rating, count: ratings.letterboxd?.votes, link: ratings.letterboxd?.link,
+                             stack: letterboxdStack, rating: letterboxdRating, votes: letterboxdVotes,
+                             image: letterboxdImage, name: "Letterboxd", maximum: 5)
+        updateExternalRating(ratings.metascore.rating.map { Float($0) }, link: ratings.metascore.link,
+                             stack: metacriticStack, rating: metacriticRating,
+                             image: metacriticImage, name: "Metacritic", maximum: 100)
+        updateExternalRating(ratings.tmdb.rating.map { $0 * 10 }, count: ratings.tmdb.votes, link: ratings.tmdb.link,
+                             stack: tmdbStack, rating: tmdbRating, votes: tmdbVotes,
+                             image: tmdbImage, name: "TMDb", maximum: 100)
+
+        updateRottenTomatoesImages(ratings.rottenTomatoes)
+        updateMetacriticImage(ratings.metascore)
+    }
+
+    private func setRatingImage(_ image: UIImage, on button: UIButton) {
+        var configuration = UIButton.Configuration.plain()
+        configuration.cornerStyle = .fixed
+        configuration.background.imageContentMode = .scaleAspectFit
+        configuration.background.image = image
+        button.configuration = configuration
+    }
+
+    private func updateRottenTomatoesImages(_ ratings: RottenTomatoesRatings) {
+        if let rating = ratings.rating {
+            let image: UIImage
+            switch ratings.state {
+            case "fresh":
+                image = UIImage(resource: .rottenTomatoesFresh)
+            case "certified":
+                image = UIImage(resource: .rottenTomatoesCertifiedFresh)
+            case "rotten":
+                image = UIImage(resource: .rottenTomatoesRotten)
+            default:
+                if rating >= 75 {
+                    image = UIImage(resource: .rottenTomatoesCertifiedFresh)
+                } else if rating >= 60 {
+                    image = UIImage(resource: .rottenTomatoesFresh)
+                } else {
+                    image = UIImage(resource: .rottenTomatoesRotten)
+                }
+            }
+            setRatingImage(image, on: rottentTomatoesCriticsImage)
+        }
+        if let rating = ratings.userRating {
+            let image: UIImage
+            switch ratings.userState {
+            case "upright":
+                image = UIImage(resource: .rottenTomatoesPositiveAudience)
+            case "certified":
+                image = UIImage(resource: .rottenTomatoesVerifiedHot)
+            case "spilled":
+                image = UIImage(resource: .rottenTomatoesNegativeAudience)
+            default:
+                if rating >= 90 {
+                    image = UIImage(resource: .rottenTomatoesVerifiedHot)
+                } else if rating >= 60 {
+                    image = UIImage(resource: .rottenTomatoesPositiveAudience)
+                } else {
+                    image = UIImage(resource: .rottenTomatoesNegativeAudience)
+                }
+            }
+            setRatingImage(image, on: rottenTomatoesAudienceImage)
+        }
+    }
+
+    private func updateMetacriticImage(_ ratings: MetascoreRatings) {
+        guard let rating = ratings.rating else { return }
+        let image: UIImage
+        switch rating {
+        case ...19:
+            metacriticLabel.text = "Overwhelming Dislike"
+            image = UIImage(resource: .metacriticLogoRed)
+        case ...39:
+            metacriticLabel.text = "Generally Unfavorable"
+            image = UIImage(resource: .metacriticLogoRed)
+        case ...60:
+            metacriticLabel.text = "Mixed or Average"
+            image = UIImage(resource: .metacriticLogoOrange)
+        case ...80:
+            metacriticLabel.text = "Generally Favorable"
+            image = UIImage(resource: .metacriticLogoGreen)
+        default:
+            metacriticLabel.text = "Universal Acclaim"
+            image = UIImage(resource: .metacriticLogoGreen)
+        }
+        setRatingImage(image, on: metacriticImage)
+    }
+
+    private func fetchRatingsFor(type: TraktObjectType) -> Cancellable {
+        let requestedMedia = media
+        return TraktAPIProvider.provider.request(.ratings(type: type), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+            do {
+                let response = try result.get().filterSuccessfulStatusCodes()
+                let ratings = try response.map(Ratings.self, using: TraktAPIProvider.decoder)
+
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self, self.media == requestedMedia else { return }
+                    self.updateRatings(ratings)
+                }
+            } catch {
+                print("Ratings request failed! \(error)")
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self, self.media == requestedMedia else { return }
+                    self.rating.text = "--"
+                    self.votes.text = "Unavailable"
+                }
             }
         }
     }
