@@ -193,6 +193,11 @@ final class UserManager {
         return currentUser.isVip ?? false || currentUser.isVipEp ?? false || currentUser.isVipOg ?? false
     }
 
+    func canAccessStats(for user: User?) -> Bool {
+        guard let user = user else { return false }
+        return isCurrentVIP || (!user.isCurrentUser && user.isTraktVIP)
+    }
+
     var coverImageURL: URL? {
         guard let settings = settings else { return nil }
         return settings.account.coverImageURL

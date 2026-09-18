@@ -7,6 +7,7 @@
 //
 
 import LRUCache
+import Receiver
 import SwiftUI
 import UIKit
 
@@ -231,6 +232,7 @@ struct MonthInReviewCard: View {
     }()
 
     private func fetchMIR() async {
+        guard UserManager.shared.isCurrentVIP else { return }
         if let stats = InReviewBrowseCache.stats(slug: slug, year: year, month: month) {
             await MainActor.run {
                 self.totalWatches = stats.totalWatches
@@ -419,6 +421,7 @@ struct YearInReviewCard: View {
     }
 
     private func fetchYIR() async {
+        guard UserManager.shared.isCurrentVIP else { return }
         if let stats = InReviewBrowseCache.stats(slug: slug, year: year) {
             await MainActor.run {
                 self.totalWatches = stats.totalWatches
@@ -474,6 +477,9 @@ struct YearInReviewCard: View {
 }
 
 struct InReviewView: View {
+    @State private var isVIP = UserManager.shared.isCurrentVIP
+    @State private var disposeBag = DisposeBag()
+
     private var currentYear: Int {
         Calendar.current.component(.year, from: Date())
     }
@@ -498,16 +504,60 @@ struct InReviewView: View {
                 .padding(.horizontal, 8)
             ScrollView(.horizontal) {
                 HStack(spacing: 6) {
-                    AllTimeReviewCard()
-                    YearInReviewCard(year: currentYear)
-                    YearInReviewCard(year: lastYear)
-                    ForEach(last4Months) { ym in
-                        MonthInReviewCard(year: ym.year, month: ym.month)
+                    if isVIP {
+                        AllTimeReviewCard()
+                        YearInReviewCard(year: currentYear)
+                        YearInReviewCard(year: lastYear)
+                        ForEach(last4Months) { ym in
+                            MonthInReviewCard(year: ym.year, month: ym.month)
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Image(systemName: "chart.pie")
+                                .font(.title3)
+                                .foregroundStyle(Color(uiColor: UIColor(asset: .globalTint)))
+                                .accessibilityHidden(true)
+                            Text("Advanced Stats")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Text("Explore your months, years, and all-time stats with Trakt VIP.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Spacer(minLength: 0)
+                            Button("Get VIP") {
+                                UIApplication.shared.switchToPurchase()
+                            }
+                            .font(.headline)
+                            .buttonStyle(.plain)
+                            .foregroundStyle(Color(uiColor: UIColor(asset: .globalTint)))
+                            .frame(minHeight: 44)
+                        }
+                        .padding(16)
+                        .inReviewCardFrame()
+                        .background(Color(uiColor: .ripppleCardBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: ViewRadius.large.rawValue))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: ViewRadius.large.rawValue)
+                                .stroke(Color(uiColor: UIColor(asset: .separator)).opacity(0.5), lineWidth: 1)
+                        }
                     }
                 }
             }
             .scrollIndicators(.never)
             .scrollClipDisabled()
+        }
+        .onAppear {
+            isVIP = UserManager.shared.isCurrentVIP
+            disposeBag = DisposeBag()
+            onSettingsChangedReceiver.listen { [isVIP = $isVIP] _ in
+                isVIP.wrappedValue = UserManager.shared.isCurrentVIP
+            }.disposed(by: disposeBag)
+            onVIPChangedReceiver.listen { [isVIP = $isVIP] value in
+                isVIP.wrappedValue = value
+            }.disposed(by: disposeBag)
+        }
+        .onDisappear {
+            disposeBag = DisposeBag()
         }
     }
 }

@@ -40,8 +40,27 @@ final class FollowersAndFriendsTableViewCell: TintedCanvasTableViewCell {
     /// request
     private var request: Cancellable?
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        request?.cancel()
+        user = nil
+    }
+
+    deinit {
+        request?.cancel()
+    }
+
     override func awakeFromNib() {
         super.awakeFromNib()
+
+        onSettingsChangedReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.loadCounts()
+        }.disposed(by: disposeBag)
+        onVIPChangedReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.loadCounts()
+        }.disposed(by: disposeBag)
 
         numberFormatter.numberStyle = .decimal
 
@@ -74,8 +93,8 @@ final class FollowersAndFriendsTableViewCell: TintedCanvasTableViewCell {
         }
 
         onUsersHiddenFromCommentsChangedReceiver.listen { [weak self] users in
-            guard let self = self else { return }
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 self.blockedCount?.countFromCurrentValueTo(CGFloat(users.count), withDuration: 0.7)
             }
         }.disposed(by: disposeBag)
@@ -85,26 +104,34 @@ final class FollowersAndFriendsTableViewCell: TintedCanvasTableViewCell {
 
     var user: User! {
         didSet {
-            if user.isCurrentUser == false {
-                blockedCount?.superview?.isHidden = true
-                blockedSeparator?.isHidden = true
-            }
+            guard let user = user else { return }
+            blockedCount?.superview?.isHidden = !user.isCurrentUser
+            blockedSeparator?.isHidden = !user.isCurrentUser
             loadCounts()
         }
     }
 
     private func loadCounts() {
-        TraktAPIProvider.provider.request(.stats(type: .user(slug: user.slug)),
-                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-            guard let self = self else { return }
+        request?.cancel()
+        let canAccessStats = UserManager.shared.canAccessStats(for: user)
+        blockedCount?.isHidden = !canAccessStats
+        for label in [followersCount, followingCount, friendsCount] {
+            label?.countFrom(0, to: 0, withDuration: 0)
+            label?.isHidden = !canAccessStats
+        }
+        guard canAccessStats, let requestedUser = user else { return }
+        request = TraktAPIProvider.provider.request(.stats(type: .user(slug: requestedUser.slug)),
+                                                    callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             switch result {
             case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
+                    guard response.statusCode != 204 else { return }
                     let stats = try response.map(UserStats.self, using: TraktAPIProvider.decoder)
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self, self.user == requestedUser, UserManager.shared.canAccessStats(for: self.user) else { return }
                         self.followersCount.countFromCurrentValueTo(CGFloat(stats.network.followers), withDuration: 0.7)
                         self.followingCount.countFromCurrentValueTo(CGFloat(stats.network.following), withDuration: 0.7)
                         self.friendsCount.countFromCurrentValueTo(CGFloat(stats.network.friends), withDuration: 0.7)

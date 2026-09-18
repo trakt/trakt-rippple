@@ -16,18 +16,18 @@ final class TraktStatsViewController: UIViewController {
         case mir(user: User, month: Int, year: Int)
         case yir(user: User, year: Int)
         case all(user: User)
+
+        var user: User {
+            switch self {
+            case .all(let user), .mir(let user, _, _), .yir(let user, _):
+                return user
+            }
+        }
     }
 
     var mode: StatsMode!
     private var user: User {
-        switch mode! {
-        case .all(let user):
-            return user
-        case .mir(let user, _, _):
-            return user
-        case .yir(let user, _):
-            return user
-        }
+        return mode.user
     }
 
     override func viewDidLoad() {

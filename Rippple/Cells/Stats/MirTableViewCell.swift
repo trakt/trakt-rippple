@@ -21,9 +21,25 @@ final class MirTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var moreButton: UIButton!
 
     private let disposeBag = DisposeBag()
+    private var vipNudgeView: StatsVIPNudgeView?
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cancelCancellable()
+        user = nil
+    }
 
     override func awakeFromNib() {
         super.awakeFromNib()
+        vipNudgeView = StatsVIPNudgeView.install(in: contentView)
+        onSettingsChangedReceiver.listen { [weak self] _ in
+            guard let self = self, let user = self.user else { return }
+            self.update(with: user)
+        }.disposed(by: disposeBag)
+        onVIPChangedReceiver.listen { [weak self] _ in
+            guard let self = self, let user = self.user else { return }
+            self.update(with: user)
+        }.disposed(by: disposeBag)
 
         RatingsManager.shared.onRatedItemsChangedReceiver.skip(count: 1).listen { [weak self] _ in
             guard let self = self else { return }
@@ -57,7 +73,7 @@ final class MirTableViewCell: TintedCanvasTableViewCell {
     }
 
     func setup(user: User, year: Int, month: Int) {
-        if self.user == user, self.year == year, self.month == month {
+        if self.user == user, self.user?.isTraktVIP == user.isTraktVIP, self.year == year, self.month == month {
             return
         }
 
@@ -117,6 +133,14 @@ final class MirTableViewCell: TintedCanvasTableViewCell {
     private let dateFormatter = DateComponentsFormatter()
 
     private func update(with user: User) {
+        cancelCancellable()
+        vipNudgeView?.setLocked(!UserManager.shared.canAccessStats(for: user))
+        for label in [plays, minutes, ratings, comments] {
+            label?.countFrom(0, to: 0, withDuration: 0)
+            label?.text = "—"
+        }
+        guard UserManager.shared.canAccessStats(for: user) else { return }
+
         numberFormatter.numberStyle = .decimal
 
         dateFormatter.unitsStyle = .brief
@@ -157,7 +181,6 @@ final class MirTableViewCell: TintedCanvasTableViewCell {
             return self.dateFormatter.string(from: TimeInterval(value * 60))!
         }
 
-        cancelCancellable()
         cancellable = fetchMir()
     }
 
@@ -183,12 +206,13 @@ final class MirTableViewCell: TintedCanvasTableViewCell {
         }
     }
 
-    private func fetchMir() -> Cancellable {
-        return TraktAPIProvider.provider.request(.mir(slug: user.slug,
-                                                      year: year,
-                                                      month: month),
+    private func fetchMir() -> Cancellable? {
+        guard UserManager.shared.canAccessStats(for: user), let requestedUser = user,
+              let requestedYear = year, let requestedMonth = month else { return nil }
+        return TraktAPIProvider.provider.request(.mir(slug: requestedUser.slug,
+                                                      year: requestedYear,
+                                                      month: requestedMonth),
                                                  callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
-            guard let self = self else { return }
             switch result {
             case .success(let moyaResponse):
                 do {
@@ -196,7 +220,10 @@ final class MirTableViewCell: TintedCanvasTableViewCell {
 
                     let stats = try response.map(IRUserStats.self, using: TraktAPIProvider.decoder).stats.all
 
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self, self.user == requestedUser,
+                              self.year == requestedYear, self.month == requestedMonth,
+                              UserManager.shared.canAccessStats(for: self.user) else { return }
                         self.updateRatingsWith(ratings: stats.ratingsCounts.total)
                         self.updatePlaysWith(plays: stats.playCounts.total)
                         self.updateMinutesWith(minutes: stats.minutes.total)

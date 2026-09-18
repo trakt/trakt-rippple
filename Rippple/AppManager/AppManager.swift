@@ -596,7 +596,7 @@ public extension UIApplication {
     }
 
     internal func openStats(mode: TraktStatsViewController.StatsMode) {
-        if UserManager.shared.isCurrentVIP {
+        if UserManager.shared.canAccessStats(for: mode.user) {
             let embed = TraktStatsViewController()
             embed.mode = mode
             let navigationController = StyledNavigationController(rootViewController: embed)

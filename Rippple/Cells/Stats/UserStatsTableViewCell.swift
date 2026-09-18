@@ -26,43 +26,54 @@ final class UserStatsTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet private var statsColumnsStack: UIStackView!
 
     private let disposeBag = DisposeBag()
+    private var vipNudgeView: StatsVIPNudgeView?
 
     override func prepareForReuse() {
         super.prepareForReuse()
         cancelCancellable()
+        user = nil
     }
 
     override func awakeFromNib() {
         super.awakeFromNib()
         configureStatsColumnsPriorities()
+        vipNudgeView = StatsVIPNudgeView.install(in: contentView)
+        onSettingsChangedReceiver.listen { [weak self] _ in
+            guard let self = self, let user = self.user else { return }
+            self.update(with: user)
+        }.disposed(by: disposeBag)
+        onVIPChangedReceiver.listen { [weak self] _ in
+            guard let self = self, let user = self.user else { return }
+            self.update(with: user)
+        }.disposed(by: disposeBag)
 
         RatingsManager.shared.onRatedItemsChangedReceiver.skip(count: 1).listen { [weak self] _ in
             guard let self = self else { return }
             self.cancelCancellable()
-            self.cancellable = self.fetchStatsFor(type: .user(slug: self.user.slug))
+            self.cancellable = self.fetchStats()
         }.disposed(by: disposeBag)
 
         onOwnCommentsChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.fetchCommentCount(type: .user(slug: self.user.slug))
+            self.fetchCommentCount()
         }.disposed(by: disposeBag)
 
         WatchingManager.shared.onWatchingItemChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             self.cancelCancellable()
-            self.cancellable = self.fetchStatsFor(type: .user(slug: self.user.slug))
+            self.cancellable = self.fetchStats()
         }.disposed(by: disposeBag)
 
         onMarkWatchedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.cancelCancellable()
-            self.cancellable = self.fetchStatsFor(type: .user(slug: self.user.slug))
+            self.cancellable = self.fetchStats()
         }.disposed(by: disposeBag)
 
         onRemoveWatchReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.cancelCancellable()
-            self.cancellable = self.fetchStatsFor(type: .user(slug: self.user.slug))
+            self.cancellable = self.fetchStats()
         }.disposed(by: disposeBag)
 
         onSyncWatchedMoviesChangedReceiver.hotOnly().listen { [weak self] _ in
@@ -90,7 +101,8 @@ final class UserStatsTableViewCell: TintedCanvasTableViewCell {
 
     var user: User! {
         didSet {
-            if user == oldValue { return }
+            if user == oldValue, user?.isTraktVIP == oldValue?.isTraktVIP { return }
+            guard let user = user else { return }
             update(with: user)
         }
     }
@@ -109,6 +121,14 @@ final class UserStatsTableViewCell: TintedCanvasTableViewCell {
     private let dateFormatter = DateComponentsFormatter()
 
     private func update(with user: User) {
+        cancelCancellable()
+        vipNudgeView?.setLocked(!UserManager.shared.canAccessStats(for: user))
+        for label in [plays, minutes, moviesPlays, showsPlays, episodesPlays, ratings, comments] {
+            label?.countFrom(0, to: 0, withDuration: 0)
+            label?.text = "—"
+        }
+        guard UserManager.shared.canAccessStats(for: user) else { return }
+
         numberFormatter.numberStyle = .decimal
 
         dateFormatter.unitsStyle = .brief
@@ -172,9 +192,8 @@ final class UserStatsTableViewCell: TintedCanvasTableViewCell {
             return self.dateFormatter.string(from: TimeInterval(value * 60))!
         }
 
-        cancelCancellable()
-        cancellable = fetchStatsFor(type: .user(slug: user.slug))
-        fetchCommentCount(type: .user(slug: self.user.slug))
+        cancellable = fetchStats()
+        fetchCommentCount()
 
         if user.isCurrentUser {
             updateWatchedStats()
@@ -210,6 +229,7 @@ final class UserStatsTableViewCell: TintedCanvasTableViewCell {
     }
 
     private func updateWatchedStats() {
+        guard UserManager.shared.canAccessStats(for: user) else { return }
         let manager = SyncWatchedManager.shared
         let moviePlays = manager.movieWatchedItems.watchedDatesByTraktId.values.reduce(0) { $0 + $1.count }
         let episodePlays = manager.episodeWatchedItems.watchedDatesByTraktId.values.reduce(0) { $0 + $1.count }
@@ -226,18 +246,19 @@ final class UserStatsTableViewCell: TintedCanvasTableViewCell {
         }
     }
 
-    private func fetchStatsFor(type: TraktObjectType) -> Cancellable {
-        return TraktAPIProvider.provider.request(.stats(type: type), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-            guard let self = self else { return }
+    private func fetchStats() -> Cancellable? {
+        guard UserManager.shared.canAccessStats(for: user), let requestedUser = user else { return nil }
+        return TraktAPIProvider.provider.request(.stats(type: .user(slug: requestedUser.slug)), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             switch result {
             case .success(let moyaResponse):
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
+                    guard response.statusCode != 204 else { return }
                     let stats = try response.map(UserStats.self, using: TraktAPIProvider.decoder)
 
-                    DispatchQueue.main.async {
-                        if case .user(let slug) = type, self.user.slug != slug { return }
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self, self.user == requestedUser, UserManager.shared.canAccessStats(for: self.user) else { return }
                         self.updateRatingsWith(ratings: stats.ratings)
                         self.updateMinutesWith(minutes: stats.minutes)
 
@@ -251,17 +272,17 @@ final class UserStatsTableViewCell: TintedCanvasTableViewCell {
                         }
                     }
                 } catch {
-                    print("fetchStatsFor request JSON mapping failed! \(error)")
+                    print("fetchStats request JSON mapping failed! \(error)")
                 }
             case .failure(let error):
-                print("fetchStatsFor request failure \(error)")
+                print("fetchStats request failure \(error)")
             }
         }
     }
 
-    private func fetchCommentCount(type: TraktObjectType) {
-        TraktAPIProvider.provider.request(.commentCount(type: type), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
-            guard let self = self else { return }
+    private func fetchCommentCount() {
+        guard UserManager.shared.canAccessStats(for: user), let requestedUser = user else { return }
+        TraktAPIProvider.provider.request(.commentCount(type: .user(slug: requestedUser.slug)), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
             switch result {
             case .success(let moyaResponse):
                 do {
@@ -270,8 +291,8 @@ final class UserStatsTableViewCell: TintedCanvasTableViewCell {
                     if let response = response.response {
                         let allHTTPHeaders = response.allHeaderFields
                         if let itemCount = allHTTPHeaders["x-pagination-item-count"] as? String {
-                            DispatchQueue.main.async {
-                                if case .user(let slug) = type, self.user.slug != slug { return }
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self, self.user == requestedUser, UserManager.shared.canAccessStats(for: self.user) else { return }
                                 self.updateCommentsWith(comments: Int(itemCount))
                             }
                         }
@@ -310,5 +331,86 @@ private extension UserStats {
 
     var minutes: Int {
         return movies.minutes + episodes.minutes
+    }
+}
+
+/// Shared by the profile and monthly stats cards, keeping their existing sizing.
+final class StatsVIPNudgeView: UIView {
+    private weak var statsContent: UIView?
+    private var minimumHeightConstraints = [NSLayoutConstraint]()
+
+    static func install(in contentView: UIView) -> StatsVIPNudgeView? {
+        guard let card = contentView.subviews.first as? CardView else { return nil }
+        let nudge = StatsVIPNudgeView()
+        nudge.statsContent = card.subviews.first { $0 is UIScrollView }
+        nudge.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(nudge)
+        NSLayoutConstraint.activate([
+            nudge.leadingAnchor.constraint(equalTo: card.leadingAnchor),
+            nudge.trailingAnchor.constraint(equalTo: card.trailingAnchor),
+            nudge.topAnchor.constraint(equalTo: card.topAnchor),
+            nudge.bottomAnchor.constraint(equalTo: card.bottomAnchor)
+        ])
+        let icon = UIImageView(image: UIImage(systemName: "chart.pie"))
+        icon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .title3)
+        icon.tintColor = UIColor(asset: .globalTint)
+        icon.contentMode = .scaleAspectFit
+        icon.isAccessibilityElement = false
+
+        let title = UILabel()
+        title.text = "Advanced Stats"
+        title.font = .preferredFont(forTextStyle: .headline)
+        title.textColor = .label
+        title.adjustsFontForContentSizeCategory = true
+        title.numberOfLines = 0
+
+        let subtitle = UILabel()
+        subtitle.text = "With Trakt VIP"
+        subtitle.font = .preferredFont(forTextStyle: .footnote)
+        subtitle.textColor = .secondaryLabel
+        subtitle.adjustsFontForContentSizeCategory = true
+        subtitle.numberOfLines = 0
+
+        let text = UIStackView(arrangedSubviews: [title, subtitle])
+        text.axis = .vertical
+        text.spacing = 2
+
+        let button = TitleOnlyButton(frame: .zero)
+        button.setTitle("Get VIP", for: .normal)
+        button.titleLabel?.font = .preferredFont(forTextStyle: .headline)
+        button.titleLabel?.adjustsFontForContentSizeCategory = true
+        button.setContentHuggingPriority(.required, for: .horizontal)
+        button.setContentCompressionResistancePriority(.required, for: .horizontal)
+        button.addAction(UIAction { _ in
+            UIApplication.shared.switchToPurchase()
+        }, for: .touchUpInside)
+
+        let row = UIStackView(arrangedSubviews: [icon, text, button])
+        row.alignment = .center
+        row.spacing = 12
+        row.translatesAutoresizingMaskIntoConstraints = false
+        nudge.addSubview(row)
+        NSLayoutConstraint.activate([
+            icon.widthAnchor.constraint(equalToConstant: 24),
+            button.heightAnchor.constraint(greaterThanOrEqualToConstant: 44),
+            row.centerYAnchor.constraint(equalTo: nudge.centerYAnchor),
+            row.leadingAnchor.constraint(equalTo: nudge.leadingAnchor, constant: 16),
+            row.trailingAnchor.constraint(equalTo: nudge.trailingAnchor, constant: -16)
+        ])
+        nudge.minimumHeightConstraints = [
+            row.topAnchor.constraint(greaterThanOrEqualTo: nudge.topAnchor, constant: 8),
+            row.bottomAnchor.constraint(lessThanOrEqualTo: nudge.bottomAnchor, constant: -8)
+        ]
+        nudge.setLocked(true)
+        return nudge
+    }
+
+    func setLocked(_ locked: Bool) {
+        isHidden = !locked
+        for constraint in minimumHeightConstraints {
+            constraint.isActive = locked
+        }
+        statsContent?.isHidden = locked
+        statsContent?.accessibilityElementsHidden = locked
     }
 }
