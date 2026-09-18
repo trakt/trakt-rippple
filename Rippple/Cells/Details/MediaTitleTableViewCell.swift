@@ -132,6 +132,7 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
             stack.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 3, bottom: 0, trailing: 3)
         }
         certificationLabel.adjustsFontForContentSizeCategory = true
+        certificationLabel.textColor = .label
         certificationButton.accessibilityLabel = "Certifications and parental guide"
         certificationButton.accessibilityHint = "Show age ratings and content guidance"
         certificationLabel.isAccessibilityElement = false
@@ -237,7 +238,7 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
 
     @objc
     private func configureView() {
-        certificationBorderView.layer.borderColor = certificationLabel.textColor.cgColor
+        certificationBorderView.layer.borderColor = UIColor.secondaryLabel.cgColor
     }
 
     private let contextMenuHelper = ContextMenuHelper()
@@ -486,6 +487,11 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
             button.removeFromSuperview()
         }
         placeShowButton()
+
+        // Center the indicators on the capital letters rather than the font's line box.
+        guard let font = certificationLabel.font else { return }
+        let offset = (font.capHeight - font.ascender - font.descender) / 2
+        parentalGuideIndicators.transform = CGAffineTransform(translationX: 0, y: offset)
     }
 
     private func placeShowButton() {
