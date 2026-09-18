@@ -134,7 +134,7 @@ final class CommentTableViewCell: TintedCanvasTableViewCell {
 
         if let chatBubbleBackgroundImage = chatBubbleBackgroundImage {
             chatBubbleBackgroundImage.image = chatBubbleBackgroundImage.image?.withRenderingMode(.alwaysTemplate)
-            chatBubbleBackgroundImage.tintColor = .ripppleCardBackground
+            chatBubbleBackgroundImage.tintColor = .ripppleSecondaryBackground
             chatBubbleBackgroundImage.tintAdjustmentMode = .normal
         }
 
