@@ -1583,6 +1583,13 @@ struct WatchlistedItemWithNotes: Codable {
 struct People: Codable {
     let cast: [Cast]
     let crew: Crew?
+    let guestStars: [Cast]?
+
+    enum CodingKeys: String, CodingKey {
+        case cast
+        case crew
+        case guestStars = "guest_stars"
+    }
 
     var allMovies: [Movie] {
         var result: [Movie] = []

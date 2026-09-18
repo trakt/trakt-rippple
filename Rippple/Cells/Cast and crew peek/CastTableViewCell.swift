@@ -84,11 +84,11 @@ final class CastTableViewCell: TintedCanvasTableViewCell {
         didSet {
             if media.movie != nil, let people = people, let movieCrew = people.crew {
                 crew = (movieCrew.directing?.filter { job -> Bool in
-                    return job.jobs.contains("Director")
+                    job.jobs.contains("Director")
                 } ?? [Job]()) + (movieCrew.writing ?? [Job]())
             } else if media.episode != nil, let people = people, let episodeCrew = people.crew {
                 crew = (episodeCrew.directing?.filter { job -> Bool in
-                    return job.jobs.contains("Director")
+                    job.jobs.contains("Director")
                 } ?? [Job]())
             } else if media.show != nil, let people = people, let showCrew = people.crew {
                 crew = showCrew.createdBy ?? [Job]()
@@ -182,7 +182,7 @@ final class CastTableViewCell: TintedCanvasTableViewCell {
                     }
                 }
             case .show(let show):
-                TraktAPIProvider.provider.request(TraktAPIService.peopleShow(id: show.identifiers.trakt!, extended: nil),
+                TraktAPIProvider.provider.request(TraktAPIService.peopleShow(id: show.identifiers.trakt!, extended: .guestStars),
                                                   callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                     guard let self = self else { return }
                     switch result {
@@ -207,7 +207,7 @@ final class CastTableViewCell: TintedCanvasTableViewCell {
                     }
                 }
             case .episode(let episode, let show):
-                TraktAPIProvider.provider.request(TraktAPIService.peopleEpisode(id: show.identifiers.trakt!, season: episode.season, episode: episode.number, extended: nil),
+                TraktAPIProvider.provider.request(TraktAPIService.peopleEpisode(id: show.identifiers.trakt!, season: episode.season, episode: episode.number, extended: .guestStars),
                                                   callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                     guard let self = self else { return }
                     switch result {
@@ -232,7 +232,7 @@ final class CastTableViewCell: TintedCanvasTableViewCell {
                     }
                 }
             case .season(let season, let show):
-                TraktAPIProvider.provider.request(TraktAPIService.peopleSeason(id: show.identifiers.trakt!, season: season.number, extended: nil),
+                TraktAPIProvider.provider.request(TraktAPIService.peopleSeason(id: show.identifiers.trakt!, season: season.number, extended: .guestStars),
                                                   callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                     guard let self = self else { return }
                     switch result {
@@ -285,9 +285,9 @@ final class CastTableViewCell: TintedCanvasTableViewCell {
         }
 
         // Build sections based on media type and available data
-        var hasCast = false
+        let cast = ((people?.cast ?? []) + (people?.guestStars ?? [])).removingDuplicates().prefix(8)
+        let hasCast = !cast.isEmpty
         var hasCrew = false
-        if let people = people, !people.cast.isEmpty { hasCast = true }
         if let crew = crew, !crew.isEmpty { hasCrew = true }
 
         if !hasCast, !hasCrew {
@@ -300,9 +300,8 @@ final class CastTableViewCell: TintedCanvasTableViewCell {
         if hasCast { snapshot.appendSections([.cast]) }
         if hasCrew { snapshot.appendSections([.crew]) }
 
-        if hasCast, let people = people {
-            let maxCount = min(people.cast.count, 6)
-            let items: [Item] = people.cast.prefix(maxCount).map { .cast($0) }
+        if hasCast {
+            let items: [Item] = cast.map { .cast($0) }
             snapshot.appendItems(items, toSection: .cast)
         }
         if hasCrew, let crew = crew {
@@ -347,7 +346,7 @@ extension CastTableViewCell: UICollectionViewDelegate {
                                                                                                            height: 500 * 1.5)
                                                   return mediaPreviewViewController
                                               }, actionProvider: { _ -> UIMenu? in
-                                                  return UIMenu(children: [])
+                                                  UIMenu(children: [])
                                               })
         }
 
