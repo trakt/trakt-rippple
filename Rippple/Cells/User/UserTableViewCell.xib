@@ -133,6 +133,7 @@
             </tableViewCellContentView>
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <connections>
+                <outlet property="VIPImageView" destination="IDF-k8-yAG" id="dnP-1G-9ru"/>
                 <outlet property="VIPLabel" destination="wG3-CR-cBK" id="GO2-Qg-RR1"/>
                 <outlet property="VIPView" destination="fa5-Nl-wOu" id="7AY-UM-Cxc"/>
                 <outlet property="avatarImageView" destination="QOH-pI-BIJ" id="Wau-k5-m9M"/>
