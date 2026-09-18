@@ -277,10 +277,7 @@ class SidebarViewController: UIViewController {
         }
         profileButton.setImage(UIImage(imageLiteralResourceName: "bg_placeholder_avatar_small"), for: .normal)
         let profileBarButtonItem = UIBarButtonItem(customView: profileButton)
-        #if targetEnvironment(macCatalyst)
-        // The avatar supplies its own circular background; toolbar glass stretches around the custom view.
         profileBarButtonItem.hidesSharedBackground = true
-        #endif
         navigationItem.leftBarButtonItem = profileBarButtonItem
     }
 
