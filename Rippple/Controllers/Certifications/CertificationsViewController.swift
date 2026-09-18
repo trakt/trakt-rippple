@@ -180,7 +180,7 @@ final class CertificationsViewController: UITableViewController {
         case .certification:
             let cell = tableView.dequeueReusableCell(withIdentifier: "certification", for: indexPath) as! CertificationTableViewCell
             cell.certification = certification
-            cell.nameLabel.textColor = UIColor(asset: .globalTint)
+            cell.nameLabel.textColor = .label
             if certification == nil {
                 let name = currentCertification?.trimmingCharacters(in: .whitespacesAndNewlines)
                 cell.nameLabel.text = name?.isEmpty == false ? name : "Not rated"
