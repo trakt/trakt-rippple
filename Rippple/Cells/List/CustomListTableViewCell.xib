@@ -211,7 +211,7 @@
                         </subviews>
                     </stackView>
                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" dataMode="none" prefetchingEnabled="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UIo-Cg-Qwa">
-                        <rect key="frame" x="12" y="111" width="422" height="110"/>
+                        <rect key="frame" x="13" y="111" width="420" height="110"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <edgeInsets key="layoutMargins" top="8" left="20" bottom="8" right="20"/>
                         <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="fFW-Sb-56x">
@@ -227,7 +227,7 @@
                     </collectionView>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="UIo-Cg-Qwa" firstAttribute="trailing" secondItem="4h3-dQ-9kw" secondAttribute="trailing" id="7BO-NC-6aD"/>
+                    <constraint firstItem="UIo-Cg-Qwa" firstAttribute="trailing" secondItem="4h3-dQ-9kw" secondAttribute="trailing" constant="-1" id="7BO-NC-6aD"/>
                     <constraint firstItem="3UU-OF-LJ6" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leading" constant="24" id="9TX-TZ-AAc"/>
                     <constraint firstItem="3UU-OF-LJ6" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="top" constant="16" id="IQt-RX-MOm"/>
                     <constraint firstAttribute="bottom" secondItem="3UU-OF-LJ6" secondAttribute="bottom" constant="16" id="Kfi-pN-1fp"/>
@@ -235,7 +235,7 @@
                     <constraint firstAttribute="bottom" secondItem="4h3-dQ-9kw" secondAttribute="bottom" constant="4" id="MWI-hs-Dob"/>
                     <constraint firstAttribute="trailing" secondItem="3UU-OF-LJ6" secondAttribute="trailing" constant="24" id="R9B-fH-2Jy"/>
                     <constraint firstAttribute="trailing" secondItem="4h3-dQ-9kw" secondAttribute="trailing" constant="12" id="Y5G-Zd-kyf"/>
-                    <constraint firstItem="UIo-Cg-Qwa" firstAttribute="leading" secondItem="4h3-dQ-9kw" secondAttribute="leading" id="cGm-xw-1vq"/>
+                    <constraint firstItem="UIo-Cg-Qwa" firstAttribute="leading" secondItem="4h3-dQ-9kw" secondAttribute="leading" constant="1" id="cGm-xw-1vq"/>
                     <constraint firstItem="UIo-Cg-Qwa" firstAttribute="top" secondItem="I6T-Pg-MkC" secondAttribute="top" id="diw-1T-8ga"/>
                     <constraint firstItem="UIo-Cg-Qwa" firstAttribute="bottom" secondItem="I6T-Pg-MkC" secondAttribute="bottom" id="nCz-Fa-Myk"/>
                     <constraint firstItem="4h3-dQ-9kw" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leading" constant="12" id="tPr-qF-sei"/>
