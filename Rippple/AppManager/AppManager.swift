@@ -471,8 +471,13 @@ public extension UIApplication {
         splitViewController.setViewController(browseViewController, for: .secondary)
         splitViewController.setViewController(compactViewController, for: .compact)
 
-        let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
-        window.setRootViewController(splitViewController, options: transitionOptions)
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
+            window.setRootViewController(compactViewController, options: transitionOptions)
+        } else {
+            let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
+            window.setRootViewController(splitViewController, options: transitionOptions)
+        }
     }
 
     func switchToLogin() {
