@@ -900,6 +900,8 @@ final class FilterHeaderView: UICollectionReusableView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        directionalLayoutMargins = NSDirectionalEdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+        preservesSuperviewLayoutMargins = true
     }
 
     @available(*, unavailable)
@@ -920,8 +922,8 @@ final class FilterHeaderView: UICollectionReusableView {
 
             NSLayoutConstraint.activate([
                 stackView.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-                stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-                stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+                stackView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+                stackView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
                 stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
                 stackView.heightAnchor.constraint(equalToConstant: 44)
             ])
