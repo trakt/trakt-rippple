@@ -45,7 +45,12 @@ final class RecentSearchViewController: UITableViewController {
     }
 
     private func reloadSearches() {
-        recents = RecentSearchManager.shared.recentSearches
+        let latestRecents = RecentSearchManager.shared.recentSearches
+        let latestSearches = Set(latestRecents)
+        let displayedSearches = Set(recents)
+        // Keep this page's order stable while searches are reused.
+        recents = recents.filter { latestSearches.contains($0) }
+            + latestRecents.filter { !displayedSearches.contains($0) }
         navigationItem.subtitle = "\(recents.count) recent search\(recents.count == 1 ? "" : "es")"
         clearButton.isEnabled = !recents.isEmpty
         if recents.isEmpty {
