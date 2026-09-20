@@ -1132,7 +1132,7 @@ extension MediaViewController {
         case .backdrop:
             return view.frame.width * 0.5
         case .poster:
-            return min((tableView.bounds.width - 18.0) * 1.5, 650.0)
+            return UITableView.automaticDimension
         case .title:
             return UITableView.automaticDimension
         case .activity:
