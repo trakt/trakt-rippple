@@ -72,7 +72,7 @@ struct QuickAccessWidgetProvider: AppIntentTimelineProvider {
                       let title = item.movie?.title ?? item.show?.title,
                       let deeplink = URL(string: "ripl://\(item.movie != nil ? "movies" : "shows")/\(identifier)") else { return nil }
                 return QuickAccessWidgetItem(traktIdentifier: identifier,
-                                             tmdbIdentifier: Int(exactly: ids.tmdb),
+                                             tmdbIdentifier: ids.tmdb.flatMap { Int(exactly: $0) },
                                              tmdbMediaType: item.movie != nil ? "movie" : "tv",
                                              title: title,
                                              deeplink: deeplink)

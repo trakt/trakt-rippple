@@ -326,6 +326,30 @@
 					<key>INTypePropertyType</key>
 					<string>String</string>
 				</dict>
+				<dict>
+					<key>INTypePropertyDisplayName</key>
+					<string>traktId</string>
+					<key>INTypePropertyDisplayPriority</key>
+					<integer>7</integer>
+					<key>INTypePropertyName</key>
+					<string>traktId</string>
+					<key>INTypePropertyTag</key>
+					<integer>103</integer>
+					<key>INTypePropertyType</key>
+					<string>Integer</string>
+				</dict>
+				<dict>
+					<key>INTypePropertyDisplayName</key>
+					<string>traktType</string>
+					<key>INTypePropertyDisplayPriority</key>
+					<integer>8</integer>
+					<key>INTypePropertyName</key>
+					<string>traktType</string>
+					<key>INTypePropertyTag</key>
+					<integer>104</integer>
+					<key>INTypePropertyType</key>
+					<string>String</string>
+				</dict>
 			</array>
 		</dict>
 	</array>

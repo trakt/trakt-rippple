@@ -76,10 +76,22 @@ struct SingleWidgetProvider: IntentTimelineProvider {
     }
 
     func getTimeline(for configuration: MediaWidgetIntent, in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-        print("Getting Widget Timeline for configuration: \(configuration)")
-        if configuration.type?.identifier == WidgetType.custom.rawValue {
+        if WidgetType.isCustom(configuration.type?.identifier) {
             Task {
-                let data = await TraktItemLoader().loadCachedMediaItem(from: URL(string: "\(TraktAPIConfiguration.baseURL)/search/tmdb/\(configuration.type!.tmdbId!)?extended=full&type=\(configuration.type!.tmdbType! == "tv" ? "show" : "movie")")!)
+                let selection = configuration.type
+                let data: TraktItem?
+                if let id = selection?.traktId?.int64Value, id > 0,
+                   let type = selection?.traktType, type == "movie" || type == "show",
+                   let url = URL(string: "\(TraktAPIConfiguration.baseURL)/\(type)s/\(id)?extended=full") {
+                    data = await TraktItemLoader().loadCachedMediaItem(from: url, type: type)
+                } else if let id = selection?.tmdbId?.int64Value, id > 0,
+                          let type = selection?.tmdbType, type == "movie" || type == "tv",
+                          let url = URL(string: "\(TraktAPIConfiguration.baseURL)/search/tmdb/\(id)?extended=full&type=\(type == "tv" ? "show" : "movie")") {
+                    // Existing configurations retain their TMDb identifier until the user picks a new title.
+                    data = await TraktItemLoader().loadCachedMediaItem(from: url)
+                } else {
+                    data = nil
+                }
 
                 let entries = await entries(for: data,
                                             and: configuration,
@@ -341,7 +353,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
                               uiImage: image(source: loadedImage ?? UIImage(), in: context))
             entries.append(entry)
         } else {
-            if configuration.type?.identifier == WidgetType.custom.rawValue {
+            if WidgetType.isCustom(configuration.type?.identifier) {
                 let errorProgress = WidgetModel(title: "Nothing Found",
                                                 subtitle: "Nothing found for this search. Try another one.",
                                                 image: nil,
@@ -594,7 +606,7 @@ struct TraktItemLoader {
         defaults.set(data, forKey: searchTMDbCacheKey(for: url))
     }
 
-    func loadCachedMediaItem(from url: URL) async -> TraktItem? {
+    func loadCachedMediaItem(from url: URL, type: String? = nil) async -> TraktItem? {
         cleanupOldTMDbSearchCacheEntries()
 
         let cached = cachedMediaItem(for: url)
@@ -610,9 +622,17 @@ struct TraktItemLoader {
             request.setValue("2", forHTTPHeaderField: "trakt-api-version")
             request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
 
-            let (data, _) = try await session.data(for: request)
+            let (data, response) = try await session.data(for: request)
+            guard let response = response as? HTTPURLResponse, (200..<300).contains(response.statusCode) else { return cached?.item }
             let decoder = JSONDecoder()
-            let mediaItem = try decoder.decode([TraktItem].self, from: data).first
+            let mediaItem: TraktItem?
+            if type == "movie" {
+                mediaItem = try TraktItem(movie: decoder.decode(TraktMovie.self, from: data), show: nil)
+            } else if type == "show" {
+                mediaItem = try TraktItem(movie: nil, show: decoder.decode(TraktShow.self, from: data))
+            } else {
+                mediaItem = try decoder.decode([TraktItem].self, from: data).first
+            }
 
             if let mediaItem, mediaItem.movie != nil || mediaItem.show != nil {
                 storeMediaItemInCache(mediaItem, for: url)
@@ -855,7 +875,7 @@ struct TraktMovie: Codable {
 
 struct TraktIdentifier: Codable {
     let trakt: Int64
-    let tmdb: Int64
+    let tmdb: Int64?
 }
 
 struct TraktShow: Codable {
@@ -908,10 +928,11 @@ struct TMDbImageLoader {
 
     var session = URLSession.shared
 
-    func loadImage(for tmdbId: Int64,
+    func loadImage(for tmdbId: Int64?,
                    mediaType: String,
                    with width: CGFloat,
                    imageType: ImageType = .backdrop) async -> UIImage? {
+        guard let tmdbId = tmdbId, tmdbId > 0 else { return nil }
         do {
             let (configurationData, _) = try await session.data(from: URL(string: "https://api.themoviedb.org/3/configuration?api_key=\(TmdbAPIConfiguration.apiKey)")!)
             let decoder = JSONDecoder()

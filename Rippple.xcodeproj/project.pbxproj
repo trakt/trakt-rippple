@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F91800000000000000000003 /* WidgetSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = F91800000000000000000004 /* WidgetSearch.swift */; };
 		A10F10012F00000000000001 /* CommentGIFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10F10012F00000000000002 /* CommentGIFView.swift */; };
 		CE9150000000000000000002 /* TraktLimitsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE9150000000000000000001 /* TraktLimitsView.swift */; };
 		09033ADE2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09033ADD2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift */; };
@@ -584,6 +585,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F91800000000000000000004 /* WidgetSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../Widget/WidgetSearch.swift; sourceTree = "<group>"; };
 		A10F10012F00000000000002 /* CommentGIFView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentGIFView.swift; sourceTree = "<group>"; };
 		CE9150000000000000000001 /* TraktLimitsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraktLimitsView.swift; sourceTree = "<group>"; };
 		09033ADD2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleChronologyTableViewController.swift; sourceTree = "<group>"; };
@@ -2496,6 +2498,7 @@
 			isa = PBXGroup;
 			children = (
 				3AD15CE4287C245A00FD0B2F /* IntentHandler.swift */,
+				F91800000000000000000004 /* WidgetSearch.swift */,
 				3AD15CE6287C245A00FD0B2F /* Info.plist */,
 				3AD15CFC287C245A00FD0B2F /* WidgetIntent.entitlements */,
 			);
@@ -3563,6 +3566,7 @@
 				09060B982F2F9A320069502F /* Secrets.swift in Sources */,
 				3AD15D03287C24A500FD0B2F /* Widget.intentdefinition in Sources */,
 				3AD15CE5287C245A00FD0B2F /* IntentHandler.swift in Sources */,
+				F91800000000000000000003 /* WidgetSearch.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

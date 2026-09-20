@@ -10,33 +10,20 @@ import Intents
 
 class IntentHandler: INExtension, MediaTypeIntentHandling {
     func provideTypeOptionsCollection(for intent: MediaTypeIntent, searchTerm: String?) async throws -> INObjectCollection<MediaType> {
-        if let searchTerm = searchTerm, !searchTerm.isEmpty {
-            let data = try await TMDBItemLoader().loadItems(from: URL(string: "https://api.themoviedb.org/3/search/multi?api_key=\(TmdbAPIConfiguration.apiKey)&query=\(searchTerm.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)")!)
-            let items = data.results
-                .filter { $0.mediaType == "tv" || $0.mediaType == "movie" }
-                .map {
-                    var subtitle = $0.mediaType == "tv" ? "TV show" : "Movie"
-                    if let firstAirDate = $0.firstAirDate, firstAirDate.isEmpty == false {
-                        subtitle += " · \(firstAirDate.prefix(4))"
-                    }
-                    if let releaseDate = $0.releaseDate, releaseDate.isEmpty == false {
-                        subtitle += " · \(releaseDate.prefix(4))"
-                    }
-                    if let originCountry = $0.originCountry?.first {
-                        let locale = Locale(identifier: "en_US")
-                        if let country = locale.localizedString(forRegionCode: originCountry) {
-                            subtitle += " · \(country)"
-                        }
-                    }
-
-                    let media = MediaType(identifier: WidgetType.custom.rawValue,
-                                          display: $0.title ?? $0.name!,
-                                          subtitle: subtitle,
-                                          image: nil)
-                    media.tmdbId = NSNumber(value: $0.id)
-                    media.tmdbType = $0.mediaType
-                    return media
-                }
+        let query = (searchTerm ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if query.isEmpty == false {
+            let results = try await WidgetSearchLoader().search(query: query)
+            try Task.checkCancellation()
+            let items = results.compactMap { result -> MediaType? in
+                guard let item = result.media else { return nil }
+                let media = MediaType(identifier: "\(WidgetType.custom.rawValue):\(result.type):\(item.ids.trakt)",
+                                      display: item.title,
+                                      subtitle: result.subtitle,
+                                      image: nil)
+                media.traktId = NSNumber(value: item.ids.trakt)
+                media.traktType = result.type
+                return media
+            }
             return INObjectCollection(items: items)
         } else {
             let watchedSection = INObjectSection(title: "Last Watched",
@@ -82,43 +69,5 @@ class IntentHandler: INExtension, MediaTypeIntentHandling {
         // you can override this and return the handler you want for that particular intent.
 
         return self
-    }
-}
-
-struct TMDbResults: Codable {
-    let results: [TMDbResult]
-}
-
-struct TMDbResult: Codable {
-    let mediaType: String // movie, tv or person
-
-    let title: String? // movie
-    let name: String? // tv or person
-
-    let firstAirDate: String? // first air for tv
-    let releaseDate: String? // release date for movies
-
-    let originCountry: [String]? // for tv only
-
-    let id: Int64
-
-    enum CodingKeys: String, CodingKey {
-        case mediaType = "media_type"
-        case title
-        case name
-        case id
-        case firstAirDate = "first_air_date"
-        case releaseDate = "release_date"
-        case originCountry = "origin_country"
-    }
-}
-
-struct TMDBItemLoader {
-    var session = URLSession.shared
-
-    func loadItems(from url: URL) async throws -> TMDbResults {
-        let (data, _) = try await session.data(from: url)
-        let decoder = JSONDecoder()
-        return try decoder.decode(TMDbResults.self, from: data)
     }
 }

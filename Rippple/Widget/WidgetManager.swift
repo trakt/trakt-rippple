@@ -571,7 +571,7 @@ final class WidgetManager {
                 guard case .success(let widgets) = result else { return }
 
                 for widget in widgets {
-                    if let intent = widget.configuration as? MediaTypeIntent, intent.type?.identifier == WidgetType.custom.rawValue {
+                    if let intent = widget.configuration as? MediaTypeIntent, WidgetType.isCustom(intent.type?.identifier) {
                         WidgetCenter.shared.reloadTimelines(ofKind: widget.kind)
                     } else if let intent = widget.configuration as? MediaTypeIntent, intent.type?.identifier == key {
                         WidgetCenter.shared.reloadTimelines(ofKind: widget.kind)
