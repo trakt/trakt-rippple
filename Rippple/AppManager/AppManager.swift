@@ -288,7 +288,8 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
 
     var mainAppIsDisplayed: Bool {
         setup()
-        return mainWindow?.rootViewController?.isKind(of: UISplitViewController.self) ?? false
+        let rootViewController = mainWindow?.rootViewController
+        return rootViewController is UISplitViewController || rootViewController is MainTabBarController
     }
 
     func checkRating() {
@@ -417,7 +418,7 @@ public extension UIApplication {
 
     func switchToMainApp() {
         AppManager.shared.setup()
-        for window in AppManager.shared.windows where !(window.rootViewController is UISplitViewController) {
+        for window in AppManager.shared.windows where !(window.rootViewController is UISplitViewController) && !(window.rootViewController is MainTabBarController) {
             let rootViewController = (window.rootViewController as? UINavigationController)?.viewControllers.first
             let viewController: UIViewController
             switch SceneDelegate.WindowMode(configurationName: window.windowScene?.session.configuration.name) {
