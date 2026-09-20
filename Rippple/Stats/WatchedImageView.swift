@@ -11,6 +11,9 @@ import Receiver
 import UIKit
 
 final class WatchedImageView: UIImageView {
+    private static let watchedImage = UIImage(systemName: "checkmark.circle")
+    private static let rewatchedImage = UIImage(systemName: "checkmark.circle.badge.plus")
+
     private let disposeBag = DisposeBag()
 
     override func awakeFromNib() {
@@ -58,6 +61,7 @@ final class WatchedImageView: UIImageView {
     var media: MediaModel? {
         didSet {
             isHidden = true
+            image = WatchedImageView.watchedImage
             switch media {
             case .movie, .episode:
                 updateFromSyncWatchedManager()
@@ -79,14 +83,24 @@ final class WatchedImageView: UIImageView {
     private func updateFromSyncWatchedManager() {
         switch media {
         case .movie(let movie):
-            isHidden = !SyncWatchedManager.shared.isWatched(type: .movies,
-                                                            traktId: movie.identifiers.trakt!)
+            updateWatchedStatus(type: .movies, traktId: movie.identifiers.trakt)
         case .episode(let episode, _):
-            isHidden = !SyncWatchedManager.shared.isWatched(type: .episodes,
-                                                            traktId: episode.identifiers.trakt!)
+            updateWatchedStatus(type: .episodes, traktId: episode.identifiers.trakt)
         default:
             return
         }
+    }
+
+    private func updateWatchedStatus(type: SyncWatchedType, traktId: Int64?) {
+        guard let traktId = traktId else {
+            isHidden = true
+            image = WatchedImageView.watchedImage
+            return
+        }
+
+        let watchedCount = SyncWatchedManager.shared.watchedDates(for: type, traktId: traktId).count
+        isHidden = watchedCount == 0
+        image = watchedCount > 1 ? WatchedImageView.rewatchedImage : WatchedImageView.watchedImage
     }
 
     private func updateSeasonWatchedStatus(season: Season, show: Show) {
