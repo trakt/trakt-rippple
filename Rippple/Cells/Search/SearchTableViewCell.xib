@@ -24,17 +24,17 @@
                     <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="0L1-FP-MPx">
                         <rect key="frame" x="26" y="14" width="323" height="38"/>
                         <subviews>
-                            <label userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iyj-Q4-XJ0">
+                            <label userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iyj-Q4-XJ0">
                                 <rect key="frame" x="0.0" y="9" width="278.5" height="20.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="auQ-W8-yNU">
+                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="751" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="auQ-W8-yNU">
                                 <rect key="frame" x="284.5" y="10.5" width="12.5" height="16.5"/>
                                 <color key="tintColor" name="Card Separator"/>
                             </imageView>
-                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="t6A-ft-GJG">
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" horizontalCompressionResistancePriority="1000" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="t6A-ft-GJG">
                                 <rect key="frame" x="303" y="9" width="20" height="20"/>
                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="color" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -43,12 +43,12 @@
                     </stackView>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="0L1-FP-MPx" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leadingMargin" constant="10" id="19S-lD-8hd"/>
+                    <constraint firstItem="0L1-FP-MPx" firstAttribute="leading" secondItem="fPh-11-ATa" secondAttribute="leading" constant="14" id="19S-lD-8hd"/>
                     <constraint firstItem="0L1-FP-MPx" firstAttribute="bottom" secondItem="fPh-11-ATa" secondAttribute="bottom" constant="-14" id="Dsa-bb-hCg"/>
                     <constraint firstItem="fPh-11-ATa" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="top" id="Fq3-bY-70B"/>
                     <constraint firstItem="0L1-FP-MPx" firstAttribute="top" secondItem="fPh-11-ATa" secondAttribute="top" constant="14" id="ami-LX-jfH"/>
                     <constraint firstAttribute="trailing" secondItem="fPh-11-ATa" secondAttribute="trailing" constant="12" id="dBA-UK-fg3"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="0L1-FP-MPx" secondAttribute="trailing" constant="10" id="eFd-Fm-tg8"/>
+                    <constraint firstItem="fPh-11-ATa" firstAttribute="trailing" secondItem="0L1-FP-MPx" secondAttribute="trailing" constant="14" id="eFd-Fm-tg8"/>
                     <constraint firstAttribute="bottom" secondItem="fPh-11-ATa" secondAttribute="bottom" id="jCM-AA-3U2"/>
                     <constraint firstItem="fPh-11-ATa" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leading" constant="12" id="jLy-EO-eqW"/>
                 </constraints>

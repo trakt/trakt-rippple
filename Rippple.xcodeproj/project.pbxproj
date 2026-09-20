@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		F91800000000000000000003 /* WidgetSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = F91800000000000000000004 /* WidgetSearch.swift */; };
+		51DCAD2734B9430EA1144D6C /* ListsSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D25821450D4196AEA3514A /* ListsSearchViewController.swift */; };
+		695C5B718247457494D65808 /* BrowseListsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F20186B9E743C9BD23D4FA /* BrowseListsViewController.swift */; };
+		F91800000000000000000009 /* RecentSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9180000000000000000000A /* RecentSearchViewController.swift */; };
+		F91800000000000000000005 /* SmartSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F91800000000000000000006 /* SmartSearchViewController.swift */; };
+		F91800000000000000000001 /* TraktSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = F91800000000000000000002 /* TraktSearch.swift */; };
 		A10F10012F00000000000001 /* CommentGIFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10F10012F00000000000002 /* CommentGIFView.swift */; };
 		CE9150000000000000000002 /* TraktLimitsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE9150000000000000000001 /* TraktLimitsView.swift */; };
 		09033ADE2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09033ADD2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift */; };
@@ -586,6 +591,11 @@
 
 /* Begin PBXFileReference section */
 		F91800000000000000000004 /* WidgetSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../Widget/WidgetSearch.swift; sourceTree = "<group>"; };
+		F7D25821450D4196AEA3514A /* ListsSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsSearchViewController.swift; sourceTree = "<group>"; };
+		07F20186B9E743C9BD23D4FA /* BrowseListsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseListsViewController.swift; sourceTree = "<group>"; };
+		F9180000000000000000000A /* RecentSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentSearchViewController.swift; sourceTree = "<group>"; };
+		F91800000000000000000006 /* SmartSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartSearchViewController.swift; sourceTree = "<group>"; };
+		F91800000000000000000002 /* TraktSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraktSearch.swift; sourceTree = "<group>"; };
 		A10F10012F00000000000002 /* CommentGIFView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentGIFView.swift; sourceTree = "<group>"; };
 		CE9150000000000000000001 /* TraktLimitsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraktLimitsView.swift; sourceTree = "<group>"; };
 		09033ADD2E7BDD5A00C838D7 /* PeopleChronologyTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleChronologyTableViewController.swift; sourceTree = "<group>"; };
@@ -2249,6 +2259,7 @@
 			isa = PBXGroup;
 			children = (
 				3AFD3F0D1FB733360003B966 /* TraktAPIProvider.swift */,
+				F91800000000000000000002 /* TraktSearch.swift */,
 				09B899022F21184200DC202D /* TraktAPIProvider+List.swift */,
 				09B899052F2A123400DC202D /* TraktAPIProvider+Collection.swift */,
 				09B8990A2F2A567800DC202D /* TraktAPIProvider+Watchlist.swift */,
@@ -2580,8 +2591,12 @@
 				3A939B8D1FD28F7C00799552 /* PreviewViewController.swift */,
 				3AB2464C20079A58008B3A58 /* FollowingStoryLikeViewController.swift */,
 				3A020B9620D3B64B0081FA3E /* SearchViewController.swift */,
+				F9180000000000000000000A /* RecentSearchViewController.swift */,
+				F91800000000000000000006 /* SmartSearchViewController.swift */,
 				3A020B9820D3DE070081FA3E /* SearchResultsViewController.swift */,
 				3AD170FF2348CC9D00D20D41 /* PeopleSearchResultsViewController.swift */,
+				07F20186B9E743C9BD23D4FA /* BrowseListsViewController.swift */,
+				F7D25821450D4196AEA3514A /* ListsSearchViewController.swift */,
 				3AECA326242FB1D100A863CC /* ListSearchResultsViewController.swift */,
 				3A459EB120FA2D5300A1E99B /* ReactionsViewController.swift */,
 				3AD80E0B2129560800C70E7F /* SeasonsViewController.swift */,
@@ -3228,6 +3243,8 @@
 				3AB2464D20079A58008B3A58 /* FollowingStoryLikeViewController.swift in Sources */,
 				3A3EA9562DA96096004D55A8 /* InfoCardTableViewCell.swift in Sources */,
 				3A5C2E512183415200F6CA76 /* EFCountingLabel.swift in Sources */,
+				695C5B718247457494D65808 /* BrowseListsViewController.swift in Sources */,
+				51DCAD2734B9430EA1144D6C /* ListsSearchViewController.swift in Sources */,
 				3AECA327242FB1D100A863CC /* ListSearchResultsViewController.swift in Sources */,
 				3A0551942567BFE300E12647 /* UserStatsTableViewCell.swift in Sources */,
 				3A77A85C29FC22CE0006177D /* NotificationCenterTableViewCell.swift in Sources */,
@@ -3282,6 +3299,7 @@
 				3AD62F59253ED28000F541EB /* EpisodeShowTableViewCell.swift in Sources */,
 				3AE96B662A4C6288007921B8 /* C1BrowseCollectionViewCell.swift in Sources */,
 				3A6F58BB264FC5CB0087345C /* SwipeActionsViewController.swift in Sources */,
+				F91800000000000000000009 /* RecentSearchViewController.swift in Sources */,
 				3AC8BEAB24E44D74000EB9A0 /* SearchTableViewCell.swift in Sources */,
 				3ABAB4C4222DCBBC00B5EE0C /* MediaNextEpisodeErrorViewController.swift in Sources */,
 				3A4B57A224BB53B4005D36C7 /* HiddenMediaManager.swift in Sources */,
@@ -3340,6 +3358,7 @@
 				3AEA95C329DDEA2C00BE9BA4 /* CalendarViewController.swift in Sources */,
 				09A2F1012FC9000000A10001 /* RemoteNotificationsManager.swift in Sources */,
 				3AFD3F0E1FB733360003B966 /* TraktAPIProvider.swift in Sources */,
+				F91800000000000000000001 /* TraktSearch.swift in Sources */,
 				3AD15D06287D936A00FD0B2F /* WidgetManager.swift in Sources */,
 				3AB2D84A201F2A6E00BAD105 /* DeeplinkParser.swift in Sources */,
 				3A6B073A23B4EB6700869D01 /* EpisodesToWatchViewController.swift in Sources */,
@@ -3376,6 +3395,7 @@
 				3A1B95142A3C7E1A0044972F /* L1BrowseCollectionViewCell.swift in Sources */,
 				3A541CF72A61334000E1A153 /* HistoryBrowseCollectionViewCell.swift in Sources */,
 				3A020B9720D3B64B0081FA3E /* SearchViewController.swift in Sources */,
+				F91800000000000000000005 /* SmartSearchViewController.swift in Sources */,
 				3A24D5F21FC845410066314C /* Segue+Extension.swift in Sources */,
 				3A06B643277B0DF800E8DDB3 /* SeasonsRatingsViewController.swift in Sources */,
 				3A06B645277B0DF800E8DDB3 /* SeasonsRatingsGridAdapter.swift in Sources */,

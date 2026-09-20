@@ -320,6 +320,9 @@ enum TraktAPIService {
     case episodeSentiments(id: Int64)
 
     case search(type: SearchType, query: String)
+    case searchExact(type: SearchType, query: String)
+    case searchTrending(type: SearchType, query: String)
+    case searchSelected(type: SearchType, query: String, id: Int64)
     case lookup(tmdbID: String, type: TmdbType)
 
     case trendingLists(type: ListType?)
@@ -706,6 +709,12 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/\(id)"
         case .commentMediaItem(let id):
             return "/comments/\(id)/item"
+        case .searchExact(let type, _):
+            return "/search/\(type.rawValue)/exact"
+        case .searchTrending(let type, _):
+            return "/search/recent_by_id/global/\(type == .movie ? "movies" : type == .show ? "shows" : "movies,shows")"
+        case .searchSelected:
+            return "/search/recent"
         case .search(let type, _):
             return "/search/\(type.rawValue)"
         case .lookup(let tmdb, _):
@@ -1112,8 +1121,10 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .commentMediaItem:
             return .get
-        case .search:
+        case .search, .searchExact, .searchTrending:
             return .get
+        case .searchSelected:
+            return .post
         case .lookup:
             return .get
         case .trendingMedia:
@@ -1446,6 +1457,11 @@ extension TraktAPIService: AuthorizedTargetType {
         case .commentMediaItem:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
+        case .searchExact(_, let query), .searchTrending(_, let query):
+            return .requestParameters(parameters: ["query": query, "extended": "full", "limit": "50"], encoding: URLEncoding.default)
+        case .searchSelected(let type, let query, let id):
+            let plural = type == .movie ? "movies" : type == .show ? "shows" : type == .person ? "people" : "lists"
+            return .requestParameters(parameters: ["query": query, "type": plural, "id": id], encoding: JSONEncoding.default)
         case .search(let type, let query):
             if type == .person {
                 return .requestParameters(parameters: ["query": query,
@@ -2072,7 +2088,7 @@ extension TraktAPIService: AuthorizedTargetType {
                 return true
             }
             return false
-        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary:
+        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .searchExact, .searchTrending, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary:
             return false
         case .stats(let type):
             switch type {

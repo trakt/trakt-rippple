@@ -219,14 +219,14 @@ private enum RipppleIntentService {
     static func searchMovies(matching query: String) async throws -> [MovieEntity] {
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard query.isEmpty == false else { return [] }
-        let items: [MediaItem] = try await request(.search(type: .movie, query: query))
+        let items = try await TraktAPIProvider.search(query: query, type: .movie)
         return items.compactMap(\.movie).compactMap(MovieEntity.init)
     }
 
     static func searchShows(matching query: String) async throws -> [ShowEntity] {
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard query.isEmpty == false else { return [] }
-        let items: [MediaItem] = try await request(.search(type: .show, query: query))
+        let items = try await TraktAPIProvider.search(query: query, type: .show)
         return items.compactMap(\.show).compactMap(ShowEntity.init)
     }
 
@@ -234,21 +234,13 @@ private enum RipppleIntentService {
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard query.isEmpty == false else { return [] }
 
-        let results: TMDbResults = try await tmdbRequest(.search(query))
-        var media = [MediaEntity]()
-        for result in results.results
-            .filter({ $0.mediaType == "movie" || $0.mediaType == "tv" })
-            .prefix(10) {
-            let type: TmdbType = result.mediaType == "movie" ? .movie : .show
-            guard let items: [MediaItem] = try? await request(.lookup(tmdbID: String(result.id),
-                                                                      type: type)) else { continue }
-            if let movie = items.compactMap(\.movie).compactMap(MovieEntity.init).first {
-                media.append(.movie(movie))
-            } else if let show = items.compactMap(\.show).compactMap(ShowEntity.init).first {
-                media.append(.show(show))
-            }
+        let results = try await TraktAPIProvider.search(query: query)
+        try _Concurrency.Task.checkCancellation()
+        return results.compactMap { result in
+            if let movie = result.movie, let entity = MovieEntity(movie: movie) { return .movie(entity) }
+            if let show = result.show, let entity = ShowEntity(show: show) { return .show(entity) }
+            return nil
         }
-        return media
     }
 
     static func movies(with identifiers: [Int]) async throws -> [MovieEntity] {
@@ -563,24 +555,6 @@ private enum RipppleIntentService {
                     do {
                         let response = try response.filterSuccessfulStatusCodes()
                         try continuation.resume(returning: response.map(Response.self, using: TraktAPIProvider.decoder))
-                    } catch {
-                        continuation.resume(throwing: error)
-                    }
-                case .failure(let error):
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
-    }
-
-    private static func tmdbRequest<Response: Decodable>(_ target: TmdbAPIService) async throws -> Response {
-        try await withCheckedThrowingContinuation { continuation in
-            TmdbAPIProvider.provider.request(target, callbackQueue: .global(qos: .utility)) { result in
-                switch result {
-                case .success(let response):
-                    do {
-                        let response = try response.filterSuccessfulStatusCodes()
-                        try continuation.resume(returning: response.map(Response.self, using: TmdbAPIProvider.decoder))
                     } catch {
                         continuation.resume(throwing: error)
                     }

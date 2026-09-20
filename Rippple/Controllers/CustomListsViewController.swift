@@ -112,6 +112,11 @@ final class CustomListsViewController: UITableViewController {
         super.init(coder: aDecoder)
     }
 
+    private var listsSubtitle = "Loading..."
+    private var listBarButtonItems: [UIBarButtonItem]?
+    private let listsSearchResults = ListsSearchViewController()
+    private lazy var searchController = UISearchController(searchResultsController: listsSearchResults)
+
     private var lists = [List]()
     private var likedLists = [List]()
 
@@ -196,10 +201,35 @@ final class CustomListsViewController: UITableViewController {
         }
 
         if user.isCurrentUser {
-            navigationItem.title = "Lists"
+            navigationItem.title = "Your Lists"
         } else {
             navigationItem.title = "\(user.username)'s Lists"
             navigationItem.rightBarButtonItems = nil
+        }
+
+        listBarButtonItems = navigationItem.rightBarButtonItems
+        searchController.delegate = self
+        searchController.searchResultsUpdater = listsSearchResults
+        searchController.showsSearchResultsController = true
+        searchController.searchBar.placeholder = "Search Lists"
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        definesPresentationContext = true
+        listsSearchResults.listDelegate = self
+        listsSearchResults.onSubtitleChanged = { [weak self] subtitle in
+            guard let self = self, self.searchController.isActive else { return }
+            self.navigationItem.subtitle = subtitle
+        }
+        listsSearchResults.onSelectList = { [weak self] list in
+            guard let self = self else { return }
+            self.searchController.searchBar.resignFirstResponder()
+            self.openList(list)
+        }
+        listsSearchResults.onSelectBrowse = { [weak self] tab in
+            guard let self = self else { return }
+            self.searchController.searchBar.resignFirstResponder()
+            self.saveStandardList("\(tab.rawValue.lowercased()) lists")
+            self.openBrowseLists(tab, animated: true)
         }
 
         tableView.allowsSelectionDuringEditing = true
@@ -330,6 +360,13 @@ final class CustomListsViewController: UITableViewController {
                     UIView.setAnimationsEnabled(false)
                     performSegue(withIdentifier: "collaborations-no-animation", sender: self)
                     UIView.setAnimationsEnabled(true)
+                } else if UserDefaults.standard.string(forKey: "CustomListsViewController.standardList") == "smart searches", user.isCurrentUser {
+                    UserDefaults.standard.removeObject(forKey: "CustomListsViewController.standardList")
+                    UserDefaults.standard.removeObject(forKey: "CustomListsViewController.displayList")
+                } else if user.isCurrentUser,
+                          let identifier = UserDefaults.standard.string(forKey: "CustomListsViewController.standardList"),
+                          let category = browseListsCategory(identifier) {
+                    openBrowseLists(category, animated: false)
                 } else { // watchlist or default behaviour (retro-compatibility)
                     UIView.setAnimationsEnabled(false)
                     performSegue(withIdentifier: "watchlist-no-animation", sender: self)
@@ -365,16 +402,17 @@ final class CustomListsViewController: UITableViewController {
     }
 
     private func applySnapshot(animating: Bool = false, reload: Bool = false) {
+        listsSearchResults.additionalLists = lists
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
 
         let contentItems = lists.map { Wrapper.list($0, isLiked: false) }
 
         if showLoading {
-            navigationItem.subtitle = "Loading..."
+            listsSubtitle = "Loading..."
             snapshot.appendSections([.loading])
             snapshot.appendItems([.spacer(100)], toSection: .loading)
         } else if error != nil {
-            navigationItem.subtitle = "Error!"
+            listsSubtitle = "Error"
             snapshot.appendSections([.error])
             snapshot.appendItems([.spacer(101)], toSection: .error)
         } else {
@@ -393,7 +431,6 @@ final class CustomListsViewController: UITableViewController {
             }
 
             // Content (custom lists)
-            navigationItem.subtitle = "\(lists.count) Custom List\(lists.count > 1 ? "s" : "")"
             snapshot.appendSections([.content])
             snapshot.appendItems(contentItems, toSection: .content)
             if reload {
@@ -410,6 +447,10 @@ final class CustomListsViewController: UITableViewController {
             }
         }
 
+        if !showLoading, error == nil {
+            listsSubtitle = user.isCurrentUser ? "\(lists.count) curated, \(likedLists.count) liked" : "\(lists.count) curated"
+        }
+        navigationItem.subtitle = searchController.isActive ? listsSearchResults.subtitle : listsSubtitle
         DispatchQueue.main.async {
             self.dataSource.apply(snapshot, animatingDifferences: false)
         }
@@ -447,6 +488,47 @@ final class CustomListsViewController: UITableViewController {
                 }
             }
         }
+    }
+
+    private func openList(_ list: List) {
+        if navigationController?.viewControllers.first == self,
+           let encoded = try? JSONEncoder().encode(list) {
+            UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
+            UserDefaults.standard.set(encoded, forKey: "CustomListsViewController.customList")
+            UserDefaults.standard.removeObject(forKey: "CustomListsViewController.standardList")
+        }
+        performSegue(withIdentifier: "list", sender: list)
+    }
+
+    private func saveStandardList(_ identifier: String) {
+        guard navigationController?.viewControllers.first == self else { return }
+        UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
+        UserDefaults.standard.set(identifier, forKey: "CustomListsViewController.standardList")
+        UserDefaults.standard.removeObject(forKey: "CustomListsViewController.customList")
+    }
+
+    private func openStandardList(_ identifier: String) {
+        saveStandardList(identifier)
+        if let category = browseListsCategory(identifier) {
+            openBrowseLists(category, animated: true)
+        } else {
+            performSegue(withIdentifier: identifier, sender: self)
+        }
+    }
+
+    private func browseListsCategory(_ identifier: String) -> BrowseListsViewController.Category? {
+        switch identifier {
+        case "browseLists", "browse lists", "trendingLists", "trending lists": return .trending
+        case "officialLists", "official lists", "trakt official lists": return .official
+        case "popularLists", "popular lists": return .popular
+        default: return nil
+        }
+    }
+
+    private func openBrowseLists(_ category: BrowseListsViewController.Category, animated: Bool) {
+        let controller = BrowseListsViewController()
+        controller.category = category
+        navigationController?.pushViewController(controller, animated: animated)
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -520,31 +602,12 @@ extension CustomListsViewController {
             default:
                 break
             }
-        } else if navigationController?.viewControllers.first == self {
-            switch item {
-            case .standard(let name, _, let segueId):
-                UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
-                UserDefaults.standard.set(name.lowercased(), forKey: "CustomListsViewController.standardList")
-                UserDefaults.standard.removeObject(forKey: "CustomListsViewController.customList")
-                UserDefaults.standard.synchronize()
-                performSegue(withIdentifier: segueId, sender: self)
-            case .list(let list, _):
-                if let encoded = try? JSONEncoder().encode(list) {
-                    UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
-                    UserDefaults.standard.set(encoded, forKey: "CustomListsViewController.customList")
-                    UserDefaults.standard.removeObject(forKey: "CustomListsViewController.standardList")
-                    UserDefaults.standard.synchronize()
-                }
-                performSegue(withIdentifier: "list", sender: list)
-            default:
-                break
-            }
         } else {
             switch item {
-            case .standard(_, _, let segueId):
-                performSegue(withIdentifier: segueId, sender: self)
+            case .standard(_, _, let identifier):
+                openStandardList(identifier)
             case .list(let list, _):
-                performSegue(withIdentifier: "list", sender: list)
+                openList(list)
             default:
                 break
             }
@@ -616,7 +679,7 @@ extension CustomListsViewController: ListTableViewCellDelegate {
     func cell(_ cell: ListTableViewCell, action: ListTableViewCell.Action) {
         guard let list = cell.list else { return }
         if action == .touch {
-            performSegue(withIdentifier: "list", sender: list)
+            openList(list)
         } else if action == .user {
             if let type = list.type, type == "official" {
                 let alert = UIAlertController(title: "Trakt Official List",
@@ -660,7 +723,9 @@ extension CustomListsViewController: UITableViewDropDelegate {
         if destSection == .liked {
             return UITableViewDropProposal(operation: .cancel)
         }
-        if destSection == .standard && destinationIndexPath.row == 3 {
+        if destSection == .standard,
+           case .standard(_, _, let identifier) = dataSource.itemIdentifier(for: destinationIndexPath),
+           ["watchlist", "recommended", "collection"].contains(identifier) == false {
             return UITableViewDropProposal(operation: .cancel)
         }
         tableView.cellForRow(at: destinationIndexPath)?.isSelected = true
@@ -836,5 +901,20 @@ extension CustomListsViewController: UITableViewDropDelegate {
                 }
             }
         }
+    }
+}
+
+extension CustomListsViewController: UISearchControllerDelegate {
+    func willPresentSearchController(_ searchController: UISearchController) {
+        navigationItem.title = "Lists"
+        navigationItem.setRightBarButtonItems(nil, animated: false)
+        listsSearchResults.loadViewIfNeeded()
+        navigationItem.subtitle = listsSearchResults.subtitle
+    }
+
+    func willDismissSearchController(_ searchController: UISearchController) {
+        navigationItem.title = user.isCurrentUser ? "Your Lists" : "\(user.username)'s Lists"
+        navigationItem.setRightBarButtonItems(listBarButtonItems, animated: false)
+        navigationItem.subtitle = listsSubtitle
     }
 }

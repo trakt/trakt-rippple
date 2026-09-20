@@ -14,6 +14,10 @@ import UIKit
 final class ListSearchResultsViewController: UITableViewController {
     /// Public
     var service: TraktAPIService!
+    var allowsLoggedOutRequests = false
+    var onSubtitleChanged: ((String) -> Void)?
+    private var request: Cancellable?
+    private var requestID = UUID()
 
     private let disposeBag = DisposeBag()
 
@@ -56,7 +60,7 @@ final class ListSearchResultsViewController: UITableViewController {
         precondition(service != nil, "Search results view controller must be fed with a service object!")
 
         navigationItem.style = .browser
-        navigationItem.subtitle = "Loading..."
+        updateSubtitle("Loading...")
         navigationItem.largeTitleDisplayMode = .never
 
         tableView.allowsFocus = false
@@ -64,10 +68,6 @@ final class ListSearchResultsViewController: UITableViewController {
         tableView.dataSource = dataSource
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
         tableView.separatorStyle = .none
-
-        var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
-        snapshot.appendSections([.loading])
-        dataSource.apply(snapshot, animatingDifferences: false)
 
         animationViewContainer.tintColor = UIColor(asset: .globalTint)
         animationViewContainer.startAnimating()
@@ -80,50 +80,65 @@ final class ListSearchResultsViewController: UITableViewController {
     }
 
     func fetch() {
-        if SessionManager.shared.isLoggedOut {
-            return
-        }
+        if SessionManager.shared.isLoggedOut, !allowsLoggedOutRequests { return }
+        request?.cancel()
+        requestID = UUID()
+        let identifier = requestID
+        error = nil
+        updateSubtitle("Loading...")
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
+        snapshot.appendSections([.loading])
+        applySnapshot(snapshot)
 
-        TraktAPIProvider.provider.request(service, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-            guard let self = self else { return }
-
-            switch result {
-            case .success(let moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    let searchResults = try response.map([ListItem].self, using: TraktAPIProvider.decoder).filter { $0.list != nil }.map { Wrapper.list($0.list!) }
-
-                    var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
-                    snapshot.appendSections([.content])
-                    snapshot.appendItems(searchResults.removingDuplicates())
-                    DispatchQueue.main.async {
-                        self.navigationItem.subtitle = "\(searchResults.count) result\(searchResults.count < 2 ? "" : "s")"
-                        self.dataSource.apply(snapshot, animatingDifferences: false)
-                    }
-                } catch {
-                    print("List request JSON mapping failed! \(error)")
-                    self.error = error
-
-                    var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
-                    snapshot.appendSections([.error])
-                    DispatchQueue.main.async {
-                        self.navigationItem.subtitle = "Error"
-                        self.dataSource.apply(snapshot, animatingDifferences: false)
-                    }
-                }
-            case .failure(let error):
-                print("List request failure \(error)")
-                self.error = error
-
+        request = TraktAPIProvider.provider.request(service, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+            let lists: Result<[Wrapper], Error> = Result {
+                let response = try result.get().filterSuccessfulStatusCodes()
+                return try response.map([ListItem].self, using: TraktAPIProvider.decoder)
+                    .compactMap { $0.list }.map { Wrapper.list($0) }.removingDuplicates()
+            }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.requestID == identifier else { return }
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
-                snapshot.appendSections([.error])
-                DispatchQueue.main.async {
-                    self.navigationItem.subtitle = "Error"
-                    self.dataSource.apply(snapshot, animatingDifferences: false)
+                switch lists {
+                case .success(let items):
+                    self.updateSubtitle("\(items.count) result\(items.count == 1 ? "" : "s")")
+                    snapshot.appendSections([.content])
+                    snapshot.appendItems(items)
+                case .failure(let error):
+                    self.error = error
+                    self.updateSubtitle("Error")
+                    snapshot.appendSections([.error])
                 }
+                self.refreshControl?.endRefreshing()
+                self.applySnapshot(snapshot)
             }
         }
+    }
+
+    private func applySnapshot(_ snapshot: NSDiffableDataSourceSnapshot<Section, Wrapper>) {
+        let identifier = requestID
+        let headerOffset = tableView.contentOffset.y + tableView.adjustedContentInset.top
+        let isHeaderVisible = tableView.tableHeaderView.map { headerOffset < $0.bounds.height } ?? false
+        dataSource.apply(snapshot, animatingDifferences: false) { [weak self] in
+            guard let self = self, self.requestID == identifier, isHeaderVisible,
+                  !self.tableView.isTracking, !self.tableView.isDragging, !self.tableView.isDecelerating else { return }
+            // Section replacement can anchor the first row and scroll the filter header out of view.
+            self.tableView.setContentOffset(CGPoint(x: self.tableView.contentOffset.x,
+                                                    y: max(0, headerOffset) - self.tableView.adjustedContentInset.top),
+                                            animated: false)
+        }
+    }
+
+    private func updateSubtitle(_ subtitle: String) {
+        navigationItem.subtitle = subtitle
+        onSubtitleChanged?(subtitle)
+    }
+
+    private func openSearchResult(_ list: List) {
+        if case .search(_, let query) = service {
+            TraktAPIProvider.recordSearchSelection(query: query, type: .list, id: list.identifiers.trakt)
+        }
+        performSegue(withIdentifier: "list", sender: list)
     }
 
     @IBSegueAction
@@ -145,9 +160,8 @@ final class ListSearchResultsViewController: UITableViewController {
 extension ListSearchResultsViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        if case Wrapper.list(let list) = item {
-            performSegue(withIdentifier: "list", sender: list)
-        }
+        guard case Wrapper.list(let list) = item else { return }
+        openSearchResult(list)
     }
 
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -187,7 +201,7 @@ extension ListSearchResultsViewController: ListTableViewCellDelegate {
     func cell(_ cell: ListTableViewCell, action: ListTableViewCell.Action) {
         guard let list = cell.list else { return }
         if action == .touch {
-            performSegue(withIdentifier: "list", sender: list)
+            openSearchResult(list)
         } else if action == .user {
             if let type = list.type, type == "official" {
                 let alert = UIAlertController(title: "Trakt Official List",

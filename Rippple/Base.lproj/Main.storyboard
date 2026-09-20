@@ -1333,20 +1333,12 @@ Keeping things private for private users...</string>
                                 </connections>
                             </button>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="Edit" id="exe-6y-Pts">
-                            <connections>
-                                <action selector="editTableViewWithSender:" destination="qHj-Dm-cz1" id="7t0-tK-MLm"/>
-                            </connections>
-                        </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <outlet property="editBarButtonItem" destination="exe-6y-Pts" id="aSs-Op-4TE"/>
                         <segue destination="Ar2-el-Dtq" kind="show" identifier="results" id="e9p-rv-CKT"/>
-                        <segue destination="Ar2-el-Dtq" kind="show" identifier="browse" id="etV-Sj-p4s"/>
                         <segue destination="MEa-Fw-siX" kind="show" identifier="user" id="ot1-Pb-TOu"/>
                         <segue destination="ioV-zc-UU0" kind="show" identifier="people" id="lms-Vj-xll"/>
                         <segue destination="Zqa-6j-kaq" kind="show" identifier="lists" id="frn-AU-ku0"/>
-                        <segue destination="oHT-rP-8qn" kind="presentation" identifier="smartSearch" id="Kiv-Dp-uxJ"/>
                         <segue destination="crF-lO-TE2" kind="show" identifier="details" id="vYh-Je-i9H"/>
                     </connections>
                 </tableViewController>
@@ -3130,7 +3122,7 @@ Are you sure about this people name's spelling?</string>
         <!--List Search Results View Controller-->
         <scene sceneID="AVS-Y2-628">
             <objects>
-                <tableViewController id="Zqa-6j-kaq" customClass="ListSearchResultsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="ListSearchResultsViewController" id="Zqa-6j-kaq" customClass="ListSearchResultsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="100" sectionHeaderHeight="28" sectionFooterHeight="28" id="7EN-St-yfK" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -4785,8 +4777,6 @@ Keeping things private for private users...</string>
         <segue reference="gZk-zu-rat"/>
         <segue reference="TRC-u5-3rw"/>
         <segue reference="lGe-Ne-T6L"/>
-        <segue reference="etV-Sj-p4s"/>
-        <segue reference="Kiv-Dp-uxJ"/>
         <segue reference="iRx-Qf-nvv"/>
         <segue reference="lUX-57-seM"/>
         <segue reference="fIG-dL-sAE"/>
