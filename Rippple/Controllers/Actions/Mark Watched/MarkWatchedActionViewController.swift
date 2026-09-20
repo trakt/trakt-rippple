@@ -96,10 +96,14 @@ final class MarkWatchedActionViewController: UITableViewController {
             tableView.superview?.addSubview(markWatchedButton)
 
             markWatchedButton.translatesAutoresizingMaskIntoConstraints = false
+            let preferredWidth = markWatchedButton.widthAnchor.constraint(equalToConstant: 250)
+            preferredWidth.priority = .defaultHigh
             NSLayoutConstraint.activate([
-                markWatchedButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                markWatchedButton.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
+                markWatchedButton.leadingAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+                markWatchedButton.trailingAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
                 markWatchedButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-                markWatchedButton.widthAnchor.constraint(equalToConstant: 250),
+                preferredWidth,
                 markWatchedButton.heightAnchor.constraint(equalToConstant: 44)
             ])
 
