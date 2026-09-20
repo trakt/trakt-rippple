@@ -213,7 +213,7 @@ final class CustomListsViewController: UITableViewController {
         searchController.showsSearchResultsController = true
         searchController.searchBar.placeholder = "Search Lists"
         navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
+        navigationItem.hidesSearchBarWhenScrolling = true
         definesPresentationContext = true
         listsSearchResults.listDelegate = self
         listsSearchResults.onSubtitleChanged = { [weak self] subtitle in
