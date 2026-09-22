@@ -162,6 +162,8 @@ struct WatchingControlWidget: Widget {
 
 @available(iOS 27.0, *)
 private struct WatchingControlWidgetEntryView: View {
+    @Environment(\.showsWidgetContainerBackground) private var showsWidgetContainerBackground
+
     let entry: WatchingControlWidgetEntry
 
     var body: some View {
@@ -184,7 +186,7 @@ private struct WatchingControlWidgetEntryView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(12)
+        .padding(showsWidgetContainerBackground ? 12 : 0)
         .containerBackground(.background, for: .widget)
     }
 

@@ -111,6 +111,7 @@ struct UpcomingWidget: Widget {
 }
 
 private struct UpcomingWidgetEntryView: View {
+    @Environment(\.showsWidgetContainerBackground) private var showsWidgetContainerBackground
     @Environment(\.widgetRenderingMode) private var widgetRenderingMode
 
     let entry: UpcomingWidgetEntry
@@ -125,8 +126,8 @@ private struct UpcomingWidgetEntryView: View {
                 }
             }
         }
-        .padding([.trailing, .leading, .top], upcomingWidgetContentPadding)
-        .padding(.bottom, 4)
+        .padding([.trailing, .leading, .top], showsWidgetContainerBackground ? upcomingWidgetContentPadding : 0)
+        .padding(.bottom, showsWidgetContainerBackground ? 4 : 0)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .containerBackground(.background, for: .widget)
     }

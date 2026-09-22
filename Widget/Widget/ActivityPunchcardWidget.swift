@@ -58,6 +58,8 @@ struct ActivityPunchcardWidget: Widget {
 }
 
 private struct ActivityPunchcardWidgetView: View {
+    @Environment(\.showsWidgetContainerBackground) private var showsWidgetContainerBackground
+
     let entry: ActivityPunchcardWidgetEntry
 
     var body: some View {
@@ -67,7 +69,7 @@ private struct ActivityPunchcardWidgetView: View {
                               punchSize: ActivityPunchcardMetrics.punchSize * 1.2,
                               fillsAvailableSpace: true,
                               outerCornerRadiusFactor: 0.8)
-            .padding(14)
+            .padding(showsWidgetContainerBackground ? 14 : 0)
             .containerBackground(.background, for: .widget)
             .widgetURL(URL(string: "ripl://users/me"))
     }
