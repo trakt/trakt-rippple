@@ -273,7 +273,8 @@ final class EpisodeToWatchManager {
             }
         }.disposed(by: disposeBag)
 
-        onSyncWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
+        // Rebuild when WatchedManager updates the show metadata used below; SyncWatchedManager can finish before it.
+        onWatchedShowsChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if EpisodeToWatchSettings.shared.watched {
                 print("EpisodeToWatchManager.forceRefresh because watched changed")

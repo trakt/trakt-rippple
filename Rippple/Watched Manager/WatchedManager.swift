@@ -13,8 +13,34 @@ import UIKit
 
 extension TinyStorage {
     static let cache: TinyStorage = {
-        let containerURL = URL.cachesDirectory
-        return .init(insideDirectory: containerURL, name: "rippple-tiny-cache")
+        let name = "rippple-tiny-cache"
+        let containerURL = URL.applicationSupportDirectory
+        let legacyDirectoryURL = URL.cachesDirectory.appending(path: name, directoryHint: .isDirectory)
+        var directoryURL = containerURL.appending(path: name, directoryHint: .isDirectory)
+        let fileManager = FileManager.default
+
+        do {
+            try fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
+            // Move the existing store before TinyStorage reads it; never replace a migrated store.
+            if !fileManager.fileExists(atPath: directoryURL.path),
+               fileManager.fileExists(atPath: legacyDirectoryURL.path) {
+                try fileManager.moveItem(at: legacyDirectoryURL, to: directoryURL)
+            }
+            try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        } catch {
+            print("Unable to migrate TinyStorage: \(error)")
+            return .init(insideDirectory: URL.cachesDirectory, name: name)
+        }
+
+        do {
+            var resourceValues = URLResourceValues()
+            resourceValues.isExcludedFromBackup = true
+            try directoryURL.setResourceValues(resourceValues)
+        } catch {
+            print("Unable to exclude TinyStorage from backup: \(error)")
+        }
+
+        return .init(insideDirectory: containerURL, name: name)
     }()
 }
 
@@ -75,7 +101,6 @@ final class WatchedManager {
             TinyStorage.cache.remove(key: "WatchedManager.showsHistoryItems")
             TinyStorage.cache.remove(key: "WatchedManager.moviesHistoryItems")
             TinyStorage.cache.remove(key: "WatchedManager.episodeHistoryItems")
-            onWatchedShowsChangedTransmitter.broadcast([])
             onWatchedMoviesChangedTransmitter.broadcast([])
         }.disposed(by: disposeBag)
 
@@ -113,13 +138,6 @@ final class WatchedManager {
 
         onSettingsChangedReceiver.hotOnly().listen { settings in
             if settings != nil {
-                if let data = UserDefaults.standard.data(forKey: "WatchedManager.showsHistoryItems"), let array = try? PropertyListDecoder().decode([WatchedItem].self, from: data) {
-                    self.showsHistoryItems = array
-                }
-
-                if let data = UserDefaults.standard.data(forKey: "WatchedManager.moviesHistoryItems"), let array = try? PropertyListDecoder().decode([WatchedItem].self, from: data) {
-                    self.moviesHistoryItems = array
-                }
                 self.lastShowsAndEpisodesCheck = .now
                 self.lastMoviesCheck = .now
                 self.refreshWatchedShows()
@@ -137,7 +155,6 @@ final class WatchedManager {
                 TinyStorage.cache.remove(key: "WatchedManager.showsHistoryItems")
                 TinyStorage.cache.remove(key: "WatchedManager.moviesHistoryItems")
                 TinyStorage.cache.remove(key: "WatchedManager.episodeHistoryItems")
-                onWatchedShowsChangedTransmitter.broadcast([])
                 onWatchedMoviesChangedTransmitter.broadcast([])
             }
         }.disposed(by: disposeBag)
@@ -324,21 +341,20 @@ extension WatchedManager {
     }
 
     private func performRefreshWatchedShows() {
-        if SessionManager.shared.isLoggedOut {
-            return
-        }
+        guard SessionManager.shared.isLoggedIn else { return }
+
         TraktAPIProvider.fetchAllWatchedItems(slug: "me",
                                               type: .shows,
-                                              extended: .fullnoseasons) { result in
-            switch result {
-            case .success(let items):
-                DispatchQueue.main.async {
+                                              extended: .fullnoseasons) { [weak self] result in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, SessionManager.shared.isLoggedIn else { return }
+
+                switch result {
+                case .success(let items):
                     self.showsHistoryItems = self.polyfilledWatchedShows(items)
-                }
-            case .failure(let error):
-                print("Watched Shows request failure \(error)")
-                DispatchQueue.main.async {
-                    onWatchedShowsChangedTransmitter.broadcast(self.watchedShows)
+                case .failure(let error):
+                    // Keep the last complete snapshot; failure is not a watched-data update.
+                    print("Watched Shows request failure \(error)")
                 }
             }
         }
