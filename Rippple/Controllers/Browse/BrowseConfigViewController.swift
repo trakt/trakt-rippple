@@ -11,9 +11,12 @@ import UIKit
 
 let (onBrowseConfigChangedTransmitter, onBrowseConfigChangedReceiver) = Receiver<String>.make(with: .warm(upTo: 1))
 
+let (onShelfConfigChangedTransmitter, onShelfConfigChangedReceiver) = Receiver<String>.make(with: .warm(upTo: 1))
+
 final class BrowseConfigManager {
     private let disposeBag = DisposeBag()
     private var lastTransmittedConfig: String?
+    private var lastTransmittedShelfConfig: String?
 
     private init() {
         PurchaseManager.shared.onPurchasedChangedReceiver.hotOnly().listen { [weak self] _ in
@@ -38,22 +41,22 @@ final class BrowseConfigManager {
 
         onEpisodeToWatchChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.transmitCurrent()
+            self.transmitConfigurations()
         }.disposed(by: disposeBag)
 
         onWatchlistSearchableDataSourceChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.transmitCurrent()
+            self.transmitConfigurations()
         }.disposed(by: disposeBag)
 
         onSyncWatchedMoviesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.transmitCurrent()
+            self.transmitConfigurations()
         }.disposed(by: disposeBag)
 
         onSyncWatchedEpisodesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            self.transmitCurrent()
+            self.transmitConfigurations()
         }.disposed(by: disposeBag)
     }
 
@@ -100,19 +103,37 @@ final class BrowseConfigManager {
         didSet {
             UserDefaults.standard.set(currentConfig, forKey: "BrowseConfigManager.currentConfig")
             UserDefaults.standard.synchronize()
-            transmitCurrent()
+            transmitConfigurations()
         }
     }
 
-    private func transmitCurrent() {
+    private func transmitConfigurations() {
         guard let currentConfig = currentConfig else { return }
+        let config = configurationHidingEmptySections(UserManager.shared.currentUser == nil ? freeConfig : currentConfig)
+        if config != lastTransmittedConfig {
+            lastTransmittedConfig = config
+            onBrowseConfigChangedTransmitter.broadcast(config)
+        }
+
+        let shelfConfig = filteredShelfConfig
+        if shelfConfig != lastTransmittedShelfConfig {
+            lastTransmittedShelfConfig = shelfConfig
+            onShelfConfigChangedTransmitter.broadcast(shelfConfig)
+        }
+    }
+
+    var filteredShelfConfig: String {
+        configurationHidingEmptySections(shelfConfig)
+    }
+
+    private func configurationHidingEmptySections(_ config: String) -> String {
         let decoder = JSONDecoder()
         let episodesToWatchIsEmpty = EpisodeToWatchManager.shared.filteredMediaModels.isEmpty
         let watchlistIsEmpty = WatchlistManager.shared.isEmpty
         let watchedMoviesIsEmpty = SyncWatchedManager.shared.watchedMovies.isEmpty
         let watchedEpisodesIsEmpty = SyncWatchedManager.shared.watchedEpisodes.isEmpty
         let historyIsEmpty = watchedMoviesIsEmpty && watchedEpisodesIsEmpty
-        let config = (UserManager.shared.currentUser == nil ? freeConfig : currentConfig)
+        return config
             .components(separatedBy: .newlines).filter { line in
                 guard let data = line.data(using: .utf8),
                       let module = try? decoder.decode(BrowseViewController.ModuleType.self, from: data) else {
@@ -125,9 +146,6 @@ final class BrowseConfigManager {
                     (watchedMoviesIsEmpty == false || module.filter.path != "/recommendations/movies")
             }
             .joined(separator: "\n")
-        guard config != lastTransmittedConfig else { return }
-        lastTransmittedConfig = config
-        onBrowseConfigChangedTransmitter.broadcast(config)
     }
 
     private var shelfProxy = ""
