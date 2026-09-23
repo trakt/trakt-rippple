@@ -33,11 +33,10 @@ final class ToWatchFooterTableViewCell: TintedCanvasTableViewCell {
                     let showCount = models.count
                     var episodeCount = 0
                     var timeToWatch = 0
-                    var hasCompleteRuntimeEstimate = true
                     for model in models {
                         switch model {
                         case .showProgress(let show, let progress):
-                            let runtime = show.runtime ?? progress.nextEpisodeToWatch?.runtime
+                            let runtime = show.runtime ?? progress.nextEpisodeToWatch?.runtime ?? 40
                             let episodesForShow: Int
                             if progress.toRewatchCount > 0 {
                                 episodesForShow = progress.toRewatchCount
@@ -45,11 +44,7 @@ final class ToWatchFooterTableViewCell: TintedCanvasTableViewCell {
                                 episodesForShow = max(1, progress.behind)
                             }
                             episodeCount += episodesForShow
-                            if let runtime {
-                                timeToWatch += episodesForShow * runtime
-                            } else {
-                                hasCompleteRuntimeEstimate = false
-                            }
+                            timeToWatch += episodesForShow * runtime
                         default:
                             break
                         }
@@ -127,7 +122,6 @@ final class ToWatchFooterTableViewCell: TintedCanvasTableViewCell {
                     }
 
                     if models.isEmpty == false,
-                       hasCompleteRuntimeEstimate,
                        let duration = dateFormatter.string(from: TimeInterval(timeToWatch * 60)) {
                         lines.append("About \(duration) in total.")
                         highlightedText.append(duration)
@@ -150,15 +144,10 @@ final class ToWatchFooterTableViewCell: TintedCanvasTableViewCell {
                     guard let self = self else { return }
                     let movieCount = models.count
                     var timeToWatch = 0
-                    var hasCompleteRuntimeEstimate = true
                     for model in models {
                         switch model {
                         case .movie(let movie):
-                            if let runtime = movie.runtime {
-                                timeToWatch += runtime
-                            } else {
-                                hasCompleteRuntimeEstimate = false
-                            }
+                            timeToWatch += movie.runtime ?? 90
                         default:
                             break
                         }
@@ -185,8 +174,7 @@ final class ToWatchFooterTableViewCell: TintedCanvasTableViewCell {
                         let movies = Self.counted(movieCount, singular: "movie")
                         var resultLines = ["We found \(movies)\(Self.sourceSuffix(sourceNames))."]
                         highlightedText.append(movies)
-                        if hasCompleteRuntimeEstimate,
-                           let duration = dateFormatter.string(from: TimeInterval(timeToWatch * 60)) {
+                        if let duration = dateFormatter.string(from: TimeInterval(timeToWatch * 60)) {
                             resultLines.append("About \(duration) in total.")
                             highlightedText.append(duration)
                         }
