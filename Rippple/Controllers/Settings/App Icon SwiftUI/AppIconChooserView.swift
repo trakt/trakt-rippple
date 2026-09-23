@@ -22,9 +22,13 @@ struct AppIconChooserView: View {
         .indigo,
         .purple,
         .pink,
-        .brown,
+        .brown
+    ]
+
+    private let studioIcons: [AppIconIdentifier] = [
         .monochrome,
-        .graphite
+        .graphite,
+        .prism
     ]
 
     private let specialIcons: [AppIconIdentifier] = [
@@ -57,6 +61,7 @@ struct AppIconChooserView: View {
             VStack(alignment: .leading, spacing: 24) {
                 iconSection(title: nil, identifiers: [.original])
                 iconSection(title: "Color Editions", identifiers: colorIcons)
+                iconSection(title: "Studio Editions", identifiers: studioIcons)
                 iconSection(title: "Community Editions", identifiers: specialIcons)
                 iconSection(title: "Stealth Editions", identifiers: stealthIcons)
             }
