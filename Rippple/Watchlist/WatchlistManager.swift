@@ -12,7 +12,7 @@ import UIKit
 
 let (onWatchlistChangedTransmitter, onWatchlistChangedReceiver) = Receiver<Bool>.make(with: .hot)
 let (onMoviesWatchlistedChangedTransmitter, onMoviesWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
-let (onShowsWatchlistedChangedTransmitter, onShowsWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
+let (onShowsWatchlistedChangedTransmitter, onShowsWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .warm(upTo: 1))
 let (onEpisodesWatchlistedChangedTransmitter, onEpisodesWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 let (onSeasonsWatchlistedChangedTransmitter, onSeasonsWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 let (onWatchlistSearchableDataSourceChangedTransmitter, onWatchlistSearchableDataSourceChangedReceiver) = Receiver<ToWatchSearchableDataSource>.make(with: .warm(upTo: 1))
@@ -47,6 +47,7 @@ final class WatchlistManager {
             self.watchlistedShows.removeAll()
             self.watchlistedSeasons.removeAll()
             self.watchlistedEpisodes.removeAll()
+            self.hasLoadedWatchlistedShows = false
         }.disposed(by: disposeBag)
 
         // refresh if checkin in in progress
@@ -151,9 +152,12 @@ final class WatchlistManager {
         }
     }
 
+    private var hasLoadedWatchlistedShows = false
+
     fileprivate var watchlistedShows = Set<Int64>() {
         didSet {
-            if self.watchlistedShows != oldValue {
+            if self.watchlistedShows != oldValue || !hasLoadedWatchlistedShows {
+                hasLoadedWatchlistedShows = true
                 onShowsWatchlistedChangedTransmitter.broadcast(Array(watchlistedShows))
             }
         }

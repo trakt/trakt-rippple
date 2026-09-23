@@ -265,7 +265,7 @@ final class EpisodeToWatchManager {
             }
         }.disposed(by: disposeBag)
 
-        onShowsWatchlistedChangedReceiver.skip(count: 1).listen { [weak self] _ in
+        onShowsWatchlistedChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
             if EpisodeToWatchSettings.shared.watchlist {
                 print("EpisodeToWatchManager.forceRefresh because Watchlist changed")

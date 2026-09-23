@@ -243,7 +243,7 @@ final class EpisodeNotificationsManager {
                 try Task.checkCancellation()
 
                 var requests = [UNNotificationRequest]()
-                var showBehindStatus = [Int64: Bool]()
+                var showProgressCache = [Int64: ShowProgress?]()
                 let reduceBasedOnProgress = self.reduceBasedOnProgress
                 let groupEpisodes = self.groupEpisodes
                 let postponeNighttimeNotifications = self.postponeNighttimeNotifications
@@ -262,7 +262,7 @@ final class EpisodeNotificationsManager {
                                              watchlistedShowIdentifiers: watchlistedShowIdentifiers) != nil else { continue }
 
                     if reduceBasedOnProgress && event.isStandardEpisode {
-                        let isBehind = await self.isBehind(show: showEpisodeCalendarItem.show, showBehindStatus: &showBehindStatus)
+                        let isBehind = await self.isBehind(for: showEpisodeCalendarItem, showProgressCache: &showProgressCache)
                         try Task.checkCancellation()
                         if isBehind && shouldKeepStandardEpisodeInGroupedBulk(for: showEpisodeCalendarItem,
                                                                               in: showEpisodeCalendarItems,
@@ -285,9 +285,9 @@ final class EpisodeNotificationsManager {
                     for request in requests {
                         try Task.checkCancellation()
                         let filteredAndSortedRequests = requests.filter { otherRequest -> Bool in
-                            return otherRequest.content.threadIdentifier == request.content.threadIdentifier && (request.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate() == (otherRequest.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate()
+                            otherRequest.content.threadIdentifier == request.content.threadIdentifier && (request.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate() == (otherRequest.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate()
                         }.sorted { firstRequest, secondRequest -> Bool in
-                            return firstRequest.content.body < secondRequest.content.body
+                            firstRequest.content.body < secondRequest.content.body
                         }
 
                         if filteredAndSortedRequests.count > 1 && request == filteredAndSortedRequests.first! {
@@ -420,19 +420,29 @@ final class EpisodeNotificationsManager {
         return show.isDropped || show.isHiddenFromProgress || show.isHiddenFromCalendar
     }
 
-    private func isBehind(show: Show, showBehindStatus: inout [Int64: Bool]) async -> Bool {
-        guard let showId = show.identifiers.trakt else { return false }
+    private func isBehind(for showEpisodeItem: ShowEpisodeCalendarItem, showProgressCache: inout [Int64: ShowProgress?]) async -> Bool {
+        guard let showId = showEpisodeItem.show.identifiers.trakt else { return false }
 
-        if let isBehind = showBehindStatus[showId] { return isBehind }
+        let progress: ShowProgress?
+        if let cachedProgress = showProgressCache[showId] {
+            progress = cachedProgress
+        } else {
+            progress = await showEpisodeItem.show.mediaModel.progress()
+            showProgressCache.updateValue(progress, forKey: showId)
+        }
 
-        guard let progress = await show.mediaModel.progress() else {
-            showBehindStatus[showId] = false
+        guard let progress = progress, progress.behind > 0 else { return false }
+        guard progress.toRewatchCount == 0,
+              let nextEpisode = progress.nextEpisodeToWatch else { return true }
+
+        // A release awaiting its delayed notification is not an older unwatched episode.
+        if nextEpisode.season == showEpisodeItem.episode.season,
+           nextEpisode.number == showEpisodeItem.episode.number {
             return false
         }
 
-        let isBehind = progress.behind > 0
-        showBehindStatus[showId] = isBehind
-        return isBehind
+        guard let firstAired = nextEpisode.firstAired else { return true }
+        return firstAired < showEpisodeItem.firstAired
     }
 
     private func beginNotificationRebuildBackgroundTask() -> UIBackgroundTaskIdentifier? {
