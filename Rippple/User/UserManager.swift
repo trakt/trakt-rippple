@@ -194,8 +194,9 @@ final class UserManager {
     }
 
     func canAccessStats(for user: User?) -> Bool {
+        if isCurrentVIP { return true }
         guard let user = user else { return false }
-        return isCurrentVIP || (!user.isCurrentUser && user.isTraktVIP)
+        return !user.isCurrentUser && !user.isPrivate && user.isTraktVIP
     }
 
     var coverImageURL: URL? {

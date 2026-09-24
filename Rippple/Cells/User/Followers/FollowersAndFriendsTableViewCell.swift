@@ -37,65 +37,68 @@ final class FollowersAndFriendsTableViewCell: TintedCanvasTableViewCell {
 
     private let numberFormatter = NumberFormatter()
 
-    /// request
-    private var request: Cancellable?
+    private var requests = [Cancellable]()
+    private var loadGeneration = 0
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        request?.cancel()
         user = nil
     }
 
     deinit {
-        request?.cancel()
+        requests.forEach { $0.cancel() }
     }
 
     override func awakeFromNib() {
         super.awakeFromNib()
 
         onSettingsChangedReceiver.listen { [weak self] _ in
-            guard let self = self else { return }
-            self.loadCounts()
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.loadCounts()
+            }
         }.disposed(by: disposeBag)
         onVIPChangedReceiver.listen { [weak self] _ in
-            guard let self = self else { return }
-            self.loadCounts()
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.loadCounts()
+            }
         }.disposed(by: disposeBag)
 
         numberFormatter.numberStyle = .decimal
 
-        followersCount.text = "0"
         followersCount.method = .easeInOut
         followersCount.formatBlock = { [weak self] value in
             guard let self = self else { return "0" }
             return "\(self.numberFormatter.string(from: NSNumber(value: Int(value))) ?? "0")"
         }
 
-        followingCount.text = "0"
         followingCount.method = .easeInOut
         followingCount.formatBlock = { [weak self] value in
             guard let self = self else { return "0" }
             return "\(self.numberFormatter.string(from: NSNumber(value: Int(value))) ?? "0")"
         }
 
-        friendsCount.text = "0"
         friendsCount.method = .easeInOut
         friendsCount.formatBlock = { [weak self] value in
             guard let self = self else { return "0" }
             return "\(self.numberFormatter.string(from: NSNumber(value: Int(value))) ?? "0")"
         }
 
-        blockedCount?.text = "0"
         blockedCount?.method = .easeInOut
         blockedCount?.formatBlock = { [weak self] value in
             guard let self = self else { return "0" }
             return "\(self.numberFormatter.string(from: NSNumber(value: Int(value))) ?? "0")"
         }
 
-        onUsersHiddenFromCommentsChangedReceiver.listen { [weak self] users in
+        for label in [followersCount, followingCount, friendsCount, blockedCount] {
+            label?.countFrom(0, to: 0, withDuration: 0)
+        }
+
+        onUsersHiddenFromCommentsChangedReceiver.hotOnly().listen { [weak self] _ in
             DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.blockedCount?.countFromCurrentValueTo(CGFloat(users.count), withDuration: 0.7)
+                guard let self = self, self.user?.isCurrentUser == true else { return }
+                self.loadCounts()
             }
         }.disposed(by: disposeBag)
 
@@ -104,45 +107,105 @@ final class FollowersAndFriendsTableViewCell: TintedCanvasTableViewCell {
 
     var user: User! {
         didSet {
-            guard let user = user else { return }
-            blockedCount?.superview?.isHidden = !user.isCurrentUser
-            blockedSeparator?.isHidden = !user.isCurrentUser
             loadCounts()
         }
     }
 
     private func loadCounts() {
-        request?.cancel()
-        let canAccessStats = UserManager.shared.canAccessStats(for: user)
-        blockedCount?.isHidden = !canAccessStats
-        for label in [followersCount, followingCount, friendsCount] {
+        requests.forEach { $0.cancel() }
+        requests.removeAll()
+        loadGeneration += 1
+
+        let isCurrentUser = user?.isCurrentUser == true
+        blockedCount?.superview?.isHidden = !isCurrentUser
+        blockedSeparator?.isHidden = !isCurrentUser
+        for label in [followersCount, followingCount, friendsCount, blockedCount] {
             label?.countFrom(0, to: 0, withDuration: 0)
-            label?.isHidden = !canAccessStats
+            label?.isHidden = false
         }
-        guard canAccessStats, let requestedUser = user else { return }
-        request = TraktAPIProvider.provider.request(.stats(type: .user(slug: requestedUser.slug)),
-                                                    callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
-            switch result {
-            case .success(let moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                    guard response.statusCode != 204 else { return }
-                    let stats = try response.map(UserStats.self, using: TraktAPIProvider.decoder)
+        guard let requestedUser = user, UserManager.shared.currentUser != nil else {
+            for label in [followersCount, followingCount, friendsCount, blockedCount] {
+                label?.text = "—"
+            }
+            return
+        }
 
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self, self.user == requestedUser, UserManager.shared.canAccessStats(for: self.user) else { return }
-                        self.followersCount.countFromCurrentValueTo(CGFloat(stats.network.followers), withDuration: 0.7)
-                        self.followingCount.countFromCurrentValueTo(CGFloat(stats.network.following), withDuration: 0.7)
-                        self.friendsCount.countFromCurrentValueTo(CGFloat(stats.network.friends), withDuration: 0.7)
+        if isCurrentUser ? UserManager.shared.isCurrentVIP : requestedUser.isTraktVIP {
+            fetchStats(for: requestedUser)
+        } else {
+            fetchNetworkCounts(for: requestedUser)
+        }
+        if isCurrentUser {
+            fetchCount(.blocked, for: requestedUser, label: blockedCount)
+        }
+    }
+
+    private func fetchStats(for requestedUser: User) {
+        let currentUser = UserManager.shared.currentUser
+        let requestedGeneration = loadGeneration
+        let request = TraktAPIProvider.provider.request(.stats(type: .user(slug: requestedUser.slug)),
+                                                        callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
+            let statsResult = Result<UserStats?, Error> {
+                let response = try result.get().filterSuccessfulStatusCodes()
+                guard response.statusCode != 204 else { return nil }
+                return try response.map(UserStats.self, using: TraktAPIProvider.decoder)
+            }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self,
+                      self.user == requestedUser,
+                      UserManager.shared.currentUser == currentUser,
+                      self.loadGeneration == requestedGeneration else { return }
+                switch statsResult {
+                case .success(let stats):
+                    guard let stats = stats else {
+                        self.fetchNetworkCounts(for: requestedUser)
+                        return
                     }
-                } catch {
-                    print("/stats request JSON mapping failed! \(error)")
+                    self.followersCount.countFromCurrentValueTo(CGFloat(stats.network.followers), withDuration: 0.7)
+                    self.followingCount.countFromCurrentValueTo(CGFloat(stats.network.following), withDuration: 0.7)
+                    self.friendsCount.countFromCurrentValueTo(CGFloat(stats.network.friends), withDuration: 0.7)
+                case .failure(let error):
+                    for label in [self.followersCount, self.followingCount, self.friendsCount] {
+                        label?.text = "—"
+                    }
+                    print("Network stats request failed! \(error)")
                 }
-            case .failure(let error):
-                print("/stats request failure \(error)")
             }
         }
+        requests.append(request)
+    }
+
+    private func fetchNetworkCounts(for requestedUser: User) {
+        let counts: [(UserCountType, EFCountingLabel?)] = [
+            (.followers, followersCount),
+            (.following, followingCount),
+            (.friends, friendsCount)
+        ]
+        for (type, label) in counts {
+            fetchCount(type, for: requestedUser, label: label)
+        }
+    }
+
+    private func fetchCount(_ type: UserCountType, for requestedUser: User, label: EFCountingLabel?) {
+        let currentUser = UserManager.shared.currentUser
+        let requestedGeneration = loadGeneration
+        let request = TraktAPIProvider.fetchUserCount(slug: requestedUser.slug, type: type) { [weak self, weak label] result in
+            DispatchQueue.main.async { [weak self, weak label] in
+                guard let self = self,
+                      self.user == requestedUser,
+                      UserManager.shared.currentUser == currentUser,
+                      self.loadGeneration == requestedGeneration else { return }
+                switch result {
+                case .success(let count):
+                    label?.countFromCurrentValueTo(CGFloat(count), withDuration: 0.7)
+                case .failure(let error):
+                    label?.text = "—"
+                    print("User count request failed! \(error)")
+                }
+            }
+        }
+        requests.append(request)
     }
 
     @IBAction func friends(_ sender: Any) {

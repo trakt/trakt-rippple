@@ -188,6 +188,19 @@ enum WatchedType: String {
     case shows
 }
 
+enum UserCountType: String {
+    case plays = "history"
+    case movies = "watched/movies"
+    case shows = "watched/shows"
+    case episodes = "watched/episodes"
+    case ratings
+    case comments = "comments/all/all"
+    case following
+    case followers
+    case friends
+    case blocked = "hidden/comments"
+}
+
 enum SyncWatchedType: String {
     case movies
     case shows
@@ -255,6 +268,7 @@ enum TraktAPIService {
     case settings
     case comments(type: TraktObjectType, pageInfo: PageInfo, sortBy: CommentsSort?, replies: IncludeReplies?, mediaType: CommentMediaType = .all)
     case commentCount(type: TraktObjectType)
+    case userCount(slug: String, type: UserCountType, startDate: Date? = nil, endDate: Date? = nil)
 
     case history(slug: String = "me", type: HistoryMediaType?, id: Int64?, pageInfo: PageInfo, startDate: Date? = nil, endDate: Date?, extended: Extended? = .full)
     case isWatched(type: HistoryMediaType, id: Int64)
@@ -543,6 +557,8 @@ extension TraktAPIService: AuthorizedTargetType {
 
     var path: String {
         switch self {
+        case .userCount(let slug, let type, _, _):
+            return type == .blocked ? "/users/hidden/comments" : "/users/\(slug)/\(type.rawValue)"
         case .token:
             return "/oauth/token"
         case .refresh:
@@ -1087,7 +1103,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .movieSocial, .showSocial, .seasonSocial, .episodeSocial:
             return .get
-        case .commentCount:
+        case .commentCount, .userCount:
             return .head
         case .postComment:
             return .post
@@ -1380,6 +1396,25 @@ extension TraktAPIService: AuthorizedTargetType {
             return .requestParameters(parameters: ["page": "\(pageInfo.page)",
                                                    "limit": "\(pageInfo.limit)"],
                                       encoding: URLEncoding.default)
+        case .userCount(_, let type, let startDate, let endDate):
+            var parameters = ["page": "1", "limit": "1"]
+            if type == .blocked {
+                parameters["type"] = "user"
+            }
+            if type == .comments {
+                parameters["include_replies"] = "false"
+            }
+            if type == .plays {
+                let formatter = ISO8601DateFormatter()
+                formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                if let startDate = startDate {
+                    parameters["start_at"] = formatter.string(from: startDate)
+                }
+                if let endDate = endDate {
+                    parameters["end_at"] = formatter.string(from: endDate)
+                }
+            }
+            return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
         case .commentCount, .commentLikesCount:
             return .requestPlain
         case .postComment(let type, let traktId, let body, let spoilers):

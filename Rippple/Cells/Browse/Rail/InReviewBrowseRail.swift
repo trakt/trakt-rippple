@@ -504,7 +504,7 @@ struct InReviewView: View {
                 .padding(.horizontal, 8)
             ScrollView(.horizontal) {
                 HStack(spacing: 6) {
-                    if isVIP {
+                    if isVIP || UserManager.shared.isCurrentVIP {
                         AllTimeReviewCard()
                         YearInReviewCard(year: currentYear)
                         YearInReviewCard(year: lastYear)
@@ -525,6 +525,10 @@ struct InReviewView: View {
                                 .foregroundStyle(.secondary)
                             Spacer(minLength: 0)
                             Button("Get VIP") {
+                                guard !UserManager.shared.isCurrentVIP else {
+                                    isVIP = true
+                                    return
+                                }
                                 UIApplication.shared.switchToPurchase()
                             }
                             .font(.headline)
@@ -550,10 +554,14 @@ struct InReviewView: View {
             isVIP = UserManager.shared.isCurrentVIP
             disposeBag = DisposeBag()
             onSettingsChangedReceiver.listen { [isVIP = $isVIP] _ in
-                isVIP.wrappedValue = UserManager.shared.isCurrentVIP
+                DispatchQueue.main.async {
+                    isVIP.wrappedValue = UserManager.shared.isCurrentVIP
+                }
             }.disposed(by: disposeBag)
-            onVIPChangedReceiver.listen { [isVIP = $isVIP] value in
-                isVIP.wrappedValue = value
+            onVIPChangedReceiver.listen { [isVIP = $isVIP] _ in
+                DispatchQueue.main.async {
+                    isVIP.wrappedValue = UserManager.shared.isCurrentVIP
+                }
             }.disposed(by: disposeBag)
         }
         .onDisappear {
