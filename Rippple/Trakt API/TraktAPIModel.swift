@@ -672,6 +672,12 @@ struct CommentItem: Codable, Hashable {
     let comment: Comment
 }
 
+struct CommentGIF: Codable, Equatable, Hashable {
+    let url: String
+    let width: Double?
+    let height: Double?
+}
+
 struct Comment: Codable, Equatable, Hashable {
     static func == (lhs: Comment, rhs: Comment) -> Bool {
         return lhs.identifier == rhs.identifier
@@ -683,7 +689,7 @@ struct Comment: Codable, Equatable, Hashable {
 
     let identifier: Int64
     let body: String
-    var gif: String? = nil
+    var gif: CommentGIF? = nil
     let containsSpoiler: Bool
     let isReview: Bool
     let language: String?
@@ -956,7 +962,7 @@ struct SocialRating: Codable, Equatable, Hashable {
 struct SocialComment: Codable, Equatable, Hashable {
     let identifiers: Identifiers
     let body: String?
-    var gif: String? = nil
+    var gif: CommentGIF? = nil
     let containsSpoiler: Bool
     let isReview: Bool
     let language: String?

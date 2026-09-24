@@ -23,6 +23,7 @@ final class CommentGIFView: UIView {
     private var isLoading = false
     private let compactPlaceholderSize: CGFloat = 96
     private let fullPlaceholderSize = CGSize(width: 176, height: 132)
+    private var placeholderImageSize: CGSize?
     private var imageSize = CGSize(width: 4, height: 3)
 
     override init(frame: CGRect) {
@@ -92,7 +93,7 @@ final class CommentGIFView: UIView {
     func configure(with model: CommentModel) {
         defer { setNeedsLayout() }
         let comment = model.comment
-        guard let gif = comment.gif, !gif.isEmpty else {
+        guard let gif = comment.gif, !gif.url.isEmpty else {
             reset()
             return
         }
@@ -106,7 +107,7 @@ final class CommentGIFView: UIView {
             showPlaceholder(symbol: "eye.slash", accessibilityLabel: "GIF hidden. Open comment to view spoiler.")
             return
         }
-        guard let url = URL(string: gif), url.scheme?.lowercased() == "https", url.host != nil else {
+        guard let url = URL(string: gif.url), url.scheme?.lowercased() == "https", url.host != nil else {
             reset()
             isHidden = false
             showPlaceholder(symbol: "exclamationmark.triangle", accessibilityLabel: "GIF unavailable")
@@ -116,6 +117,13 @@ final class CommentGIFView: UIView {
         reset()
         isHidden = false
         attachmentURL = url
+        if let width = gif.width, let height = gif.height,
+           width.isFinite, height.isFinite, width > 0, height > 0 {
+            let aspectRatio = height / width
+            if aspectRatio.isFinite, aspectRatio > 0 {
+                placeholderImageSize = CGSize(width: width, height: height)
+            }
+        }
         loadImage()
     }
 
@@ -128,6 +136,7 @@ final class CommentGIFView: UIView {
         imageView.image = nil
         imageView.isHidden = true
         attachmentURL = nil
+        placeholderImageSize = nil
         imageSize = CGSize(width: 4, height: 3)
         statusButton.setImage(nil, for: .normal)
         statusButton.isUserInteractionEnabled = false
@@ -219,8 +228,12 @@ final class CommentGIFView: UIView {
         } else {
             preferredPlaceholderSize = showsLargePlaceholder ? fullPlaceholderSize : CGSize(width: 64, height: 44)
         }
+        let placeholderImageSize = showsLargePlaceholder ? placeholderImageSize : nil
+        let layoutImageSize = imageView.isHidden ? (placeholderImageSize ?? imageSize) : imageSize
         if !isCompact, let heightConstraint = heightConstraint {
-            let height = imageView.isHidden ? preferredPlaceholderSize.height : min(maximumHeight, bounds.width * imageSize.height / imageSize.width)
+            let height = imageView.isHidden && placeholderImageSize == nil
+                ? preferredPlaceholderSize.height
+                : min(maximumHeight, bounds.width * (layoutImageSize.height / layoutImageSize.width))
             if abs(heightConstraint.constant - height) > 0.5 {
                 heightConstraint.constant = height
                 DispatchQueue.main.async { [weak self] in
@@ -229,13 +242,13 @@ final class CommentGIFView: UIView {
                 }
             }
         }
-        let scale = min(bounds.width / imageSize.width, min(bounds.height, maximumHeight) / imageSize.height)
-        let size = CGSize(width: imageSize.width * scale, height: imageSize.height * scale)
+        let scale = min(bounds.width / layoutImageSize.width, min(bounds.height, maximumHeight) / layoutImageSize.height)
+        let size = CGSize(width: layoutImageSize.width * scale, height: layoutImageSize.height * scale)
         let alignsRight = isCompact != (effectiveUserInterfaceLayoutDirection == .rightToLeft)
         let x = alignsRight ? bounds.width - size.width : 0
         let y = isCompact ? bounds.height - size.height : 0
         imageView.frame = CGRect(origin: CGPoint(x: x, y: y), size: size)
-        let placeholderSize = CGSize(width: min(bounds.width, preferredPlaceholderSize.width), height: min(bounds.height, preferredPlaceholderSize.height))
+        let placeholderSize = placeholderImageSize != nil ? size : CGSize(width: min(bounds.width, preferredPlaceholderSize.width), height: min(bounds.height, preferredPlaceholderSize.height))
         let placeholderX = alignsRight ? bounds.width - placeholderSize.width : 0
         let placeholderY = isCompact ? bounds.height - placeholderSize.height : 0
         statusButton.frame = CGRect(origin: CGPoint(x: placeholderX, y: placeholderY), size: placeholderSize)
