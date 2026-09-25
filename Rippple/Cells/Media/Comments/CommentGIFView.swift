@@ -7,6 +7,7 @@
 //
 
 import Kingfisher
+import KingfisherWebP
 import UIKit
 
 /// An attachment shared by discussions and compact comment previews.
@@ -190,7 +191,13 @@ final class CommentGIFView: UIView {
         showPlaceholder(symbol: nil, accessibilityLabel: "Loading GIF")
 
         imageView.autoPlayAnimatedImage = !UIAccessibility.isReduceMotionEnabled
-        let options: KingfisherOptionsInfo = UIAccessibility.isReduceMotionEnabled ? [.onlyLoadFirstFrame] : []
+        var options: KingfisherOptionsInfo = [
+            .processor(WebPProcessor.default),
+            .cacheSerializer(WebPSerializer.default)
+        ]
+        if UIAccessibility.isReduceMotionEnabled {
+            options.append(.onlyLoadFirstFrame)
+        }
         let resource = KF.ImageResource(downloadURL: url,
                                         cacheKey: url.absoluteString + (UIAccessibility.isReduceMotionEnabled ? "#still" : ""))
         imageView.kf.setImage(with: resource, options: options) { [weak self] result in

@@ -49,6 +49,16 @@ If you update dependencies, update their requirements, resolved files, and the v
   - **Source**: https://github.com/onevcat/Kingfisher
   - **Pinned version**: `8.12.0`
 
+- **KingfisherWebP** (`KingfisherWebP`)
+  - **Description**: WebP decoding and caching for Kingfisher, including animated comment attachments.
+  - **Source**: https://github.com/yeatse/KingfisherWebP
+  - **Pinned version**: `1.7.3`
+
+- **libwebp-Xcode** (`libwebp`, transitive via KingfisherWebP)
+  - **Description**: WebP image encoding and decoding library packaged for Apple platforms.
+  - **Source**: https://github.com/SDWebImage/libwebp-Xcode
+  - **Pinned version**: `1.6.0`
+
 - **LRUCache** (`LRUCache`)
   - **Description**: LRU (least recently used) cache implementation for Swift.
   - **Source**: https://github.com/nicklockwood/LRUCache
