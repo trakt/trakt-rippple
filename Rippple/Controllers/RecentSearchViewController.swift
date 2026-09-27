@@ -34,7 +34,7 @@ final class RecentSearchViewController: UITableViewController {
         tableView.register(UINib(nibName: "SearchTableViewCell", bundle: nil), forCellReuseIdentifier: "search")
         tableView.sectionHeaderHeight = .leastNonzeroMagnitude
         tableView.sectionFooterHeight = .leastNonzeroMagnitude
-        tableView.contentInset.top = 12
+        tableView.tableHeaderView = TintedView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 10))
         onRecentSearchChangedReceiver.listen { [weak self] _ in
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
