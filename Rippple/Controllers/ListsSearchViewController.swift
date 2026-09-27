@@ -70,6 +70,7 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
             return cell
         case .message(let message):
             let cell = tableView.dequeueReusableCell(withIdentifier: "empty", for: indexPath) as! EmptyTableViewCell
+            cell.topSpacing.constant = 24
             cell.emoji.text = "🔎"
             cell.title.text = message
             cell.subtitle.text = "Try searching for a different list name."
@@ -77,11 +78,7 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
             cell.action.isHidden = true
             return cell
         case .loading:
-            let cell = self.statusCell("Searching lists…")
-            let spinner = UIActivityIndicatorView(style: .medium)
-            spinner.startAnimating()
-            cell.accessoryView = spinner
-            return cell
+            return tableView.dequeueReusableCell(withIdentifier: "loading", for: indexPath) as! LoadingIndicatorTableViewCell
         case .retry:
             let cell = self.statusCell("Couldn’t load lists. Tap to retry.")
             cell.selectionStyle = .default
@@ -101,6 +98,7 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.separatorStyle = .none
+        tableView.contentInsetAdjustmentBehavior = .never
         tableView.tableHeaderView = TintedView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 15))
         tableView.keyboardDismissMode = .interactive
         tableView.rowHeight = UITableView.automaticDimension
@@ -113,6 +111,7 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
         tableView.register(UINib(nibName: "CustomListTableViewCell", bundle: nil), forCellReuseIdentifier: "custom list")
         tableView.register(UINib(nibName: "EmptyTableViewCell", bundle: nil), forCellReuseIdentifier: "empty")
         tableView.register(UINib(nibName: "ActivityHeaderTableViewCell", bundle: nil), forCellReuseIdentifier: "header")
+        tableView.register(UINib(nibName: "LoadingIndicatorTableViewCell", bundle: nil), forCellReuseIdentifier: "loading")
         tableView.dataSource = dataSource
         curatedLists = ListsManager.shared.lists
         collaborations = CollaborationsManager.shared.collaborations

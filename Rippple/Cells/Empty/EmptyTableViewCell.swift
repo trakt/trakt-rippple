@@ -14,6 +14,7 @@ final class EmptyTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var subtitle: UILabel!
     @IBOutlet var body: UILabel!
     @IBOutlet var action: UIButton!
+    @IBOutlet var topSpacing: NSLayoutConstraint!
 
     override func awakeFromNib() {
         super.awakeFromNib()

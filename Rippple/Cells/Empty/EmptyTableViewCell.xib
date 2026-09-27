@@ -65,6 +65,7 @@
                 <outlet property="emoji" destination="YtP-cI-OC2" id="dzq-av-FnV"/>
                 <outlet property="subtitle" destination="dHB-nf-m5v" id="d2g-Bc-HXa"/>
                 <outlet property="title" destination="Kvk-HV-HXr" id="CbJ-Ne-7C6"/>
+                <outlet property="topSpacing" destination="SsK-ZW-5ux" id="Kgv-ao-Fq2"/>
             </connections>
             <point key="canvasLocation" x="160.30534351145039" y="164.78873239436621"/>
         </tableViewCell>
