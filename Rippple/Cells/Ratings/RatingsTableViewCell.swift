@@ -88,9 +88,8 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
             }
         }
         imdbRating.format = "%.1f"
-        for label in [letterboxdRating, malRating] {
-            label?.format = "%.2f"
-        }
+        letterboxdRating.format = "%.1f"
+        malRating.format = "%.2f"
         resetRatings()
 
         for bar in distributionBars {
