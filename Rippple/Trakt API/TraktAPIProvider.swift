@@ -33,6 +33,22 @@ enum TraktAPIProvider {
                                                                                       eventMonitors: [checkRatingMonitor]),
                                                                      plugins: [networkLogger, AuthPlugin { source.token }])
 
+    #if targetEnvironment(macCatalyst)
+    /// MCP reports upstream failures directly; mutations must never be retried automatically.
+    static let mcpProvider = MoyaProvider<MCPAPIService>(endpointClosure: { target in
+        Endpoint(url: target.baseURL.absoluteString,
+                 sampleResponseClosure: { .networkResponse(200, Data()) },
+                 method: target.method,
+                 task: target.task,
+                 httpHeaderFields: target.headers)
+    }, session: Session(configuration: {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 45
+        configuration.timeoutIntervalForResource = 60
+        return configuration
+    }(), redirectHandler: Redirector(behavior: .doNotFollow)), plugins: [AuthPlugin { source.token }])
+    #endif
+
     static let decoder = setupJSONDecoder()
 
     static let checkRatingMonitor: ClosureEventMonitor = {

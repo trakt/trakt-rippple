@@ -39,6 +39,9 @@ final class AboutViewController: UITableViewController {
         case automations
         case deeplinks
         case openIn
+        #if targetEnvironment(macCatalyst)
+        case mcp
+        #endif
     }
 
     @IBOutlet var barButtonItem: UIBarButtonItem!
@@ -202,6 +205,16 @@ final class AboutViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch AboutSection(rawValue: indexPath.section)! {
         case .settings:
+            #if targetEnvironment(macCatalyst)
+            if indexPath.row == SettingsSection.mcp.rawValue {
+                let view = MCPSettingsView(navigationController: navigationController)
+                let controller = RipppleHostingController(rootView: view)
+                controller.title = "Local MCP Server"
+                navigationController?.pushViewController(controller, animated: true)
+                tableView.deselectRow(at: indexPath, animated: true)
+                return
+            }
+            #endif
             if indexPath.row == SettingsSection.notifications.rawValue {
                 performSegue(withIdentifier: "notifications", sender: nil)
                 tableView.deselectRow(at: indexPath, animated: true)
@@ -440,9 +453,9 @@ final class AboutViewController: UITableViewController {
                         }
                     }
                 }.buttonStyle(.borderless)
-                #if targetEnvironment(macCatalyst)
+                    #if targetEnvironment(macCatalyst)
                     .padding(8)
-                #endif
+                    #endif
             }
             cell.accessoryType = .none
         } else if AboutSection(rawValue: indexPath.section) == .about, indexPath.row == 2 {

@@ -279,6 +279,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         view.tintColor = UIColor(asset: .globalTint)
         #endif
         AppManager.shared.setup()
+        #if targetEnvironment(macCatalyst)
+        MCPServerManager.shared.setup()
+        #endif
 
         UISwitch.appearance().onTintColor = RipppleAppearance.switchTintColor
         NVActivityIndicatorView.DEFAULT_COLOR = UIColor(asset: .globalTint)
