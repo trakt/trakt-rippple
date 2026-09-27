@@ -197,7 +197,7 @@ final class SearchViewController: UITableViewController {
 
     private func updateDatasource() {
         if searchQuery.isEmpty {
-            navigationItem.subtitle = isLoadingTrending ? "Loading..." : "Trending searches"
+            navigationItem.subtitle = "Trending searches"
         } else if isExplicitUserSearch {
             navigationItem.subtitle = nil
         } else {
@@ -283,6 +283,11 @@ final class SearchViewController: UITableViewController {
         }
         snapshot.appendSections([.trending])
         snapshot.appendItems(suggestionItems(trending))
+        let existingItems = Set(dataSource.snapshot().itemIdentifiers)
+        snapshot.reconfigureItems(snapshot.itemIdentifiers.filter {
+            if case .suggestion = $0 { return existingItems.contains($0) }
+            return false
+        })
 
         dataSource.apply(snapshot, animatingDifferences: false)
     }
@@ -397,21 +402,19 @@ final class SearchViewController: UITableViewController {
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.style = .browser
 
-        fetchTrending()
-
-        applicationLifecycleReceiver.listen { [weak self] applicationLifecycle in
-            guard let self = self else { return }
-            switch applicationLifecycle {
-            case .didBecomeActive:
-                self.fetchTrending()
-            case .didFinishLaunching: break
-            case .didEnterBackground: break
+        trending = TrendingSearchManager.shared.results
+        onTrendingSearchChangedReceiver.listen { [weak self] results in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.trending = results
             }
         }.disposed(by: disposeBag)
 
         onRecentSearchChangedReceiver.listen { [weak self] _ in
-            guard let self = self else { return }
-            self.updateDatasource()
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.updateDatasource()
+            }
         }.disposed(by: disposeBag)
 
         updateDatasource()
@@ -428,23 +431,6 @@ final class SearchViewController: UITableViewController {
     private var suggestionWorkItem: DispatchWorkItem?
     private var isSearching = false
     private var searchFailed = false
-    private var isLoadingTrending = false
-    private var trendingRequest: Cancellable?
-
-    private func fetchTrending() {
-        trendingRequest?.cancel()
-        isLoadingTrending = true
-        updateDatasource()
-        trendingRequest = TraktAPIProvider.search(query: "") { [weak self] result in
-            guard let self = self else { return }
-            self.isLoadingTrending = false
-            if case .success(let results) = result {
-                self.trending = Array(results.prefix(50))
-            } else {
-                self.updateDatasource()
-            }
-        }
-    }
 
     @objc private func fetchSuggestions() {
         let query = searchQuery
@@ -453,7 +439,7 @@ final class SearchViewController: UITableViewController {
         isSearching = true
         searchFailed = false
         updateDatasource()
-        suggestionRequest = TraktAPIProvider.search(query: query, onUpdate: { [weak self] results in
+        suggestionRequest = TraktAPIProvider.search(query: query, includeLocal: true, onUpdate: { [weak self] results in
             guard let self = self, self.searchQuery == query else { return }
             self.showSuggestions(results, query: query)
         }) { [weak self] result in
@@ -663,7 +649,6 @@ final class SearchViewController: UITableViewController {
     }
 
     deinit {
-        trendingRequest?.cancel()
         suggestionWorkItem?.cancel()
         suggestionRequest?.cancel()
         if let request = request {
@@ -750,10 +735,8 @@ extension SearchViewController: UISearchResultsUpdating {
         suggestionRequest?.cancel()
         isSearching = query.isEmpty == false && query.hasPrefix("@") == false
         searchFailed = false
-        if searchQuery.isEmpty {
-            suggestions = trending
-            suggestionsQuery = ""
-        }
+        suggestions = []
+        suggestionsQuery = query
         searchQuery = query
         guard isSearching else { return }
         let work = DispatchWorkItem { [weak self] in

@@ -9,7 +9,7 @@
 import Foundation
 import Moya
 
-struct TraktSearchResult: Decodable, Hashable {
+struct TraktSearchResult: Codable, Hashable {
     let movie: Movie?
     let show: Show?
     let person: Person?
@@ -58,8 +58,12 @@ struct TraktSearchResult: Decodable, Hashable {
 private final class TraktSearchRequest: Cancellable {
     var requests = [Cancellable]()
     var isCancelled = false
+    var localSearchTask: _Concurrency.Task<Void, Never>?
+
     func cancel() {
         isCancelled = true
+        localSearchTask?.cancel()
+        localSearchTask = nil
         let pending = requests
         requests.removeAll()
         pending.forEach { $0.cancel() }
@@ -101,7 +105,11 @@ private final class TraktAsyncSearchRequest {
 
 extension TraktAPIProvider {
     @discardableResult
-    static func search(query: String, type: SearchType = .moviesAndShow, includePeople: Bool = false,
+    static func search(query: String,
+                       type: SearchType = .moviesAndShow,
+                       includePeople: Bool = false,
+                       includeLocal: Bool = false,
+                       requireCompleteResults: Bool = false,
                        onUpdate: (([TraktSearchResult]) -> Void)? = nil,
                        completion: @escaping (Result<[TraktSearchResult], Error>) -> Void) -> Cancellable {
         let request = TraktSearchRequest()
@@ -111,8 +119,45 @@ extension TraktAPIProvider {
             : [.searchExact(type: type, query: query), .searchTrending(type: type, query: query), .search(type: type, query: query)]
         if includePeople, query.isEmpty == false { targets.append(.search(type: .person, query: query)) }
         var results = [[TraktSearchResult]?](repeating: nil, count: targets.count)
-        var remaining = targets.count
+        let searchesLocally = includeLocal && query.isEmpty == false && (type == .movie || type == .show || type == .moviesAndShow)
+        var remaining = targets.count + (searchesLocally ? 1 : 0)
+        var localResults = [TraktSearchResult]()
         var failure: Error?
+
+        func publish() {
+            guard request.isCancelled == false else { return }
+            if remaining == 0 { request.requests.removeAll() }
+            let exact = results[0] ?? []
+            // Raw exact scores use 2/1/0 bands; never compare them with fuzzy scores.
+            let trending = query.isEmpty && type == .moviesAndShow ? interleaveTrending(movies: exact, shows: results[1] ?? []) : exact
+            let ordered = query.isEmpty ? trending : exact.filter { ($0.score ?? 1) >= 1 }
+                + (results[1] ?? []) + (results[2] ?? [])
+                + exact.filter { ($0.score ?? 1) < 1 }
+            var seen = Set<String>()
+            let media = (localResults + ordered).filter { ($0.id ?? 0) > 0 && !$0.title.isEmpty && seen.insert($0.key).inserted }
+            let people = includePeople && results.count > 3 ? (results[3] ?? []).prefix(12) : []
+            let combined = media + people.filter { ($0.id ?? 0) > 0 && seen.insert($0.key).inserted }
+            guard remaining == 0 else {
+                if combined.isEmpty == false { onUpdate?(combined) }
+                return
+            }
+            if requireCompleteResults || combined.isEmpty, let failure = failure {
+                completion(.failure(failure))
+            } else {
+                completion(.success(combined))
+            }
+        }
+
+        if searchesLocally {
+            request.localSearchTask = _Concurrency.Task { @MainActor in
+                let items = await ToWatchSearchManager.shared.search(for: query, type: type, limit: 50)
+                guard request.isCancelled == false else { return }
+                localResults = items
+                request.localSearchTask = nil
+                remaining -= 1
+                publish()
+            }
+        }
         for (index, target) in targets.enumerated() {
             let child = noRatingProvider.request(target, callbackQueue: .global(qos: .userInitiated)) { response in
                 let decoded: Result<[TraktSearchResult], Error> = Result {
@@ -126,30 +171,7 @@ extension TraktAPIProvider {
                     case .failure(let error): failure = error
                     }
                     remaining -= 1
-                    if remaining == 0 { request.requests.removeAll() }
-                    if remaining == 0, results.allSatisfy({ $0 == nil }), let failure = failure {
-                        completion(.failure(failure))
-                        return
-                    }
-                    let exact = results[0] ?? []
-                    // Raw exact scores use 2/1/0 bands; never compare them with fuzzy scores.
-                    let trending = query.isEmpty && type == .moviesAndShow ? interleaveTrending(movies: exact, shows: results[1] ?? []) : exact
-                    let ordered = query.isEmpty ? trending : exact.filter { ($0.score ?? 1) >= 1 }
-                        + (results[1] ?? []) + (results[2] ?? [])
-                        + exact.filter { ($0.score ?? 1) < 1 }
-                    var seen = Set<String>()
-                    let media = ordered.filter { ($0.id ?? 0) > 0 && !$0.title.isEmpty && seen.insert($0.key).inserted }
-                    let people = includePeople && results.count > 3 ? (results[3] ?? []).prefix(12) : []
-                    let combined = media + people.filter { ($0.id ?? 0) > 0 && seen.insert($0.key).inserted }
-                    if remaining > 0 {
-                        if combined.isEmpty == false { onUpdate?(combined) }
-                        return
-                    }
-                    if combined.isEmpty, let failure = failure {
-                        completion(.failure(failure))
-                    } else {
-                        completion(.success(combined))
-                    }
+                    publish()
                 }
             }
             request.requests.append(child)

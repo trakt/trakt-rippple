@@ -107,6 +107,32 @@ final class ToWatchSearchManager {
         }.disposed(by: disposeBag)
     }
 
+    func search(for query: String, type: SearchType, limit: Int) async -> [TraktSearchResult] {
+        guard SessionManager.shared.isLoggedIn else { return [] }
+        let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard query.isEmpty == false else { return [] }
+
+        let sources: [[MediaModel]]
+        switch type {
+        case .movie:
+            sources = movieDataSources
+        case .show:
+            sources = showDataSources
+        case .moviesAndShow:
+            sources = (0..<max(movieDataSources.count, showDataSources.count)).map { index in
+                (movieDataSources.indices.contains(index) ? movieDataSources[index] : []) +
+                    (showDataSources.indices.contains(index) ? showDataSources[index] : [])
+            }
+        case .person, .list:
+            return []
+        }
+
+        let candidates = await ToWatchSearchManager.candidates(in: sources, query: query, limit: limit)
+        return candidates.map {
+            TraktSearchResult(movie: $0.movie, show: $0.show, person: nil, score: nil)
+        }
+    }
+
     func searchMovies(for query: String, limit: Int) async -> [MediaModel] {
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard query.isEmpty == false, limit > 0 else { return [] }

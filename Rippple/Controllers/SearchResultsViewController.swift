@@ -245,6 +245,15 @@ class SearchResultsViewController: UITableViewController {
         }
     }
 
+    private func showSearchResults(_ results: [TraktSearchResult]) {
+        let media = results.compactMap(\.media)
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
+        snapshot.appendSections([.content])
+        snapshot.appendItems(media.map(Wrapper.media))
+        navigationItem.subtitle = "\(media.count) result\(media.count == 1 ? "" : "s")"
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
     func fetch() {
         if SessionManager.shared.isLoggedOut {
             return
@@ -254,21 +263,21 @@ class SearchResultsViewController: UITableViewController {
 
         searchRequest?.cancel()
         if case .search(let type, let query) = service, type != .person, type != .list {
-            searchRequest = TraktAPIProvider.search(query: query, type: type) { [weak self] result in
+            searchRequest = TraktAPIProvider.search(query: query, type: type, includeLocal: true, onUpdate: { [weak self] results in
                 guard let self = self else { return }
-                var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
+                self.showSearchResults(results)
+            }) { [weak self] result in
+                guard let self = self else { return }
                 switch result {
                 case .success(let results):
-                    let media = results.compactMap(\.media)
-                    snapshot.appendSections([.content])
-                    snapshot.appendItems(media.map(Wrapper.media))
-                    self.navigationItem.subtitle = "\(media.count) result\(media.count == 1 ? "" : "s")"
+                    self.showSearchResults(results)
                 case .failure(let error):
                     self.error = error
+                    var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
                     snapshot.appendSections([.error])
                     self.navigationItem.subtitle = "Couldn’t load results"
+                    self.dataSource.apply(snapshot, animatingDifferences: false)
                 }
-                self.dataSource.apply(snapshot, animatingDifferences: false)
             }
             return
         }

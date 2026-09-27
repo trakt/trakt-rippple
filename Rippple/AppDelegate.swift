@@ -358,6 +358,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         WidgetManager.shared.setup()
         SavedFiltersManager.shared.setup()
         RecentSearchManager.shared.setup()
+        TrendingSearchManager.shared.setup()
         OpenActionManager.shared.setup()
 
         WatchlistManager.shared.setup()
