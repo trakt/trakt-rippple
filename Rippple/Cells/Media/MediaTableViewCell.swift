@@ -801,6 +801,6 @@ extension MediaTableViewCell: MediaDragSource {
     }
 
     var dragPreviewView: UIView? {
-        return poster
+        return poster.imageView
     }
 }
