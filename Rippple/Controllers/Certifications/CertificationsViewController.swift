@@ -61,11 +61,6 @@ final class CertificationsViewController: UITableViewController {
 
         dataSource.defaultRowAnimation = .none
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .refresh, primaryAction: UIAction { [weak self] _ in
-            guard let self = self else { return }
-            self.refresh()
-        })
-
         refresh()
     }
 
@@ -137,6 +132,11 @@ final class CertificationsViewController: UITableViewController {
     }
 
     private func reloadContent() {
+        navigationItem.rightBarButtonItem = guideFailed ? UIBarButtonItem(systemItem: .refresh, primaryAction: UIAction { [weak self] _ in
+            guard let self = self else { return }
+            self.refresh()
+        }) : nil
+
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.content])
         snapshot.appendItems([.certification])
@@ -157,9 +157,6 @@ final class CertificationsViewController: UITableViewController {
         }
         if guideFailed {
             return "Couldn't load parental guidance. Use Refresh to try again."
-        }
-        if guideLoading == false, guide?.guide.isEmpty != false {
-            return "Parental guidance is unavailable for this title."
         }
         return nil
     }
@@ -188,7 +185,7 @@ final class CertificationsViewController: UITableViewController {
                 if certificationsLoading {
                     cell.descriptionLabel.text = "Loading certification details…"
                 } else {
-                    cell.descriptionLabel.text = certificationsFailed ? "Couldn't load certification details. Use Refresh to try again." : "No certification details available for this title."
+                    cell.descriptionLabel.text = certificationsFailed ? "Couldn't load certification details." : "No certification details available for this title."
                 }
             }
             cell.metadataLabel.isHidden = cell.metadataLabel.text?.isEmpty != false
