@@ -45,7 +45,7 @@ class TintedTableView: UITableView {
     }
 }
 
-final class TintedPlainTableView: TintedTableView {
+final class TintedPlainTableView: CustomTableView {
     override fileprivate func applyBackground() {
         backgroundColor = .ripppleViewBackground
     }

@@ -14,6 +14,7 @@ final class SearchViewController: UITableViewController {
     let searchController = UISearchController(searchResultsController: nil)
 
     private let disposeBag = DisposeBag()
+    private let contextMenu = ContextMenuHelper()
 
     /// request
     private var request: Cancellable?
@@ -525,6 +526,40 @@ final class SearchViewController: UITableViewController {
         return .leastNonzeroMagnitude
     }
 
+    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        guard let cell = tableView.cellForRow(at: indexPath) as? MediaTableViewCell else { return nil }
+        contextMenu.cell = cell
+        contextMenu.controller = self
+
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: { [weak self] in
+            guard let self = self else { return nil }
+            return self.contextMenu.previewViewController
+        }, actionProvider: { [weak self] _ in
+            guard let self = self else { return nil }
+            return self.contextMenu.menu
+        })
+    }
+
+    override func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        guard let poster = contextMenu.previewView else { return nil }
+        return UITargetedPreview(view: poster, parameters: UIPreviewParameters())
+    }
+
+    override func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        guard let poster = contextMenu.previewView else { return nil }
+        return UITargetedPreview(view: poster, parameters: UIPreviewParameters())
+    }
+
+    override func tableView(_ tableView: UITableView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
+        guard let controller = contextMenu.commitViewController else { return }
+        if let cell = contextMenu.cell as? MediaTableViewCell,
+           let indexPath = tableView.indexPath(for: cell),
+           case .suggestion(let config, let result) = dataSource.itemIdentifier(for: indexPath) {
+            recordSelection(result, query: config.query ?? "")
+        }
+        navigationController?.show(controller, sender: self)
+    }
+
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
         if case .suggestion(_, let result) = item {
@@ -585,10 +620,14 @@ final class SearchViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
     }
 
-    private func openSuggestion(_ result: TraktSearchResult, query: String) {
+    private func recordSelection(_ result: TraktSearchResult, query: String) {
         searchController.searchBar.resignFirstResponder()
         TraktAPIProvider.recordSearchSelection(query: query, type: result.type, id: result.id)
         saveRecentSearch(title: result.title, query: result.title, path: recentSearchPath(for: result))
+    }
+
+    private func openSuggestion(_ result: TraktSearchResult, query: String) {
+        recordSelection(result, query: query)
         if let media = result.media {
             performSegue(withIdentifier: "details", sender: media)
         } else if let person = result.person {
