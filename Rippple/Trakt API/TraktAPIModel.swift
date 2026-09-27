@@ -2419,6 +2419,7 @@ struct LastActivities: Codable, Equatable, Hashable {
     let episodes: LastEpisodesActivities
     let shows: LastShowsActivities
     let comments: LastCommentsActivities
+    let watchlist: LastWatchlistActivities
 }
 
 struct LastEpisodesActivities: Codable, Equatable, Hashable {
@@ -2452,6 +2453,14 @@ struct LastCommentsActivities: Codable, Equatable, Hashable {
 
     enum CodingKeys: String, CodingKey {
         case blockedAt = "blocked_at"
+    }
+}
+
+struct LastWatchlistActivities: Codable, Equatable, Hashable {
+    let updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case updatedAt = "updated_at"
     }
 }
 

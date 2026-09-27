@@ -19,6 +19,7 @@ let (onWatchlistSearchableDataSourceChangedTransmitter, onWatchlistSearchableDat
 
 final class WatchlistManager {
     private let disposeBag = DisposeBag()
+    private var lastWatchlistCheck: Date = .now
 
     private init() {}
 
@@ -38,6 +39,14 @@ final class WatchlistManager {
 
         onSettingsChangedReceiver.listen { _ in
             self.refreshWatchlist()
+        }.disposed(by: disposeBag)
+
+        onLastWatchlistActivitiesChangedReceiver.listen { [weak self] lastActivities in
+            guard let self = self else { return }
+            if self.lastWatchlistCheck < lastActivities.updatedAt {
+                self.lastWatchlistCheck = .now
+                self.refreshWatchlist()
+            }
         }.disposed(by: disposeBag)
 
         onUserLoggedOutReceiver.listen { [weak self] _ in
