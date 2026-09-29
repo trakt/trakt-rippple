@@ -40,10 +40,10 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="6eW-5l-jkh" firstAttribute="top" secondItem="Cvw-JT-64L" secondAttribute="top" id="6cv-Rq-Uj5"/>
-                            <constraint firstItem="VvP-kY-UaN" firstAttribute="centerX" secondItem="Cvw-JT-64L" secondAttribute="centerX" id="AdK-AX-kfS"/>
+                            <constraint firstItem="VvP-kY-UaN" firstAttribute="centerX" secondItem="YgK-4a-dq5" secondAttribute="centerX" id="AdK-AX-kfS"/>
                             <constraint firstItem="YgK-4a-dq5" firstAttribute="bottom" secondItem="VvP-kY-UaN" secondAttribute="bottom" constant="22" id="LoG-sm-KyB"/>
-                            <constraint firstItem="YgK-4a-dq5" firstAttribute="trailing" secondItem="6eW-5l-jkh" secondAttribute="trailing" id="SnW-vf-kyy"/>
-                            <constraint firstItem="6eW-5l-jkh" firstAttribute="leading" secondItem="YgK-4a-dq5" secondAttribute="leading" id="c93-lG-4YN"/>
+                            <constraint firstAttribute="trailing" secondItem="6eW-5l-jkh" secondAttribute="trailing" id="SnW-vf-kyy"/>
+                            <constraint firstItem="6eW-5l-jkh" firstAttribute="leading" secondItem="Cvw-JT-64L" secondAttribute="leading" id="c93-lG-4YN"/>
                             <constraint firstAttribute="bottom" secondItem="6eW-5l-jkh" secondAttribute="bottom" id="rFP-iW-thH"/>
                         </constraints>
                     </view>
