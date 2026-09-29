@@ -94,14 +94,12 @@ extension TraktAPIProvider {
                                                limit: Int) async throws -> [WatchlistItem] {
         var pageInfo = PageInfo.firstPage(with: limit)
         var listItems = [WatchlistItem]()
-        let marker = ListItemsMarkerManager.shared.marker(for: id)
 
         while true {
             let (items, nextPage) = try await fetchListItemsPage(slug: slug,
                                                                  id: id,
                                                                  type: type,
-                                                                 pageInfo: pageInfo,
-                                                                 marker: marker)
+                                                                 pageInfo: pageInfo)
             listItems.append(contentsOf: items)
 
             guard let nextPage = nextPage, nextPage.page <= nextPage.pageCount else {
@@ -115,15 +113,13 @@ extension TraktAPIProvider {
     private static func fetchListItemsPage(slug: String?,
                                            id: Int64,
                                            type: ListMediaType?,
-                                           pageInfo: PageInfo,
-                                           marker: String) async throws -> ([WatchlistItem], PageInfo?) {
+                                           pageInfo: PageInfo) async throws -> ([WatchlistItem], PageInfo?) {
         return try await withCheckedThrowingContinuation { continuation in
             TraktAPIProvider.provider.request(.listItems(slug: slug,
                                                          id: id,
                                                          type: type,
                                                          extended: .full,
-                                                         pageInfo: pageInfo,
-                                                         marker: marker),
+                                                         pageInfo: pageInfo),
                                               callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
                 switch result {
                 case .success(let moyaResponse):

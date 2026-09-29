@@ -69,7 +69,6 @@
 		09C0DEAD2FC1100000D00004 /* Haring in Frameworks */ = {isa = PBXBuildFile; productRef = 09C0DEAF2FC1100000D00006 /* Haring */; };
 		09C0DEC22F9ABCD000000001 /* CommentsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */; };
 		09C0DEC42FA3B00100000001 /* ListBrowseCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C0DEC32FA3B00100000001 /* ListBrowseCollectionViewCell.swift */; };
-		09D2613A2F76B1B000536D3D /* ListItemsMarkerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D261392F76B1B000536D3D /* ListItemsMarkerManager.swift */; };
 		09D261502F76B2200536D40 /* ListReorderingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D261512F76B2200536D40 /* ListReorderingViewController.swift */; };
 		09DCC25E2EF83A3300C3EA79 /* ImageBrowserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DCC25D2EF83A3300C3EA79 /* ImageBrowserViewController.swift */; };
 		09DCC2602EFA889B00C3EA79 /* FullScreenImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DCC25F2EFA889B00C3EA79 /* FullScreenImageViewController.swift */; };
@@ -658,7 +657,6 @@
 		09B899242FD0000100DC202D /* TraktAPIProvider+User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraktAPIProvider+User.swift"; sourceTree = "<group>"; };
 		09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsTabViewController.swift; sourceTree = "<group>"; };
 		09C0DEC32FA3B00100000001 /* ListBrowseCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListBrowseCollectionViewCell.swift; sourceTree = "<group>"; };
-		09D261392F76B1B000536D3D /* ListItemsMarkerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItemsMarkerManager.swift; sourceTree = "<group>"; };
 		09D261512F76B2200536D40 /* ListReorderingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListReorderingViewController.swift; sourceTree = "<group>"; };
 		09DA10562F4C990200DD80F5 /* CONTRIBUTING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CONTRIBUTING.md; sourceTree = "<group>"; };
 		09DA10572F4C990F00DD80F5 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -1519,7 +1517,6 @@
 			children = (
 				3A2E11E02896F92200BA1713 /* ListsManager.swift */,
 				3A510DE9292E26D2000BC1B7 /* CollaborationsManager.swift */,
-				09D261392F76B1B000536D3D /* ListItemsMarkerManager.swift */,
 			);
 			path = "Lists Manager";
 			sourceTree = "<group>";
@@ -3578,7 +3575,6 @@
 				3A59D99321DA328900305819 /* ImagesManager.swift in Sources */,
 				3AF54B5029682F8F00493884 /* SavedFiltersManager.swift in Sources */,
 				3A3FE6D021DD55FD00980245 /* MediaViewController.swift in Sources */,
-				09D2613A2F76B1B000536D3D /* ListItemsMarkerManager.swift in Sources */,
 				3A693D55218B7FBF00B47ADB /* RatingsManager.swift in Sources */,
 				3AF5B92A231D0C4500749ECC /* ContextMenuHelper.swift in Sources */,
 				3ADFA0B023365C1500D8DD79 /* CastCollectionViewCell.swift in Sources */,

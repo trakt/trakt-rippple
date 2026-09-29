@@ -67,9 +67,8 @@ final class ListsManager {
             UserDefaults.standard.synchronize()
         }.disposed(by: disposeBag)
 
-        onListChangedReceiver.listen { [weak self] lists in
+        onListChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            ListItemsMarkerManager.shared.invalidate(lists: lists)
             self.refreshLists()
         }.disposed(by: disposeBag)
 

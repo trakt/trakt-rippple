@@ -299,8 +299,7 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
                                                                    id: list.identifiers.trakt!,
                                                                    type: nil,
                                                                    extended: .full,
-                                                                   pageInfo: PageInfo(page: 1, limit: 20, pageCount: 20, itemCount: 20),
-                                                                   marker: ListItemsMarkerManager.shared.marker(for: list.identifiers.trakt!)),
+                                                                   pageInfo: PageInfo(page: 1, limit: 20, pageCount: 20, itemCount: 20)),
                                                         callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
 

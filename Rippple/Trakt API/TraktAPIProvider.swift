@@ -9,29 +9,46 @@
 import Alamofire
 import Foundation
 import Moya
+import Receiver
 
 enum TraktAPIProvider {
     static let source = TokenSource()
 
+    private static let commentsCacheBuster = CommentsCacheBuster()
+    private static let listsCacheBuster = ListsCacheBuster()
+
     static let networkLogger = NetworkLoggerPlugin(configuration: NetworkLoggerPlugin.Configuration(logOptions: .verbose))
 
     static let debug_provider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy()),
-                                                              plugins: [networkLogger, AuthPlugin { source.token }])
+                                                              plugins: [networkLogger,
+                                                                        AuthPlugin { source.token },
+                                                                        commentsCacheBuster,
+                                                                        listsCacheBuster])
 
     static let provider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy(),
                                                                          eventMonitors: [checkRatingMonitor]),
-                                                        plugins: [AuthPlugin { source.token }])
+                                                        plugins: [AuthPlugin { source.token },
+                                                                  commentsCacheBuster,
+                                                                  listsCacheBuster])
 
     static let noRatingProvider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy()),
-                                                                plugins: [AuthPlugin { source.token }])
+                                                                plugins: [AuthPlugin { source.token },
+                                                                          commentsCacheBuster,
+                                                                          listsCacheBuster])
+
     static let noChacheProvider = MoyaProvider<TraktAPIService>(requestClosure: requestClosure,
                                                                 session: Session(interceptor: RipppleRetryPolicy(),
                                                                                  eventMonitors: [checkRatingMonitor]),
-                                                                plugins: [AuthPlugin { source.token }])
+                                                                plugins: [AuthPlugin { source.token },
+                                                                          commentsCacheBuster,
+                                                                          listsCacheBuster])
     static let noChacheDebugProvider = MoyaProvider<TraktAPIService>(requestClosure: requestClosure,
                                                                      session: Session(interceptor: RipppleRetryPolicy(),
                                                                                       eventMonitors: [checkRatingMonitor]),
-                                                                     plugins: [networkLogger, AuthPlugin { source.token }])
+                                                                     plugins: [networkLogger,
+                                                                               AuthPlugin { source.token },
+                                                                               commentsCacheBuster,
+                                                                               listsCacheBuster])
 
     #if targetEnvironment(macCatalyst)
     /// MCP reports upstream failures directly; mutations must never be retried automatically.
@@ -179,6 +196,104 @@ private struct LossyDecodableElement<Element: Decodable>: Decodable {
             value = nil
             self.error = error
         }
+    }
+}
+
+// MARK: - CommentsCacheBuster
+
+private final class CommentsCacheBuster: PluginType {
+    private let lock = NSLock()
+    private var marker: String?
+
+    func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
+        guard target.method == .get || target.method == .head,
+              target.path.split(separator: "/").contains("comments") else { return request }
+
+        lock.lock()
+        let marker = marker
+        lock.unlock()
+
+        guard let marker = marker else { return request }
+        return request.addingCacheMarker(marker)
+    }
+
+    func didReceive(_ result: Result<Response, MoyaError>, target: TargetType) {
+        guard target.method == .post || target.method == .put || target.method == .patch || target.method == .delete,
+              target.path.split(separator: "/").contains("comments"),
+              case .success(let response) = result,
+              (200..<300).contains(response.statusCode) else { return }
+
+        // Moya calls this before completion handlers trigger follow-up reads.
+        lock.lock()
+        marker = UUID().uuidString
+        lock.unlock()
+    }
+}
+
+// MARK: - ListsCacheBuster
+
+private final class ListsCacheBuster: PluginType {
+    private let disposeBag = DisposeBag()
+    private let lock = NSLock()
+    private var markers = [Int64: String]()
+
+    init() {
+        onUserLoggedOutReceiver.listen { [weak self] _ in
+            guard let self = self else { return }
+            self.lock.lock()
+            self.markers.removeAll()
+            self.lock.unlock()
+        }.disposed(by: disposeBag)
+    }
+
+    func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
+        guard let target = target as? TraktAPIService,
+              case .listItems(_, let listId, _, _, _) = target else { return request }
+
+        lock.lock()
+        let marker = markers[listId] ?? UUID().uuidString
+        markers[listId] = marker
+        lock.unlock()
+
+        return request.addingCacheMarker(marker)
+    }
+
+    func didReceive(_ result: Result<Response, MoyaError>, target: TargetType) {
+        guard let target = target as? TraktAPIService,
+              case .success(let response) = result,
+              (200..<300).contains(response.statusCode) else { return }
+
+        let listId: Int64
+        switch target {
+        case .addToList(_, let id, _), .removeFromList(_, let id, _), .addToListWithNotes(_, let id, _),
+             .reorderListItems(_, let id, _), .updateListItem(_, _, let id, _),
+             .updateList(let id, _, _, _, _, _), .deleteList(let id):
+            listId = id
+        default:
+            return
+        }
+
+        lock.lock()
+        markers[listId] = UUID().uuidString
+        lock.unlock()
+    }
+}
+
+private extension URLRequest {
+    func addingCacheMarker(_ marker: String) -> URLRequest {
+        guard let url = url,
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return self }
+
+        var queryItems = components.queryItems ?? []
+        queryItems.removeAll { $0.name == "marker" }
+        queryItems.append(URLQueryItem(name: "marker", value: marker))
+        components.queryItems = queryItems
+
+        guard let url = components.url else { return self }
+
+        var request = self
+        request.url = url
+        return request
     }
 }
 

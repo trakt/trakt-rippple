@@ -39,8 +39,8 @@ final class ListReorderingViewController: UITableViewController {
 
         func handleSuccessfulReorder() {
             switch self {
-            case .list(let list, _):
-                ListItemsMarkerManager.shared.invalidate(listId: list.identifiers.trakt!)
+            case .list:
+                break
             case .watchlist:
                 WatchlistManager.shared.refresh()
             case .favorites:
