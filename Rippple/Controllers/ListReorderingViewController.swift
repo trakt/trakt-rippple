@@ -62,7 +62,11 @@ final class ListReorderingViewController: UITableViewController {
         var didMoveRow: ((IndexPath, IndexPath) -> Void)?
 
         override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+            #if targetEnvironment(macCatalyst)
+            canMoveRowAtIndexPath?(indexPath) ?? false
+            #else
             false
+            #endif
         }
 
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
@@ -248,14 +252,45 @@ extension ListReorderingViewController: UITableViewDragDelegate, UITableViewDrop
         let itemProvider = NSItemProvider(object: NSString(string: String(watchlistItem.id)))
         let dragItem = UIDragItem(itemProvider: itemProvider)
         dragItem.localObject = watchlistItem
-        let source = tableView.cellForRow(at: indexPath) as? MediaDragSource
-        dragItem.setDragPreview(from: source?.dragPreviewView)
+        #if targetEnvironment(macCatalyst)
+        if let cell = tableView.cellForRow(at: indexPath),
+           let card = cell.contentView.subviews.first as? CardView {
+            let bounds = card.convert(card.bounds.insetBy(dx: 2, dy: 2), to: cell.contentView)
+            let previewBounds = CGRect(origin: .zero, size: bounds.size)
+            let path = UIBezierPath(roundedRect: previewBounds, cornerRadius: max(0, card.layer.cornerRadius - 2))
+            let format = UIGraphicsImageRendererFormat()
+            format.opaque = false
+            format.scale = card.traitCollection.displayScale
+            let image = UIGraphicsImageRenderer(size: bounds.size, format: format).image { context in
+                path.addClip()
+                context.cgContext.translateBy(x: -bounds.minX, y: -bounds.minY)
+                cell.contentView.layer.render(in: context.cgContext)
+            }
+            let parameters = UIDragPreviewParameters()
+            parameters.backgroundColor = .clear
+            parameters.visiblePath = path
+            dragItem.previewProvider = {
+                UIDragPreview(view: UIImageView(image: image), parameters: parameters)
+            }
+            if let data = image.pngData() {
+                itemProvider.previewImageHandler = { completion, _, _ in
+                    completion?(data as NSData, nil)
+                }
+            }
+        }
+        #endif
+
         return [dragItem]
     }
 
     func tableView(_ tableView: UITableView, dragPreviewParametersForRowAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        guard let cell = tableView.cellForRow(at: indexPath), let source = cell as? MediaDragSource else { return nil }
-        return UIDragItem.dragPreviewParameters(from: source.dragPreviewView, in: cell)
+        guard let cell = tableView.cellForRow(at: indexPath),
+              let card = cell.contentView.subviews.first as? CardView else { return nil }
+        let parameters = UIDragPreviewParameters()
+        parameters.backgroundColor = .clear
+        parameters.visiblePath = UIBezierPath(roundedRect: card.convert(card.bounds.insetBy(dx: 2, dy: 2), to: cell),
+                                              cornerRadius: max(0, card.layer.cornerRadius - 2))
+        return parameters
     }
 
     func tableView(_ tableView: UITableView, canHandle session: UIDropSession) -> Bool {
