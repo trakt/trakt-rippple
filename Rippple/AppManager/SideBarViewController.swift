@@ -105,6 +105,23 @@ class SidebarViewController: UIViewController {
         }
     }
 
+    private var smartLists = [List]() {
+        didSet {
+            var sectionSnapshot = dataSource.snapshot(for: .smartLists)
+            sectionSnapshot.deleteAll()
+
+            sectionSnapshot.append([Item(title: Section.smartLists.rawValue, subtitle: nil, image: nil)])
+            sectionSnapshot.append(smartLists.map { Item(title: $0.name.emojiUnescapedString,
+                                                         subtitle: $0.description,
+                                                         image: UIImage(systemName: "sparkles")) },
+                                   to: sectionSnapshot.items[0])
+            if UserDefaults.standard.bool(forKey: "SmartListsSideBarExpanded") {
+                sectionSnapshot.expand([sectionSnapshot.items[0]])
+            }
+            dataSource.apply(sectionSnapshot, to: .smartLists, animatingDifferences: true, completion: nil)
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -131,6 +148,11 @@ class SidebarViewController: UIViewController {
         onLikedListsChangedReceiver.listen { [weak self] lists in
             guard let self = self else { return }
             self.likedLists = lists
+        }.disposed(by: disposeBag)
+
+        onSmartListsChangedReceiver.listen { [weak self] lists in
+            guard let self = self else { return }
+            self.smartLists = lists
         }.disposed(by: disposeBag)
 
         commandReceiver.listen { keyCommand in
@@ -222,6 +244,12 @@ class SidebarViewController: UIViewController {
                 selectItem(at: IndexPath(row: 3, section: 0), allowsReselection: false)
             }
         } else if indexPath.section == 4 {
+            if indexPath.row <= smartLists.count {
+                selectItem(at: indexPath, allowsReselection: false)
+            } else {
+                selectItem(at: IndexPath(row: 3, section: 0), allowsReselection: false)
+            }
+        } else if indexPath.section == 5 {
             // if it's a liked list, we check the number of likedLists
             if indexPath.row <= likedLists.count {
                 selectItem(at: indexPath, allowsReselection: false)
@@ -378,6 +406,7 @@ extension SidebarViewController {
                 #else
                 var content = UIListContentConfiguration.subtitleCell()
                 content.secondaryText = item.subtitle
+                content.secondaryTextProperties.numberOfLines = 2
                 #endif
 
                 content.text = item.title
@@ -420,7 +449,8 @@ extension SidebarViewController {
             let indexPath = self.dataSource.indexPath(for: item)
             if indexPath?.section == 2 { UserDefaults.standard.set(true, forKey: "LibrarySideBarExpanded") }
             if indexPath?.section == 3 { UserDefaults.standard.set(true, forKey: "ListsSideBarExpanded") }
-            if indexPath?.section == 4 { UserDefaults.standard.set(true, forKey: "LikedListsSideBarExpanded") }
+            if indexPath?.section == 4 { UserDefaults.standard.set(true, forKey: "SmartListsSideBarExpanded") }
+            if indexPath?.section == 5 { UserDefaults.standard.set(true, forKey: "LikedListsSideBarExpanded") }
             UserDefaults.standard.synchronize()
         }
 
@@ -428,13 +458,14 @@ extension SidebarViewController {
             let indexPath = self.dataSource.indexPath(for: item)
             if indexPath?.section == 2 { UserDefaults.standard.set(false, forKey: "LibrarySideBarExpanded") }
             if indexPath?.section == 3 { UserDefaults.standard.set(false, forKey: "ListsSideBarExpanded") }
-            if indexPath?.section == 4 { UserDefaults.standard.set(false, forKey: "LikedListsSideBarExpanded") }
+            if indexPath?.section == 4 { UserDefaults.standard.set(false, forKey: "SmartListsSideBarExpanded") }
+            if indexPath?.section == 5 { UserDefaults.standard.set(false, forKey: "LikedListsSideBarExpanded") }
             UserDefaults.standard.synchronize()
         }
 
         // Creating and applying snapshots
 
-        let sections: [Section] = [.tabs, .moreTabs, .lists, .customLists, .likedLists]
+        let sections: [Section] = [.tabs, .moreTabs, .lists, .customLists, .smartLists, .likedLists]
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         snapshot.appendSections(sections)
         dataSource.apply(snapshot, animatingDifferences: false)
@@ -474,6 +505,14 @@ extension SidebarViewController {
                     sectionSnapshot.expand([headerItem])
                 }
                 dataSource.apply(sectionSnapshot, to: section)
+            case .smartLists:
+                let headerItem = Item(title: section.rawValue, subtitle: nil, image: nil)
+                var sectionSnapshot = NSDiffableDataSourceSectionSnapshot<Item>()
+                sectionSnapshot.append([headerItem])
+                if UserDefaults.standard.bool(forKey: "SmartListsSideBarExpanded") {
+                    sectionSnapshot.expand([headerItem])
+                }
+                dataSource.apply(sectionSnapshot, to: section)
             }
         }
     }
@@ -486,6 +525,7 @@ extension SidebarViewController: UICollectionViewDelegate {
         if indexPath.section == 2 && indexPath.row == 0 { return false }
         if indexPath.section == 3 && indexPath.row == 0 { return false }
         if indexPath.section == 4 && indexPath.row == 0 { return false }
+        if indexPath.section == 5 && indexPath.row == 0 { return false }
         return true
     }
 
@@ -563,10 +603,11 @@ extension SidebarViewController: UICollectionViewDelegate {
             navigationController.topViewController?.loadViewIfNeeded()
             splitViewController?.setViewController(listsViewController, for: column)
             navigationController.topViewController?.navigationItem.hidesBackButton = true
-        } else if indexPath.section == 4 {
+        } else if indexPath.section == 4 || indexPath.section == 5 {
             let listIndex = indexPath.row - 1
-            guard likedLists.indices.contains(listIndex) else { return }
-            let list = likedLists[listIndex]
+            let sectionLists = indexPath.section == 4 ? smartLists : likedLists
+            guard sectionLists.indices.contains(listIndex) else { return }
+            let list = sectionLists[listIndex]
             if let encoded = try? JSONEncoder().encode(list) {
                 UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
                 UserDefaults.standard.set(encoded, forKey: "CustomListsViewController.customList")
@@ -696,6 +737,7 @@ private enum Section: String {
     case moreTabs
     case lists = "Your Lists"
     case customLists = "Custom Lists"
+    case smartLists = "Smart Lists"
     case likedLists = "Liked Lists"
 }
 

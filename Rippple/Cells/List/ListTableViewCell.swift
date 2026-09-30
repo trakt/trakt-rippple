@@ -28,6 +28,7 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var accessoryIndicator: UIImageView?
 
     @IBOutlet var likesCountLabel: UILabel?
+    @IBOutlet var countsStackView: UIView?
     @IBOutlet var itemsCountLabel: UILabel?
 
     @IBOutlet var avatarButton: UIButton?
@@ -140,6 +141,8 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
         }
     }
 
+    private static let previewItemsLimit = 35
+
     /// Filter
     private static let userFilter = RoundCornerImageProcessor(
         cornerRadius: 20.0,
@@ -214,7 +217,11 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
                 }
             }
 
-            if list.privacy.self == .me {
+            // Smart lists have no likes or item count.
+            countsStackView?.isHidden = list.isSmartList
+            if list.isSmartList {
+                itemsCountLabel?.isHidden = true
+            } else if list.privacy.self == .me {
                 likesCountLabel?.text = "\(list.itemCount ?? 0) \((list.itemCount ?? 0) <= 1 ? "item" : "items")"
                 itemsCountLabel?.isHidden = true
             } else {
@@ -224,6 +231,9 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
             }
 
             if collectionView != nil {
+                if oldValue != list {
+                    items = nil
+                }
                 fetchItems(for: list)
             }
 
@@ -236,6 +246,9 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
                                                        automaticLinkDetectionEnabled: true)
 
     private func attributedString() -> NSAttributedString? {
+        if let smartList = list?.smartList {
+            return smartListDescription(smartList)
+        }
         guard let listDescription = list?.description else { return nil }
 
         markdownParser.color = .label
@@ -256,9 +269,19 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
         return markdownParser.parse(listDescription.htmlDecoded.emojiUnescapedString)
     }
 
+    /// The builder's sentence, with its conditions in bold like the builder's highlighted words.
+    private func smartListDescription(_ smartList: SmartList) -> NSAttributedString {
+        let traits = UITraitCollection(preferredContentSizeCategory: min(UIApplication.shared.preferredContentSizeCategory, .extraExtraExtraLarge))
+        let font = UIFont.preferredFont(forTextStyle: .callout, compatibleWith: traits)
+        let boldFont = font.fontDescriptor.withSymbolicTraits(.traitBold).map { UIFont(descriptor: $0, size: 0) } ?? font
+        return SmartListSentence(smartList: smartList).attributedString(regular: [.font: font, .foregroundColor: UIColor.secondaryLabel],
+                                                                        highlighted: [.font: boldFont, .foregroundColor: UIColor.label])
+    }
+
     private func refreshLike() {
         guard let list = list else { return }
-        if list.user.isCurrentUser {
+        // Smart lists cannot be liked.
+        if list.user.isCurrentUser || list.isSmartList {
             likeButton?.isHidden = true
         } else {
             likeButton?.isHidden = false
@@ -295,11 +318,8 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
     }
 
     func fetchItems(for list: List) {
-        cancellable = TraktAPIProvider.provider.request(.listItems(slug: list.user.identifiers.slug,
-                                                                   id: list.identifiers.trakt!,
-                                                                   type: nil,
-                                                                   extended: .full,
-                                                                   pageInfo: PageInfo(page: 1, limit: 20, pageCount: 20, itemCount: 20)),
+        guard let service = list.previewItemsService(limit: ListTableViewCell.previewItemsLimit) else { return }
+        cancellable = TraktAPIProvider.provider.request(service,
                                                         callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
 
@@ -308,7 +328,7 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
                 do {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
 
-                    let results = try response.map([WatchlistItem].self, using: TraktAPIProvider.decoder).sorted { $0.listedAt > $1.listedAt }
+                    let results = try list.previewItems(from: response)
 
                     DispatchQueue.main.async {
                         if self.list == list {
@@ -346,7 +366,7 @@ extension ListTableViewCell: UICollectionViewDataSource {
         if let items = items {
             return items.count
         } else {
-            return min(20, list?.itemCount ?? 0)
+            return list?.isSmartList == true ? ListTableViewCell.previewItemsLimit : min(ListTableViewCell.previewItemsLimit, list?.itemCount ?? 0)
         }
     }
 

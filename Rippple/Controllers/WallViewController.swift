@@ -31,7 +31,6 @@ final class WallViewController: StyledNavigationController {
     }
 
     private var likedLists: [List]?
-    private var traktSavedFilters: [SavedFilter]?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,11 +40,6 @@ final class WallViewController: StyledNavigationController {
         onLikedListsChangedReceiver.listen { [weak self] likedLists in
             guard let self = self else { return }
             self.likedLists = likedLists
-        }.disposed(by: disposeBag)
-
-        onSavedFiltersChangedReceiver.listen { [weak self] savedFilters in
-            guard let self = self else { return }
-            self.traktSavedFilters = savedFilters
         }.disposed(by: disposeBag)
     }
 
@@ -103,21 +97,6 @@ final class WallViewController: StyledNavigationController {
                                 ])
 
         // Deferred sections built similarly to ShelfConfigView
-        // Saved Filters on Trakt.tv
-        let savedFiltersDeferred = UIDeferredMenuElement.uncached { completion in
-            guard let savedFilters = self.traktSavedFilters else {
-                completion([UIAction(title: "No Saved Filters", attributes: [.disabled], handler: { _ in })])
-                return
-            }
-            let elements = savedFilters.map { action(for: $0) }
-            if elements.isEmpty {
-                completion([UIAction(title: "No Saved Filters", attributes: [.disabled], handler: { _ in })])
-            } else {
-                completion(elements)
-            }
-        }
-        let savedFiltersMenu = UIMenu(title: "Saved Filters", children: [savedFiltersDeferred])
-
         // TV Shows Smart Searches
         let showsSmartDeferred = UIDeferredMenuElement.uncached { completion in
             let shows = SmartSearch.smartSearches(for: .show)
@@ -154,6 +133,18 @@ final class WallViewController: StyledNavigationController {
         }
         let yourListsMenu = UIMenu(title: "Custom Lists", children: [yourListsDeferred])
 
+        // Smart Lists
+        let smartListsDeferred = UIDeferredMenuElement.uncached { completion in
+            let smartLists = ListsManager.shared.smartLists
+            let elements = smartLists.map { action(for: $0.savedFilter) }
+            if elements.isEmpty {
+                completion([UIAction(title: "No Smart Lists", attributes: [.disabled], handler: { _ in })])
+            } else {
+                completion(elements)
+            }
+        }
+        let smartListsMenu = UIMenu(title: "Smart Lists", children: [smartListsDeferred])
+
         // Liked Lists
         let likedListsDeferred = UIDeferredMenuElement.uncached { completion in
             guard let likedLists = self.likedLists else {
@@ -181,7 +172,7 @@ final class WallViewController: StyledNavigationController {
         }
         let collaborationsMenu = UIMenu(title: "Collaborations", children: [collaborationsDeferred])
 
-        return UIMenu(children: [quickPicks, savedFiltersMenu, showsSmartMenu, moviesSmartMenu, yourListsMenu, likedListsMenu, collaborationsMenu])
+        return UIMenu(children: [quickPicks, yourListsMenu, smartListsMenu, likedListsMenu, collaborationsMenu, showsSmartMenu, moviesSmartMenu])
     }
 
     private var profileButton: UIButton {

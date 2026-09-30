@@ -11,17 +11,15 @@ import UIKit
 
 final class SmartSearchViewController: UITableViewController {
     private enum Section {
-        case filters
         case movies
         case shows
     }
 
     private let disposeBag = DisposeBag()
-    private var savedFilters = [SavedFilter]()
     private var movies = [SmartSearch]()
     private var shows = [SmartSearch]()
 
-    private var sections: [Section] = [.movies, .shows]
+    private let sections: [Section] = [.movies, .shows]
 
     override func loadView() {
         tableView = TintedPlainTableView(frame: .zero, style: .grouped)
@@ -48,13 +46,6 @@ final class SmartSearchViewController: UITableViewController {
             guard let self = self else { return }
             self.scheduleReload()
         }.disposed(by: disposeBag)
-        onSavedFiltersChangedReceiver.listen { [weak self] filters in
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.savedFilters = filters
-                self.reloadSearches()
-            }
-        }.disposed(by: disposeBag)
         reloadSearches()
     }
 
@@ -69,23 +60,15 @@ final class SmartSearchViewController: UITableViewController {
     private func reloadSearches() {
         movies = SmartSearch.smartSearches(for: .movie)
         shows = SmartSearch.smartSearches(for: .show)
-        sections = (isEditing || savedFilters.isEmpty ? [] : [.filters]) + [.movies, .shows]
         tableView.reloadData()
     }
 
     private func smartSearch(at indexPath: IndexPath) -> SmartSearch? {
         guard sections.indices.contains(indexPath.section) else { return nil }
         switch sections[indexPath.section] {
-        case .filters: return nil
         case .movies: return movies.indices.contains(indexPath.row) ? movies[indexPath.row] : nil
         case .shows: return shows.indices.contains(indexPath.row) ? shows[indexPath.row] : nil
         }
-    }
-
-    private func savedFilter(at indexPath: IndexPath) -> SavedFilter? {
-        guard sections.indices.contains(indexPath.section), sections[indexPath.section] == .filters,
-              savedFilters.indices.contains(indexPath.row) else { return nil }
-        return savedFilters[indexPath.row]
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -95,7 +78,6 @@ final class SmartSearchViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard sections.indices.contains(section) else { return 0 }
         switch sections[section] {
-        case .filters: return savedFilters.count
         case .movies: return movies.count
         case .shows: return shows.count
         }
@@ -108,11 +90,7 @@ final class SmartSearchViewController: UITableViewController {
         cell.card.alpha = isEditing ? 0 : 1
         cell.chevron.alpha = isEditing ? 0 : 1
         cell.shouldShowActivityIndicator = false
-        if let search = smartSearch(at: indexPath) {
-            cell.setup(with: search.name ?? "Smart Search")
-        } else {
-            cell.setup(with: savedFilter(at: indexPath)?.name ?? "")
-        }
+        cell.setup(with: smartSearch(at: indexPath)?.name ?? "Smart Search")
         return cell
     }
 
@@ -120,11 +98,9 @@ final class SmartSearchViewController: UITableViewController {
         guard sections.indices.contains(section) else { return nil }
         let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: "header") as! SearchHeaderView
         header.button.removeTarget(self, action: nil, for: .touchUpInside)
-        header.button.isHidden = isEditing || sections[section] == .filters
+        header.button.isHidden = isEditing
         header.button.setTitle("Add Smart Search", for: .normal)
         switch sections[section] {
-        case .filters:
-            header.title.text = "💾 Saved Filters"
         case .movies:
             header.title.text = "📽 Movies"
             header.button.addTarget(self, action: #selector(addMovieSearch), for: .touchUpInside)
@@ -146,14 +122,8 @@ final class SmartSearchViewController: UITableViewController {
             return
         }
         guard let controller = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SearchResultsViewController") as? SearchResultsViewController else { return }
-        if let search = smartSearch(at: indexPath) {
-            controller.aSmartSearch = search
-        } else if let filter = savedFilter(at: indexPath) {
-            controller.title = filter.name
-            controller.savedFilter = filter
-        } else {
-            return
-        }
+        guard let search = smartSearch(at: indexPath) else { return }
+        controller.aSmartSearch = search
         navigationController?.show(controller, sender: self)
     }
 

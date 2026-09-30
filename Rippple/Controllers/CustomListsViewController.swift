@@ -17,6 +17,7 @@ final class CustomListsViewController: UITableViewController {
         case error
         case standard
         case content
+        case smart
         case liked
     }
 
@@ -42,6 +43,19 @@ final class CustomListsViewController: UITableViewController {
             guard editingStyle == .delete else { return }
             guard let item = itemIdentifier(for: indexPath) else { return }
             guard case .list(let list, let isLiked) = item, isLiked == false else { return }
+
+            if list.isSmartList {
+                SwiftMessages.show(message: "Deleting List...", style: .loading)
+                ListsManager.shared.delete(smartList: list) { result in
+                    switch result {
+                    case .success:
+                        SwiftMessages.show(message: "👍 Your list has been deleted")
+                    case .failure(let error):
+                        SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
+                    }
+                }
+                return
+            }
 
             if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") {
                 UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/mylists")!))
@@ -72,8 +86,8 @@ final class CustomListsViewController: UITableViewController {
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
             guard let item = itemIdentifier(for: indexPath) else { return false }
             switch item {
-            case .list(_, let isLiked):
-                return !isLiked
+            case .list(let list, let isLiked):
+                return !isLiked && !list.isSmartList
             default:
                 return false
             }
@@ -118,6 +132,7 @@ final class CustomListsViewController: UITableViewController {
     private lazy var searchController = UISearchController(searchResultsController: listsSearchResults)
 
     private var lists = [List]()
+    private var smartLists = [List]()
     private var likedLists = [List]()
 
     private let disposeBag = DisposeBag()
@@ -277,8 +292,16 @@ final class CustomListsViewController: UITableViewController {
                 self.applySnapshot(animating: true, reload: true)
                 self.updateListCreationButton()
             }.disposed(by: disposeBag)
+
+            onSmartListsChangedReceiver.listen { [weak self] smartLists in
+                guard let self = self else { return }
+                if UserManager.shared.currentUser == nil { return }
+                self.smartLists = smartLists
+                self.applySnapshot(animating: true, reload: true)
+            }.disposed(by: disposeBag)
         } else {
             fetchCustomLists()
+            fetchSmartLists()
         }
 
         navigationController?.delegate = self
@@ -306,33 +329,23 @@ final class CustomListsViewController: UITableViewController {
         updateListCreationButton()
     }
 
+    /// Both entries stay visible at the limit, so reaching it reads as an account limit rather than a missing feature.
     private func updateListCreationButton() {
-        if ListsManager.shared.lists.count < UserManager.shared.currentUserListLimit {
-            var actions = [UIAction]()
-            actions.append(UIAction(title: "New Custom List",
-                                    handler: { _ in
-                                        self.performSegue(withIdentifier: "add", sender: nil)
-                                    }))
-            actions.append(UIAction(title: "New couchmoney.tv TV List",
-                                    handler: { _ in
-                                        UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/tvaddlist")!))
-                                    }))
-            actions.append(UIAction(title: "New couchmoney.tv Movie List",
-                                    handler: { _ in
-                                        UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/addlist")!))
-                                    }))
-            addListBarButtonItem?.menu = UIMenu(children: actions)
-            addListBarButtonItem?.target = nil
-            addListBarButtonItem?.action = nil
-        } else {
-            addListBarButtonItem?.menu = nil
-            addListBarButtonItem?.target = self
-            addListBarButtonItem?.action = #selector(VIPLimit)
+        let newSmartList = UIAction(title: "New Smart List", image: UIImage(systemName: "sparkles")) { [weak self] _ in
+            guard let self = self else { return }
+            SmartListBuilderViewController.present(from: self)
         }
-    }
-
-    @objc func VIPLimit() {
-        UIApplication.shared.presentTraktLimits(limitReached: true)
+        let newCustomList = UIAction(title: "New Custom List", image: UIImage(systemName: "list.bullet")) { [weak self] _ in
+            guard let self = self else { return }
+            if ListsManager.shared.lists.count < UserManager.shared.currentUserListLimit {
+                self.performSegue(withIdentifier: "add", sender: nil)
+            } else {
+                UIApplication.shared.presentAccountLimitReached()
+            }
+        }
+        addListBarButtonItem?.menu = UIMenu(children: [newSmartList, newCustomList])
+        addListBarButtonItem?.target = nil
+        addListBarButtonItem?.action = nil
     }
 
     private func restore() {
@@ -381,6 +394,7 @@ final class CustomListsViewController: UITableViewController {
             ListsManager.shared.refresh()
         } else {
             fetchCustomLists()
+            fetchSmartLists()
         }
     }
 
@@ -388,7 +402,12 @@ final class CustomListsViewController: UITableViewController {
         showLoading = true
         error = nil
         applySnapshot(animating: true)
-        fetchCustomLists()
+        if user.isCurrentUser {
+            ListsManager.shared.refresh()
+        } else {
+            fetchCustomLists()
+            fetchSmartLists()
+        }
     }
 
     @IBAction func edit(_ sender: UIBarButtonItem) {
@@ -402,7 +421,7 @@ final class CustomListsViewController: UITableViewController {
     }
 
     private func applySnapshot(animating: Bool = false, reload: Bool = false) {
-        listsSearchResults.additionalLists = lists
+        listsSearchResults.additionalLists = lists + smartLists
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
 
         let contentItems = lists.map { Wrapper.list($0, isLiked: false) }
@@ -437,6 +456,17 @@ final class CustomListsViewController: UITableViewController {
                 snapshot.reloadItems(contentItems)
             }
 
+            // Smart lists stay visible while editing so they can be edited or deleted.
+            if smartLists.isEmpty == false {
+                let smartItems = smartLists.map { Wrapper.list($0, isLiked: false) }
+                snapshot.appendSections([.smart])
+                snapshot.appendItems([.spacer(11), .header("Smart Lists", "\(smartLists.count) list\(smartLists.count > 1 ? "s" : "")")], toSection: .smart)
+                snapshot.appendItems(smartItems, toSection: .smart)
+                if reload {
+                    snapshot.reloadItems(smartItems)
+                }
+            }
+
             if user.isCurrentUser, tableView.isEditing == false {
                 // Liked lists
                 snapshot.appendSections([.liked])
@@ -448,7 +478,9 @@ final class CustomListsViewController: UITableViewController {
         }
 
         if !showLoading, error == nil {
-            listsSubtitle = user.isCurrentUser ? "\(lists.count) curated, \(likedLists.count) liked" : "\(lists.count) curated"
+            listsSubtitle = user.isCurrentUser
+                ? "\(lists.count) curated, \(smartLists.count) smart, \(likedLists.count) liked"
+                : (smartLists.isEmpty ? "\(lists.count) curated" : "\(lists.count) curated, \(smartLists.count) smart")
         }
         navigationItem.subtitle = searchController.isActive ? listsSearchResults.subtitle : listsSubtitle
         DispatchQueue.main.async {
@@ -485,6 +517,23 @@ final class CustomListsViewController: UITableViewController {
                     self.error = error
                     self.showLoading = false
                     self.applySnapshot(animating: true)
+                }
+            }
+        }
+    }
+
+    /// Only public smart lists are returned for other users.
+    private func fetchSmartLists() {
+        guard SessionManager.shared.isLoggedOut == false, let user = user else { return }
+        TraktAPIProvider.fetchSmartLists(user: user) { [weak self] result in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.user == user else { return }
+                switch result {
+                case .success(let smartLists):
+                    self.smartLists = smartLists
+                    self.applySnapshot(animating: true, reload: true)
+                case .failure(let error):
+                    print("smartLists request failure \(error)")
                 }
             }
         }
@@ -594,7 +643,9 @@ extension CustomListsViewController {
                     // Don't allow editing liked lists
                     break
                 }
-                if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") == false {
+                if list.isSmartList {
+                    SmartListBuilderViewController.present(from: self, list: list)
+                } else if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") == false {
                     performSegue(withIdentifier: "edit", sender: list)
                 } else {
                     UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/mylists")!))
@@ -625,7 +676,7 @@ extension CustomListsViewController {
         if sectionType == .error {
             return errorView
         }
-        if sectionType == .liked {
+        if sectionType == .liked || sectionType == .smart {
             return UIView()
         }
         return nil
@@ -720,7 +771,8 @@ extension CustomListsViewController: UITableViewDropDelegate {
         let snapshot = dataSource.snapshot()
         let destSection = snapshot.sectionIdentifiers[destinationIndexPath.section]
 
-        if destSection == .liked {
+        // Items cannot be added to smart lists: Trakt resolves them from their conditions.
+        if destSection == .liked || destSection == .smart {
             return UITableViewDropProposal(operation: .cancel)
         }
         if destSection == .standard,

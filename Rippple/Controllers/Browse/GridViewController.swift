@@ -173,7 +173,7 @@ final class GridViewController: UICollectionViewController {
 
         onListChangedReceiver.hotOnly().listen { [weak self] lists in
             guard let self = self else { return }
-            for list in lists where self.savedFilter.path.localizedStandardContains("/lists/\(list.identifiers.trakt!)") {
+            for list in lists where list.isSource(of: self.savedFilter) {
                 DispatchQueue.main.async {
                     self.reloadData()
                 }

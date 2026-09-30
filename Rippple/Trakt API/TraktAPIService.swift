@@ -398,6 +398,13 @@ enum TraktAPIService {
     case reorderLists(ids: [Int64])
     case updateList(id: Int64, name: String, description: String, privacy: ListPrivacy, displayNumbers: Bool, allowComments: Bool)
 
+    case smartLists(slug: String = "me")
+    case smartList(userSlug: String = "me", slug: String)
+    case smartListItems(slug: String, pageInfo: PageInfo)
+    case createSmartList(SmartListDraft)
+    case updateSmartList(slug: String, SmartListDraft)
+    case deleteSmartList(slug: String)
+
     case addToList(slug: String? = "me", id: Int64, item: WatchlistedItem)
     case removeFromList(slug: String? = "me", id: Int64, item: WatchlistedItem)
     case reorderListItems(slug: String? = "me", id: Int64, ids: [Int64])
@@ -471,8 +478,8 @@ enum TraktAPIService {
     case movieCertifications
     case tvCertifications
     case networks
+    case watchNowSources(country: String)
 
-    case savedFilters
     case savedFilter(section: String, path: String, query: String, pageInfo: PageInfo)
 
     case movieLists(id: Int64, type: ListType)
@@ -885,6 +892,17 @@ extension TraktAPIService: AuthorizedTargetType {
             }
         case .createList:
             return "/users/me/lists"
+        case .smartLists(let slug):
+            return "/users/\(slug)/smart-lists"
+        case .smartList(let userSlug, let slug):
+            // The public `/smart-lists/:slug` route ignores authentication, so it cannot return private lists.
+            return "/users/\(userSlug)/smart-lists/\(slug)"
+        case .smartListItems(let slug, _):
+            return "/smart-lists/\(slug)/items"
+        case .createSmartList:
+            return "/users/me/smart-lists"
+        case .updateSmartList(let slug, _), .deleteSmartList(let slug):
+            return "/users/me/smart-lists/\(slug)"
         case .deleteList(let listId):
             return "/users/me/lists/\(listId)"
         case .reorderLists:
@@ -996,8 +1014,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/certifications/shows"
         case .networks:
             return "/networks"
-        case .savedFilters:
-            return "/users/saved_filters"
+        case .watchNowSources(let country):
+            return "/watchnow/sources/\(country)"
         case .savedFilter(_, let path, _, _):
             return path
         case .showLists(let id, let type):
@@ -1209,6 +1227,14 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .createList:
             return .post
+        case .smartLists, .smartList, .smartListItems:
+            return .get
+        case .createSmartList:
+            return .post
+        case .updateSmartList:
+            return .put
+        case .deleteSmartList:
+            return .delete
         case .deleteList:
             return .delete
         case .reorderLists:
@@ -1245,9 +1271,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .delete
         case .playedShows, .playedMovies, .watchedShows, .watchedMovies, .collectedShows, .collectedMovies:
             return .get
-        case .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks:
-            return .get
-        case .savedFilters:
+        case .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .watchNowSources:
             return .get
         case .savedFilter:
             return .get
@@ -1757,6 +1781,15 @@ extension TraktAPIService: AuthorizedTargetType {
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             }
+        case .smartLists, .smartList, .deleteSmartList:
+            return .requestPlain
+        case .smartListItems(_, let pageInfo):
+            return .requestParameters(parameters: ["extended": "full",
+                                                   "page": "\(pageInfo.page)",
+                                                   "limit": "\(pageInfo.limit)"],
+                                      encoding: URLEncoding.default)
+        case .createSmartList(let draft), .updateSmartList(_, let draft):
+            return .requestJSONEncodable(draft)
         case .createList(let name, let description, let privacy, let displayNumbers, let allowComments):
             return .requestParameters(parameters: ["name": name,
                                                    "description": description,
@@ -1952,9 +1985,7 @@ extension TraktAPIService: AuthorizedTargetType {
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
-        case .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks:
-            return .requestPlain
-        case .savedFilters:
+        case .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .watchNowSources:
             return .requestPlain
         case .savedFilter(let section, _, let query, let pageInfo):
             var queryString = query.removingPercentEncoding!
@@ -2132,7 +2163,7 @@ extension TraktAPIService: AuthorizedTargetType {
                 return true
             }
             return false
-        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .searchExact, .searchTrending, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary:
+        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .searchExact, .searchTrending, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .watchNowSources, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary:
             return false
         case .stats(let type):
             switch type {

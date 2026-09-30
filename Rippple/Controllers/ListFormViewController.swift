@@ -47,10 +47,8 @@ final class ListFormViewController: UITableViewController {
             allowCommentsSwitch.isOn = list.commentsAllowed
             displayRankSwitch.isOn = list.displayRank
 
-            addButton.title = "Update"
             title = "Update your list"
         } else {
-            addButton.title = "Add"
             title = "Add a list"
         }
 

@@ -250,6 +250,7 @@
                 <outlet property="collectionSpaceView" destination="Ohd-p5-bvc" id="Lfm-Nn-Dzo"/>
                 <outlet property="collectionView" destination="UIo-Cg-Qwa" id="jBJ-QH-mZl"/>
                 <outlet property="descriptionLabel" destination="iL9-FS-MvP" id="Ye9-Ha-IP6"/>
+                <outlet property="countsStackView" destination="lla-oD-BbR" id="sLc-Cs-001"/>
                 <outlet property="itemsCountLabel" destination="aaH-Nw-Md6" id="CZA-4h-SFx"/>
                 <outlet property="likeButton" destination="VMY-I9-KK3" id="viQ-7L-DmF"/>
                 <outlet property="likesCountLabel" destination="hLy-c2-fmE" id="7WL-0C-n8y"/>

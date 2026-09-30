@@ -920,9 +920,9 @@ private class UpdateShowsOperation: Operation, @unchecked Sendable {
             return
         }
 
-        TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
-                                           id: list.identifiers.trakt!,
-                                           type: .shows) { [weak self] result in
+        TraktAPIProvider.fetchAllListItems(list: list,
+                                           type: .shows,
+                                           smartListLimit: TraktAPIProvider.smartListToWatchItemsLimit) { [weak self] result in
             guard let self = self else { return }
             defer { completion() }
             if self.isCancelled { return }

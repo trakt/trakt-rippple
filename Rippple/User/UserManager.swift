@@ -66,12 +66,22 @@ final class UserManager {
         return settings?.browsing.watchOnlyOnce ?? false
     }
 
+    /// The country Trakt uses for the user's watch now services.
+    var currentUserWatchNowCountry: String? {
+        return settings?.browsing.watchNow?.country
+    }
+
     var currentUserCanComment: Bool {
         return settings?.permissions.commenting ?? false
     }
 
     var currentUserListLimit: Int {
         return settings?.limits.list.count ?? 0
+    }
+
+    /// Falls back to the limits Trakt enforces when saving a smart list.
+    var currentUserSmartListLimit: Int {
+        return settings?.limits.savedFilters?.count ?? (isCurrentVIP ? 100 : 5)
     }
 
     var currentUserNotesLimit: Int {

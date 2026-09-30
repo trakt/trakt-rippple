@@ -221,6 +221,8 @@ final class ListViewController: UITableViewController {
     }
 
     private var fetchTask: Task<Void, Never>?
+    /// Smart list definitions can change while items load: only the latest fetch is shown.
+    private var fetchGeneration = 0
     private let progressContext = ListProgressContext()
 
     private var watchlistItems: [WatchlistItem]? {
@@ -265,7 +267,7 @@ final class ListViewController: UITableViewController {
     @IBOutlet var filterButtonItem: UIBarButtonItem!
     private var currentFilter = Filter.none {
         didSet {
-            UserDefaults.standard.set(currentFilter.rawValue, forKey: "ListViewController.\(list.identifiers.trakt!).currentFilter")
+            UserDefaults.standard.set(currentFilter.rawValue, forKey: "ListViewController.\(preferencesKey).currentFilter")
             UserDefaults.standard.synchronize()
 
             filterButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
@@ -293,7 +295,7 @@ final class ListViewController: UITableViewController {
     /// Sort
     private var currentSorting = Sort.rank {
         didSet {
-            UserDefaults.standard.set(currentSorting.rawValue, forKey: "ListViewController.\(list.identifiers.trakt!).currentSorting")
+            UserDefaults.standard.set(currentSorting.rawValue, forKey: "ListViewController.\(preferencesKey).currentSorting")
             UserDefaults.standard.synchronize()
 
             if watchlistItems != nil {
@@ -525,11 +527,11 @@ final class ListViewController: UITableViewController {
 
         refreshControl?.isEnabled = false
 
-        if let filter = Filter(rawValue: UserDefaults.standard.integer(forKey: "ListViewController.\(list.identifiers.trakt!).currentFilter")) {
+        if let filter = Filter(rawValue: UserDefaults.standard.integer(forKey: "ListViewController.\(preferencesKey).currentFilter")) {
             currentFilter = filter
         }
 
-        if let sort = Sort(rawValue: UserDefaults.standard.integer(forKey: "ListViewController.\(list.identifiers.trakt!).currentSorting")) {
+        if let sort = Sort(rawValue: UserDefaults.standard.integer(forKey: "ListViewController.\(preferencesKey).currentSorting")) {
             currentSorting = sort
         }
 
@@ -548,11 +550,24 @@ final class ListViewController: UITableViewController {
         dataSource.apply(snapshot, animatingDifferences: false)
 
         onListChangedReceiver.listen { [weak self] lists in
-            guard let self = self else { return }
-            for list in lists where list == self.list {
-                self.list = list
-                self.fetch()
+            // Some list changes are broadcast from background tasks.
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                for list in lists where list == self.list {
+                    self.apply(updatedList: list)
+                }
             }
+        }.disposed(by: disposeBag)
+
+        onSmartListsChangedReceiver.hotOnly().listen { [weak self] smartLists in
+            guard let self = self, self.list.isSmartList, self.list.user.isCurrentUser else { return }
+            guard let smartList = smartLists.first(where: { $0 == self.list }) else {
+                // Deleted from this screen, the builder or another device.
+                self.navigationController?.popViewController(animated: true)
+                return
+            }
+            // Edited from the builder or another device: editing a stale definition would overwrite it.
+            self.apply(updatedList: smartList)
         }.disposed(by: disposeBag)
 
         filterButtonItem.primaryAction = nil
@@ -644,6 +659,19 @@ final class ListViewController: UITableViewController {
                 guard let self = self else { return }
                 SwiftMessages.show(message: "Deleting List...", style: .loading)
 
+                if self.list.isSmartList {
+                    // The screen closes itself once the list is removed from the lists manager.
+                    ListsManager.shared.delete(smartList: self.list) { result in
+                        switch result {
+                        case .success:
+                            SwiftMessages.show(message: "👍 Your list has been deleted")
+                        case .failure(let error):
+                            SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
+                        }
+                    }
+                    return
+                }
+
                 TraktAPIProvider.provider.request(.deleteList(id: self.list.identifiers.trakt!), callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                     guard let self = self else { return }
 
@@ -672,7 +700,16 @@ final class ListViewController: UITableViewController {
 
         let edit = UIAction(title: "Edit", image: UIImage(systemName: "pencil")) { [weak self] _ in
             guard let self = self else { return }
-            self.performSegue(withIdentifier: "edit", sender: self.list)
+            if self.list.isSmartList {
+                SmartListBuilderViewController.present(from: self, list: self.list)
+            } else {
+                self.performSegue(withIdentifier: "edit", sender: self.list)
+            }
+        }
+
+        let duplicate = UIAction(title: "Duplicate", image: UIImage(systemName: "plus.square.on.square")) { [weak self] _ in
+            guard let self = self else { return }
+            SmartListBuilderViewController.present(from: self, duplicating: self.list)
         }
 
         let couchMoney = UIAction(title: "Open couchmoney.tv", image: UIImage(systemName: "sofa")) { _ in
@@ -742,6 +779,12 @@ final class ListViewController: UITableViewController {
             reorderMenu = [UIMenu(options: .displayInline, children: [reorder])]
         }
 
+        if list.isSmartList {
+            // Any visible smart list can be duplicated: only the owner can edit or delete it.
+            let actions = list.user.isCurrentUser ? [edit, duplicate, delete] : [duplicate]
+            return UIMenu(children: [UIMenu(options: .displayInline, children: actions), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
+        }
+
         if list.user.isCurrentUser {
             if let shareLink = list.shareLink,
                list.privacy != .me,
@@ -805,6 +848,23 @@ final class ListViewController: UITableViewController {
         fetch()
     }
 
+    private func apply(updatedList list: List) {
+        // Smart lists are refreshed from several channels: only a new definition needs a new fetch.
+        guard list.isSmartList == false || list.smartList != self.list.smartList else { return }
+        self.list = list
+        if list.isSmartList {
+            // The definition may have changed: refresh its name, summary and actions.
+            navigationItem.title = list.name.emojiUnescapedString
+            buildMenu()
+            var snapshot = dataSource.snapshot()
+            if snapshot.indexOfSection(.header) != nil {
+                snapshot.reloadSections([.header])
+                dataSource.apply(snapshot)
+            }
+        }
+        fetch()
+    }
+
     @IBAction func retry(_ sender: Any) {
         error = nil
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
@@ -830,19 +890,20 @@ final class ListViewController: UITableViewController {
         }
 
         fetchTask?.cancel()
-        TraktAPIProvider.fetchAllListItems(slug: list.user.identifiers.slug,
-                                           id: list.identifiers.trakt!,
-                                           type: nil) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let results):
-                self.watchlistItems = results.removingDuplicates()
-            case .failure(let error):
-                print("Comments request JSON mapping failed! \(error)")
+        fetchGeneration += 1
+        let generation = fetchGeneration
+        TraktAPIProvider.fetchAllListItems(list: list, type: nil) { [weak self] result in
+            let result = result.map { $0.removingDuplicates() }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.fetchGeneration == generation else { return }
+                switch result {
+                case .success(let results):
+                    self.watchlistItems = results
+                case .failure(let error):
+                    print("Comments request JSON mapping failed! \(error)")
 
-                var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
-                snapshot.appendSections([.error])
-                DispatchQueue.main.async {
+                    var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
+                    snapshot.appendSections([.error])
                     self.error = error
                     self.dataSource.apply(snapshot, animatingDifferences: false)
                 }
@@ -933,7 +994,10 @@ final class ListViewController: UITableViewController {
                 self.currentFilter = .episodes
             }
 
-            let filters = UIMenu(title: "What do you want to see?", options: .displayInline, children: [all, movies, shows, seasons, episodes])
+            // Smart lists only resolve to movies and shows.
+            let filters = UIMenu(title: "What do you want to see?",
+                                 options: .displayInline,
+                                 children: self.list.isSmartList ? [all, movies, shows] : [all, movies, shows, seasons, episodes])
 
             let rank = UIAction(title: "Rank", image: nil, state: self.currentSorting == .rank ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
@@ -985,7 +1049,9 @@ final class ListViewController: UITableViewController {
                 self.currentSorting = .random
             }
 
-            let sorting = UIMenu(title: "Sort By", children: [rank, added, lastWatched, title, release, runtime, weightedRating, rating, votes, random])
+            // Smart list items have no listing date.
+            let sorting = UIMenu(title: "Sort By",
+                                 children: (self.list.isSmartList ? [rank] : [rank, added]) + [lastWatched, title, release, runtime, weightedRating, rating, votes, random])
 
             completion([filters, sorting])
         }
@@ -1006,8 +1072,13 @@ final class ListViewController: UITableViewController {
         models.forEach { $0.add(to: self.list) }
     })
 
+    /// Whether items can be added, removed, reordered or annotated. Smart list items are resolved by Trakt.
     private var isListEditable: Bool {
-        list.user.isCurrentUser || CollaborationsManager.shared.collaborations.contains(list)
+        !list.isSmartList && (list.user.isCurrentUser || CollaborationsManager.shared.collaborations.contains(list))
+    }
+
+    private var preferencesKey: String {
+        list.smartListSlug.map { "smart-\($0)" } ?? "\(list.identifiers.trakt!)"
     }
 
     private func showProgress() {
@@ -1051,7 +1122,9 @@ extension ListViewController {
 
         if section == dataSource.snapshot().indexOfSection(Section.content) {
             if watchlistItems != nil, dataSource.snapshot().numberOfItems(inSection: Section.content) == 0 {
-                if list.itemCount == 0, list.user.isCurrentUser {
+                if list.isSmartList, currentFilter == .none, searchQuery.isEmpty {
+                    emptyLabel.text = "Nothing matches this Smart List right now.\nTry loosening its conditions."
+                } else if list.itemCount == 0, list.user.isCurrentUser {
                     emptyLabel.text = "Your list seems to be empty.\nTry adding something in it: a movie,\na tv show, an episode or a season.\nOr don't. Do as you wish."
                 } else if list.itemCount == 0 {
                     emptyLabel.text = "This list seems to be empty.\nI wouldn't like it but it's your call."
@@ -1132,7 +1205,7 @@ extension ListViewController {
     }
 
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        if !list.user.isCurrentUser, CollaborationsManager.shared.collaborations.contains(list) == false { return nil }
+        guard isListEditable else { return nil }
 
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
         guard case Wrapper.item(let watchlistItem) = item else { return nil }
@@ -1174,7 +1247,7 @@ extension ListViewController {
                                                                   userId: list.user.identifiers.slug ?? user?.slug ?? "me",
                                                                   listId: list.identifiers.trakt!,
                                                                   itemId: watchlistItem.id,
-                                                                  canEdit: UserManager.shared.isCurrentVIP && (list.user.isCurrentUser || CollaborationsManager.shared.collaborations.contains(list)),
+                                                                  canEdit: UserManager.shared.isCurrentVIP && isListEditable,
                                                                   user: list.user,
                                                                   listItem: watchlistItem))
     }
@@ -1184,7 +1257,7 @@ extension ListViewController {
                                                                   userId: list.user.identifiers.slug ?? user?.slug ?? "me",
                                                                   listId: list.identifiers.trakt!,
                                                                   itemId: watchlistItem.id,
-                                                                  canEdit: UserManager.shared.isCurrentVIP && (list.user.isCurrentUser || CollaborationsManager.shared.collaborations.contains(list)),
+                                                                  canEdit: UserManager.shared.isCurrentVIP && isListEditable,
                                                                   user: list.user,
                                                                   listItem: watchlistItem))
     }
@@ -1298,7 +1371,23 @@ final class NoteTextFieldDelegate: NSObject, UITextFieldDelegate {
 }
 
 extension List {
+    /// Whether a saved filter, such as a shelf rail or a grid, shows the items of this list.
+    func isSource(of savedFilter: SavedFilter) -> Bool {
+        if isSmartList {
+            return savedFilter.path == self.savedFilter.path
+        }
+        guard let id = identifiers.trakt else { return false }
+        return savedFilter.path.localizedStandardContains("/lists/\(id)/")
+    }
+
     var savedFilter: SavedFilter {
+        if let smartListSlug = smartListSlug {
+            return SavedFilter(section: "lists",
+                               name: "\(name)",
+                               path: "/smart-lists/\(smartListSlug)/items",
+                               query: "",
+                               limit: 250)
+        }
         if let slug = user.identifiers.slug {
             return SavedFilter(section: "lists",
                                name: "\(name)",

@@ -113,10 +113,10 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
         tableView.register(UINib(nibName: "ActivityHeaderTableViewCell", bundle: nil), forCellReuseIdentifier: "header")
         tableView.register(UINib(nibName: "LoadingIndicatorTableViewCell", bundle: nil), forCellReuseIdentifier: "loading")
         tableView.dataSource = dataSource
-        curatedLists = ListsManager.shared.lists
+        curatedLists = ListsManager.shared.ownedLists
         collaborations = CollaborationsManager.shared.collaborations
 
-        onCustomListsChangedReceiver.listen { [weak self] lists in
+        onOwnedListsChangedReceiver.listen { [weak self] lists in
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.curatedLists = lists
@@ -211,9 +211,10 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         snapshot.appendSections([.browse])
         snapshot.appendItems(BrowseListsViewController.Category.allCases.map { .browse($0) }, toSection: .browse)
-        var seen = Set<Identifiers>()
+        // Lists are unique by identifiers and kind: a smart list can share its Trakt ID with a custom list.
+        var seen = Set<List>()
         let localLists = SessionManager.shared.isLoggedOut ? [] : (additionalLists + curatedLists + likedLists + collaborations)
-            .filter { seen.insert($0.identifiers).inserted }
+            .filter { seen.insert($0).inserted }
         let matches = localLists.filter { query.isEmpty || $0.name.localizedCaseInsensitiveContains(query) }
         if !matches.isEmpty {
             snapshot.appendSections([.local])
@@ -222,8 +223,8 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
         }
         if !query.isEmpty {
             snapshot.appendSections([.remote])
-            seen = Set(matches.map { $0.identifiers })
-            let remote = remoteLists.filter { seen.insert($0.identifiers).inserted }
+            seen = Set(matches)
+            let remote = remoteLists.filter { seen.insert($0).inserted }
             let headerSubtitle = isLoading ? "Loading..." : "\(remote.count) list\(remote.count == 1 ? "" : "s")"
             snapshot.appendItems([.header("Lists on Trakt", headerSubtitle)], toSection: .remote)
             snapshot.appendItems(remote.map { .list($0) }, toSection: .remote)

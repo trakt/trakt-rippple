@@ -371,10 +371,12 @@ struct ListItem: Codable {
 struct List: Codable, Equatable, Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(identifiers)
+        hasher.combine(isSmartList)
     }
 
+    /// Smart lists and custom lists have independent Trakt identifiers.
     static func == (lhs: List, rhs: List) -> Bool {
-        return lhs.identifiers == rhs.identifiers
+        return lhs.identifiers == rhs.identifiers && lhs.isSmartList == rhs.isSmartList
     }
 
     private let _name: String
@@ -395,6 +397,9 @@ struct List: Codable, Equatable, Hashable {
 
     let user: User
 
+    /// The definition of a Trakt smart list, `nil` for custom lists.
+    private(set) var smartList: SmartList?
+
     enum CodingKeys: String, CodingKey {
         case _name = "name"
         case description
@@ -408,10 +413,251 @@ struct List: Codable, Equatable, Hashable {
         case user
         case type
         case shareLink = "share_link"
+        case smartList = "smart_list"
+    }
+
+    init(smartList: SmartList, user: User) {
+        _name = smartList.name
+        description = SmartListSentence(smartList: smartList).string
+        commentsAllowed = false
+        displayRank = true
+        itemCount = nil
+        likes = 0
+        identifiers = smartList.identifiers
+        type = "smart"
+        privacy = smartList.privacy
+        commentCount = nil
+        shareLink = nil
+        self.user = user
+        self.smartList = smartList
     }
 
     var name: String {
         return _name.emojiUnescapedString
+    }
+
+    var isSmartList: Bool {
+        return smartList != nil
+    }
+}
+
+// MARK: - Smart Lists
+
+enum SmartListSource: String, Codable, CaseIterable, UnknownDecodable {
+    case trending
+    case popular
+    case anticipated
+    case recommendations
+    case discover
+    case watchlist
+    case library
+    case unknown
+
+    var title: String {
+        switch self {
+        case .trending: return "Trending"
+        case .popular: return "Popular"
+        case .anticipated: return "Anticipated"
+        case .recommendations: return "Recommended"
+        case .discover: return "Discover"
+        case .watchlist: return "Watchlist"
+        case .library: return "Library"
+        case .unknown: return "Unknown"
+        }
+    }
+}
+
+enum SmartListMediaType: String, Codable, CaseIterable, UnknownDecodable {
+    case movies
+    case shows
+    case media
+    case unknown
+
+    static var selectableCases: [SmartListMediaType] {
+        allCases.filter { $0 != .unknown }
+    }
+
+    var title: String {
+        switch self {
+        case .movies: return "Movies"
+        case .shows: return "TV Shows"
+        case .media, .unknown: return "Movies & TV Shows"
+        }
+    }
+
+    var includesMovies: Bool {
+        self != .shows
+    }
+
+    var includesShows: Bool {
+        self != .movies
+    }
+}
+
+/// Mirrors the Trakt `smartListFiltersSchema`. Unset values are omitted from requests.
+struct SmartListFilters: Codable, Hashable {
+    enum Operator: String, Codable, UnknownDecodable {
+        case and
+        case or
+        case unknown
+    }
+
+    var genres: [String]?
+    var genresOperator: Operator?
+    var subgenres: [String]?
+    var certifications: [String]?
+    var languages: [String]?
+    var countries: [String]?
+    var statuses: [String]?
+    var networks: [String]?
+    var keywords: [String]?
+    var keywordsOperator: Operator?
+    var watchnow: [String]?
+    var years: [Int]?
+    var ratings: [Int]?
+    var runtimes: [Int]?
+    var imdbRatings: [Double]?
+    var rtMeters: [Int]?
+    var rtUserMeters: [Int]?
+    var letterboxdRatings: [Double]?
+    var malRatings: [Double]?
+    // Parental guide filters are accepted by Trakt but not yet documented; keep them so edits do not drop them.
+    var parentalNudity: [Double]?
+    var parentalViolence: [Double]?
+    var parentalProfanity: [Double]?
+    var parentalAlcohol: [Double]?
+    var parentalFrightening: [Double]?
+    var parentalIncludeUnrated: Bool?
+    var ignoreWatched: Bool?
+    var ignoreWatchlisted: Bool?
+    var ignoreWatching: Bool?
+    var ignoreUnreleased: Bool?
+    var ignoreReleased: Bool?
+    var ignoreEnded: Bool?
+    var ignoreAiring: Bool?
+    var ignoreNoReleaseDate: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case genres
+        case genresOperator = "genres_operator"
+        case subgenres
+        case certifications
+        case languages
+        case countries
+        case statuses
+        case networks
+        case keywords
+        case keywordsOperator = "keywords_operator"
+        case watchnow
+        case years
+        case ratings
+        case runtimes
+        case imdbRatings = "imdb_ratings"
+        case rtMeters = "rt_meters"
+        case rtUserMeters = "rt_user_meters"
+        case letterboxdRatings = "letterboxd_ratings"
+        case malRatings = "mal_ratings"
+        case parentalNudity = "parental_nudity"
+        case parentalViolence = "parental_violence"
+        case parentalProfanity = "parental_profanity"
+        case parentalAlcohol = "parental_alcohol"
+        case parentalFrightening = "parental_frightening"
+        case parentalIncludeUnrated = "parental_include_unrated"
+        case ignoreWatched = "ignore_watched"
+        case ignoreWatchlisted = "ignore_watchlisted"
+        case ignoreWatching = "ignore_watching"
+        case ignoreUnreleased = "ignore_unreleased"
+        case ignoreReleased = "ignore_released"
+        case ignoreEnded = "ignore_ended"
+        case ignoreAiring = "ignore_airing"
+        case ignoreNoReleaseDate = "ignore_no_release_date"
+    }
+}
+
+/// A Trakt smart list definition: a source and filters that Trakt resolves into items.
+struct SmartList: Codable, Hashable {
+    let name: String
+    let privacy: ListPrivacy
+    let identifiers: Identifiers
+    let source: SmartListSource
+    let mediaType: SmartListMediaType
+    let filters: SmartListFilters
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case privacy
+        case identifiers = "ids"
+        case source
+        case mediaType = "media_type"
+        case filters
+    }
+}
+
+extension String {
+    /// "science-fiction" → "Science Fiction", "returning series" → "Returning Series".
+    var smartListTitle: String {
+        let acronyms = ["Tv": "TV", "Hbo": "HBO", "Amc": "AMC", "Bbc": "BBC", "Itv": "ITV"]
+        return replacingOccurrences(of: "-", with: " ")
+            .replacingOccurrences(of: "_", with: " ")
+            .capitalized
+            .split(separator: " ")
+            .map { acronyms[String($0)] ?? String($0) }
+            .joined(separator: " ")
+    }
+}
+
+/// The body of a smart list creation or update.
+struct SmartListDraft: Encodable, Equatable {
+    var name = ""
+    var source = SmartListSource.trending
+    var mediaType = SmartListMediaType.media
+    var privacy = ListPrivacy.me
+    var filters = SmartListFilters()
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case source
+        case mediaType = "media_type"
+        case privacy
+        case filters
+    }
+
+    init() {}
+
+    init(smartList: SmartList) {
+        name = smartList.name
+        source = smartList.source == .unknown ? .trending : smartList.source
+        mediaType = smartList.mediaType == .unknown ? .media : smartList.mediaType
+        privacy = [.all, .friends].contains(smartList.privacy) ? smartList.privacy : .me
+        filters = smartList.filters
+    }
+}
+
+struct SmartListCreated: Decodable {
+    let identifiers: Identifiers
+
+    enum CodingKeys: String, CodingKey {
+        case identifiers = "ids"
+    }
+}
+
+struct SmartListItem: Decodable {
+    let rank: Int
+    let movie: Movie?
+    let show: Show?
+
+    /// Smart list items have no listing date or item identifier, so the rank identifies them.
+    var watchlistItem: WatchlistItem? {
+        guard movie != nil || show != nil else { return nil }
+        return WatchlistItem(listedAt: Date.distantPast,
+                             rank: rank,
+                             movie: movie,
+                             show: show,
+                             episode: nil,
+                             season: nil,
+                             list: nil,
+                             id: Int64(rank),
+                             notes: nil)
     }
 }
 
@@ -585,6 +831,22 @@ struct NotesLimits: Codable {
 struct Limits: Codable {
     let list: ListLimits
     let notes: NotesLimits
+    /// Smart lists: Trakt still reports their limit under the saved filters they replaced.
+    let savedFilters: ListLimits?
+
+    enum CodingKeys: String, CodingKey {
+        case list
+        case notes
+        case savedFilters = "saved_filters"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        list = try container.decode(ListLimits.self, forKey: .list)
+        notes = try container.decode(NotesLimits.self, forKey: .notes)
+        // An unexpected shape must not fail the whole settings response.
+        savedFilters = try? container.decodeIfPresent(ListLimits.self, forKey: .savedFilters)
+    }
 }
 
 struct Permissions: Codable {
@@ -594,10 +856,16 @@ struct Permissions: Codable {
 }
 
 struct Browsing: Codable {
+    struct WatchNow: Codable {
+        let country: String?
+    }
+
     let watchOnlyOnce: Bool
+    let watchNow: WatchNow?
 
     enum CodingKeys: String, CodingKey {
         case watchOnlyOnce = "watch_only_once"
+        case watchNow = "watchnow"
     }
 }
 
@@ -1783,6 +2051,18 @@ struct CertificationsCounties: Codable {
 
 struct Network: Codable, Hashable {
     let name: String
+}
+
+struct WatchNowSource: Decodable, Sendable {
+    let source: String
+    let name: String
+    let linkCount: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case source
+        case name
+        case linkCount = "link_count"
+    }
 }
 
 struct Language: Codable {

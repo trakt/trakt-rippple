@@ -550,6 +550,15 @@ public extension UIApplication {
         present(alertController)
     }
 
+    /// Offers Trakt VIP to free accounts. VIP accounts see their limits instead.
+    func presentAccountLimitReached() {
+        if UserManager.shared.isCurrentVIP {
+            presentTraktLimits(limitReached: true)
+        } else {
+            switchToPurchase()
+        }
+    }
+
     internal func presentTraktLimits(limitReached: Bool = false) {
         AppManager.shared.setup()
         var presented = AppManager.shared.mainWindow?.rootViewController

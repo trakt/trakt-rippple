@@ -156,6 +156,14 @@ class BrowseTableViewCell: TintedCanvasTableViewCell {
             progress.resumeTimer()
         }
 
+        onListChangedReceiver.hotOnly().listen { [weak self] lists in
+            guard let self = self, let savedFilter = self.savedFilter else { return }
+            // Smart list items depend on their definition, which may have just changed.
+            if lists.contains(where: { $0.isSmartList && $0.isSource(of: savedFilter) }) {
+                self.fetchItems(ignoringCache: true)
+            }
+        }.disposed(by: disposeBag)
+
         onLastWatchedEpisodeActivitiesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             if self.reuseIdentifier != "History" { return }

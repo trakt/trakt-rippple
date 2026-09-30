@@ -233,9 +233,14 @@ private final class CommentsCacheBuster: PluginType {
 // MARK: - ListsCacheBuster
 
 private final class ListsCacheBuster: PluginType {
+    private enum Key: Hashable {
+        case list(Int64)
+        case smartList(String)
+    }
+
     private let disposeBag = DisposeBag()
     private let lock = NSLock()
-    private var markers = [Int64: String]()
+    private var markers = [Key: String]()
 
     init() {
         onUserLoggedOutReceiver.listen { [weak self] _ in
@@ -248,11 +253,11 @@ private final class ListsCacheBuster: PluginType {
 
     func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
         guard let target = target as? TraktAPIService,
-              case .listItems(_, let listId, _, _, _) = target else { return request }
+              let key = itemsKey(for: target) else { return request }
 
         lock.lock()
-        let marker = markers[listId] ?? UUID().uuidString
-        markers[listId] = marker
+        let marker = markers[key] ?? UUID().uuidString
+        markers[key] = marker
         lock.unlock()
 
         return request.addingCacheMarker(marker)
@@ -263,19 +268,37 @@ private final class ListsCacheBuster: PluginType {
               case .success(let response) = result,
               (200..<300).contains(response.statusCode) else { return }
 
-        let listId: Int64
+        let key: Key
         switch target {
         case .addToList(_, let id, _), .removeFromList(_, let id, _), .addToListWithNotes(_, let id, _),
              .reorderListItems(_, let id, _), .updateListItem(_, _, let id, _),
              .updateList(let id, _, _, _, _, _), .deleteList(let id):
-            listId = id
+            key = .list(id)
+        case .updateSmartList(let slug, _), .deleteSmartList(let slug):
+            key = .smartList(slug)
         default:
             return
         }
 
         lock.lock()
-        markers[listId] = UUID().uuidString
+        markers[key] = UUID().uuidString
         lock.unlock()
+    }
+
+    /// Smart list items are also read through shelf rails and grids, as `/smart-lists/:slug/items` saved filters.
+    private func itemsKey(for target: TraktAPIService) -> Key? {
+        switch target {
+        case .listItems(_, let id, _, _, _):
+            return .list(id)
+        case .smartListItems(let slug, _):
+            return .smartList(slug)
+        case .savedFilter(_, let path, _, _):
+            let components = path.split(separator: "/")
+            guard components.count == 3, components[0] == "smart-lists", components[2] == "items" else { return nil }
+            return .smartList(String(components[1]))
+        default:
+            return nil
+        }
     }
 }
 

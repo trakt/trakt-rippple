@@ -185,6 +185,158 @@ Try with complete original titles.</string>
             </objects>
             <point key="canvasLocation" x="1220" y="175"/>
         </scene>
+        <!--Smart List-->
+        <scene sceneID="sLb-Sc-001">
+            <objects>
+                <tableViewController storyboardIdentifier="SmartListBuilderViewController" id="sLb-Vc-001" customClass="SmartListBuilderViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="sLb-Tv-001" customClass="CustomTableView" customModule="Rippple" customModuleProvider="target">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <view key="tableFooterView" contentMode="scaleToFill" id="sLb-Ft-001" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="0.0" width="414" height="5"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        </view>
+                        <connections>
+                            <outlet property="dataSource" destination="sLb-Vc-001" id="sLb-Ds-001"/>
+                            <outlet property="delegate" destination="sLb-Vc-001" id="sLb-Dl-001"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Smart List" id="sLb-Ni-001">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="sLb-Cn-001">
+                            <connections>
+                                <action selector="cancel:" destination="sLb-Vc-001" id="sLb-Ca-001"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="sLb-Sv-001">
+                            <connections>
+                                <action selector="save:" destination="sLb-Vc-001" id="sLb-Sa-001"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="addConditionButton" destination="sLb-Ac-001" id="sLb-Oa-001"/>
+                        <outlet property="animationViewContainer" destination="sLb-Ai-001" id="sLb-Ob-001"/>
+                        <outlet property="emptyLabel" destination="sLb-El-001" id="sLb-Oc-001"/>
+                        <outlet property="emptyView" destination="sLb-Ev-001" id="sLb-Od-001"/>
+                        <outlet property="errorView" destination="sLb-Er-001" id="sLb-Oe-001"/>
+                        <outlet property="loadingView" destination="sLb-Lv-001" id="sLb-Of-001"/>
+                        <outlet property="saveButton" destination="sLb-Sv-001" id="sLb-Oh-001"/>
+                        <outlet property="sentenceLabel" destination="sLb-Sl-001" id="sLb-Oi-001"/>
+                        <segue destination="5oQ-dd-7nq" kind="show" identifier="details" id="sLb-Sg-001"/>
+                        <segue destination="05N-ME-TUF" kind="show" identifier="comments" id="sLb-Sg-002"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="sLb-Fr-001" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <view contentMode="scaleToFill" id="sLb-Lv-001" userLabel="Loading" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sLb-Ai-001" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
+                            <rect key="frame" x="95" y="46" width="50" height="50"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="width" secondItem="sLb-Ai-001" secondAttribute="height" multiplier="1:1" id="sLb-Ct-001"/>
+                                <constraint firstAttribute="width" constant="50" id="sLb-Ct-002"/>
+                            </constraints>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="string" keyPath="typeName" value="ballScaleMultiple"/>
+                            </userDefinedRuntimeAttributes>
+                        </view>
+                    </subviews>
+                    <viewLayoutGuide key="safeArea" id="sLb-Sf-001"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    <constraints>
+                        <constraint firstItem="sLb-Ai-001" firstAttribute="centerY" secondItem="sLb-Sf-001" secondAttribute="centerY" id="sLb-Ct-003"/>
+                        <constraint firstItem="sLb-Ai-001" firstAttribute="centerX" secondItem="sLb-Sf-001" secondAttribute="centerX" id="sLb-Ct-004"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" id="sLb-Ev-001" userLabel="Empty" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sLb-El-001">
+                            <rect key="frame" x="16" y="36" width="208" height="56"/>
+                            <string key="text">Nothing matches these conditions right now.</string>
+                            <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                            <color key="textColor" systemColor="secondaryLabelColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <viewLayoutGuide key="safeArea" id="sLb-Sf-002"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    <constraints>
+                        <constraint firstItem="sLb-Sf-002" firstAttribute="trailing" secondItem="sLb-El-001" secondAttribute="trailing" constant="16" id="sLb-Ct-005"/>
+                        <constraint firstItem="sLb-El-001" firstAttribute="centerY" secondItem="sLb-Sf-002" secondAttribute="centerY" id="sLb-Ct-006"/>
+                        <constraint firstItem="sLb-El-001" firstAttribute="leading" secondItem="sLb-Sf-002" secondAttribute="leading" constant="16" id="sLb-Ct-007"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" id="sLb-Er-001" userLabel="Error" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="sLb-St-001">
+                            <rect key="frame" x="16" y="49" width="208" height="44"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="An error occurred..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sLb-Lb-001">
+                                    <rect key="frame" x="0.0" y="0.0" width="208" height="16"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                    <color key="textColor" systemColor="secondaryLabelColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLb-Rt-001">
+                                    <rect key="frame" x="0.0" y="16" width="208" height="28"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                    <state key="normal" title="Retry">
+                                        <color key="titleColor" name="Global Tint"/>
+                                    </state>
+                                    <connections>
+                                        <action selector="refresh:" destination="sLb-Vc-001" eventType="touchUpInside" id="sLb-Ra-001"/>
+                                    </connections>
+                                </button>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                    <viewLayoutGuide key="safeArea" id="sLb-Sf-003"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    <constraints>
+                        <constraint firstItem="sLb-Sf-003" firstAttribute="trailing" secondItem="sLb-St-001" secondAttribute="trailing" constant="16" id="sLb-Ct-008"/>
+                        <constraint firstItem="sLb-St-001" firstAttribute="centerY" secondItem="sLb-Sf-003" secondAttribute="centerY" id="sLb-Ct-009"/>
+                        <constraint firstItem="sLb-Sf-003" firstAttribute="leading" secondItem="sLb-St-001" secondAttribute="leading" constant="-16" id="sLb-Ct-010"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" id="sLb-Hd-001" userLabel="Sentence" customClass="TintedView" customModule="Rippple" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="340"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <subviews>
+                        <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sLb-Sl-001">
+                            <rect key="frame" x="40" y="132" width="240" height="20.5"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" preferredBehavioralStyle="pad" translatesAutoresizingMaskIntoConstraints="NO" id="sLb-Ac-001">
+                            <rect key="frame" x="26" y="172.5" width="164.5" height="34.5"/>
+                            <state key="normal" title="Button"/>
+                            <buttonConfiguration key="configuration" style="plain" image="plus.circle" catalog="system" title="Add Condition" imagePadding="6">
+                                <fontDescription key="titleFontDescription" style="UICTFontTextStyleBody"/>
+                            </buttonConfiguration>
+                        </button>
+                    </subviews>
+                    <viewLayoutGuide key="safeArea" id="sLb-Sf-004"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    <constraints>
+                        <constraint firstItem="sLb-Sf-004" firstAttribute="trailing" secondItem="sLb-Sl-001" secondAttribute="trailing" constant="40" id="sLb-Ct-011"/>
+                        <constraint firstItem="sLb-Ac-001" firstAttribute="top" secondItem="sLb-Sl-001" secondAttribute="bottom" constant="20" id="sLb-Ct-012"/>
+                        <constraint firstItem="sLb-Sl-001" firstAttribute="leading" secondItem="sLb-Sf-004" secondAttribute="leading" constant="40" id="sLb-Ct-013"/>
+                        <constraint firstItem="sLb-Sl-001" firstAttribute="centerY" secondItem="sLb-Sf-004" secondAttribute="centerY" constant="-15" id="sLb-Ct-014"/>
+                        <constraint firstItem="sLb-Ac-001" firstAttribute="leading" secondItem="sLb-Sl-001" secondAttribute="leading" constant="-14" id="sLb-Ct-015"/>
+                    </constraints>
+                </view>
+            </objects>
+            <point key="canvasLocation" x="1220" y="1020"/>
+        </scene>
         <!--MediaViewController-->
         <scene sceneID="4mY-XG-hXO">
             <objects>
