@@ -2943,6 +2943,9 @@
 						CreatedOnToolsVersion = 9.1;
 						LastSwiftMigration = 1020;
 						SystemCapabilities = {
+							com.apple.AssociatedDomains = {
+								enabled = 1;
+							};
 							com.apple.Push = {
 								enabled = 1;
 							};
@@ -3221,6 +3224,7 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/Rippple/Secrets.swift",
+				"${SRCROOT}/Scripts/check-secrets.sh",
 			);
 			name = "Run Script (Secrets Check)";
 			outputFileListPaths = (
@@ -3229,7 +3233,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "SECRETS_FILE=\"${SRCROOT}/Rippple/Secrets.swift\"\n\nif [ ! -f \"$SECRETS_FILE\" ]; then\n  echo \"error: Missing Secrets.swift file. Copy Secrets-Template.swift to Secrets.swift, fill in the required values, and include the file in all needed targets.\" >&2\n  exit 1\nfi\n\nFILTERED=$(grep -v '^[[:space:]]*//' \"$SECRETS_FILE\")\nif echo \"$FILTERED\" | grep -q '<#'; then\n  echo \"error: Secrets.swift contains template placeholders. Fill in all the required values.\" >&2\n  exit 1\nfi\n\nif echo \"$FILTERED\" | grep -E -q '=[[:space:]]*\"\"'; then\n  echo \"error: Secrets.swift contains empty string values. Fill in all the required values.\" >&2\n  exit 1\nfi\n";
+			shellScript = "/bin/sh \"${SRCROOT}/Scripts/check-secrets.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

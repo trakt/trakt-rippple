@@ -261,7 +261,7 @@ enum CertificationType: String {
 }
 
 enum TraktAPIService {
-    case token(code: String)
+    case token(code: String, codeVerifier: String?)
     case refresh(refreshToken: String)
     case revoke(token: String)
     case watching(slug: String = "me")
@@ -1312,20 +1312,31 @@ extension TraktAPIService: AuthorizedTargetType {
 
     var task: Task {
         switch self {
-        case .token(let code):
-            return .requestParameters(parameters: ["code": code,
-                                                   "client_id": TraktAPIConfiguration.clientId,
-                                                   "client_secret": TraktAPIConfiguration.secretId,
-                                                   "redirect_uri": TraktAPIConfiguration.callbackURL,
-                                                   "grant_type": "authorization_code"],
-                                      encoding: JSONEncoding.default)
+        case .token(let code, let codeVerifier):
+            var parameters: [String: Any] = ["code": code,
+                                             "client_id": TraktAPIConfiguration.clientId,
+                                             "redirect_uri": TraktAPIConfiguration.callbackURL,
+                                             "grant_type": "authorization_code"]
+            if let codeVerifier = codeVerifier {
+                parameters["code_verifier"] = codeVerifier
+            }
+            #if DEBUG
+            if !TraktAPIConfiguration.secretId.isEmpty {
+                parameters["client_secret"] = TraktAPIConfiguration.secretId
+            }
+            #endif
+            return .requestParameters(parameters: parameters, encoding: JSONEncoding.default)
         case .refresh(let refreshToken):
-            return .requestParameters(parameters: ["refresh_token": refreshToken,
-                                                   "client_id": TraktAPIConfiguration.clientId,
-                                                   "client_secret": TraktAPIConfiguration.secretId,
-                                                   "redirect_uri": TraktAPIConfiguration.callbackURL,
-                                                   "grant_type": "refresh_token"],
-                                      encoding: JSONEncoding.default)
+            var parameters: [String: Any] = ["refresh_token": refreshToken,
+                                             "client_id": TraktAPIConfiguration.clientId,
+                                             "redirect_uri": TraktAPIConfiguration.callbackURL,
+                                             "grant_type": "refresh_token"]
+            #if DEBUG
+            if !TraktAPIConfiguration.secretId.isEmpty {
+                parameters["client_secret"] = TraktAPIConfiguration.secretId
+            }
+            #endif
+            return .requestParameters(parameters: parameters, encoding: JSONEncoding.default)
         case .revoke(let accessToken):
             return .requestParameters(parameters: ["token": accessToken],
                                       encoding: URLEncoding.default)

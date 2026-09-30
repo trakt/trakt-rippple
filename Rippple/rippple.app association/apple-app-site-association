@@ -1,4 +1,4 @@
-{
+{ 
   "applinks": {
       "details": [
            {
@@ -35,9 +35,15 @@
                {
                   "/": "/whatsnew",
                   "comment": "Matches any URL with a path that starts with /whatsnew."
+               },
+               {
+                  "/": "/trakt/oauth2/callback"
                }
              ]
            }
        ]
+   },
+   "webcredentials": {
+      "apps": [ "GZG6JGPM44.tv.trakt.rippple" ]
    }
 }
