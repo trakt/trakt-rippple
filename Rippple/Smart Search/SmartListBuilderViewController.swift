@@ -7,6 +7,7 @@
 //
 
 import FoundationModels
+import LRUCache
 import Moya
 import Receiver
 import UIKit
@@ -33,6 +34,7 @@ final class SmartListBuilderViewController: SearchResultsViewController {
     }
 
     private var isSaving = false
+    private var nameSuggestionsPrefetch: _Concurrency.Task<Void, Never>?
     private weak var detailsViewController: SmartListDetailsViewController?
     private var tokenMenus = [UIMenu]()
     private var laidOutSize = CGSize.zero
@@ -41,9 +43,15 @@ final class SmartListBuilderViewController: SearchResultsViewController {
     private static let tokenKey = NSAttributedString.Key("SmartListBuilderToken")
     private static let previewLimit = 25
 
-    /// Presents the builder to create a smart list, or to edit one owned by the current user.
+    /// Presents the builder to create a smart list, or to edit one owned by the current user. New lists start from a
+    /// prompt when the on-device model can turn it into conditions.
     static func present(from controller: UIViewController, list: List? = nil) {
         if let list = list, list.isSmartList == false || list.user.isCurrentUser == false { return }
+        if list == nil, SmartListAssistant.isAvailable {
+            guard canCreate() else { return }
+            controller.present(UINavigationController(rootViewController: SmartListPromptViewController()), animated: true)
+            return
+        }
         present(from: controller, list: list, draft: list?.smartList.map { SmartListDraft(smartList: $0) } ?? SmartListDraft())
     }
 
@@ -57,20 +65,29 @@ final class SmartListBuilderViewController: SearchResultsViewController {
     }
 
     private static func present(from controller: UIViewController, list: List?, draft: SmartListDraft) {
-        guard SessionManager.shared.isLoggedIn, let owner = UserManager.shared.currentUser else { return }
-        // New lists count toward the account limit, checked here so every way of creating one is covered.
-        if list == nil, ListsManager.shared.smartLists.count >= UserManager.shared.currentUserSmartListLimit {
-            UIApplication.shared.presentAccountLimitReached()
-            return
-        }
-        guard let builder = UIStoryboard(name: "SmartSearch", bundle: nil)
-            .instantiateViewController(withIdentifier: "SmartListBuilderViewController") as? SmartListBuilderViewController else { return }
+        guard list != nil || canCreate(), let builder = make(list: list, draft: draft) else { return }
+        controller.present(UINavigationController(rootViewController: builder), animated: true)
+    }
 
+    /// New lists count toward the account limit, checked here so every way of creating one is covered.
+    private static func canCreate() -> Bool {
+        guard SessionManager.shared.isLoggedIn else { return false }
+        guard ListsManager.shared.smartLists.count < UserManager.shared.currentUserSmartListLimit else {
+            UIApplication.shared.presentAccountLimitReached()
+            return false
+        }
+        return true
+    }
+
+    static func make(list: List?, draft: SmartListDraft) -> SmartListBuilderViewController? {
+        guard SessionManager.shared.isLoggedIn, let owner = UserManager.shared.currentUser,
+              let builder = UIStoryboard(name: "SmartSearch", bundle: nil)
+              .instantiateViewController(withIdentifier: "SmartListBuilderViewController") as? SmartListBuilderViewController else { return nil }
         builder.list = list
         builder.owner = owner
         builder.original = draft
         builder.draft = draft
-        controller.present(UINavigationController(rootViewController: builder), animated: true)
+        return builder
     }
 
     override func viewDidLoad() {
@@ -149,6 +166,23 @@ final class SmartListBuilderViewController: SearchResultsViewController {
         sentenceLabel.attributedText = sentence()
         service = previewService
         layoutHeader()
+        prefetchNameSuggestions()
+    }
+
+    deinit {
+        nameSuggestionsPrefetch?.cancel()
+    }
+
+    /// Names are suggested ahead of the save form, once conditions stop changing for a moment, so they show up at once.
+    private func prefetchNameSuggestions() {
+        nameSuggestionsPrefetch?.cancel()
+        guard SmartListNameSuggestion.isAvailable else { return }
+        let sentence = SmartListSentence(source: draft.source, mediaType: draft.mediaType, filters: draft.filters).string
+        nameSuggestionsPrefetch = _Concurrency.Task { @MainActor in
+            try? await _Concurrency.Task.sleep(for: .seconds(1))
+            guard _Concurrency.Task.isCancelled == false else { return }
+            SmartListNameSuggestion.prefetch(for: sentence)
+        }
     }
 
     private func sentence() -> NSAttributedString {
@@ -623,6 +657,7 @@ final class SmartListBuilderViewController: SearchResultsViewController {
 private final class SmartListDetailsViewController: UITableViewController, UITextFieldDelegate {
     /// Trakt only enforces public and private smart lists: friends lists are visible to their owner alone.
     private static let privacies: [ListPrivacy] = [.me, .all]
+    private static let nameRow = 1
 
     private let isNew: Bool
     private let sentence: String
@@ -661,6 +696,9 @@ private final class SmartListDetailsViewController: UITableViewController, UITex
         tableView = TintedTableView(frame: .zero, style: .insetGrouped)
         tableView.dataSource = self
         tableView.delegate = self
+        // Room to scroll every suggestion above the keyboard, which scrolling puts away.
+        tableView.tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 160))
+        tableView.keyboardDismissMode = .onDrag
     }
 
     override func viewDidLoad() {
@@ -692,12 +730,17 @@ private final class SmartListDetailsViewController: UITableViewController, UITex
             let suggestions = await SmartListNameSuggestion.names(for: sentence)
             guard let self = self else { return }
             self.nameSuggestions = suggestions
-            self.showsNameSuggestions = suggestions.isEmpty == false
-            self.tableView.reloadData()
+            // Only the suggestions are reloaded: reloading the name's row would end editing and put the keyboard away.
+            if suggestions.isEmpty {
+                self.showsNameSuggestions = false
+                self.tableView.deleteSections(IndexSet(integer: 1), with: .fade)
+            } else {
+                self.tableView.reloadSections(IndexSet(integer: 1), with: .fade)
+            }
         }
     }
 
-    /// Refreshes the checkmark on the suggestion matching the typed name.
+    /// Refreshes which suggestion matches the typed name.
     private func reloadNameSuggestions() {
         guard showsNameSuggestions, nameSuggestions != nil else { return }
         UIView.performWithoutAnimation {
@@ -754,17 +797,15 @@ private final class SmartListDetailsViewController: UITableViewController, UITex
         section == 0 ? 2 : max(nameSuggestions?.count ?? 1, 1)
     }
 
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        section == 1 ? "Suggested Names" : nil
-    }
-
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.section == 1 {
             return nameSuggestionCell(at: indexPath.row)
         }
         let cell = TintedTableViewCell(style: .default, reuseIdentifier: nil)
         cell.selectionStyle = .none
-        let control: UIView = indexPath.row == 0 ? nameField : privacyControl
+        // Privacy first, so the name sits right above its suggestions.
+        let isNameRow = indexPath.row == SmartListDetailsViewController.nameRow
+        let control: UIView = isNameRow ? nameField : privacyControl
         control.translatesAutoresizingMaskIntoConstraints = false
         cell.contentView.addSubview(control)
         let margins = cell.contentView.layoutMarginsGuide
@@ -774,39 +815,86 @@ private final class SmartListDetailsViewController: UITableViewController, UITex
             control.topAnchor.constraint(equalTo: margins.topAnchor),
             control.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
             // The custom list form's name field height.
-            control.heightAnchor.constraint(greaterThanOrEqualToConstant: indexPath.row == 0 ? 34 : 32)
+            control.heightAnchor.constraint(greaterThanOrEqualToConstant: isNameRow ? 34 : 32)
         ])
         return cell
     }
 
+    /// Suggestions are the prompt's example buttons, below the form, the chosen one in full color.
     private func nameSuggestionCell(at row: Int) -> UITableViewCell {
-        let cell = TintedTableViewCell(style: .default, reuseIdentifier: nil)
-        var content = cell.defaultContentConfiguration()
-        guard let suggestions = nameSuggestions, suggestions.indices.contains(row) else {
-            content.text = "Suggesting names…"
-            content.textProperties.color = .secondaryLabel
-            let activityIndicator = UIActivityIndicatorView(style: .medium)
-            activityIndicator.startAnimating()
-            cell.accessoryView = activityIndicator
-            cell.selectionStyle = .none
-            cell.contentConfiguration = content
-            return cell
+        let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+        cell.backgroundConfiguration = .clear()
+        cell.selectionStyle = .none
+        // Hides the separator: these aren't rows of the form.
+        cell.separatorInset = UIEdgeInsets(top: 0, left: .greatestFiniteMagnitude, bottom: 0, right: 0)
+        let button: UIButton
+        if let suggestions = nameSuggestions, suggestions.indices.contains(row) {
+            let suggestion = suggestions[row]
+            button = UIButton.smartListOption(suggestion) { [weak self] in
+                guard let self = self, self.nameField.isEnabled else { return }
+                self.nameField.text = suggestion
+                self.navigationItem.rightBarButtonItem?.isEnabled = true
+                self.reloadNameSuggestions()
+            }
+            if suggestion == trimmedName {
+                button.configuration?.baseForegroundColor = .label
+            }
+        } else {
+            button = UIButton.smartListOption("Suggesting names…") {}
+            button.isEnabled = false
         }
-        content.text = suggestions[row]
-        content.image = UIImage(systemName: "sparkles")
-        cell.contentConfiguration = content
-        cell.accessoryType = suggestions[row] == trimmedName ? .checkmark : .none
+        button.translatesAutoresizingMaskIntoConstraints = false
+        cell.contentView.addSubview(button)
+        // The examples' stack keeps 2 points between buttons.
+        NSLayoutConstraint.activate([
+            button.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 1),
+            button.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -1),
+            button.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
+            button.trailingAnchor.constraint(lessThanOrEqualTo: cell.contentView.layoutMarginsGuide.trailingAnchor)
+        ])
         return cell
+    }
+
+    /// The prompt's spacing between the field and its examples.
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        section == 1 ? 24 : UITableView.automaticDimension
+    }
+
+    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        section == 0 && showsNameSuggestions ? .leastNonzeroMagnitude : UITableView.automaticDimension
+    }
+
+    /// Suggestions are buttons: their rows aren't selectable.
+    override func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
+        indexPath.section == 0
+    }
+
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        updateSuggestionOpacity(of: cell, at: indexPath)
+    }
+
+    /// UITableViewController declares this without implementing it: calling super crashes.
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        for cell in tableView.visibleCells {
+            guard let indexPath = tableView.indexPath(for: cell) else { continue }
+            updateSuggestionOpacity(of: cell, at: indexPath)
+        }
+    }
+
+    /// As in the prompt's examples, suggestions low on the screen are dimmed and brighten as they scroll up.
+    private func updateSuggestionOpacity(of cell: UITableViewCell, at indexPath: IndexPath) {
+        guard indexPath.section == 1 else { return }
+        let top = tableView.contentOffset.y + tableView.adjustedContentInset.top
+        let height = tableView.bounds.height - tableView.adjustedContentInset.top - tableView.adjustedContentInset.bottom
+        guard height > 0 else { return }
+        // Full strength in the top 40% of the visible area, down to 30% at its bottom.
+        let fade = min(max(((cell.frame.midY - top) / height - 0.4) / 0.6, 0), 1)
+        cell.contentView.alpha = 1 - 0.7 * fade
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        if indexPath.section == 1 {
-            guard nameField.isEnabled, let suggestions = nameSuggestions, suggestions.indices.contains(indexPath.row) else { return }
-            nameField.text = suggestions[indexPath.row]
-            navigationItem.rightBarButtonItem?.isEnabled = true
-            reloadNameSuggestions()
-        } else if indexPath.row == 0 {
+        if indexPath.row == SmartListDetailsViewController.nameRow {
             nameField.becomeFirstResponder()
         }
     }
@@ -816,7 +904,7 @@ private final class SmartListDetailsViewController: UITableViewController, UITex
 private enum SmartListNameSuggestion {
     @Generable
     struct Suggestions {
-        @Guide(description: "Distinct short list names of 2 to 5 words each, in Title Case, without quotes, emoji or final punctuation.", .count(5))
+        @Guide(description: "Distinct names for the whole list, of at most 10 words each, in Title Case, without quotes, emoji or final punctuation.", .count(10))
         var names: [String]
     }
 
@@ -824,21 +912,47 @@ private enum SmartListNameSuggestion {
         SystemLanguageModel.default.isAvailable
     }
 
+    /// One request per sentence, shared by the builder, which starts it early, and the save form, which shows its names.
+    private static let requests = LRUCache<String, _Concurrency.Task<[String], Never>>(countLimit: 20)
+
+    static func prefetch(for sentence: String) {
+        _ = request(for: sentence)
+    }
+
     static func names(for sentence: String) async -> [String] {
-        // Examples keep the small model close to the conditions, rather than inventing details.
+        let names = await request(for: sentence).value
+        if names.isEmpty {
+            // Asked again next time rather than remembered as having no names.
+            requests.removeValue(forKey: sentence)
+        }
+        return names
+    }
+
+    private static func request(for sentence: String) -> _Concurrency.Task<[String], Never> {
+        if let request = requests.value(forKey: sentence) {
+            return request
+        }
+        let request = _Concurrency.Task { await generatedNames(for: sentence) }
+        requests.setValue(request, forKey: sentence)
+        return request
+    }
+
+    private static func generatedNames(for sentence: String) async -> [String] {
+        // Said to be a set of conditions, or "name a list of movies" gets titles of movies. Examples are described rather
+        // than given as sentences, which get their names copied as they are.
         let session = LanguageModelSession(instructions: """
-        You name smart lists in a movie and TV show tracking app. A sentence describes what a list contains. \
-        Reply with short, natural names a person would give that list, using only its most distinctive conditions. \
-        Never add details that aren't in the sentence. Write "TV" in capitals.
-        Examples:
-        "A smart list with Movies that are currently Trending, in the Horror genre" → Trending Horror
-        "A smart list with TV Shows from the Watchlist, released on HBO, that aren't already watched" → Unwatched HBO Shows
-        "A smart list with Movies & TV Shows that are Popular, with an IMDb rating between 8 and 10" → Popular & Acclaimed
+        You name smart lists in a movie and TV show tracking app. A smart list is a saved set of conditions, described by a sentence. \
+        Give names a person would use for the whole list, combining its most distinctive conditions. \
+        Never reply with titles of movies or shows. Write "TV" in capitals.
+        For example, popular horror movies from the 80s could be named 80s Horror Favorites, \
+        and unwatched shows on HBO could be named Unwatched HBO Shows.
         """)
+        // Default sampling: greedy sampling repeats the same names.
         guard let response = try? await session.respond(to: sentence, generating: Suggestions.self) else { return [] }
         return response.content.names
-            .map { String($0.trimmingCharacters(in: CharacterSet(charactersIn: "\"“”.").union(.whitespacesAndNewlines)).prefix(60)) }
-            .filter { $0.isEmpty == false }
+            .map { $0.trimmingCharacters(in: CharacterSet(charactersIn: "\"“”.").union(.whitespacesAndNewlines)) }
+            // List names are at most 10 words long.
+            .filter { $0.isEmpty == false && $0.split(whereSeparator: \.isWhitespace).count <= 10 }
             .removingDuplicates()
     }
 }

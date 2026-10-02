@@ -181,6 +181,8 @@
 		3A3BC691271DAF9B007ED8A6 /* SmartSearch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3A3BC690271DAF9B007ED8A6 /* SmartSearch.storyboard */; };
 		5A7C2E1B30F0000000000005 /* SmartListSentence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0000000000006 /* SmartListSentence.swift */; };
 		5A7C2E1B30F0000000000003 /* SmartListBuilderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0000000000004 /* SmartListBuilderViewController.swift */; };
+		5A7C2E1B30F0000000000007 /* SmartListAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0000000000008 /* SmartListAssistant.swift */; };
+		5A7C2E1B30F0000000000009 /* SmartListPromptViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F000000000000A /* SmartListPromptViewController.swift */; };
 		3A3BC693271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3BC692271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift */; };
 		3A3EA94C2DA91BE9004D55A8 /* TinyStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 3A3EA94B2DA91BE9004D55A8 /* TinyStorage */; };
 		3A3EA9542DA96087004D55A8 /* InfoCardTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A3EA9532DA96087004D55A8 /* InfoCardTableViewCell.xib */; };
@@ -780,6 +782,8 @@
 		3A3BC690271DAF9B007ED8A6 /* SmartSearch.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SmartSearch.storyboard; sourceTree = "<group>"; };
 		5A7C2E1B30F0000000000006 /* SmartListSentence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListSentence.swift; sourceTree = "<group>"; };
 		5A7C2E1B30F0000000000004 /* SmartListBuilderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListBuilderViewController.swift; sourceTree = "<group>"; };
+		5A7C2E1B30F0000000000008 /* SmartListAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListAssistant.swift; sourceTree = "<group>"; };
+		5A7C2E1B30F000000000000A /* SmartListPromptViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListPromptViewController.swift; sourceTree = "<group>"; };
 		3A3BC692271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartSearchBuilderViewController.swift; sourceTree = "<group>"; };
 		3A3EA9532DA96087004D55A8 /* InfoCardTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = InfoCardTableViewCell.xib; sourceTree = "<group>"; };
 		3A3EA9552DA96096004D55A8 /* InfoCardTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoCardTableViewCell.swift; sourceTree = "<group>"; };
@@ -1581,6 +1585,8 @@
 				3A3BC692271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift */,
 				5A7C2E1B30F0000000000004 /* SmartListBuilderViewController.swift */,
 				5A7C2E1B30F0000000000006 /* SmartListSentence.swift */,
+				5A7C2E1B30F0000000000008 /* SmartListAssistant.swift */,
+				5A7C2E1B30F000000000000A /* SmartListPromptViewController.swift */,
 				3A3BC690271DAF9B007ED8A6 /* SmartSearch.storyboard */,
 			);
 			path = "Smart Search";
@@ -3428,6 +3434,8 @@
 				3A3BC693271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift in Sources */,
 				5A7C2E1B30F0000000000003 /* SmartListBuilderViewController.swift in Sources */,
 				5A7C2E1B30F0000000000005 /* SmartListSentence.swift in Sources */,
+				5A7C2E1B30F0000000000007 /* SmartListAssistant.swift in Sources */,
+				5A7C2E1B30F0000000000009 /* SmartListPromptViewController.swift in Sources */,
 				3A26D34A2BD26A81002EF98E /* LoginBrowseViewController.swift in Sources */,
 				3AE5C89724A0D67900820841 /* MediaBackdropTableViewCell.swift in Sources */,
 				3A0D036D2C9DB3DE00D0DDD7 /* AppIconChooserView.swift in Sources */,
