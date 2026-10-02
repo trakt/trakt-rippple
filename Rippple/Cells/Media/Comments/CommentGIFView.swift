@@ -17,6 +17,7 @@ final class CommentGIFView: UIView {
     private let imageView = AnimatedImageView()
     private let statusButton = UIButton(type: .custom)
     private var attachmentURL: URL?
+    private var isSpoilerBlurred = false
     private var requestIdentifier = UUID()
     private var heightConstraint: NSLayoutConstraint?
     private var isCompact = false
@@ -102,22 +103,17 @@ final class CommentGIFView: UIView {
             reset()
             return
         }
-        guard !model.hidesCommentMedia else {
-            reset()
-            isHidden = false
-            showPlaceholder(symbol: "eye.slash", accessibilityLabel: "GIF hidden. Open comment to view spoiler.")
-            return
-        }
         guard let url = URL(string: gif.url), url.scheme?.lowercased() == "https", url.host != nil else {
             reset()
             isHidden = false
             showPlaceholder(symbol: "exclamationmark.triangle", accessibilityLabel: "GIF unavailable")
             return
         }
-        guard attachmentURL != url else { return }
+        guard attachmentURL != url || isSpoilerBlurred != model.hidesCommentMedia else { return }
         reset()
         isHidden = false
         attachmentURL = url
+        isSpoilerBlurred = model.hidesCommentMedia
         if let width = gif.width, let height = gif.height,
            width.isFinite, height.isFinite, width > 0, height > 0 {
             let aspectRatio = height / width
@@ -137,6 +133,7 @@ final class CommentGIFView: UIView {
         imageView.image = nil
         imageView.isHidden = true
         attachmentURL = nil
+        isSpoilerBlurred = false
         placeholderImageSize = nil
         imageSize = CGSize(width: 4, height: 3)
         statusButton.setImage(nil, for: .normal)
@@ -190,16 +187,23 @@ final class CommentGIFView: UIView {
         imageView.isHidden = true
         showPlaceholder(symbol: nil, accessibilityLabel: "Loading GIF")
 
-        imageView.autoPlayAnimatedImage = !UIAccessibility.isReduceMotionEnabled
+        // Spoiler GIFs show a blurred still frame; blurring every animated frame would be costly.
+        let isBlurred = isSpoilerBlurred
+        let loadsStillFrame = isBlurred || UIAccessibility.isReduceMotionEnabled
+        imageView.autoPlayAnimatedImage = !loadsStillFrame
+        imageView.accessibilityLabel = isBlurred ? "Blurred GIF. Open comment to view spoiler." : "Attached GIF"
+        let processor: ImageProcessor = isBlurred
+            ? WebPProcessor.default |> BlurImageProcessor(blurRadius: 24)
+            : WebPProcessor.default
         var options: KingfisherOptionsInfo = [
-            .processor(WebPProcessor.default),
+            .processor(processor),
             .cacheSerializer(WebPSerializer.default)
         ]
-        if UIAccessibility.isReduceMotionEnabled {
+        if loadsStillFrame {
             options.append(.onlyLoadFirstFrame)
         }
         let resource = KF.ImageResource(downloadURL: url,
-                                        cacheKey: url.absoluteString + (UIAccessibility.isReduceMotionEnabled ? "#still" : ""))
+                                        cacheKey: url.absoluteString + (loadsStillFrame ? "#still" : ""))
         imageView.kf.setImage(with: resource, options: options) { [weak self] result in
             guard let self = self, self.requestIdentifier == requestIdentifier else { return }
             switch result {
