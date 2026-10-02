@@ -49,7 +49,7 @@ final class SocialActivitiesViewController: UITableViewController {
             cell.action.isHidden = true
             return cell
         case .header(let summary):
-            let cell = tableView.dequeueReusableCell(withIdentifier: "social activity header") as! ActivityHeaderTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "header") as! ActivityHeaderTableViewCell
             cell.title.text = summary.titleText
             cell.contentTrailingConstraint?.constant = 24
             if let averageRatingText = summary.averageRatingText,
@@ -101,7 +101,7 @@ final class SocialActivitiesViewController: UITableViewController {
         tableView.allowsFocus = false
         tableView.separatorStyle = .none
         tableView.contentInset = UIEdgeInsets(top: 4, left: 0, bottom: 20, right: 0)
-        tableView.register(UINib(nibName: "ActivityHeaderTableViewCell", bundle: nil), forCellReuseIdentifier: "social activity header")
+        tableView.register(UINib(nibName: "ActivityHeaderTableViewCell", bundle: nil), forCellReuseIdentifier: "header")
         tableView.register(UINib(nibName: "SocialActivityUserTableViewCell", bundle: nil), forCellReuseIdentifier: "social activity user")
         tableView.register(UINib(nibName: "SocialActivityCommentTableViewCell", bundle: nil), forCellReuseIdentifier: "social activity comment")
         tableView.register(UINib(nibName: "LoadingIndicatorTableViewCell", bundle: nil), forCellReuseIdentifier: "loading")
