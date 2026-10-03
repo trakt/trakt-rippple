@@ -7,6 +7,7 @@
 //
 
 import Kingfisher
+import LRUCache
 import Moya
 import Receiver
 import UIKit
@@ -143,6 +144,35 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
 
     private static let previewItemsLimit = 35
 
+    private struct PreviewCacheEntry {
+        let items: [WatchlistItem]
+        let expirationDate: Date
+    }
+
+    private static let previewCacheLifetime: TimeInterval = 2 * 60
+    private static let previewCacheDisposeBag = DisposeBag()
+
+    /// Keeps preview posters across cell rebinding (reuse, reloads) without a request per list.
+    private static let previewCache: LRUCache<List, PreviewCacheEntry> = {
+        let cache = LRUCache<List, PreviewCacheEntry>(countLimit: 200)
+        onListChangedReceiver.listen { lists in
+            lists.forEach { cache.removeValue(forKey: $0) }
+        }.disposed(by: previewCacheDisposeBag)
+        onUserLoggedOutReceiver.listen { _ in
+            cache.removeAll()
+        }.disposed(by: previewCacheDisposeBag)
+        return cache
+    }()
+
+    private static func cachedPreviewItems(for list: List) -> [WatchlistItem]? {
+        guard let entry = previewCache.value(forKey: list) else { return nil }
+        guard entry.expirationDate > Date() else {
+            previewCache.removeValue(forKey: list)
+            return nil
+        }
+        return entry.items
+    }
+
     /// Filter
     private static let userFilter = RoundCornerImageProcessor(
         cornerRadius: 20.0,
@@ -231,10 +261,14 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
             }
 
             if collectionView != nil {
-                if oldValue != list {
-                    items = nil
+                if let cached = ListTableViewCell.cachedPreviewItems(for: list) {
+                    items = cached
+                } else {
+                    if oldValue != list {
+                        items = nil
+                    }
+                    fetchItems(for: list)
                 }
-                fetchItems(for: list)
             }
 
             refreshLike()
@@ -331,6 +365,8 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
                     let results = try list.previewItems(from: response)
 
                     DispatchQueue.main.async {
+                        let entry = PreviewCacheEntry(items: results, expirationDate: Date().addingTimeInterval(ListTableViewCell.previewCacheLifetime))
+                        ListTableViewCell.previewCache.setValue(entry, forKey: list, cost: results.count)
                         if self.list == list {
                             self.items = results
                         }

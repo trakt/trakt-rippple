@@ -18,7 +18,7 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
     weak var listDelegate: ListTableViewCellDelegate?
     var additionalLists = [List]() {
         didSet {
-            if isViewLoaded { applySnapshot(reloadLists: true) }
+            if isViewLoaded { applySnapshot() }
         }
     }
 
@@ -98,7 +98,6 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.separatorStyle = .none
-        tableView.contentInsetAdjustmentBehavior = .never
         tableView.tableHeaderView = TintedView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 15))
         tableView.keyboardDismissMode = .interactive
         tableView.rowHeight = UITableView.automaticDimension
@@ -120,21 +119,21 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.curatedLists = lists
-                self.applySnapshot(reloadLists: true)
+                self.applySnapshot()
             }
         }.disposed(by: disposeBag)
         onLikedListsChangedReceiver.listen { [weak self] lists in
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.likedLists = lists
-                self.applySnapshot(reloadLists: true)
+                self.applySnapshot()
             }
         }.disposed(by: disposeBag)
         onCollaborationsChangedReceiver.listen { [weak self] lists in
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.collaborations = lists
-                self.applySnapshot(reloadLists: true)
+                self.applySnapshot()
             }
         }.disposed(by: disposeBag)
         onUserLoggedOutReceiver.listen { [weak self] _ in
@@ -202,12 +201,12 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
                 case .success(let lists): self.remoteLists = lists
                 case .failure: self.hasError = true
                 }
-                self.applySnapshot(reloadLists: true)
+                self.applySnapshot()
             }
         }
     }
 
-    private func applySnapshot(reloadLists: Bool = false) {
+    private func applySnapshot() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         snapshot.appendSections([.browse])
         snapshot.appendItems(BrowseListsViewController.Category.allCases.map { .browse($0) }, toSection: .browse)
@@ -242,14 +241,11 @@ final class ListsSearchViewController: UITableViewController, UISearchResultsUpd
         }
         subtitle = isLoading ? "Loading..." : "\(count) result\(count == 1 ? "" : "s")"
         onSubtitleChanged?(subtitle)
-        if reloadLists {
-            let existingItems = Set(dataSource.snapshot().itemIdentifiers)
-            snapshot.reconfigureItems(snapshot.itemIdentifiers.filter { item in
-                if case .list = item { return existingItems.contains(item) }
-                return false
-            })
-        }
-        dataSource.apply(snapshot, animatingDifferences: false)
+        // Reload instead of diffing: a batch update that removes many self-sizing rows
+        // (the first typed letter filters most lists out) makes UIKit size every row,
+        // which creates a cell and fires a preview request per list and trips the watchdog.
+        // Reloading also re-binds visible cells, so reconfiguring updated lists is unnecessary.
+        dataSource.applySnapshotUsingReloadData(snapshot)
     }
 
     private func statusCell(_ text: String) -> UITableViewCell {

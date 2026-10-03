@@ -75,7 +75,7 @@
                                                 <rect key="frame" x="0.0" y="4" width="68.5" height="22.5"/>
                                                 <color key="backgroundColor" systemColor="secondarySystemFillColor"/>
                                             </view>
-                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="Sw3-po-JkS">
+                                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="Sw3-po-JkS">
                                                 <rect key="frame" x="0.0" y="4" width="68.5" height="22.5"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="lock.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="rcn-s1-UED">
@@ -98,7 +98,7 @@
                                                 <rect key="frame" x="73.5" y="4" width="105" height="22.5"/>
                                                 <color key="backgroundColor" systemColor="secondarySystemFillColor"/>
                                             </view>
-                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="814-dk-RuE">
+                                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="814-dk-RuE">
                                                 <rect key="frame" x="73.5" y="4" width="105" height="22.5"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.2.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Bfk-TV-tHa">
