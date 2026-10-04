@@ -219,6 +219,7 @@ class ContextMenuHelper: NSObject {
     }
 
     var previewViewController: UIViewController? {
+        guard let media = media else { return nil }
         if let mediaPreviewViewController = UIStoryboard(name: "MediaPreview", bundle: nil).instantiateInitialViewController() as? MediaPreviewViewController {
             mediaPreviewViewController.media = media
 
