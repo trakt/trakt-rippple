@@ -85,7 +85,7 @@
                 <constraints>
                     <constraint firstItem="gKf-3z-GS4" firstAttribute="top" secondItem="N6V-FX-23U" secondAttribute="top" constant="16" id="8DC-uc-hk7"/>
                     <constraint firstAttribute="trailing" secondItem="gKf-3z-GS4" secondAttribute="trailing" constant="12" id="Cmu-IP-2bP"/>
-                    <constraint firstItem="gKf-3z-GS4" firstAttribute="leading" secondItem="N6V-FX-23U" secondAttribute="leadingMargin" constant="-8" id="IDe-BU-e6l"/>
+                    <constraint firstItem="gKf-3z-GS4" firstAttribute="leading" secondItem="N6V-FX-23U" secondAttribute="leading" constant="12" id="IDe-BU-e6l"/>
                     <constraint firstItem="JVE-ji-5I9" firstAttribute="trailing" secondItem="gKf-3z-GS4" secondAttribute="trailing" constant="-5" id="X0i-GW-1Cq"/>
                     <constraint firstItem="JVE-ji-5I9" firstAttribute="leading" secondItem="gKf-3z-GS4" secondAttribute="leading" constant="12" id="ZlZ-gP-Klu"/>
                     <constraint firstItem="JVE-ji-5I9" firstAttribute="top" secondItem="gKf-3z-GS4" secondAttribute="top" constant="10" id="gqG-B4-52C"/>

@@ -39,12 +39,12 @@
                     </stackView>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="0L1-FP-MPx" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leadingMargin" constant="4" id="19S-lD-8hd"/>
-                    <constraint firstItem="0L1-FP-MPx" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="topMargin" constant="4" id="2Km-QP-3yA"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="0L1-FP-MPx" secondAttribute="bottom" constant="4" id="6to-Y0-maR"/>
+                    <constraint firstItem="0L1-FP-MPx" firstAttribute="leading" secondItem="fPh-11-ATa" secondAttribute="leading" constant="12" id="19S-lD-8hd"/>
+                    <constraint firstItem="0L1-FP-MPx" firstAttribute="top" secondItem="fPh-11-ATa" secondAttribute="top" constant="12" id="2Km-QP-3yA"/>
+                    <constraint firstItem="fPh-11-ATa" firstAttribute="bottom" secondItem="0L1-FP-MPx" secondAttribute="bottom" constant="12" id="6to-Y0-maR"/>
                     <constraint firstItem="fPh-11-ATa" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="top" constant="4" id="Fq3-bY-70B"/>
                     <constraint firstAttribute="trailing" secondItem="fPh-11-ATa" secondAttribute="trailing" constant="12" id="dBA-UK-fg3"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="0L1-FP-MPx" secondAttribute="trailing" constant="10" id="eFd-Fm-tg8"/>
+                    <constraint firstItem="fPh-11-ATa" firstAttribute="trailing" secondItem="0L1-FP-MPx" secondAttribute="trailing" constant="12" id="eFd-Fm-tg8"/>
                     <constraint firstAttribute="bottom" secondItem="fPh-11-ATa" secondAttribute="bottom" constant="4" id="jCM-AA-3U2"/>
                     <constraint firstItem="fPh-11-ATa" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leading" constant="12" id="jLy-EO-eqW"/>
                 </constraints>

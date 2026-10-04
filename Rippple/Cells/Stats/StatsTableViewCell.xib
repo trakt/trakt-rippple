@@ -115,7 +115,7 @@
                                             <constraint firstAttribute="bottom" secondItem="Yz8-Ns-pqg" secondAttribute="bottom" constant="12" id="QRW-4O-eFa"/>
                                             <constraint firstItem="Yz8-Ns-pqg" firstAttribute="top" secondItem="h17-q2-NSS" secondAttribute="top" constant="12" id="Y4g-0u-6cD"/>
                                             <constraint firstAttribute="trailing" secondItem="Yz8-Ns-pqg" secondAttribute="trailing" constant="12" id="ZND-qP-nBY"/>
-                                            <constraint firstItem="Yz8-Ns-pqg" firstAttribute="leading" secondItem="h17-q2-NSS" secondAttribute="leadingMargin" constant="10" id="cYM-vF-k9L"/>
+                                            <constraint firstItem="Yz8-Ns-pqg" firstAttribute="leading" secondItem="h17-q2-NSS" secondAttribute="leading" constant="18" id="cYM-vF-k9L"/>
                                         </constraints>
                                     </view>
                                 </subviews>

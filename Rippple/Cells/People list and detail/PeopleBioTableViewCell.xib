@@ -34,12 +34,12 @@
                 <constraints>
                     <constraint firstAttribute="trailing" secondItem="dIu-9q-MMf" secondAttribute="trailing" constant="12" id="8k4-pO-qvT"/>
                     <constraint firstAttribute="bottom" secondItem="dIu-9q-MMf" secondAttribute="bottom" constant="4" id="CcD-fB-jCY"/>
-                    <constraint firstItem="Ose-v0-zlF" firstAttribute="top" secondItem="sUs-qn-Yfb" secondAttribute="topMargin" constant="10" id="H0s-Z5-w3U"/>
+                    <constraint firstItem="Ose-v0-zlF" firstAttribute="top" secondItem="dIu-9q-MMf" secondAttribute="top" constant="16" id="H0s-Z5-w3U"/>
                     <constraint firstItem="dIu-9q-MMf" firstAttribute="leading" secondItem="sUs-qn-Yfb" secondAttribute="leading" constant="12" id="Ra3-oR-haG"/>
-                    <constraint firstItem="Ose-v0-zlF" firstAttribute="leading" secondItem="sUs-qn-Yfb" secondAttribute="leadingMargin" constant="10" id="Vsb-yA-bCH"/>
+                    <constraint firstItem="Ose-v0-zlF" firstAttribute="leading" secondItem="dIu-9q-MMf" secondAttribute="leading" constant="12" id="Vsb-yA-bCH"/>
                     <constraint firstItem="dIu-9q-MMf" firstAttribute="top" secondItem="sUs-qn-Yfb" secondAttribute="top" constant="4" id="f4o-eD-DuU"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="Ose-v0-zlF" secondAttribute="bottom" constant="12" id="gQw-ff-rBo"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="Ose-v0-zlF" secondAttribute="trailing" constant="10" id="ixq-t9-wfW"/>
+                    <constraint firstItem="dIu-9q-MMf" firstAttribute="bottom" secondItem="Ose-v0-zlF" secondAttribute="bottom" constant="16" id="gQw-ff-rBo"/>
+                    <constraint firstItem="dIu-9q-MMf" firstAttribute="trailing" secondItem="Ose-v0-zlF" secondAttribute="trailing" constant="12" id="ixq-t9-wfW"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>

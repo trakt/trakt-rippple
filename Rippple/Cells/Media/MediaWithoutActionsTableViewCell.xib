@@ -83,12 +83,12 @@
                 </subviews>
                 <constraints>
                     <constraint firstAttribute="bottom" secondItem="zqo-fY-uu6" secondAttribute="bottom" constant="4" id="0xk-nj-UAH"/>
-                    <constraint firstItem="dJU-2N-kxv" firstAttribute="trailing" secondItem="1ig-VS-old" secondAttribute="trailingMargin" id="1nk-HE-xhg"/>
+                    <constraint firstItem="dJU-2N-kxv" firstAttribute="trailing" secondItem="zqo-fY-uu6" secondAttribute="trailing" constant="-5" id="1nk-HE-xhg"/>
                     <constraint firstAttribute="trailing" secondItem="zqo-fY-uu6" secondAttribute="trailing" constant="12" id="6k9-p8-NlB"/>
                     <constraint firstItem="zqo-fY-uu6" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leading" constant="12" id="9dJ-s0-zhn"/>
                     <constraint firstItem="dJU-2N-kxv" firstAttribute="centerY" secondItem="zqo-fY-uu6" secondAttribute="centerY" id="Gh8-p8-o0C"/>
-                    <constraint firstItem="dJU-2N-kxv" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="topMargin" constant="1" id="YBC-Yi-ufJ"/>
-                    <constraint firstItem="dJU-2N-kxv" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leadingMargin" constant="4" id="fr9-zS-nk2"/>
+                    <constraint firstItem="dJU-2N-kxv" firstAttribute="top" secondItem="zqo-fY-uu6" secondAttribute="top" constant="10" id="YBC-Yi-ufJ"/>
+                    <constraint firstItem="dJU-2N-kxv" firstAttribute="leading" secondItem="zqo-fY-uu6" secondAttribute="leading" constant="10" id="fr9-zS-nk2"/>
                     <constraint firstItem="zqo-fY-uu6" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="top" constant="4" id="pOE-zB-DvN"/>
                 </constraints>
             </tableViewCellContentView>

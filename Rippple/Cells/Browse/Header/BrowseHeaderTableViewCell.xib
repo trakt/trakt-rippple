@@ -40,7 +40,7 @@
             <constraints>
                 <constraint firstAttribute="bottom" secondItem="SRY-oU-JEc" secondAttribute="bottom" constant="12" id="1wK-Cp-5Fx"/>
                 <constraint firstAttribute="trailing" secondItem="SRY-oU-JEc" secondAttribute="trailing" constant="8" id="l2C-j5-SzE"/>
-                <constraint firstItem="SRY-oU-JEc" firstAttribute="leading" secondItem="axe-wf-24v" secondAttribute="leadingMargin" id="n8X-CA-gq8"/>
+                <constraint firstItem="SRY-oU-JEc" firstAttribute="leading" secondItem="axe-wf-24v" secondAttribute="leading" constant="20" id="n8X-CA-gq8"/>
                 <constraint firstItem="SRY-oU-JEc" firstAttribute="top" secondItem="axe-wf-24v" secondAttribute="top" constant="18" id="r7g-1s-5rO"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>

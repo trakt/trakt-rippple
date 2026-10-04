@@ -55,14 +55,14 @@
                 </subviews>
                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                 <constraints>
-                    <constraint firstItem="Gd5-W9-Zcd" firstAttribute="top" secondItem="pZn-zg-L4k" secondAttribute="topMargin" constant="10" id="0rB-zp-j1e"/>
-                    <constraint firstItem="Gd5-W9-Zcd" firstAttribute="leading" secondItem="pZn-zg-L4k" secondAttribute="leadingMargin" constant="9" id="IWH-0p-kCr"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="Gd5-W9-Zcd" secondAttribute="trailing" constant="9" id="M0k-fI-Jti"/>
+                    <constraint firstItem="Gd5-W9-Zcd" firstAttribute="top" secondItem="YMp-DY-vAB" secondAttribute="top" constant="16" id="0rB-zp-j1e"/>
+                    <constraint firstItem="Gd5-W9-Zcd" firstAttribute="leading" secondItem="YMp-DY-vAB" secondAttribute="leading" constant="12" id="IWH-0p-kCr"/>
+                    <constraint firstItem="YMp-DY-vAB" firstAttribute="trailing" secondItem="Gd5-W9-Zcd" secondAttribute="trailing" constant="12" id="M0k-fI-Jti"/>
                     <constraint firstItem="YMp-DY-vAB" firstAttribute="top" secondItem="pZn-zg-L4k" secondAttribute="top" constant="4" id="SaO-jJ-a4S"/>
                     <constraint firstAttribute="trailing" secondItem="YMp-DY-vAB" secondAttribute="trailing" constant="12" id="Tpu-ef-KNd"/>
                     <constraint firstAttribute="bottom" secondItem="YMp-DY-vAB" secondAttribute="bottom" constant="4" id="WVY-Yb-MTG"/>
                     <constraint firstItem="YMp-DY-vAB" firstAttribute="leading" secondItem="pZn-zg-L4k" secondAttribute="leading" constant="12" id="cPe-Kz-ZGB"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="Gd5-W9-Zcd" secondAttribute="bottom" constant="10" id="iJC-MH-5Ic"/>
+                    <constraint firstItem="YMp-DY-vAB" firstAttribute="bottom" secondItem="Gd5-W9-Zcd" secondAttribute="bottom" constant="16" id="iJC-MH-5Ic"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>

@@ -160,7 +160,7 @@
                                             </stackView>
                                         </subviews>
                                         <constraints>
-                                            <constraint firstItem="aC8-ec-GjL" firstAttribute="leading" secondItem="tyM-5n-QA4" secondAttribute="leadingMargin" constant="4" id="LpU-h5-cVi"/>
+                                            <constraint firstItem="aC8-ec-GjL" firstAttribute="leading" secondItem="tyM-5n-QA4" secondAttribute="leading" constant="12" id="LpU-h5-cVi"/>
                                             <constraint firstItem="aC8-ec-GjL" firstAttribute="top" secondItem="tyM-5n-QA4" secondAttribute="top" constant="12" id="XJp-M3-TJl"/>
                                             <constraint firstAttribute="trailing" secondItem="aC8-ec-GjL" secondAttribute="trailing" constant="12" id="Yi1-fG-M1i"/>
                                             <constraint firstAttribute="bottom" secondItem="aC8-ec-GjL" secondAttribute="bottom" constant="12" id="ma5-Ex-JHc"/>

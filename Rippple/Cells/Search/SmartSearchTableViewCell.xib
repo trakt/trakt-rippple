@@ -46,13 +46,13 @@
                     </view>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="0L1-FP-MPx" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leadingMargin" constant="10" id="19S-lD-8hd"/>
+                    <constraint firstItem="0L1-FP-MPx" firstAttribute="leading" secondItem="fPh-11-ATa" secondAttribute="leading" constant="12" id="19S-lD-8hd"/>
                     <constraint firstItem="fPh-11-ATa" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="top" constant="4" id="Fq3-bY-70B"/>
                     <constraint firstItem="mMa-C3-tac" firstAttribute="leading" secondItem="iyj-Q4-XJ0" secondAttribute="leading" id="HvW-R5-zNa"/>
                     <constraint firstItem="mMa-C3-tac" firstAttribute="trailing" secondItem="fPh-11-ATa" secondAttribute="trailing" id="TTp-JQ-U3o"/>
                     <constraint firstItem="0L1-FP-MPx" firstAttribute="centerY" secondItem="1ig-VS-old" secondAttribute="centerY" id="XYe-p1-dck"/>
                     <constraint firstAttribute="trailing" secondItem="fPh-11-ATa" secondAttribute="trailing" constant="12" id="dBA-UK-fg3"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="0L1-FP-MPx" secondAttribute="trailing" constant="10" id="eFd-Fm-tg8"/>
+                    <constraint firstItem="fPh-11-ATa" firstAttribute="trailing" secondItem="0L1-FP-MPx" secondAttribute="trailing" constant="12" id="eFd-Fm-tg8"/>
                     <constraint firstAttribute="bottom" secondItem="fPh-11-ATa" secondAttribute="bottom" constant="4" id="jCM-AA-3U2"/>
                     <constraint firstItem="fPh-11-ATa" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leading" constant="12" id="jLy-EO-eqW"/>
                     <constraint firstAttribute="bottom" secondItem="mMa-C3-tac" secondAttribute="bottom" id="miF-qW-VBX"/>

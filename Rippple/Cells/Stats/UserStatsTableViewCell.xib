@@ -188,7 +188,7 @@
                                             <constraint firstAttribute="trailing" secondItem="caW-xd-Ivc" secondAttribute="trailing" constant="15" id="aSd-gQ-mLH"/>
                                             <constraint firstItem="hXI-cU-AEl" firstAttribute="bottom" secondItem="Jqf-oN-HRN" secondAttribute="bottom" id="cIR-NX-Jwp"/>
                                             <constraint firstItem="hXI-cU-AEl" firstAttribute="trailing" secondItem="Jqf-oN-HRN" secondAttribute="trailing" id="jgZ-nS-7hw"/>
-                                            <constraint firstItem="caW-xd-Ivc" firstAttribute="leading" secondItem="vUQ-t0-vOR" secondAttribute="leadingMargin" constant="10" id="vyt-Mo-BGm"/>
+                                            <constraint firstItem="caW-xd-Ivc" firstAttribute="leading" secondItem="vUQ-t0-vOR" secondAttribute="leading" constant="18" id="vyt-Mo-BGm"/>
                                         </constraints>
                                     </view>
                                 </subviews>
