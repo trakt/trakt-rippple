@@ -233,8 +233,8 @@ extension SeasonsRatingsViewController: SeasonsRatingsGridViewDelegate {
                                                                                                        height: 500 * 0.5)
                                               return mediaPreviewViewController
                                           }, actionProvider: { _ -> UIMenu? in
-                                              return UIMenu(title: episodeMedia.mediaTitle,
-                                                            children: episodeMedia.rateMenu.children)
+                                              UIMenu(title: episodeMedia.mediaTitle,
+                                                     children: episodeMedia.rateMenu.children)
                                           })
     }
 }
