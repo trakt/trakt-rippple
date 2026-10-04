@@ -1,22 +1,30 @@
 # Rippple contributor guide
 
-This file applies to the whole repository. Keep changes simple, focused, and consistent with nearby code. For setup and contribution details, also read `README.md` and `CONTRIBUTING.md`.
+This file applies to the whole repository. Keep changes simple, focused, and consistent with nearby code. For setup and contribution details, also read `README.md` and `CONTRIBUTING.md`. `docs/RIPPPLE_101.md` explains the product.
 
 ## Project shape
 
-- Rippple is a native Trakt client for iPhone, iPad, and Mac Catalyst. The deployment target is version 26 and the project uses Swift 5 language mode.
-- Open and build `Rippple.xcodeproj`. Dependencies are managed with Swift Package Manager.
-- The main `Rippple` app target embeds `WidgetExtension`, `WidgetIntent`, and `NotificationService`.
-- The codebase is UIKit-first and still uses storyboards and XIBs. SwiftUI is used for suitable standalone, configuration, widget, and live-activity views.
-- There is no committed test target or CI workflow. Validate focused changes with SwiftFormat, a relevant build, and a manual smoke test.
+- Rippple is a native Trakt client for iPhone, iPad, and Mac Catalyst. The deployment target is iOS 26 and the project uses Swift 5 language mode without strict concurrency checking.
+- Open and build `Rippple.xcodeproj` (`*.xcworkspace` is gitignored). Dependencies are managed with Swift Package Manager through the project.
+- Targets and their folders: `Rippple/` (app), `Widget/` (`WidgetExtension`), `WidgetIntent/`, and `NotificationService/`. The app target embeds the three extensions, and shared schemes exist for all four.
+- The codebase is UIKit-first and still uses storyboards and XIBs. SwiftUI is used for suitable standalone, configuration, widget, and live-activity views, and is hosted in UIKit through `RipppleHostingController`.
+- `Rippple/MCP` is a Mac Catalyst-only local MCP server (`#if targetEnvironment(macCatalyst)`) that exposes Trakt tools over the Network framework and talks to Trakt through `mcpProvider`.
+- Every build runs three script phases: a lenient SwiftFormat lint on changed files, `Scripts/check-secrets.sh`, and a version script. The build fails if `Rippple/Secrets.swift` is missing or still contains template placeholders.
+- There is no test target and no CI workflow. Validate focused changes with SwiftFormat, a relevant build, and a manual smoke test.
+
+## Branches and releases
+
+- `develop` is the integration branch. `main` only receives `release/x.y` and `hotfix/x.y.z` merges, which are tagged with the version.
+- Branch from and target `develop` unless told otherwise.
 
 ## Working principles
 
 - Make the smallest coherent change that solves the problem. Avoid unrelated cleanup, broad rewrites, or new abstractions for one use.
 - Follow the architecture and terminology already used by the feature. Put code beside related code; do not reorganize folders without a clear need.
 - Preserve existing behavior on iPhone, iPad, and Mac Catalyst. Check nearby `targetEnvironment(macCatalyst)` handling before adding platform-specific UI.
+- The app is English-only; there are no `.strings` or `.xcstrings` tables. Write user-facing text as plain English literals, do not add `NSLocalizedString` or `String(localized:)`, and do not flag missing localization as a review issue.
 - Do not add a dependency or test framework without prior discussion. Prefer Apple APIs and existing project utilities.
-- Never commit or expose `Rippple/Secrets.swift`, tokens, API keys, signing data, or user data. Use `Rippple/Secrets-Template.swift` only as the public schema.
+- Never commit or expose `Rippple/Secrets.swift`, tokens, API keys, signing data, or user data. Use `Rippple/Secrets-Template.swift` only as the public schema. Local Debug builds with a client secret must keep the `ripl://` callback URL.
 - Preserve unrelated working-tree changes; do not format or rewrite untouched files.
 
 ## Architecture and coding conventions
@@ -24,22 +32,22 @@ This file applies to the whole repository. Keep changes simple, focused, and con
 ### UI
 
 - Prefer UIKit when extending an existing controller, storyboard, XIB, table, or collection flow. Use SwiftUI when the feature is self-contained and it clearly reduces complexity.
-- Reuse existing cells, hosting controllers, colors, image helpers, loading indicators, and message presentation before creating another UI system.
+- Reuse existing cells, `RipppleHostingController`, colors, image helpers, `RippleLoadingIndicator`, and `SwiftMessages.show(message:style:)` before creating another UI system.
 - Perform UI mutation and user-facing message presentation on the main thread. Preserve Dynamic Type, accessibility, reuse, empty/loading/error states, and Mac Catalyst behavior.
 - New Swift, storyboard, XIB, or asset files must be added to the correct Xcode group, target membership, and build phase. Keep `project.pbxproj` edits minimal.
 
 ### Managers, state, and events
 
 - Shared domain state normally belongs in a focused `*Manager` singleton with `static let shared`, a private initializer, and an explicit `setup()` when lifecycle registration is needed.
-- Use Receiver for the existing broadcast/listen architecture. Name channels `on…Transmitter` and `on…Receiver`, retain a `DisposeBag`, and dispose every long-lived listener.
+- Use Receiver for the existing broadcast/listen architecture. Declare channels at file scope as a destructured pair, `let (on…ChangedTransmitter, on…ChangedReceiver) = Receiver<T>.make(with: .hot)`; use `.warm(upTo: 1)` when late listeners need the last value. Broadcast through the transmitter, subscribe with `receiver.listen { … }.disposed(by: disposeBag)`, and add `.hotOnly()` when a listener must ignore replayed values. Retain a `DisposeBag` and dispose every long-lived listener.
 - Capture `self` weakly in escaping closures that are owned by controllers or long-lived services. In nested escaping closures, declare `[weak self]` at every enclosing closure level so an inner weak capture does not conflict with an implicitly strong outer capture. Unwrap with `guard let self = self else { return }` at the start of each closure that directly uses `self`; an outer closure that only passes the weak capture into a nested closure does not need to unwrap it. When the guard has additional conditions, keep the full `self = self` binding before them. Do not use optional chaining or shorthand `guard let self` for this pattern.
 - Synchronize shared mutable state only when it is genuinely accessed concurrently. Prefer main-thread or queue confinement when that keeps the code simpler; use nearby `NSLock` and snapshot/update patterns only when a lock is really needed. Never hold a lock during network or UI work. Clear account-specific state on logout and broadcast only after state is consistent.
 
 ### Networking and models
 
-- Keep Trakt and TMDb networking in their existing Moya layers. Add endpoint cases to the relevant `*APIService`, use the shared provider/decoder, and put reusable pagination or mapping in `*APIProvider` extensions.
-- Do not introduce direct `URLSession` calls in views or controllers. Use Alamofire directly only inside the existing Moya session, monitor, and retry infrastructure.
-- Choose provider variants deliberately; authentication, caching, rating monitoring, and debug logging differ. Treat API data as fallible: filter status codes, surface failures, guard identifiers and indices, and avoid new force unwraps for remote data.
+- Keep Trakt and TMDb networking in their existing Moya layers under `Rippple/Trakt API` and `Rippple/Tmdb API`. Add endpoint cases to the relevant `*APIService`, use the shared provider and `decoder`, and put reusable pagination or mapping in `*APIProvider` extensions.
+- Do not introduce direct `URLSession` calls in views or controllers. Use Alamofire directly only inside the existing Moya session, monitor, and retry infrastructure (`RipppleRetryPolicy`).
+- Choose the `TraktAPIProvider` variant deliberately: `provider` (default, cached, rating-monitored), `noRatingProvider`, `noChacheProvider`, the `debug_provider`/`noChacheDebugProvider` logging variants, and `mcpProvider` (never retries mutations). Treat API data as fallible: filter status codes, surface failures, guard identifiers and indices, and avoid new force unwraps for remote data.
 - Run network and decoding work off the main thread, then return to the main thread for UI or UI-observed state. In files importing Moya, `_Concurrency.Task` avoids the `Moya.Task` name collision.
 - Before applying an asynchronous response to a reusable cell or controller, prefer checking existing model identity over adding a request UUID. Capture the requested media (for example, `let requestedMedia = media`), then guard on the main thread with `guard let self = self, self.media == requestedMedia else { return }`. Keep request cancellation, but do not rely on it alone: a response may already be queued. Use a separate request identifier only when overlapping requests for the same media require the latest response to win or model identity is insufficient.
 
@@ -47,7 +55,7 @@ This file applies to the whole repository. Keep changes simple, focused, and con
 
 - Use `UserDefaults` for user settings, `KeychainStore` for authentication tokens, and TinyStorage for Codable cache snapshots.
 - Use LRUCache for bounded in-memory caches. Give cached data an invalidation or expiration path instead of assuming it remains current.
-- Reuse `ImagesManager` to resolve image URLs and Kingfisher for image loading and caching; follow the options used by nearby image views.
+- Reuse `ImagesManager` to resolve image URLs and Kingfisher for image loading and caching; follow the options used by nearby image views (`scaleFactor`, processors, downsampling).
 - Prefer pagination and correct cache invalidation over eagerly loading large datasets.
 
 ## Swift style
@@ -65,20 +73,20 @@ This file applies to the whole repository. Keep changes simple, focused, and con
 Use each dependency through its established boundary:
 
 - **Receiver**: application events and observable manager state.
-- **Moya**: Trakt/TMDb endpoints, requests, responses, and decoding; **Alamofire** supports Moya sessions and retry behavior.
-- **Kingfisher**: remote image loading and caching; **LRUCache** and **TinyStorage** cover other memory and disk caches.
+- **Moya**: Trakt/TMDb endpoints, requests, responses, and decoding; **Alamofire** and **AlamofireNetworkActivityIndicator** support Moya sessions, retry behavior, and the network activity indicator.
+- **Kingfisher** and **KingfisherWebP**: remote image loading and caching; **LRUCache** and **TinyStorage** cover other memory and disk caches.
 - **Haring**: Markdown rendering through the parsers in `Rippple/Markdown`.
 - **NVActivityIndicatorView**: legacy loading UI; reuse the project animation in `Rippple/RippleLoader` or a nearby cell/controller pattern.
 - **YouTubePlayerKit**, **SFSymbols**, **Emoji**, **HTMLEntities**, and **Toast**: specialized uses already isolated to trailers, symbol picking, text utilities, and app messages. Extend those call sites instead of duplicating their behavior.
-- **ReactiveSwift** and **RxSwift** are resolved transitively; the app does not use them directly.
+- **ReactiveSwift**, **RxSwift**, and **libwebp** are resolved transitively; the app does not use them directly.
 
-When dependencies change, update the Xcode package references, the relevant `Package.resolved`, and `THIRD_PARTY_NOTICES.md`. CocoaPods has been removed; do not reintroduce it.
+When dependencies change, update the Xcode package references, `Rippple.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`, and `THIRD_PARTY_NOTICES.md`. CocoaPods has been removed; do not reintroduce it.
 
 ## Validation and commits
 
-1. Format only the Swift files you changed when needed: `Scripts/swiftformat.sh --format --changed`.
-2. Run the required lint gate: `Scripts/swiftformat.sh --lint --strict --changed`.
-3. Build the affected scheme in Xcode. Build the relevant extension scheme too when target-shared code changes.
+1. Format only the Swift files you changed when needed: `Scripts/swiftformat.sh --format --changed`. The first run builds the pinned SwiftFormat from `BuildTools/Package.swift`.
+2. Run the required lint gate: `Scripts/swiftformat.sh --lint --strict --changed`. The Xcode build phase only warns; this command is the real gate.
+3. Build the affected scheme in Xcode or with `xcodebuild`. Keep code signing enabled for simulator builds: `CODE_SIGNING_ALLOWED=NO` strips the iCloud entitlement and the app crashes at launch in `ShelfManager.setup()`. Build the relevant extension scheme too when target-shared code changes.
 4. Smoke-test the changed flow on a simulator or device, including logged-out, empty, loading, error, and Mac Catalyst paths when relevant.
 
 Keep commits focused. The repository convention is a short, imperative gitmoji subject, for example `🐛 Fix stale poster reuse`, `✨ Add list sorting`, or `⚡️ Cache browse rail data`.
