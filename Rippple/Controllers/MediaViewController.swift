@@ -553,21 +553,29 @@ final class MediaViewController: UITableViewController {
         }.disposed(by: disposeBag)
 
         onNotesChangedReceiver.hotOnly().listen { [weak self] _ in
-            guard let self = self else { return }
-            let media = self.media
-            self.media = media
-        }.disposed(by: disposeBag)
-
-        onProgressCacheChangedReceiver.listen { [weak self] progress in
-            guard let self = self else { return }
-            if progress.show == self.media.show {
-                self.progress = progress.showProgress
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                let media = self.media
+                self.media = media
             }
         }.disposed(by: disposeBag)
 
+        // Progress is computed and broadcast from background queues
+        onProgressCacheChangedReceiver.listen { [weak self] progress in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if progress.show == self.media.show {
+                    self.progress = progress.showProgress
+                }
+            }
+        }.disposed(by: disposeBag)
+
+        let requestedMedia = media
         media.progress { [weak self] progress in
-            guard let self = self else { return }
-            self.progress = progress
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.media == requestedMedia else { return }
+                self.progress = progress
+            }
         }
 
         episodeListTitlesReceiver.listen { [weak self] _ in

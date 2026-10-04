@@ -90,26 +90,30 @@ final class CommentComposerViewController: UIViewController {
         updateUIBasedOnWordCount()
 
         onCommentsDraftsChangedReceiver.listen { [weak self] _ in
-            guard let self = self else { return }
+            // iCloud key-value store changes are delivered on a background thread
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
 
-            guard let previousComment = CommentDraftManager.shared.comment(for: self.mediaModel) else { return }
+                guard let previousComment = CommentDraftManager.shared.comment(for: self.mediaModel) else { return }
 
-            if self.commentTextView.text == previousComment { return }
+                if self.commentTextView.text == previousComment { return }
 
-            let alertController = UIAlertController(title: "New Draft",
-                                                    message: "We found a new Draft on iCloud. Would you like to use it or dismiss it?",
-                                                    preferredStyle: .alert)
+                let alertController = UIAlertController(title: "New Draft",
+                                                        message: "We found a new Draft on iCloud. Would you like to use it or dismiss it?",
+                                                        preferredStyle: .alert)
 
-            let cancel = UIAlertAction(title: "Dismiss iCloud draft", style: .destructive)
-            alertController.addAction(cancel)
+                let cancel = UIAlertAction(title: "Dismiss iCloud draft", style: .destructive)
+                alertController.addAction(cancel)
 
-            let confirm = UIAlertAction(title: "Use iCloud draft", style: .default) { _ in
-                self.commentTextView.text = previousComment
-                self.updateUIBasedOnWordCount()
+                let confirm = UIAlertAction(title: "Use iCloud draft", style: .default) { [weak self] _ in
+                    guard let self = self else { return }
+                    self.commentTextView.text = previousComment
+                    self.updateUIBasedOnWordCount()
+                }
+                alertController.addAction(confirm)
+
+                self.present(alertController, animated: true)
             }
-            alertController.addAction(confirm)
-
-            self.present(alertController, animated: true)
         }.disposed(by: disposeBag)
 
         if UserManager.shared.currentUserCanComment == false {

@@ -297,16 +297,22 @@ final class SeasonsViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
+        // Progress is computed and broadcast from background queues
         onProgressCacheChangedReceiver.listen { [weak self] progress in
-            guard let self = self else { return }
-            if progress.show == self.show {
-                self.progress = progress.showProgress
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if progress.show == self.show {
+                    self.progress = progress.showProgress
+                }
             }
         }.disposed(by: disposeBag)
 
+        let requestedShow = show
         show.mediaModel.progress { [weak self] progress in
-            guard let self = self else { return }
-            self.progress = progress
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.show == requestedShow else { return }
+                self.progress = progress
+            }
         }
 
         episodeListTitlesReceiver.listen { [weak self] _ in

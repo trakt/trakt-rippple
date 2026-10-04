@@ -601,12 +601,15 @@ final class ListViewController: UITableViewController {
         }.disposed(by: disposeBag)
 
         listUpdatedReceiver.listen { [weak self] changedList in
-            guard let self = self else { return }
-            if self.list == changedList {
-                self.list = changedList
-                var snapshot = self.dataSource.snapshot()
-                snapshot.reloadSections([.header])
-                self.dataSource.apply(snapshot)
+            // List updates are broadcast from background network callbacks
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if self.list == changedList {
+                    self.list = changedList
+                    var snapshot = self.dataSource.snapshot()
+                    snapshot.reloadSections([.header])
+                    self.dataSource.apply(snapshot)
+                }
             }
         }.disposed(by: disposeBag)
 

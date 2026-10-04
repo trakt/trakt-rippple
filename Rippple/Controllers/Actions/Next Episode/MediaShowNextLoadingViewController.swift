@@ -87,13 +87,19 @@ final class MediaShowNextLoadingViewController: UIViewController {
                         }
                     } catch {
                         print("Error fetching episode \(error)")
-                        self.performSegue(withIdentifier: "error", sender: nil)
-                        AppManager.shared.isUserInteractionEnabled = true
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            self.performSegue(withIdentifier: "error", sender: nil)
+                            AppManager.shared.isUserInteractionEnabled = true
+                        }
                     }
                 case .failure(let error):
                     print("Failed fetching episode \(error)")
-                    self.performSegue(withIdentifier: "error", sender: nil)
-                    AppManager.shared.isUserInteractionEnabled = true
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        self.performSegue(withIdentifier: "error", sender: nil)
+                        AppManager.shared.isUserInteractionEnabled = true
+                    }
                 }
             }
         } else if let nextEpisode = showProgress.nextEpisodeToWatch {

@@ -65,16 +65,21 @@ final class SeasonsRatingsViewController: UIViewController {
             }
         }.disposed(by: disposeBag)
 
+        // Progress is computed and broadcast from background queues
         onProgressCacheChangedReceiver.listen { [weak self] progress in
-            guard let self = self else { return }
-            if progress.show == media.show {
-                self.progress = progress.showProgress
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if progress.show == media.show {
+                    self.progress = progress.showProgress
+                }
             }
         }.disposed(by: disposeBag)
 
         media.progress { [weak self] progress in
-            guard let self = self else { return }
-            self.progress = progress
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.progress = progress
+            }
         }
 
         RatingsManager.shared.onRatedItemsChangedReceiver.hotOnly().listen { [weak self] _ in
