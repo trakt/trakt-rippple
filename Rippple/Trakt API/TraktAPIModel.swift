@@ -37,12 +37,6 @@ enum EpisodeType: String, Codable, UnknownDecodable {
 }
 
 struct Episode: Codable, Equatable, Hashable {
-    private static let numberFormatter: NumberFormatter = {
-        let numberFormatter = NumberFormatter()
-        numberFormatter.minimumIntegerDigits = 2
-        return numberFormatter
-    }()
-
     static func == (lhs: Episode, rhs: Episode) -> Bool {
         return lhs.identifiers == rhs.identifiers
     }
@@ -82,12 +76,13 @@ struct Episode: Codable, Equatable, Hashable {
         case episodeType = "episode_type"
     }
 
+    // String(format:) is thread-safe, unlike a shared NumberFormatter
     var localizedEpisodeNumber: String {
-        return "S\(Episode.numberFormatter.string(from: NSNumber(value: season))!)E\(Episode.numberFormatter.string(from: NSNumber(value: number))!)"
+        return String(format: "S%02dE%02d", season, number)
     }
 
     var localizedSeasonNumber: String {
-        return "S\(Episode.numberFormatter.string(from: NSNumber(value: season))!)"
+        return String(format: "S%02d", season)
     }
 }
 
@@ -305,12 +300,6 @@ struct Movie: Codable, Equatable, Hashable {
 }
 
 struct Season: Codable, Equatable, Hashable {
-    private static let numberFormatter: NumberFormatter = {
-        let numberFormatter = NumberFormatter()
-        numberFormatter.minimumIntegerDigits = 2
-        return numberFormatter
-    }()
-
     func hash(into hasher: inout Hasher) {
         hasher.combine(identifiers)
     }
@@ -352,7 +341,7 @@ struct Season: Codable, Equatable, Hashable {
     }
 
     var localizedSeasonNumber: String {
-        return "S\(Season.numberFormatter.string(from: NSNumber(value: number))!)"
+        return String(format: "S%02d", number)
     }
 }
 
