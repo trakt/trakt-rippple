@@ -89,6 +89,9 @@ final class CommentsTabViewController: UIViewController {
             commentsViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         commentsViewController.didMove(toParent: self)
+        // The navigation bar follows this controller's navigationItem, so the embedded
+        // table view must be registered here or the bar may stay transparent while scrolling.
+        setContentScrollView(commentsViewController.tableView, for: .top)
     }
 
     private func configureProfileBarButtonItem() {

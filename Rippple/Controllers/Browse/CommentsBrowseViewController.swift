@@ -83,6 +83,8 @@ class CommentsBrowseViewController: UIViewController {
         if let commentsViewController = segue.destination as? CommentsViewController {
             self.commentsViewController = commentsViewController
             applyFeedType(reset: false)
+            // The navigation bar follows this controller's navigationItem, not the embedded child's.
+            setContentScrollView(commentsViewController.tableView, for: .top)
         }
     }
 

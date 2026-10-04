@@ -256,7 +256,8 @@ final class CommentsViewController: UITableViewController {
         precondition(coordinator != nil)
 
         navigationItem.style = .browser
-        // This controller can be embedded, where UIKit's scroll-view lookup is ambiguous.
+        // Covers the pushed case. Containers that embed this controller must register the
+        // table view on their own navigationItem owner too, or the bar may stay transparent.
         setContentScrollView(tableView, for: .top)
 
         tableView.allowsFocus = false

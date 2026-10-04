@@ -51,5 +51,7 @@ final class BrowseListsViewController: UIViewController {
             controller.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         controller.didMove(toParent: self)
+        // The navigation bar follows this controller's navigationItem, not the embedded child's.
+        setContentScrollView(controller.tableView, for: .top)
     }
 }
