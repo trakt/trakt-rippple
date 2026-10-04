@@ -605,6 +605,7 @@ final class MediaViewController: UITableViewController {
 
     @objc func respondToSwipeGesture(gesture: UIGestureRecognizer) {
         if view.window == nil { return }
+        guard let navigationController = navigationController else { return }
 
         let trans = CATransition()
         trans.type = .push
@@ -634,7 +635,7 @@ final class MediaViewController: UITableViewController {
                 guard let firstSeason = seasons.first else { return }
                 guard let firstEpisode = firstSeason.episodes?.first else { return }
 
-                navigationController!.view.layer.add(trans, forKey: nil)
+                navigationController.view.layer.add(trans, forKey: nil)
 
                 guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                     fatalError()
@@ -642,10 +643,10 @@ final class MediaViewController: UITableViewController {
 
                 mediaViewController.media = firstEpisode.mediaModel(given: show)
 
-                var stack = navigationController!.viewControllers
+                var stack = navigationController.viewControllers
                 stack.removeLast()
                 stack.append(mediaViewController)
-                navigationController!.setViewControllers(stack, animated: false)
+                navigationController.setViewControllers(stack, animated: false)
 
                 return
             }
@@ -656,7 +657,7 @@ final class MediaViewController: UITableViewController {
                 guard let firstEpisode = firstSeason.episodes?.first else { return }
 
                 if episode == firstEpisode {
-                    navigationController!.view.layer.add(trans, forKey: nil)
+                    navigationController.view.layer.add(trans, forKey: nil)
 
                     guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                         fatalError()
@@ -664,10 +665,10 @@ final class MediaViewController: UITableViewController {
 
                     mediaViewController.media = show.mediaModel
 
-                    var stack = navigationController!.viewControllers
+                    var stack = navigationController.viewControllers
                     stack.removeLast()
                     stack.append(mediaViewController)
-                    navigationController!.setViewControllers(stack, animated: false)
+                    navigationController.setViewControllers(stack, animated: false)
 
                     return
                 }
@@ -677,7 +678,7 @@ final class MediaViewController: UITableViewController {
                     if season.episodes == nil { continue }
                     for nextEpisode in season.episodes! {
                         if nextEpisode == episode {
-                            navigationController!.view.layer.add(trans, forKey: nil)
+                            navigationController.view.layer.add(trans, forKey: nil)
 
                             guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                                 fatalError()
@@ -685,10 +686,10 @@ final class MediaViewController: UITableViewController {
 
                             mediaViewController.media = before.mediaModel(given: show)
 
-                            var stack = navigationController!.viewControllers
+                            var stack = navigationController.viewControllers
                             stack.removeLast()
                             stack.append(mediaViewController)
-                            navigationController!.setViewControllers(stack, animated: false)
+                            navigationController.setViewControllers(stack, animated: false)
 
                             return
                         }
@@ -707,7 +708,7 @@ final class MediaViewController: UITableViewController {
                     if season.episodes == nil { continue }
                     for nextEpisode in season.episodes!.reversed() {
                         if nextEpisode == episode {
-                            navigationController!.view.layer.add(trans, forKey: nil)
+                            navigationController.view.layer.add(trans, forKey: nil)
 
                             guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                                 fatalError()
@@ -715,10 +716,10 @@ final class MediaViewController: UITableViewController {
 
                             mediaViewController.media = after.mediaModel(given: show)
 
-                            var stack = navigationController!.viewControllers
+                            var stack = navigationController.viewControllers
                             stack.removeLast()
                             stack.append(mediaViewController)
-                            navigationController!.setViewControllers(stack, animated: false)
+                            navigationController.setViewControllers(stack, animated: false)
 
                             return
                         }
@@ -737,7 +738,7 @@ final class MediaViewController: UITableViewController {
                 var before = firstSeason
                 for nextSeason in seasons {
                     if nextSeason == season {
-                        navigationController!.view.layer.add(trans, forKey: nil)
+                        navigationController.view.layer.add(trans, forKey: nil)
 
                         guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                             fatalError()
@@ -745,10 +746,10 @@ final class MediaViewController: UITableViewController {
 
                         mediaViewController.media = before.mediaModel(given: show)
 
-                        var stack = navigationController!.viewControllers
+                        var stack = navigationController.viewControllers
                         stack.removeLast()
                         stack.append(mediaViewController)
-                        navigationController!.setViewControllers(stack, animated: false)
+                        navigationController.setViewControllers(stack, animated: false)
 
                         return
                     }
@@ -763,7 +764,7 @@ final class MediaViewController: UITableViewController {
                 var after = lastSeason
                 for nextSeason in seasons.reversed() {
                     if nextSeason == season {
-                        navigationController!.view.layer.add(trans, forKey: nil)
+                        navigationController.view.layer.add(trans, forKey: nil)
 
                         guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                             fatalError()
@@ -771,10 +772,10 @@ final class MediaViewController: UITableViewController {
 
                         mediaViewController.media = after.mediaModel(given: show)
 
-                        var stack = navigationController!.viewControllers
+                        var stack = navigationController.viewControllers
                         stack.removeLast()
                         stack.append(mediaViewController)
-                        navigationController!.setViewControllers(stack, animated: false)
+                        navigationController.setViewControllers(stack, animated: false)
 
                         return
                     }
