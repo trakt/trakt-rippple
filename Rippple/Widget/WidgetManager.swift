@@ -522,6 +522,7 @@ final class WidgetManager {
                   let showTraktIdentifier = show.identifiers.trakt.flatMap(Int.init(exactly:)),
                   let deeplink = URL(string: "ripl://shows/\(showTraktIdentifier)/seasons/\(episode.season)/episodes/\(episode.number)") else { return nil }
             return UpcomingWidgetItem(traktIdentifier: episodeTraktIdentifier,
+                                      showTraktIdentifier: showTraktIdentifier,
                                       tmdbIdentifier: show.identifiers.tmdb.flatMap(Int.init(exactly:)),
                                       tmdbMediaType: "tv",
                                       title: show.title,
@@ -540,6 +541,7 @@ final class WidgetManager {
                   let movieTraktIdentifier = movie.identifiers.trakt.flatMap(Int.init(exactly:)),
                   let deeplink = URL(string: "ripl://movies/\(movieTraktIdentifier)") else { return nil }
             return UpcomingWidgetItem(traktIdentifier: movieTraktIdentifier,
+                                      showTraktIdentifier: nil,
                                       tmdbIdentifier: movie.identifiers.tmdb.flatMap(Int.init(exactly:)),
                                       tmdbMediaType: "movie",
                                       title: movie.title,

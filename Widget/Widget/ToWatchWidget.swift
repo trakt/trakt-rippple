@@ -59,6 +59,16 @@ enum ToWatchWidgetItem: Identifiable {
             return "movie"
         }
     }
+
+    /// The media whose artwork is shown: the show for an episode.
+    var traktIdentifier: Int {
+        switch self {
+        case .episode(let episode):
+            return episode.showTraktIdentifier
+        case .movie(let movie):
+            return movie.movieTraktIdentifier
+        }
+    }
 }
 
 @available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *)
@@ -163,6 +173,7 @@ struct ToWatchWidgetProvider: AppIntentTimelineProvider {
         await loadWidgetPosters(for: items,
                                 identifier: \ToWatchWidgetItem.id,
                                 tmdbIdentifier: \ToWatchWidgetItem.tmdbIdentifier,
+                                traktIdentifier: { $0.traktIdentifier },
                                 mediaType: \ToWatchWidgetItem.tmdbMediaType)
     }
 }
