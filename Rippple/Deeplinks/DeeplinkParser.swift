@@ -192,6 +192,11 @@ final class DeeplinkParser {
         case "search":
             return DeeplinkType.search(query: pathComponents.isEmpty ? nil : pathComponents.joined(separator: "/"))
         case "ripppleapp.writeas.com", "writeas.com", "write.as":
+            // legacy
+            return .browseThisWeek
+        case "this-week":
+            // https://rippple.app/this-week and such are cleaned up as:
+            // ripl://this-week, ripl://this-week/, ripl://this-week/2026-10-12
             return .browseThisWeek
         case "towatch":
             // /towatch/movies
@@ -221,9 +226,11 @@ final class DeeplinkParser {
 
         let absoluteString = url.absoluteString
 
-        if absoluteString.hasPrefix("https://rippple.app/"),
-           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "https://rippple.app/", with: "ripl://")) {
-            return cleanUrl
+        for prefix in ["https://rippple.app/", "http://rippple.app/", "https://www.rippple.app/", "http://www.rippple.app/"]
+            where absoluteString.lowercased().hasPrefix(prefix) {
+            if let cleanUrl = URL(string: "ripl://" + absoluteString.dropFirst(prefix.count)) {
+                return cleanUrl
+            }
         }
 
         if absoluteString.hasPrefix("ripl://rippple.app/"),
