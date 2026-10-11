@@ -48,12 +48,12 @@
                     </stackView>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="IK8-pI-wN5" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="topMargin" constant="4" id="E5c-pW-ldn"/>
+                    <constraint firstItem="IK8-pI-wN5" firstAttribute="top" secondItem="fPh-11-ATa" secondAttribute="top" constant="8" id="E5c-pW-ldn"/>
                     <constraint firstItem="fPh-11-ATa" firstAttribute="top" secondItem="1ig-VS-old" secondAttribute="top" constant="4" id="Fq3-bY-70B"/>
                     <constraint firstAttribute="trailing" secondItem="fPh-11-ATa" secondAttribute="trailing" constant="12" id="dBA-UK-fg3"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="IK8-pI-wN5" secondAttribute="trailing" constant="10" id="fAa-vU-rLX"/>
-                    <constraint firstItem="IK8-pI-wN5" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leadingMargin" constant="3" id="fDi-ec-ukR"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="IK8-pI-wN5" secondAttribute="bottom" constant="4.5" id="g0R-2H-ovi"/>
+                    <constraint firstItem="fPh-11-ATa" firstAttribute="trailing" secondItem="IK8-pI-wN5" secondAttribute="trailing" constant="12" id="fAa-vU-rLX"/>
+                    <constraint firstItem="IK8-pI-wN5" firstAttribute="leading" secondItem="fPh-11-ATa" secondAttribute="leading" constant="12" id="fDi-ec-ukR"/>
+                    <constraint firstItem="fPh-11-ATa" firstAttribute="bottom" secondItem="IK8-pI-wN5" secondAttribute="bottom" constant="8" id="g0R-2H-ovi"/>
                     <constraint firstAttribute="bottom" secondItem="fPh-11-ATa" secondAttribute="bottom" constant="4" id="jCM-AA-3U2"/>
                     <constraint firstItem="fPh-11-ATa" firstAttribute="leading" secondItem="1ig-VS-old" secondAttribute="leading" constant="12" id="jLy-EO-eqW"/>
                 </constraints>

@@ -12,6 +12,13 @@ import Receiver
 import UIKit
 
 final class UserFavoritesViewController: UITableViewController {
+    private lazy var mediaDropDelegate = MediaTableViewDropDelegate(canDrop: { [weak self] in
+        guard let self = self else { return false }
+        return self.user?.isCurrentUser == true
+    }, onDrop: { models in
+        models.forEach { $0.addToRecommendations() }
+    })
+
     var user: User!
 
     required init?(coder aDecoder: NSCoder) {
@@ -288,6 +295,7 @@ final class UserFavoritesViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.dropDelegate = mediaDropDelegate
 
         refreshControl?.isEnabled = false
 

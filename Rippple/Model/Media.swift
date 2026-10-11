@@ -33,7 +33,7 @@ enum MediaModel: Equatable, Hashable, Codable {
         }
         switch type {
         case .type:
-            fatalError()
+            throw MediaModelError.decodingError
         case .movie:
             let movie = try container.decode(Movie.self, forKey: .movie)
             self = .movie(movie)
@@ -1734,6 +1734,132 @@ extension MediaModel {
                     }
                 }
             }
+        }
+    }
+}
+
+// MARK: - Drag and drop
+
+protocol MediaDragSource: AnyObject {
+    var dragMedia: MediaModel? { get }
+    var dragPreviewView: UIView? { get }
+}
+
+extension UIDragItem {
+    private static let mediaTypeIdentifier = "tv.trakt.rippple.dragged-media"
+    private static let dragPreviewMaximumDimension: CGFloat = 150
+    private static let dragPreviewCornerRadius = ViewRadius.large.rawValue
+
+    static func mediaItems(from source: MediaDragSource?) -> [UIDragItem] {
+        guard let source = source, let media = source.dragMedia else { return [] }
+        if case .list = media { return [] }
+        guard let url = media.traktWebsiteMediaLink else { return [] }
+
+        let item = UIDragItem(itemProvider: NSItemProvider(object: url as NSURL))
+        item.registerMedia(media, previewView: source.dragPreviewView)
+        return [item]
+    }
+
+    private func registerMedia(_ media: MediaModel, previewView: UIView?) {
+        let transferableMedia: MediaModel
+        switch media {
+        case .showProgress(let show, _): transferableMedia = .show(show)
+        case .list: return
+        default: transferableMedia = media
+        }
+        localObject = media
+        setDragPreview(from: previewView)
+        itemProvider.registerDataRepresentation(forTypeIdentifier: UIDragItem.mediaTypeIdentifier, visibility: .all) { completion in
+            do {
+                try completion(JSONEncoder().encode(transferableMedia), nil)
+            } catch {
+                completion(nil, error)
+            }
+            return nil
+        }
+    }
+
+    static func dragPreviewParameters(from view: UIView?, in container: UIView) -> UIDragPreviewParameters? {
+        guard let view = view, !view.bounds.isEmpty else { return nil }
+        let scale = max(view.bounds.width, view.bounds.height) / UIDragItem.dragPreviewMaximumDimension
+        let parameters = UIDragPreviewParameters()
+        parameters.backgroundColor = .clear
+        parameters.visiblePath = UIBezierPath(roundedRect: view.convert(view.bounds, to: container),
+                                              cornerRadius: UIDragItem.dragPreviewCornerRadius * scale)
+        return parameters
+    }
+
+    func setDragPreview(from view: UIView?) {
+        guard let view = view as? UIImageView, let sourceImage = view.image,
+              sourceImage.size.width > 0, sourceImage.size.height > 0 else { return }
+        let scale = UIDragItem.dragPreviewMaximumDimension / max(sourceImage.size.width, sourceImage.size.height)
+        let size = CGSize(width: sourceImage.size.width * scale, height: sourceImage.size.height * scale)
+        let bounds = CGRect(origin: .zero, size: size)
+        let path = UIBezierPath(roundedRect: bounds, cornerRadius: UIDragItem.dragPreviewCornerRadius)
+        let format = UIGraphicsImageRendererFormat()
+        format.opaque = false
+        format.scale = view.traitCollection.displayScale
+        let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in
+            path.addClip()
+            sourceImage.draw(in: bounds)
+        }
+        let parameters = UIDragPreviewParameters()
+        parameters.backgroundColor = .clear
+        parameters.visiblePath = path
+        previewProvider = {
+            UIDragPreview(view: UIImageView(image: image), parameters: parameters)
+        }
+        #if targetEnvironment(macCatalyst)
+        if let data = image.pngData() {
+            itemProvider.previewImageHandler = { completion, _, _ in
+                completion?(data as NSData, nil)
+            }
+        }
+        #endif
+    }
+
+    var hasMedia: Bool {
+        return localObject is MediaModel || itemProvider.hasItemConformingToTypeIdentifier(UIDragItem.mediaTypeIdentifier)
+    }
+
+    @MainActor
+    static func loadMedia(from items: [UIDragItem], completion: @escaping (Result<[MediaModel], Error>) -> Void) {
+        let group = DispatchGroup()
+        var results = [Result<MediaModel, Error>?](repeating: nil, count: items.count)
+
+        // Start every provider request before the drop delegate callback returns.
+        for (index, item) in items.enumerated() {
+            if let media = item.localObject as? MediaModel {
+                results[index] = .success(media)
+                continue
+            }
+            group.enter()
+            item.itemProvider.loadDataRepresentation(forTypeIdentifier: UIDragItem.mediaTypeIdentifier) { data, error in
+                let result = Result<MediaModel, Error> {
+                    guard let data = data else {
+                        throw error ?? MediaModel.MediaModelError.decodingError
+                    }
+                    return try JSONDecoder().decode(MediaModel.self, from: data)
+                }
+                DispatchQueue.main.async {
+                    results[index] = result
+                    group.leave()
+                }
+            }
+        }
+        group.notify(queue: .main) {
+            completion(Result {
+                var models = [MediaModel]()
+                for result in results {
+                    guard let result = result else { throw MediaModel.MediaModelError.decodingError }
+                    let media = try result.get()
+                    if case .list = media { throw MediaModel.MediaModelError.decodingError }
+                    if !models.contains(media) {
+                        models.append(media)
+                    }
+                }
+                return models
+            })
         }
     }
 }

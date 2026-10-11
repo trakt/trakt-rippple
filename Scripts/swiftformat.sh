@@ -74,8 +74,9 @@ changed_filelist() {
 
 execute_swiftformat() {
   swiftformat_binary="$ROOT/BuildTools/.build/release/swiftformat"
+  swiftformat_version="$(sed -n 's/.*exact: "\([^"]*\)".*/\1/p' "$ROOT/BuildTools/Package.swift")"
 
-  if [ -x "$swiftformat_binary" ]; then
+  if [ -x "$swiftformat_binary" ] && [ "$("$swiftformat_binary" --version)" = "$swiftformat_version" ]; then
     "$swiftformat_binary" "$@"
   elif [ "$BUILD_PHASE" = "1" ] && [ "$STRICT" != "1" ]; then
     echo "warning: SwiftFormat tool is not built yet. Run Scripts/swiftformat.sh --lint --changed once to prepare it. Skipping this build."

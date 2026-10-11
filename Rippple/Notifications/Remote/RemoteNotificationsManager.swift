@@ -58,7 +58,8 @@ struct RemoteNotificationsSubscriptionCacheStatus {
 final class RemoteNotificationsManager {
     static let shared = RemoteNotificationsManager()
 
-    private lazy var encoder: JSONEncoder = {
+    /// Not lazy: subscriptions are synced from several concurrent tasks
+    private let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .sortedKeys
         return encoder

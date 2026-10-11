@@ -14,6 +14,7 @@ let (onLastWatchedMovieActivitiesChangedTransmitter, onLastWatchedMovieActivitie
 let (onLastHiddenShowActivitiesChangedTransmitter, onLastHiddenShowActivitiesChangedReceiver) = Receiver<LastShowsActivities>.make(with: .hot)
 let (onLastDroppedShowActivitiesChangedTransmitter, onLastDroppedShowActivitiesChangedReceiver) = Receiver<LastShowsActivities>.make(with: .hot)
 let (onLastHiddenUsersFromCommentsActivitiesChangedTransmitter, onLastHiddenUsersFromCommentsActivitiesChangedReceiver) = Receiver<LastCommentsActivities>.make(with: .hot)
+let (onLastWatchlistActivitiesChangedTransmitter, onLastWatchlistActivitiesChangedReceiver) = Receiver<LastWatchlistActivities>.make(with: .hot)
 
 final class TraktStatusCheckManager {
     private let disposeBag = DisposeBag()
@@ -57,6 +58,9 @@ final class TraktStatusCheckManager {
             }
             if let lastCommentsActivities = lastActivities?.comments, oldValue?.comments != lastCommentsActivities {
                 onLastHiddenUsersFromCommentsActivitiesChangedTransmitter.broadcast(lastCommentsActivities)
+            }
+            if let lastWatchlistActivities = lastActivities?.watchlist, oldValue?.watchlist != lastWatchlistActivities {
+                onLastWatchlistActivitiesChangedTransmitter.broadcast(lastWatchlistActivities)
             }
             UserDefaults.standard.set(try? PropertyListEncoder().encode(lastActivities), forKey: "TraktStatusCheckManager.lastActivities")
             UserDefaults.standard.synchronize()

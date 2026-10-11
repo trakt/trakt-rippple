@@ -39,6 +39,9 @@ final class AboutViewController: UITableViewController {
         case automations
         case deeplinks
         case openIn
+        #if targetEnvironment(macCatalyst)
+        case mcp
+        #endif
     }
 
     @IBOutlet var barButtonItem: UIBarButtonItem!
@@ -181,7 +184,7 @@ final class AboutViewController: UITableViewController {
         case .settings:
             return SettingsSection.allCases.count
         case .account:
-            return 3
+            return 4
         case .premium:
             return 1
         case .data:
@@ -202,6 +205,16 @@ final class AboutViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch AboutSection(rawValue: indexPath.section)! {
         case .settings:
+            #if targetEnvironment(macCatalyst)
+            if indexPath.row == SettingsSection.mcp.rawValue {
+                let view = MCPSettingsView(navigationController: navigationController)
+                let controller = RipppleHostingController(rootView: view)
+                controller.title = "Local MCP Server"
+                navigationController?.pushViewController(controller, animated: true)
+                tableView.deselectRow(at: indexPath, animated: true)
+                return
+            }
+            #endif
             if indexPath.row == SettingsSection.notifications.rawValue {
                 performSegue(withIdentifier: "notifications", sender: nil)
                 tableView.deselectRow(at: indexPath, animated: true)
@@ -219,10 +232,13 @@ final class AboutViewController: UITableViewController {
             if indexPath.row == 0 {
                 logoutFromTrakt()
                 tableView.deselectRow(at: indexPath, animated: true)
-            } else if indexPath.row == 1 {
+            } else if indexPath.row == 2 {
                 present(SFSafariViewController(url: URL(string: "https://status.trakt.tv")!),
                         animated: true,
                         completion: nil)
+                tableView.deselectRow(at: indexPath, animated: true)
+            } else if indexPath.row == 1 {
+                UIApplication.shared.presentTraktLimits()
                 tableView.deselectRow(at: indexPath, animated: true)
             } else {
                 if let url = URL(string: "https://app.trakt.tv/settings/advanced"), UIApplication.shared.canOpenURL(url) {
@@ -437,9 +453,9 @@ final class AboutViewController: UITableViewController {
                         }
                     }
                 }.buttonStyle(.borderless)
-                #if targetEnvironment(macCatalyst)
+                    #if targetEnvironment(macCatalyst)
                     .padding(8)
-                #endif
+                    #endif
             }
             cell.accessoryType = .none
         } else if AboutSection(rawValue: indexPath.section) == .about, indexPath.row == 2 {
@@ -458,7 +474,7 @@ final class AboutViewController: UITableViewController {
             return super.tableView(tableView, heightForRowAt: indexPath)
         }
         if case .account = AboutSection(rawValue: indexPath.section) {
-            if indexPath.row == 2 {
+            if indexPath.row == 3 {
                 return super.tableView(tableView, heightForRowAt: indexPath)
             }
         }

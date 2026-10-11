@@ -45,7 +45,7 @@ final class MainTabBarController: UITabBarController {
     private var profileAvatarDownloadTask: DownloadTask?
     private var profileTabImage = UIImage(systemName: "person.crop.circle")
 
-    private var tabStore: [Tab: UITab] {
+    private lazy var tabStore: [Tab: UITab] = {
         var store = [Tab: UITab]()
         store[.browse] = UITab(title: "Browse",
                                image: UIImage(systemName: "sparkles.rectangle.stack"),
@@ -147,7 +147,7 @@ final class MainTabBarController: UITabBarController {
                                  UIStoryboard(name: "Browse", bundle: nil).instantiateViewController(withIdentifier: "wall")
                              })
         return store
-    }
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -157,10 +157,8 @@ final class MainTabBarController: UITabBarController {
         updateTabBar(animated: false)
         updateProfileTabImage(for: UserManager.shared.currentUser)
 
-        if let userDefault = UserDefaults.standard.string(forKey: "MainTabBarController.selectedTab"),
-           let tab = Tab(rawValue: userDefault),
-           let uiTab = tabStore[tab],
-           let index = tabs.firstIndex(of: uiTab) {
+        if let identifier = UserDefaults.standard.string(forKey: "MainTabBarController.selectedTab"),
+           let index = tabs.firstIndex(where: { $0.identifier == identifier }) {
             selectedIndex = index
         }
 
@@ -218,7 +216,7 @@ final class MainTabBarController: UITabBarController {
 
     private func setProfileTabImage(_ image: UIImage?) {
         profileTabImage = image
-        tabs.first(where: { $0.identifier == Tab.profile.rawValue })?.image = image
+        tabStore[.profile]?.image = image
     }
 
     private func updateTabBarMinimizeBehavior(neverMinimize: Bool) {
@@ -246,7 +244,7 @@ final class MainTabBarController: UITabBarController {
         }
     }
 
-    fileprivate func updateTabBar(animated: Bool) {
+    private func updateTabBar(animated: Bool) {
         if customTabs == [Tab.browse] {
             isTabBarHidden = true
         } else {
@@ -255,8 +253,12 @@ final class MainTabBarController: UITabBarController {
         let tabs: [UITab] = customTabs.map {
             tabStore[$0]!
         }
-        if tabs == self.tabs { return }
+        if tabs.map(\.identifier) == self.tabs.map(\.identifier) { return }
+        let selectedIdentifier = selectedTab?.identifier
         setTabs(tabs, animated: animated)
+        if let tab = tabs.first(where: { $0.identifier == selectedIdentifier }) {
+            selectedTab = tab
+        }
         updateTabBarContextMenus()
     }
 
@@ -757,8 +759,7 @@ final class MainTabBarController: UITabBarController {
 
             let delegate = TabBarContextMenuInteractionDelegate(with: UIMenu(children: [UIMenu(options: .displayInline, children: manageActions),
                                                                                         UIMenu(options: .displayInline, children: swapActions),
-                                                                                        UIMenu(options: .displayInline, children: replaceActions)]),
-                                                                for: self)
+                                                                                        UIMenu(options: .displayInline, children: replaceActions)]))
             contextMenus.append(delegate)
             let interaction = UIContextMenuInteraction(delegate: delegate)
             control.addInteraction(interaction)
@@ -787,6 +788,7 @@ final class MainTabBarController: UITabBarController {
             UserDefaults.standard.set(encoded, forKey: "MainTabBarController.tab.positions")
             UserDefaults.standard.set(encoded, forKey: tabCustomizationStoreKey(for: tabs))
             UserDefaults.standard.synchronize()
+            updateTabBar(animated: true)
             UISelectionFeedbackGenerator().selectionChanged()
         }
     }
@@ -948,13 +950,11 @@ extension MainTabBarController: UITabBarControllerDelegate {
 }
 
 private final class TabBarContextMenuInteractionDelegate: NSObject, UIContextMenuInteractionDelegate {
-    init(with menu: UIMenu, for tabBarController: MainTabBarController) {
+    init(with menu: UIMenu) {
         self.menu = menu
-        self.tabBarController = tabBarController
     }
 
     private let menu: UIMenu
-    private weak var tabBarController: MainTabBarController?
 
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: nil,
@@ -974,10 +974,6 @@ private final class TabBarContextMenuInteractionDelegate: NSObject, UIContextMen
 
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, previewForDismissingMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
         guard let view = interaction.view else { return nil }
-        guard let tabBarController = tabBarController else { return nil }
-
-        tabBarController.updateTabBar(animated: true)
-
         guard view.window != nil else { return nil }
 
         let parameters = UIPreviewParameters()

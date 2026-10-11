@@ -146,6 +146,9 @@ extension PeopleSearchResultsViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         guard case Wrapper.people(let personItem) = item else { return }
+        if case .search(_, let query) = service {
+            TraktAPIProvider.recordSearchSelection(query: query, type: .person, id: personItem.person.ids.trakt)
+        }
         performSegue(withIdentifier: "people", sender: personItem.person)
     }
 
@@ -199,7 +202,7 @@ extension PeopleSearchResultsViewController {
                                                                                                            height: 500 * 1.5)
                                                   return mediaPreviewViewController
                                               }, actionProvider: { _ -> UIMenu? in
-                                                  return UIMenu(children: [])
+                                                  UIMenu(children: [])
                                               })
         }
 
@@ -226,6 +229,9 @@ extension PeopleSearchResultsViewController {
         guard let indexPath = configuration.identifier as? IndexPath else { return }
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         guard case Wrapper.people(let personItem) = item else { return }
+        if case .search(_, let query) = service {
+            TraktAPIProvider.recordSearchSelection(query: query, type: .person, id: personItem.person.ids.trakt)
+        }
         performSegue(withIdentifier: "people", sender: personItem.person)
     }
 }

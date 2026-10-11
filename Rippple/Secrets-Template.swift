@@ -9,6 +9,8 @@ enum TraktAPIConfiguration {
     static let authBaseURL = "https://auth.trakt.tv"
     static let baseURL = "https://api.trakt.tv"
     static let clientId = "<#TRAKT_CLIENT_ID#>"
+    // Debug contributors: client secret + ripl://
+    // Team Debug and Release: "" + HTTPS (PKCE).
     static let secretId = "<#TRAKT_CLIENT_SECRET#>"
     static let callbackURL = "ripl://trakt/oauth2/callback"
 }

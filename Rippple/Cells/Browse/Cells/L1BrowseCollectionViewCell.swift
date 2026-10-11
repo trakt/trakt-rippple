@@ -82,3 +82,13 @@ final class L1BrowseCollectionViewCell: UICollectionViewCell {
         }
     }
 }
+
+extension L1BrowseCollectionViewCell: MediaDragSource {
+    var dragMedia: MediaModel? {
+        return media
+    }
+
+    var dragPreviewView: UIView? {
+        return poster
+    }
+}

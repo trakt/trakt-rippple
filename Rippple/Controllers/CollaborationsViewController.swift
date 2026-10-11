@@ -52,6 +52,7 @@ final class CollaborationsViewController: UITableViewController {
         super.viewDidLoad()
 
         navigationItem.style = .browser
+        navigationItem.subtitle = "Loading..."
 
         if user.isCurrentUser {
             navigationItem.title = "Collaborations"
@@ -84,7 +85,7 @@ final class CollaborationsViewController: UITableViewController {
                 self.refreshControl?.isEnabled = true
                 self.refreshControl?.endRefreshing()
                 self.error = nil
-                self.tableView.reloadData()
+                self.reloadLists()
             }.disposed(by: disposeBag)
         } else {
             fetchCollaborations()
@@ -114,7 +115,7 @@ final class CollaborationsViewController: UITableViewController {
     @IBAction func retry(_ sender: Any) {
         showLoading = true
         error = nil
-        tableView.reloadData()
+        reloadLists()
         if user.isCurrentUser {
             CollaborationsManager.shared.refresh()
         } else {
@@ -144,6 +145,17 @@ final class CollaborationsViewController: UITableViewController {
                                   user: user == list.user ? user : nil)
     }
 
+    private func reloadLists() {
+        if showLoading {
+            navigationItem.subtitle = "Loading..."
+        } else if error != nil {
+            navigationItem.subtitle = "Error"
+        } else {
+            navigationItem.subtitle = "\(lists.count) list\(lists.count == 1 ? "" : "s")"
+        }
+        tableView.reloadData()
+    }
+
     private func fetchCollaborations() {
         if SessionManager.shared.isLoggedOut {
             return
@@ -170,14 +182,14 @@ final class CollaborationsViewController: UITableViewController {
                         self.lists = lists
                         self.showLoading = false
                         self.error = nil
-                        self.tableView.reloadData()
+                        self.reloadLists()
                     }
                 } catch {
                     DispatchQueue.main.async {
                         print("customLists request JSON mapping failed! \(error)")
                         self.error = error
                         self.showLoading = false
-                        self.tableView.reloadData()
+                        self.reloadLists()
                     }
                 }
             case .failure(let error):
@@ -185,7 +197,7 @@ final class CollaborationsViewController: UITableViewController {
                     print("customLists request failure \(error)")
                     self.error = error
                     self.showLoading = false
-                    self.tableView.reloadData()
+                    self.reloadLists()
                 }
             }
         }

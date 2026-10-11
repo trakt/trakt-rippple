@@ -156,6 +156,14 @@ class BrowseTableViewCell: TintedCanvasTableViewCell {
             progress.resumeTimer()
         }
 
+        onListChangedReceiver.hotOnly().listen { [weak self] lists in
+            guard let self = self, let savedFilter = self.savedFilter else { return }
+            // Smart list items depend on their definition, which may have just changed.
+            if lists.contains(where: { $0.isSmartList && $0.isSource(of: savedFilter) }) {
+                self.fetchItems(ignoringCache: true)
+            }
+        }.disposed(by: disposeBag)
+
         onLastWatchedEpisodeActivitiesChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             if self.reuseIdentifier != "History" { return }
@@ -902,60 +910,16 @@ extension BrowseTableViewCell: UICollectionViewDataSource {
 
 extension BrowseTableViewCell: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        let media: MediaModel?
-        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
-            media = cell.media
-        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
-            media = cell.media
-        } else {
-            media = nil
-        }
-        guard let media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-        let media: MediaModel?
-        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
-            media = cell.media
-        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
-            media = cell.media
-        } else {
-            media = nil
-        }
-        guard let media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        let poster: PosterImageView?
-        let previewCell: UICollectionViewCell?
-        if let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell {
-            poster = cell.poster
-            previewCell = cell
-        } else if let cell = collectionView.cellForItem(at: indexPath) as? ListBrowseCollectionViewCell {
-            poster = cell.poster
-            previewCell = cell
-        } else {
-            poster = nil
-            previewCell = nil
-        }
-        guard let poster, let previewCell else { return nil }
-
-        let parameters = UIDragPreviewParameters()
-        parameters.backgroundColor = .clear
-        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.bounds, to: previewCell), cornerRadius: poster.layer.cornerRadius)
-        return parameters
+        guard let cell = collectionView.cellForItem(at: indexPath), let source = cell as? MediaDragSource else { return nil }
+        return UIDragItem.dragPreviewParameters(from: source.dragPreviewView, in: cell)
     }
 }
 

@@ -41,6 +41,17 @@ class SearchResultsViewController: UITableViewController {
         }
     }
 
+    /// Shows the empty state instead of the loading one while there is no service.
+    var showsEmptyStateWithoutService = false
+
+    /// The page size of a capped preview. A full page is counted with Trakt's total, or as "25+" without one.
+    var resultsLimit: Int?
+
+    private var searchRequest: Cancellable?
+    private var fetchRequest: Cancellable?
+    /// Services can change while a request is in flight, as in the smart builders: only the latest response is shown.
+    private var fetchGeneration = 0
+
     // Private
 
     private enum ViewControllerSegue: String {
@@ -240,7 +251,26 @@ class SearchResultsViewController: UITableViewController {
 
         if service != nil {
             fetch()
+        } else {
+            // A pending response belongs to the previous service.
+            fetchRequest?.cancel()
+            fetchGeneration += 1
+            if showsEmptyStateWithoutService {
+                snapshot.deleteAllItems()
+                snapshot.appendSections([.content])
+                navigationItem.subtitle = nil
+                dataSource.apply(snapshot, animatingDifferences: false)
+            }
         }
+    }
+
+    private func showSearchResults(_ results: [TraktSearchResult]) {
+        let media = results.compactMap(\.media)
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
+        snapshot.appendSections([.content])
+        snapshot.appendItems(media.map(Wrapper.media))
+        navigationItem.subtitle = "\(media.count) result\(media.count == 1 ? "" : "s")"
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 
     func fetch() {
@@ -250,7 +280,31 @@ class SearchResultsViewController: UITableViewController {
 
         guard let service = service else { return }
 
-        TraktAPIProvider.provider.request(service, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
+        searchRequest?.cancel()
+        if case .search(let type, let query) = service, type != .person, type != .list {
+            searchRequest = TraktAPIProvider.search(query: query, type: type, includeLocal: true, onUpdate: { [weak self] results in
+                guard let self = self else { return }
+                self.showSearchResults(results)
+            }) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let results):
+                    self.showSearchResults(results)
+                case .failure(let error):
+                    self.error = error
+                    var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
+                    snapshot.appendSections([.error])
+                    self.navigationItem.subtitle = "Couldn’t load results"
+                    self.dataSource.apply(snapshot, animatingDifferences: false)
+                }
+            }
+            return
+        }
+
+        fetchRequest?.cancel()
+        fetchGeneration += 1
+        let generation = fetchGeneration
+        fetchRequest = TraktAPIProvider.provider.request(service, callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
@@ -266,6 +320,8 @@ class SearchResultsViewController: UITableViewController {
                     } else if case .savedFilter(_, let path, _, _) = service {
                         if path == "/shows/popular" {
                             searchResults = try response.map([Show].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: nil, show: $0, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
+                        } else if path == "/media/popular" {
+                            searchResults = try response.map([UntypedMedia].self, using: TraktAPIProvider.decoder).map(\.mediaItem)
                         } else if path == "/movies/popular" {
                             searchResults = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
                         } else {
@@ -282,33 +338,70 @@ class SearchResultsViewController: UITableViewController {
                     var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
                     snapshot.appendSections([.content])
                     snapshot.appendItems(searchResults.map { Wrapper.media(MediaModel(item: $0)) })
+                    let total = response.response?.value(forHTTPHeaderField: "X-Pagination-Item-Count").flatMap { Int($0) }
                     DispatchQueue.main.async {
-                        self.navigationItem.subtitle = "\(searchResults.count) result\(searchResults.count < 2 ? "" : "s")"
+                        guard self.fetchGeneration == generation else { return }
+                        self.navigationItem.subtitle = self.resultsSubtitle(count: searchResults.count, total: total)
                         self.dataSource.apply(snapshot, animatingDifferences: false)
                     }
                 } catch {
                     print("Comments request JSON mapping failed! \(error)")
-                    self.error = error
 
                     var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
                     snapshot.appendSections([.error])
                     DispatchQueue.main.async {
+                        guard self.fetchGeneration == generation else { return }
+                        self.error = error
                         self.navigationItem.subtitle = "Error"
                         self.dataSource.apply(snapshot, animatingDifferences: false)
                     }
                 }
             case .failure(let error):
                 print("Comments request failure \(error)")
-                self.error = error
 
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
                 snapshot.appendSections([.error])
                 DispatchQueue.main.async {
+                    guard self.fetchGeneration == generation else { return }
+                    self.error = error
                     self.navigationItem.subtitle = "Error"
                     self.dataSource.apply(snapshot, animatingDifferences: false)
                 }
             }
         }
+    }
+
+    private func recordSelection(_ media: MediaModel) {
+        guard case .search(_, let query) = service else { return }
+        switch media {
+        case .movie(let movie): TraktAPIProvider.recordSearchSelection(query: query, type: .movie, id: movie.identifiers.trakt)
+        case .show(let show): TraktAPIProvider.recordSearchSelection(query: query, type: .show, id: show.identifiers.trakt)
+        default: break
+        }
+    }
+
+    private func openSearchResult(_ media: MediaModel) {
+        recordSelection(media)
+        performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: media)
+    }
+
+    deinit {
+        searchRequest?.cancel()
+        fetchRequest?.cancel()
+    }
+
+    private func resultsSubtitle(count: Int, total: Int?) -> String {
+        guard let limit = resultsLimit else {
+            return "\(count) result\(count < 2 ? "" : "s")"
+        }
+        // Previews read as current matches: what they show changes over time.
+        guard count >= limit else {
+            return "\(count) current match\(count < 2 ? "" : "es")"
+        }
+        guard let total = total, total >= count else {
+            return "\(limit)+ current matches"
+        }
+        return "\(total.formatted()) current matches"
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -329,7 +422,7 @@ extension SearchResultsViewController {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         guard case Wrapper.media(let mediaModel) = item else { return }
 
-        performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: mediaModel)
+        openSearchResult(mediaModel)
     }
 
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -392,6 +485,7 @@ extension SearchResultsViewController {
 
     override func tableView(_ tableView: UITableView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
         guard let controller = contextMenu.commitViewController else { return }
+        if let cell = contextMenu.cell as? MediaTableViewCell, let media = cell.media { recordSelection(media) }
         navigationController?.show(controller, sender: self)
     }
 
@@ -417,7 +511,7 @@ extension SearchResultsViewController: MediaTableViewCellDelegate {
         guard case Wrapper.media(let mediaModel) = item else { return }
 
         if action == .details {
-            performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: mediaModel)
+            openSearchResult(mediaModel)
         }
     }
 }
@@ -468,8 +562,8 @@ extension MediaModel {
             guard let navigationController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "Action Navigation Controller") as? UINavigationController else { return }
 
             let markWatchedActionViewController = UIStoryboard(name: "Actions", bundle: nil).instantiateViewController(identifier: "Mark Watched") { coder -> MarkWatchedActionViewController? in
-                return MarkWatchedActionViewController(coder: coder,
-                                                       media: self)
+                MarkWatchedActionViewController(coder: coder,
+                                                media: self)
             }
 
             navigationController.viewControllers = [markWatchedActionViewController]
@@ -665,5 +759,22 @@ extension SmartSearch {
                                query: "",
                                limit: nil)
         }
+    }
+}
+
+/// Mixed popular charts return movies and shows without their type: only shows count aired episodes.
+private struct UntypedMedia: Decodable {
+    private enum CodingKeys: String, CodingKey {
+        case airedEpisodes = "aired_episodes"
+    }
+
+    let mediaItem: MediaItem
+
+    init(from decoder: Decoder) throws {
+        let isShow = try decoder.container(keyedBy: CodingKeys.self).contains(.airedEpisodes)
+        mediaItem = try MediaItem(movie: isShow ? nil : Movie(from: decoder),
+                                  show: isShow ? Show(from: decoder) : nil,
+                                  episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil,
+                                  collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil)
     }
 }

@@ -60,6 +60,41 @@ enum KeychainStore {
         token()?.accessToken
     }
 
+    #if targetEnvironment(macCatalyst)
+    static func mcpAccessKey(rotate: Bool = false) throws -> String {
+        let key = "MCPServer.accessKey"
+        let previousValue = data(forKey: key).flatMap { String(data: $0, encoding: .utf8) }
+        if !rotate, let value = previousValue,
+           value.count == 5, value.unicodeScalars.allSatisfy({ $0.properties.isEmojiPresentation }) {
+            return value
+        }
+        // Use Unicode's Emoticons block rather than maintaining a curated emoji list.
+        let emojis = (0x1F600...0x1F64F).compactMap(UnicodeScalar.init).filter {
+            $0.properties.isEmojiPresentation
+        }
+        let count = UInt32(emojis.count)
+        let limit = UInt32.max - UInt32.max % count
+        var value = ""
+        repeat {
+            value = ""
+            for _ in 0..<5 {
+                var random: UInt32 = 0
+                repeat {
+                    guard SecRandomCopyBytes(kSecRandomDefault, MemoryLayout<UInt32>.size, &random) == errSecSuccess else {
+                        throw NSError(domain: "MCPServer", code: 1, userInfo: [NSLocalizedDescriptionKey: "Could not generate a local access key."])
+                    }
+                } while random >= limit
+                value.unicodeScalars.append(emojis[Int(random % count)])
+            }
+        } while value == previousValue
+        set(Data(value.utf8), forKey: key)
+        guard data(forKey: key) == Data(value.utf8) else {
+            throw NSError(domain: "MCPServer", code: 2, userInfo: [NSLocalizedDescriptionKey: "Could not save the local access key in Keychain."])
+        }
+        return value
+    }
+    #endif
+
     // MARK: Private
 
     private static func isKeychainAvailable() -> Bool {

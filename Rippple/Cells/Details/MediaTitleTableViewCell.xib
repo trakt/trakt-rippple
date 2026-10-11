@@ -203,18 +203,18 @@
                 <constraints>
                     <constraint firstItem="rmb-K5-DXI" firstAttribute="leading" secondItem="XIS-Oy-9rR" secondAttribute="leading" id="2Tk-wc-s75"/>
                     <constraint firstItem="bcy-b4-cnr" firstAttribute="top" secondItem="W0f-hg-uLk" secondAttribute="top" id="9tU-xt-YMP"/>
-                    <constraint firstItem="W0f-hg-uLk" firstAttribute="trailing" secondItem="jFD-Zr-7Uq" secondAttribute="trailing" constant="3" id="Hv2-qh-t0h"/>
+                    <constraint firstItem="W0f-hg-uLk" firstAttribute="trailing" secondItem="GAk-y0-PaN" secondAttribute="trailing" constant="0" id="Hv2-qh-t0h"/>
                     <constraint firstItem="rmb-K5-DXI" firstAttribute="bottom" secondItem="XIS-Oy-9rR" secondAttribute="bottom" id="Kps-iv-TJs"/>
                     <constraint firstItem="JUe-xR-9dU" firstAttribute="top" secondItem="7qK-lE-rga" secondAttribute="top" constant="4" id="Mqm-iG-b5y"/>
                     <constraint firstItem="rmb-K5-DXI" firstAttribute="top" secondItem="XIS-Oy-9rR" secondAttribute="top" id="QQY-Vj-2Bd"/>
-                    <constraint firstItem="W0f-hg-uLk" firstAttribute="bottom" secondItem="jFD-Zr-7Uq" secondAttribute="bottom" constant="1" id="UKA-fl-7i5"/>
+                    <constraint firstItem="W0f-hg-uLk" firstAttribute="bottom" secondItem="GAk-y0-PaN" secondAttribute="bottom" constant="1" id="UKA-fl-7i5"/>
                     <constraint firstItem="JUe-xR-9dU" firstAttribute="leading" secondItem="7qK-lE-rga" secondAttribute="leading" constant="12" id="XZL-yc-XNE"/>
-                    <constraint firstItem="W0f-hg-uLk" firstAttribute="leading" secondItem="jFD-Zr-7Uq" secondAttribute="leading" constant="-3" id="XmK-lD-CTx"/>
+                    <constraint firstItem="W0f-hg-uLk" firstAttribute="leading" secondItem="GAk-y0-PaN" secondAttribute="leading" constant="0" id="XmK-lD-CTx"/>
                     <constraint firstItem="rmb-K5-DXI" firstAttribute="trailing" secondItem="XIS-Oy-9rR" secondAttribute="trailing" id="bLc-FJ-wbg"/>
                     <constraint firstItem="bcy-b4-cnr" firstAttribute="leading" secondItem="W0f-hg-uLk" secondAttribute="leading" id="gf6-Pv-1jJ"/>
                     <constraint firstItem="bcy-b4-cnr" firstAttribute="trailing" secondItem="W0f-hg-uLk" secondAttribute="trailing" id="lk9-uE-HuU"/>
                     <constraint firstAttribute="bottom" secondItem="JUe-xR-9dU" secondAttribute="bottom" constant="4" id="noD-FY-TQM"/>
-                    <constraint firstItem="W0f-hg-uLk" firstAttribute="top" secondItem="jFD-Zr-7Uq" secondAttribute="top" constant="-1" id="qJU-FZ-ypo"/>
+                    <constraint firstItem="W0f-hg-uLk" firstAttribute="top" secondItem="GAk-y0-PaN" secondAttribute="top" constant="-1" id="qJU-FZ-ypo"/>
                     <constraint firstAttribute="trailing" secondItem="JUe-xR-9dU" secondAttribute="trailing" constant="12" id="xuY-xj-uby"/>
                     <constraint firstItem="bcy-b4-cnr" firstAttribute="bottom" secondItem="W0f-hg-uLk" secondAttribute="bottom" id="zp1-3d-XKG"/>
                 </constraints>
@@ -222,6 +222,7 @@
             <connections>
                 <outlet property="cardView" destination="JUe-xR-9dU" id="rVR-AR-Y8w"/>
                 <outlet property="certificationBorderView" destination="W0f-hg-uLk" id="oPZ-Cc-2Vh"/>
+                <outlet property="certificationButton" destination="bcy-b4-cnr" id="PGD-BT-001"/>
                 <outlet property="certificationLabel" destination="jFD-Zr-7Uq" id="exR-Lm-YUq"/>
                 <outlet property="genreLabel" destination="7dQ-c5-Pzw" id="gog-zM-Llu"/>
                 <outlet property="mainActionButton" destination="0KI-mo-aQV" id="ULO-fS-4vq"/>

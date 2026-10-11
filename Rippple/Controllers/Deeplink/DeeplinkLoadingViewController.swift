@@ -840,8 +840,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                          "WallViewController.savedFilter",
                                          "NotesManager.notes",
                                          "ListsManager.lists",
-                                         "CollaborationsManager.collaborations",
-                                         "SavedFiltersManager.savedFilters"]
+                                         "CollaborationsManager.collaborations"]
 
         let dataUbiquitousKeys: Set = ["EpisodeToWatchManager.pinnedShows",
                                        "MovieToWatchManager.pinnedMovies",

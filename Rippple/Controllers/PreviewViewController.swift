@@ -35,6 +35,8 @@ final class PreviewViewController: UIViewController {
         // Preview
         if let commentsViewController = segue.destination as? CommentsViewController {
             commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.preview(commentModel))
+            // The navigation bar follows this controller's navigationItem, not the embedded child's.
+            setContentScrollView(commentsViewController.tableView, for: .top)
         }
     }
 
@@ -85,6 +87,7 @@ final class PreviewViewController: UIViewController {
     }
 
     @IBAction func send(_ sender: Any) {
+        guard commentModel.comment.gif == nil else { return }
         guard let window = view.window else { return }
         window.isUserInteractionEnabled = false
         showLoader()

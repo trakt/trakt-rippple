@@ -105,10 +105,13 @@ final class ShowProgressBar: UIView {
 
         contentMode = .redraw
 
+        // Progress is computed and broadcast from background queues
         onProgressCacheChangedReceiver.listen { [weak self] progress in
-            guard let self = self else { return }
-            if progress.show == self.media?.show {
-                self.showsProgress = progress.showProgress
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if progress.show == self.media?.show {
+                    self.showsProgress = progress.showProgress
+                }
             }
         }.disposed(by: disposeBag)
     }

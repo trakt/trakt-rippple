@@ -180,6 +180,7 @@ struct SocialActivityUserSummary: Hashable {
 
         let comment = Comment(identifier: identifier,
                               body: socialComment.body ?? "",
+                              gif: socialComment.gif,
                               containsSpoiler: socialComment.containsSpoiler,
                               isReview: socialComment.isReview,
                               language: socialComment.language,

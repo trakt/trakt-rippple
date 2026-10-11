@@ -1,9 +1,9 @@
---min-version 0.61.1
+--min-version 0.63.0
 --swift-version 5.0
 
 --exclude BuildTools/.build,BuildTools/.swiftpm,build,Rippple/Secrets.swift
 
---disable wrapMultilineStatementBraces
+--disable wrapMultilineStatementBraces,wrapIfStatementBodies
 
 --binary-grouping none
 --decimal-grouping none

@@ -146,6 +146,13 @@ extension CollectionItem {
 }
 
 final class CollectionViewController: UITableViewController {
+    private lazy var mediaDropDelegate = MediaTableViewDropDelegate(canDrop: { [weak self] in
+        guard let self = self else { return false }
+        return self.user?.isCurrentUser == true
+    }, onDrop: { models in
+        models.forEach { $0.addToCollection() }
+    })
+
     var user: User!
 
     required init?(coder aDecoder: NSCoder) {
@@ -420,6 +427,7 @@ final class CollectionViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.dropDelegate = mediaDropDelegate
 
         refreshControl?.isEnabled = false
 

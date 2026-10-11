@@ -184,6 +184,7 @@ struct ToWatchWidget: Widget {
 
 @available(iOS 27.0, macOS 27.0, macCatalyst 27.0, visionOS 27.0, *)
 private struct ToWatchWidgetEntryView: View {
+    @Environment(\.showsWidgetContainerBackground) private var showsWidgetContainerBackground
     @Environment(\.widgetFamily) private var family
     @Environment(\.widgetRenderingMode) private var widgetRenderingMode
 
@@ -200,7 +201,7 @@ private struct ToWatchWidgetEntryView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .padding(contentPadding)
+        .padding(showsWidgetContainerBackground ? contentPadding : 0)
         .containerBackground(.background, for: .widget)
     }
 

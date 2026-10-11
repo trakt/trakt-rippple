@@ -62,6 +62,7 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="l1l-br-d0M" secondAttribute="height" multiplier="2:3" id="UyO-lf-EQ4"/>
+                                    <constraint firstAttribute="height" priority="999" constant="620" id="Ea8-BP-yrD"/>
                                 </constraints>
                             </imageView>
                         </subviews>

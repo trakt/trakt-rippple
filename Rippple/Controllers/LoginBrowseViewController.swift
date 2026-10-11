@@ -36,4 +36,11 @@ final class LoginBrowseViewController: UIViewController {
             }
         }.disposed(by: disposeBag)
     }
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // The navigation bar follows this controller's navigationItem, not the embedded child's.
+        if let browseViewController = segue.destination as? BrowseViewController {
+            setContentScrollView(browseViewController.tableView, for: .top)
+        }
+    }
 }

@@ -39,3 +39,13 @@ final class ListMediaCollectionViewCell: UICollectionViewCell {
         }
     }
 }
+
+extension ListMediaCollectionViewCell: MediaDragSource {
+    var dragMedia: MediaModel? {
+        return item?.movie?.mediaModel ?? item?.show?.mediaModel
+    }
+
+    var dragPreviewView: UIView? {
+        return posterImageView
+    }
+}

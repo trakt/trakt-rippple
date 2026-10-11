@@ -24,16 +24,19 @@ final class CommentCountLabel: UILabel {
         super.awakeFromNib()
 
         commentPostedReceiver.listen { [weak self] commentModel in
-            guard let self = self else { return }
+            // Comments are posted from background network callbacks
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
 
-            if let media = self.media,
-               media == commentModel.media {
-                self.update(with: media)
-            }
+                if let media = self.media,
+                   media == commentModel.media {
+                    self.update(with: media)
+                }
 
-            if let comment = self.comment,
-               comment == commentModel.comment {
-                self.cancellable = self.fetchCommentCount(type: .comment(commentId: comment.identifier))
+                if let comment = self.comment,
+                   comment == commentModel.comment {
+                    self.cancellable = self.fetchCommentCount(type: .comment(commentId: comment.identifier))
+                }
             }
         }.disposed(by: disposeBag)
     }

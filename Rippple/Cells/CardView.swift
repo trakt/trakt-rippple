@@ -68,9 +68,21 @@ final class CardView: UIView {
 
     private var constraint: NSLayoutConstraint?
 
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setup()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
     override func awakeFromNib() {
         super.awakeFromNib()
+        setup()
+    }
 
+    private func setup() {
         backgroundColor = .clear
         clipsToBounds = true
         layer.cornerRadius = ViewRadius.large.rawValue

@@ -12,6 +12,13 @@ import Receiver
 import UIKit
 
 final class WatchlistViewController: UITableViewController {
+    private lazy var mediaDropDelegate = MediaTableViewDropDelegate(canDrop: { [weak self] in
+        guard let self = self else { return false }
+        return self.user?.isCurrentUser == true
+    }, onDrop: { models in
+        models.forEach { $0.addToWatchlist() }
+    })
+
     var user: User!
 
     required init?(coder aDecoder: NSCoder) {
@@ -380,6 +387,7 @@ final class WatchlistViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.dropDelegate = mediaDropDelegate
 
         refreshControl?.isEnabled = false
 

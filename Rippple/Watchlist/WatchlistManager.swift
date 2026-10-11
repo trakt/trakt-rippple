@@ -12,13 +12,14 @@ import UIKit
 
 let (onWatchlistChangedTransmitter, onWatchlistChangedReceiver) = Receiver<Bool>.make(with: .hot)
 let (onMoviesWatchlistedChangedTransmitter, onMoviesWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
-let (onShowsWatchlistedChangedTransmitter, onShowsWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
+let (onShowsWatchlistedChangedTransmitter, onShowsWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .warm(upTo: 1))
 let (onEpisodesWatchlistedChangedTransmitter, onEpisodesWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 let (onSeasonsWatchlistedChangedTransmitter, onSeasonsWatchlistedChangedReceiver) = Receiver<[Int64]>.make(with: .hot)
 let (onWatchlistSearchableDataSourceChangedTransmitter, onWatchlistSearchableDataSourceChangedReceiver) = Receiver<ToWatchSearchableDataSource>.make(with: .warm(upTo: 1))
 
 final class WatchlistManager {
     private let disposeBag = DisposeBag()
+    private var lastWatchlistCheck: Date = .now
 
     private init() {}
 
@@ -40,6 +41,14 @@ final class WatchlistManager {
             self.refreshWatchlist()
         }.disposed(by: disposeBag)
 
+        onLastWatchlistActivitiesChangedReceiver.listen { [weak self] lastActivities in
+            guard let self = self else { return }
+            if self.lastWatchlistCheck < lastActivities.updatedAt {
+                self.lastWatchlistCheck = .now
+                self.refreshWatchlist()
+            }
+        }.disposed(by: disposeBag)
+
         onUserLoggedOutReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.watchlist.removeAll()
@@ -47,6 +56,7 @@ final class WatchlistManager {
             self.watchlistedShows.removeAll()
             self.watchlistedSeasons.removeAll()
             self.watchlistedEpisodes.removeAll()
+            self.hasLoadedWatchlistedShows = false
         }.disposed(by: disposeBag)
 
         // refresh if checkin in in progress
@@ -151,9 +161,12 @@ final class WatchlistManager {
         }
     }
 
+    private var hasLoadedWatchlistedShows = false
+
     fileprivate var watchlistedShows = Set<Int64>() {
         didSet {
-            if self.watchlistedShows != oldValue {
+            if self.watchlistedShows != oldValue || !hasLoadedWatchlistedShows {
+                hasLoadedWatchlistedShows = true
                 onShowsWatchlistedChangedTransmitter.broadcast(Array(watchlistedShows))
             }
         }

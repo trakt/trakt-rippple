@@ -318,3 +318,13 @@ final class ListBrowseCollectionViewCell: UICollectionViewCell {
         return (text, episodeTitleRange)
     }
 }
+
+extension ListBrowseCollectionViewCell: MediaDragSource {
+    var dragMedia: MediaModel? {
+        return media
+    }
+
+    var dragPreviewView: UIView? {
+        return poster
+    }
+}

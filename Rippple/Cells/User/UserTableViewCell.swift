@@ -24,6 +24,7 @@ final class UserTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var memberSinceLabel: UILabel?
     @IBOutlet var VIPView: UIView?
     @IBOutlet var VIPLabel: UILabel?
+    @IBOutlet private var VIPImageView: UIImageView?
 
     @IBOutlet var privateStatus: UIImageView?
 
@@ -50,6 +51,7 @@ final class UserTableViewCell: TintedCanvasTableViewCell {
         super.awakeFromNib()
 
         commentReactionsLabel?.isHidden = true
+        VIPImageView?.image = VIPImageView?.image?.withTintColor(.white, renderingMode: .alwaysOriginal)
 
         dateFormatter.locale = Locale(identifier: "en_US")
         dateFormatter.setLocalizedDateFormatFromTemplate("MMM yyyy")

@@ -105,6 +105,23 @@ class SidebarViewController: UIViewController {
         }
     }
 
+    private var smartLists = [List]() {
+        didSet {
+            var sectionSnapshot = dataSource.snapshot(for: .smartLists)
+            sectionSnapshot.deleteAll()
+
+            sectionSnapshot.append([Item(title: Section.smartLists.rawValue, subtitle: nil, image: nil)])
+            sectionSnapshot.append(smartLists.map { Item(title: $0.name.emojiUnescapedString,
+                                                         subtitle: $0.description,
+                                                         image: UIImage(systemName: "sparkles")) },
+                                   to: sectionSnapshot.items[0])
+            if UserDefaults.standard.bool(forKey: "SmartListsSideBarExpanded") {
+                sectionSnapshot.expand([sectionSnapshot.items[0]])
+            }
+            dataSource.apply(sectionSnapshot, to: .smartLists, animatingDifferences: true, completion: nil)
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -131,6 +148,11 @@ class SidebarViewController: UIViewController {
         onLikedListsChangedReceiver.listen { [weak self] lists in
             guard let self = self else { return }
             self.likedLists = lists
+        }.disposed(by: disposeBag)
+
+        onSmartListsChangedReceiver.listen { [weak self] lists in
+            guard let self = self else { return }
+            self.smartLists = lists
         }.disposed(by: disposeBag)
 
         commandReceiver.listen { keyCommand in
@@ -217,24 +239,25 @@ class SidebarViewController: UIViewController {
         if indexPath.section == 3 {
             // if it's a list, we check the number of lists
             if indexPath.row <= lists.count {
-                collectionView(collectionView,
-                               didSelectItemAt: indexPath)
+                selectItem(at: indexPath, allowsReselection: false)
             } else {
-                collectionView(collectionView,
-                               didSelectItemAt: IndexPath(row: 3, section: 0))
+                selectItem(at: IndexPath(row: 3, section: 0), allowsReselection: false)
             }
         } else if indexPath.section == 4 {
+            if indexPath.row <= smartLists.count {
+                selectItem(at: indexPath, allowsReselection: false)
+            } else {
+                selectItem(at: IndexPath(row: 3, section: 0), allowsReselection: false)
+            }
+        } else if indexPath.section == 5 {
             // if it's a liked list, we check the number of likedLists
             if indexPath.row <= likedLists.count {
-                collectionView(collectionView,
-                               didSelectItemAt: indexPath)
+                selectItem(at: indexPath, allowsReselection: false)
             } else {
-                collectionView(collectionView,
-                               didSelectItemAt: IndexPath(row: 3, section: 0))
+                selectItem(at: IndexPath(row: 3, section: 0), allowsReselection: false)
             }
         } else {
-            collectionView(collectionView,
-                           didSelectItemAt: IndexPath(row: row, section: section))
+            selectItem(at: IndexPath(row: row, section: section), allowsReselection: false)
         }
     }
 
@@ -273,8 +296,17 @@ class SidebarViewController: UIViewController {
             UISelectionFeedbackGenerator().selectionChanged()
         })
         profileButton.addAction(profileAction, for: .touchUpInside)
+        if UIApplication.shared.supportsMultipleScenes {
+            profileButton.menu = UIMenu(children: [UIAction(title: "Open in New Window", image: UIImage(systemName: "macwindow.badge.plus")) { [weak self] _ in
+                guard let self = self else { return }
+                guard SessionManager.shared.isLoggedIn else { return }
+                SceneDelegate.openWindow(.profile, title: "Your Profile", from: self.view.window)
+            }])
+        }
         profileButton.setImage(UIImage(imageLiteralResourceName: "bg_placeholder_avatar_small"), for: .normal)
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: profileButton)
+        let profileBarButtonItem = UIBarButtonItem(customView: profileButton)
+        profileBarButtonItem.hidesSharedBackground = true
+        navigationItem.leftBarButtonItem = profileBarButtonItem
     }
 
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
@@ -374,6 +406,7 @@ extension SidebarViewController {
                 #else
                 var content = UIListContentConfiguration.subtitleCell()
                 content.secondaryText = item.subtitle
+                content.secondaryTextProperties.numberOfLines = 2
                 #endif
 
                 content.text = item.title
@@ -416,7 +449,8 @@ extension SidebarViewController {
             let indexPath = self.dataSource.indexPath(for: item)
             if indexPath?.section == 2 { UserDefaults.standard.set(true, forKey: "LibrarySideBarExpanded") }
             if indexPath?.section == 3 { UserDefaults.standard.set(true, forKey: "ListsSideBarExpanded") }
-            if indexPath?.section == 4 { UserDefaults.standard.set(true, forKey: "LikedListsSideBarExpanded") }
+            if indexPath?.section == 4 { UserDefaults.standard.set(true, forKey: "SmartListsSideBarExpanded") }
+            if indexPath?.section == 5 { UserDefaults.standard.set(true, forKey: "LikedListsSideBarExpanded") }
             UserDefaults.standard.synchronize()
         }
 
@@ -424,13 +458,14 @@ extension SidebarViewController {
             let indexPath = self.dataSource.indexPath(for: item)
             if indexPath?.section == 2 { UserDefaults.standard.set(false, forKey: "LibrarySideBarExpanded") }
             if indexPath?.section == 3 { UserDefaults.standard.set(false, forKey: "ListsSideBarExpanded") }
-            if indexPath?.section == 4 { UserDefaults.standard.set(false, forKey: "LikedListsSideBarExpanded") }
+            if indexPath?.section == 4 { UserDefaults.standard.set(false, forKey: "SmartListsSideBarExpanded") }
+            if indexPath?.section == 5 { UserDefaults.standard.set(false, forKey: "LikedListsSideBarExpanded") }
             UserDefaults.standard.synchronize()
         }
 
         // Creating and applying snapshots
 
-        let sections: [Section] = [.tabs, .moreTabs, .lists, .customLists, .likedLists]
+        let sections: [Section] = [.tabs, .moreTabs, .lists, .customLists, .smartLists, .likedLists]
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         snapshot.appendSections(sections)
         dataSource.apply(snapshot, animatingDifferences: false)
@@ -470,6 +505,14 @@ extension SidebarViewController {
                     sectionSnapshot.expand([headerItem])
                 }
                 dataSource.apply(sectionSnapshot, to: section)
+            case .smartLists:
+                let headerItem = Item(title: section.rawValue, subtitle: nil, image: nil)
+                var sectionSnapshot = NSDiffableDataSourceSectionSnapshot<Item>()
+                sectionSnapshot.append([headerItem])
+                if UserDefaults.standard.bool(forKey: "SmartListsSideBarExpanded") {
+                    sectionSnapshot.expand([headerItem])
+                }
+                dataSource.apply(sectionSnapshot, to: section)
             }
         }
     }
@@ -482,10 +525,15 @@ extension SidebarViewController: UICollectionViewDelegate {
         if indexPath.section == 2 && indexPath.row == 0 { return false }
         if indexPath.section == 3 && indexPath.row == 0 { return false }
         if indexPath.section == 4 && indexPath.row == 0 { return false }
+        if indexPath.section == 5 && indexPath.row == 0 { return false }
         return true
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        selectItem(at: indexPath, allowsReselection: true)
+    }
+
+    private func selectItem(at indexPath: IndexPath, allowsReselection: Bool) {
         defer {
             UserDefaults.standard.synchronize()
         }
@@ -497,7 +545,9 @@ extension SidebarViewController: UICollectionViewDelegate {
             guard secondaryViewControllers.indices.contains(indexPath.row) else { return }
             if let navigationController = splitViewController?.viewController(for: column) as? UINavigationController,
                navigationController == secondaryViewControllers[indexPath.row] {
-                handleReselection(of: navigationController, secondaryViewControllerIndex: indexPath.row)
+                if allowsReselection {
+                    handleReselection(of: navigationController, secondaryViewControllerIndex: indexPath.row)
+                }
             } else {
                 setSupplementaryView(index: indexPath.row)
             }
@@ -506,7 +556,9 @@ extension SidebarViewController: UICollectionViewDelegate {
             guard secondaryViewControllers.indices.contains(secondaryViewControllerIndex) else { return }
             if let navigationController = splitViewController?.viewController(for: column) as? UINavigationController,
                navigationController == secondaryViewControllers[secondaryViewControllerIndex] {
-                handleReselection(of: navigationController, secondaryViewControllerIndex: secondaryViewControllerIndex)
+                if allowsReselection {
+                    handleReselection(of: navigationController, secondaryViewControllerIndex: secondaryViewControllerIndex)
+                }
             } else {
                 setSupplementaryView(index: secondaryViewControllerIndex)
             }
@@ -551,10 +603,11 @@ extension SidebarViewController: UICollectionViewDelegate {
             navigationController.topViewController?.loadViewIfNeeded()
             splitViewController?.setViewController(listsViewController, for: column)
             navigationController.topViewController?.navigationItem.hidesBackButton = true
-        } else if indexPath.section == 4 {
+        } else if indexPath.section == 4 || indexPath.section == 5 {
             let listIndex = indexPath.row - 1
-            guard likedLists.indices.contains(listIndex) else { return }
-            let list = likedLists[listIndex]
+            let sectionLists = indexPath.section == 4 ? smartLists : likedLists
+            guard sectionLists.indices.contains(listIndex) else { return }
+            let list = sectionLists[listIndex]
             if let encoded = try? JSONEncoder().encode(list) {
                 UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
                 UserDefaults.standard.set(encoded, forKey: "CustomListsViewController.customList")
@@ -684,6 +737,7 @@ private enum Section: String {
     case moreTabs
     case lists = "Your Lists"
     case customLists = "Custom Lists"
+    case smartLists = "Smart Lists"
     case likedLists = "Liked Lists"
 }
 
@@ -696,65 +750,54 @@ extension SidebarViewController: UICollectionViewDropDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {
-        for item in session.items where item.itemProvider.canLoadObject(ofClass: NSURL.self) {
-            return true
-        }
-        return false
+        return !session.items.isEmpty && session.items.allSatisfy { $0.hasMedia }
     }
 
     func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
-        for visibleCell in collectionView.visibleCells {
-            visibleCell.isSelected = false
-        }
         guard let destinationIndexPath = destinationIndexPath else { return UICollectionViewDropProposal(operation: .cancel) }
-        if destinationIndexPath.row == 0 {
-            return UICollectionViewDropProposal(operation: .cancel)
-        }
-        if destinationIndexPath.section == 0 {
-            return UICollectionViewDropProposal(operation: .cancel)
-        }
-        if destinationIndexPath.section == 1 {
-            return UICollectionViewDropProposal(operation: .cancel)
-        }
-
-        // Watched (can't drop)
-        if destinationIndexPath.section == 2 && destinationIndexPath.row == 4 {
-            return UICollectionViewDropProposal(operation: .cancel)
-        }
-        // Collaborations (can't drop)
-        if destinationIndexPath.section == 2 && destinationIndexPath.row == 5 {
-            return UICollectionViewDropProposal(operation: .cancel)
-        }
-        // Liked Lists section header row (can't drop)
-        if destinationIndexPath.section == 4 && destinationIndexPath.row == 0 {
+        switch destinationIndexPath.section {
+        case 2:
+            guard (1...3).contains(destinationIndexPath.row) else { return UICollectionViewDropProposal(operation: .cancel) }
+        case 3:
+            guard lists.indices.contains(destinationIndexPath.row - 1) else { return UICollectionViewDropProposal(operation: .cancel) }
+        default:
             return UICollectionViewDropProposal(operation: .cancel)
         }
 
-        collectionView.cellForItem(at: destinationIndexPath)?.isSelected = true
-        return UICollectionViewDropProposal(operation: .copy)
+        return UICollectionViewDropProposal(operation: .copy, intent: .insertIntoDestinationIndexPath)
     }
 
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
-        for visibleCell in collectionView.visibleCells {
-            visibleCell.isSelected = false
-        }
-
         guard let destinationIndexPath = coordinator.destinationIndexPath else { return }
 
-        if destinationIndexPath.section == 2 {
-            if destinationIndexPath.row == 1 {
-                addToWatchlist(models: coordinator.items.compactMap { $0.dragItem.localObject as? MediaModel })
-            } else if destinationIndexPath.row == 2 {
-                addToRecommendations(models: coordinator.items.compactMap { $0.dragItem.localObject as? MediaModel })
-            } else {
-                addToCollection(models: coordinator.items.compactMap { $0.dragItem.localObject as? MediaModel })
-            }
-        }
+        let list: List?
         if destinationIndexPath.section == 3 {
-            add(models: coordinator.items.compactMap { $0.dragItem.localObject as? MediaModel }, to: lists[destinationIndexPath.row - 1])
+            guard lists.indices.contains(destinationIndexPath.row - 1) else { return }
+            list = lists[destinationIndexPath.row - 1]
+        } else {
+            guard destinationIndexPath.section == 2, (1...3).contains(destinationIndexPath.row) else { return }
+            list = nil
         }
-        if destinationIndexPath.section == 4 {
-            // Do nothing, can't add to liked lists
+        let items = coordinator.items.map { $0.dragItem }
+
+        UIDragItem.loadMedia(from: items) { [weak self] result in
+            guard let self = self else { return }
+            do {
+                let models = try result.get()
+                guard !models.isEmpty, SessionManager.shared.isLoggedIn else { return }
+                if let list = list {
+                    self.add(models: models, to: list)
+                } else {
+                    switch destinationIndexPath.row {
+                    case 1: self.addToWatchlist(models: models)
+                    case 2: self.addToRecommendations(models: models)
+                    case 3: self.addToCollection(models: models)
+                    default: break
+                    }
+                }
+            } catch {
+                SwiftMessages.show(message: "Could not load dropped media", style: .error(error))
+            }
         }
     }
 

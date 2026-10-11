@@ -72,7 +72,7 @@ struct QuickAccessWidgetProvider: AppIntentTimelineProvider {
                       let title = item.movie?.title ?? item.show?.title,
                       let deeplink = URL(string: "ripl://\(item.movie != nil ? "movies" : "shows")/\(identifier)") else { return nil }
                 return QuickAccessWidgetItem(traktIdentifier: identifier,
-                                             tmdbIdentifier: Int(exactly: ids.tmdb),
+                                             tmdbIdentifier: ids.tmdb.flatMap { Int(exactly: $0) },
                                              tmdbMediaType: item.movie != nil ? "movie" : "tv",
                                              title: title,
                                              deeplink: deeplink)
@@ -133,6 +133,7 @@ struct QuickAccessWidget: Widget {
 }
 
 private struct QuickAccessWidgetEntryView: View {
+    @Environment(\.showsWidgetContainerBackground) private var showsWidgetContainerBackground
     @Environment(\.widgetFamily) private var family
 
     let entry: QuickAccessWidgetEntry
@@ -149,7 +150,7 @@ private struct QuickAccessWidgetEntryView: View {
             .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
             .clipped()
         }
-        .padding(quickAccessWidgetContentPadding)
+        .padding(showsWidgetContainerBackground ? quickAccessWidgetContentPadding : 0)
         .containerBackground(.background, for: .widget)
     }
 

@@ -37,7 +37,7 @@ final class BrowseViewController: UITableViewController {
     var followsShelfConfig = false {
         didSet {
             if followsShelfConfig {
-                model = BrowseConfigManager.shared.shelfConfig
+                model = BrowseConfigManager.shared.filteredShelfConfig
             }
         }
     }
@@ -277,10 +277,10 @@ final class BrowseViewController: UITableViewController {
             self.menuBarButtonItem?.menu = menu()
         }.disposed(by: disposeBag)
 
-        onShelfChangedReceiver.skipRepeats().listen { [weak self] shelf in
+        onShelfConfigChangedReceiver.skipRepeats().listen { [weak self] model in
             guard let self = self else { return }
             if !self.followsShelfConfig { return }
-            self.model = BrowseConfigManager.shared.shelfConfiguration(for: shelf)
+            self.model = model
         }.disposed(by: disposeBag)
 
         onUserLoggedOutReceiver.listen { _ in

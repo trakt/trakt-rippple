@@ -110,6 +110,8 @@ final class ProfileViewController: UIViewController {
             self.commentsViewController = commentsViewController
             if let currentUser = UserManager.shared.currentUser {
                 commentsViewController.coordinator = CommentsCoordinator(type: CommentsCoordinator.ListType.user(currentUser))
+                // The navigation bar follows this controller's navigationItem, not the embedded child's.
+                setContentScrollView(commentsViewController.tableView, for: .top)
             }
         }
     }

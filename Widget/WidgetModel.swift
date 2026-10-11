@@ -23,6 +23,10 @@ enum WidgetType: String {
     case trendingShow = "widget.trendingShow"
 
     case custom = "widget.custom"
+
+    static func isCustom(_ identifier: String?) -> Bool {
+        identifier == WidgetType.custom.rawValue || identifier?.hasPrefix("\(WidgetType.custom.rawValue):") == true
+    }
 }
 
 struct WidgetModel: Identifiable, Codable, Equatable, Hashable {

@@ -176,6 +176,7 @@ enum SearchType: String {
 }
 
 enum Extended: String {
+    case guestStars = "guest_stars"
     case full
     case noseasons
     case fullnoseasons = "full,noseasons"
@@ -185,6 +186,19 @@ enum Extended: String {
 enum WatchedType: String {
     case movies
     case shows
+}
+
+enum UserCountType: String {
+    case plays = "history"
+    case movies = "watched/movies"
+    case shows = "watched/shows"
+    case episodes = "watched/episodes"
+    case ratings
+    case comments = "comments/all/all"
+    case following
+    case followers
+    case friends
+    case blocked = "hidden/comments"
 }
 
 enum SyncWatchedType: String {
@@ -247,13 +261,14 @@ enum CertificationType: String {
 }
 
 enum TraktAPIService {
-    case token(code: String)
+    case token(code: String, codeVerifier: String?)
     case refresh(refreshToken: String)
     case revoke(token: String)
     case watching(slug: String = "me")
     case settings
     case comments(type: TraktObjectType, pageInfo: PageInfo, sortBy: CommentsSort?, replies: IncludeReplies?, mediaType: CommentMediaType = .all)
     case commentCount(type: TraktObjectType)
+    case userCount(slug: String, type: UserCountType, startDate: Date? = nil, endDate: Date? = nil)
 
     case history(slug: String = "me", type: HistoryMediaType?, id: Int64?, pageInfo: PageInfo, startDate: Date? = nil, endDate: Date?, extended: Extended? = .full)
     case isWatched(type: HistoryMediaType, id: Int64)
@@ -319,6 +334,9 @@ enum TraktAPIService {
     case episodeSentiments(id: Int64)
 
     case search(type: SearchType, query: String)
+    case searchExact(type: SearchType, query: String)
+    case searchTrending(type: SearchType, query: String)
+    case searchSelected(type: SearchType, query: String, id: Int64)
     case lookup(tmdbID: String, type: TmdbType)
 
     case trendingLists(type: ListType?)
@@ -374,11 +392,18 @@ enum TraktAPIService {
     case customLists(slug: String = "me", pageInfo: PageInfo = PageInfo.firstPage(with: 100))
     case customList(userSlug: String, listSlug: String)
     case collaborations(slug: String = "me")
-    case listItems(slug: String?, id: Int64, type: ListMediaType?, extended: Extended?, pageInfo: PageInfo, marker: String)
+    case listItems(slug: String?, id: Int64, type: ListMediaType?, extended: Extended?, pageInfo: PageInfo)
     case createList(name: String, description: String, privacy: ListPrivacy, displayNumbers: Bool, allowComments: Bool)
     case deleteList(id: Int64)
     case reorderLists(ids: [Int64])
     case updateList(id: Int64, name: String, description: String, privacy: ListPrivacy, displayNumbers: Bool, allowComments: Bool)
+
+    case smartLists(slug: String = "me")
+    case smartList(userSlug: String = "me", slug: String)
+    case smartListItems(slug: String, pageInfo: PageInfo)
+    case createSmartList(SmartListDraft)
+    case updateSmartList(slug: String, SmartListDraft)
+    case deleteSmartList(slug: String)
 
     case addToList(slug: String? = "me", id: Int64, item: WatchlistedItem)
     case removeFromList(slug: String? = "me", id: Int64, item: WatchlistedItem)
@@ -453,8 +478,8 @@ enum TraktAPIService {
     case movieCertifications
     case tvCertifications
     case networks
+    case watchNowSources(country: String)
 
-    case savedFilters
     case savedFilter(section: String, path: String, query: String, pageInfo: PageInfo)
 
     case movieLists(id: Int64, type: ListType)
@@ -470,6 +495,7 @@ enum TraktAPIService {
     case deleteNotes(id: Int64)
 
     case certifications(type: CertificationType)
+    case parentalGuide(target: ParentalGuideTarget)
 
     case lastActivities
 
@@ -521,6 +547,9 @@ extension TraktAPIService: AuthorizedTargetType {
 //            return .successCodes
 //        }
 
+        if case .parentalGuide = self {
+            return .customCodes([200, 204, 401, 404])
+        }
         return .customCodes([200, 201, 204, 401, 409])
     }
 
@@ -535,6 +564,8 @@ extension TraktAPIService: AuthorizedTargetType {
 
     var path: String {
         switch self {
+        case .userCount(let slug, let type, _, _):
+            return type == .blocked ? "/users/hidden/comments" : "/users/\(slug)/\(type.rawValue)"
         case .token:
             return "/oauth/token"
         case .refresh:
@@ -701,6 +732,12 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/\(id)"
         case .commentMediaItem(let id):
             return "/comments/\(id)/item"
+        case .searchExact(let type, _):
+            return "/search/\(type.rawValue)/exact"
+        case .searchTrending(let type, _):
+            return "/search/recent_by_id/global/\(type == .movie ? "movies" : type == .show ? "shows" : "movies,shows")"
+        case .searchSelected:
+            return "/search/recent"
         case .search(let type, _):
             return "/search/\(type.rawValue)"
         case .lookup(let tmdb, _):
@@ -837,7 +874,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/\(userSlug)/lists/\(listSlug)"
         case .collaborations(let slug):
             return "/users/\(slug)/lists/collaborations"
-        case .listItems(let slug, let listId, let type, _, _, _):
+        case .listItems(let slug, let listId, let type, _, _):
             if let slug = slug {
                 switch type {
                 case .some(let type):
@@ -855,6 +892,17 @@ extension TraktAPIService: AuthorizedTargetType {
             }
         case .createList:
             return "/users/me/lists"
+        case .smartLists(let slug):
+            return "/users/\(slug)/smart-lists"
+        case .smartList(let userSlug, let slug):
+            // The public `/smart-lists/:slug` route ignores authentication, so it cannot return private lists.
+            return "/users/\(userSlug)/smart-lists/\(slug)"
+        case .smartListItems(let slug, _):
+            return "/smart-lists/\(slug)/items"
+        case .createSmartList:
+            return "/users/me/smart-lists"
+        case .updateSmartList(let slug, _), .deleteSmartList(let slug):
+            return "/users/me/smart-lists/\(slug)"
         case .deleteList(let listId):
             return "/users/me/lists/\(listId)"
         case .reorderLists:
@@ -966,8 +1014,8 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/certifications/shows"
         case .networks:
             return "/networks"
-        case .savedFilters:
-            return "/users/saved_filters"
+        case .watchNowSources(let country):
+            return "/watchnow/sources/\(country)"
         case .savedFilter(_, let path, _, _):
             return path
         case .showLists(let id, let type):
@@ -982,6 +1030,9 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/notes/\(id)"
         case .deleteNotes(let id):
             return "/notes/\(id)"
+        case .parentalGuide(let target):
+            let slug = target.slug.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) ?? target.slug
+            return "/v3/media/\(target.type.rawValue)/\(slug)/info/16/version/1"
         case .certifications(let type):
             return "/certifications/\(type)"
         case .lastActivities:
@@ -1070,7 +1121,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .movieSocial, .showSocial, .seasonSocial, .episodeSocial:
             return .get
-        case .commentCount:
+        case .commentCount, .userCount:
             return .head
         case .postComment:
             return .post
@@ -1104,8 +1155,10 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .commentMediaItem:
             return .get
-        case .search:
+        case .search, .searchExact, .searchTrending:
             return .get
+        case .searchSelected:
+            return .post
         case .lookup:
             return .get
         case .trendingMedia:
@@ -1174,6 +1227,14 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .createList:
             return .post
+        case .smartLists, .smartList, .smartListItems:
+            return .get
+        case .createSmartList:
+            return .post
+        case .updateSmartList:
+            return .put
+        case .deleteSmartList:
+            return .delete
         case .deleteList:
             return .delete
         case .reorderLists:
@@ -1210,9 +1271,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .delete
         case .playedShows, .playedMovies, .watchedShows, .watchedMovies, .collectedShows, .collectedMovies:
             return .get
-        case .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks:
-            return .get
-        case .savedFilters:
+        case .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .watchNowSources:
             return .get
         case .savedFilter:
             return .get
@@ -1230,7 +1289,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .put
         case .deleteNotes:
             return .delete
-        case .certifications:
+        case .certifications, .parentalGuide:
             return .get
         case .lastActivities:
             return .get
@@ -1277,20 +1336,31 @@ extension TraktAPIService: AuthorizedTargetType {
 
     var task: Task {
         switch self {
-        case .token(let code):
-            return .requestParameters(parameters: ["code": code,
-                                                   "client_id": TraktAPIConfiguration.clientId,
-                                                   "client_secret": TraktAPIConfiguration.secretId,
-                                                   "redirect_uri": TraktAPIConfiguration.callbackURL,
-                                                   "grant_type": "authorization_code"],
-                                      encoding: JSONEncoding.default)
+        case .token(let code, let codeVerifier):
+            var parameters: [String: Any] = ["code": code,
+                                             "client_id": TraktAPIConfiguration.clientId,
+                                             "redirect_uri": TraktAPIConfiguration.callbackURL,
+                                             "grant_type": "authorization_code"]
+            if let codeVerifier = codeVerifier {
+                parameters["code_verifier"] = codeVerifier
+            }
+            #if DEBUG
+            if !TraktAPIConfiguration.secretId.isEmpty {
+                parameters["client_secret"] = TraktAPIConfiguration.secretId
+            }
+            #endif
+            return .requestParameters(parameters: parameters, encoding: JSONEncoding.default)
         case .refresh(let refreshToken):
-            return .requestParameters(parameters: ["refresh_token": refreshToken,
-                                                   "client_id": TraktAPIConfiguration.clientId,
-                                                   "client_secret": TraktAPIConfiguration.secretId,
-                                                   "redirect_uri": TraktAPIConfiguration.callbackURL,
-                                                   "grant_type": "refresh_token"],
-                                      encoding: JSONEncoding.default)
+            var parameters: [String: Any] = ["refresh_token": refreshToken,
+                                             "client_id": TraktAPIConfiguration.clientId,
+                                             "redirect_uri": TraktAPIConfiguration.callbackURL,
+                                             "grant_type": "refresh_token"]
+            #if DEBUG
+            if !TraktAPIConfiguration.secretId.isEmpty {
+                parameters["client_secret"] = TraktAPIConfiguration.secretId
+            }
+            #endif
+            return .requestParameters(parameters: parameters, encoding: JSONEncoding.default)
         case .revoke(let accessToken):
             return .requestParameters(parameters: ["token": accessToken],
                                       encoding: URLEncoding.default)
@@ -1361,6 +1431,25 @@ extension TraktAPIService: AuthorizedTargetType {
             return .requestParameters(parameters: ["page": "\(pageInfo.page)",
                                                    "limit": "\(pageInfo.limit)"],
                                       encoding: URLEncoding.default)
+        case .userCount(_, let type, let startDate, let endDate):
+            var parameters = ["page": "1", "limit": "1"]
+            if type == .blocked {
+                parameters["type"] = "user"
+            }
+            if type == .comments {
+                parameters["include_replies"] = "false"
+            }
+            if type == .plays {
+                let formatter = ISO8601DateFormatter()
+                formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                if let startDate = startDate {
+                    parameters["start_at"] = formatter.string(from: startDate)
+                }
+                if let endDate = endDate {
+                    parameters["end_at"] = formatter.string(from: endDate)
+                }
+            }
+            return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
         case .commentCount, .commentLikesCount:
             return .requestPlain
         case .postComment(let type, let traktId, let body, let spoilers):
@@ -1438,6 +1527,11 @@ extension TraktAPIService: AuthorizedTargetType {
         case .commentMediaItem:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
+        case .searchExact(_, let query), .searchTrending(_, let query):
+            return .requestParameters(parameters: ["query": query, "extended": "full", "limit": "50"], encoding: URLEncoding.default)
+        case .searchSelected(let type, let query, let id):
+            let plural = type == .movie ? "movies" : type == .show ? "shows" : type == .person ? "people" : "lists"
+            return .requestParameters(parameters: ["query": query, "type": plural, "id": id], encoding: JSONEncoding.default)
         case .search(let type, let query):
             if type == .person {
                 return .requestParameters(parameters: ["query": query,
@@ -1676,19 +1770,26 @@ extension TraktAPIService: AuthorizedTargetType {
         case .collaborations:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
-        case .listItems(_, _, _, let extended, let pageInfo, let marker):
+        case .listItems(_, _, _, let extended, let pageInfo):
             if let extended = extended {
                 return .requestParameters(parameters: ["extended": extended.rawValue,
                                                        "page": "\(pageInfo.page)",
-                                                       "limit": "\(pageInfo.limit)",
-                                                       "marker": marker],
+                                                       "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             } else {
                 return .requestParameters(parameters: ["page": "\(pageInfo.page)",
-                                                       "limit": "\(pageInfo.limit)",
-                                                       "marker": marker],
+                                                       "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             }
+        case .smartLists, .smartList, .deleteSmartList:
+            return .requestPlain
+        case .smartListItems(_, let pageInfo):
+            return .requestParameters(parameters: ["extended": "full",
+                                                   "page": "\(pageInfo.page)",
+                                                   "limit": "\(pageInfo.limit)"],
+                                      encoding: URLEncoding.default)
+        case .createSmartList(let draft), .updateSmartList(_, let draft):
+            return .requestJSONEncodable(draft)
         case .createList(let name, let description, let privacy, let displayNumbers, let allowComments):
             return .requestParameters(parameters: ["name": name,
                                                    "description": description,
@@ -1884,9 +1985,7 @@ extension TraktAPIService: AuthorizedTargetType {
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
-        case .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks:
-            return .requestPlain
-        case .savedFilters:
+        case .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .watchNowSources:
             return .requestPlain
         case .savedFilter(let section, _, let query, let pageInfo):
             var queryString = query.removingPercentEncoding!
@@ -1972,6 +2071,9 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: JSONEncoding.default)
         case .deleteNotes:
             return .requestPlain
+        case .parentalGuide:
+            return .requestParameters(parameters: ["locale": Locale.preferredLanguages.first ?? "en"],
+                                      encoding: URLEncoding.default)
         case .certifications:
             return .requestPlain
         case .lastActivities:
@@ -2061,7 +2163,7 @@ extension TraktAPIService: AuthorizedTargetType {
                 return true
             }
             return false
-        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary:
+        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .searchExact, .searchTrending, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .watchNowSources, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary:
             return false
         case .stats(let type):
             switch type {

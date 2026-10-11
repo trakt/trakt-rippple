@@ -332,18 +332,18 @@
                     </button>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="ovG-4i-e3x" firstAttribute="top" secondItem="wJE-aW-THG" secondAttribute="topMargin" constant="4" id="1QF-S7-5cx"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="ovG-4i-e3x" secondAttribute="bottom" constant="4" id="6j5-Ja-xaL"/>
+                    <constraint firstItem="ovG-4i-e3x" firstAttribute="top" secondItem="htb-5U-Kj7" secondAttribute="top" constant="12" id="1QF-S7-5cx"/>
+                    <constraint firstItem="htb-5U-Kj7" firstAttribute="bottom" secondItem="ovG-4i-e3x" secondAttribute="bottom" constant="12" id="6j5-Ja-xaL"/>
                     <constraint firstItem="sPv-BV-B5t" firstAttribute="leading" secondItem="htb-5U-Kj7" secondAttribute="leading" id="6z4-LG-VJG"/>
                     <constraint firstItem="htb-5U-Kj7" firstAttribute="leading" secondItem="wJE-aW-THG" secondAttribute="leading" constant="12" id="C5w-Ao-VdJ"/>
                     <constraint firstItem="htb-5U-Kj7" firstAttribute="top" secondItem="wJE-aW-THG" secondAttribute="top" constant="4" id="Ht4-pC-A9I"/>
                     <constraint firstItem="sPv-BV-B5t" firstAttribute="bottom" secondItem="htb-5U-Kj7" secondAttribute="bottom" id="Xkv-Rm-r7R"/>
                     <constraint firstAttribute="trailing" secondItem="htb-5U-Kj7" secondAttribute="trailing" constant="12" id="ZDE-Pb-EbC"/>
                     <constraint firstAttribute="bottom" secondItem="htb-5U-Kj7" secondAttribute="bottom" constant="4" id="b7o-6U-5aM"/>
-                    <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="ovG-4i-e3x" secondAttribute="trailing" constant="10" id="bZL-sS-Ud6"/>
+                    <constraint firstItem="htb-5U-Kj7" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="ovG-4i-e3x" secondAttribute="trailing" constant="18" id="bZL-sS-Ud6"/>
                     <constraint firstItem="sPv-BV-B5t" firstAttribute="top" secondItem="htb-5U-Kj7" secondAttribute="top" id="dwT-Gk-zy0"/>
                     <constraint firstItem="sPv-BV-B5t" firstAttribute="trailing" secondItem="htb-5U-Kj7" secondAttribute="trailing" id="gRh-Fk-Kbu"/>
-                    <constraint firstItem="ovG-4i-e3x" firstAttribute="leading" secondItem="wJE-aW-THG" secondAttribute="leadingMargin" constant="10" id="ssv-Pp-PAA"/>
+                    <constraint firstItem="ovG-4i-e3x" firstAttribute="leading" secondItem="htb-5U-Kj7" secondAttribute="leading" constant="18" id="ssv-Pp-PAA"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>

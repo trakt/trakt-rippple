@@ -27,14 +27,11 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
     static let shared = AppManager()
     func setup() {
         // Means setup has already been done!
-        if mainWindow != nil { return }
+        if isSetUp { return }
 
         // This should only happen if something starts the AppManager too soon
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let sceneDelegate = windowScene.delegate as? SceneDelegate,
-              let window = sceneDelegate.window else { return }
-
-        mainWindow = window
+        guard mainWindow != nil else { return }
+        isSetUp = true
 
         currentUserInterfaceStyle = UIUserInterfaceStyle(rawValue: UserDefaults.standard.integer(forKey: "AppManager.currentUserInterfaceStyle"))
         if let currentUserInterfaceStyle = currentUserInterfaceStyle {
@@ -108,7 +105,17 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
     }
     #endif
 
-    fileprivate var mainWindow: UIWindow?
+    private var isSetUp = false
+
+    fileprivate var windows: [UIWindow] {
+        return UIApplication.shared.connectedScenes.compactMap { ($0.delegate as? SceneDelegate)?.window }
+    }
+
+    fileprivate var mainWindow: UIWindow? {
+        return windows.first { $0.isKeyWindow && $0.windowScene?.activationState == .foregroundActive }
+            ?? windows.first { $0.windowScene?.activationState == .foregroundActive }
+            ?? windows.first
+    }
 
     fileprivate var confettiWindow: UIWindow? {
         return UIApplication.shared.connectedScenes
@@ -281,7 +288,8 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
 
     var mainAppIsDisplayed: Bool {
         setup()
-        return mainWindow?.rootViewController?.isKind(of: UISplitViewController.self) ?? false
+        let rootViewController = mainWindow?.rootViewController
+        return rootViewController is UISplitViewController || rootViewController is MainTabBarController
     }
 
     func checkRating() {
@@ -409,11 +417,41 @@ public extension UIApplication {
     }
 
     func switchToMainApp() {
-        if AppManager.shared.mainAppIsDisplayed == true {
-            // we already are on the Main app
-            return
+        AppManager.shared.setup()
+        for window in AppManager.shared.windows where !(window.rootViewController is UISplitViewController) && !(window.rootViewController is MainTabBarController) {
+            let rootViewController = (window.rootViewController as? UINavigationController)?.viewControllers.first
+            let viewController: UIViewController
+            switch SceneDelegate.WindowMode(configurationName: window.windowScene?.session.configuration.name) {
+            case .main:
+                showMainApp(in: window)
+                continue
+            case .profile:
+                guard !(rootViewController is ProfileViewController) else { continue }
+                viewController = UIStoryboard(name: "Profile", bundle: nil).instantiateViewController(identifier: "ProfileViewController")
+            case .media:
+                guard !(rootViewController is MediaViewController) else { continue }
+                if let media = (window.windowScene?.delegate as? SceneDelegate)?.standaloneMedia {
+                    let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as! MediaViewController
+                    mediaViewController.media = media
+                    mediaViewController.isStandaloneWindow = true
+                    viewController = mediaViewController
+                } else {
+                    viewController = UIViewController()
+                    var configuration = UIContentUnavailableConfiguration.empty()
+                    configuration.text = "Unable to Restore Media"
+                    configuration.secondaryText = "Open the media in a new window again."
+                    viewController.contentUnavailableConfiguration = configuration
+                }
+            }
+            window.setRootViewController(StyledNavigationController(rootViewController: viewController), options: TransitionOptions(direction: .fade, style: .easeInOut))
         }
 
+        if DeeplinkManager.shared.shouldOpenDeeplink() {
+            switchToDeeplink()
+        }
+    }
+
+    private func showMainApp(in window: UIWindow) {
         let compactViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController()!
 
         let splitViewController = SplitViewController(style: .doubleColumn)
@@ -434,12 +472,12 @@ public extension UIApplication {
         splitViewController.setViewController(browseViewController, for: .secondary)
         splitViewController.setViewController(compactViewController, for: .compact)
 
-        let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
-        AppManager.shared.setup()
-        AppManager.shared.mainWindow?.setRootViewController(splitViewController, options: transitionOptions)
-
-        if DeeplinkManager.shared.shouldOpenDeeplink() {
-            switchToDeeplink()
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
+            window.setRootViewController(compactViewController, options: transitionOptions)
+        } else {
+            let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
+            window.setRootViewController(splitViewController, options: transitionOptions)
         }
     }
 
@@ -447,20 +485,26 @@ public extension UIApplication {
         SessionManager.shared.logout()
         UserManager.shared.logout()
 
-        let login = UIStoryboard(name: "Login", bundle: nil).instantiateInitialViewController()!
-        let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
+        showLoginInAllWindows()
+    }
+
+    @discardableResult
+    private func showLoginInAllWindows() -> UIViewController? {
         AppManager.shared.setup()
-        AppManager.shared.mainWindow?.setRootViewController(login, options: transitionOptions)
+        let mainWindow = AppManager.shared.mainWindow
+        for window in AppManager.shared.windows {
+            let login = UIStoryboard(name: "Login", bundle: nil).instantiateInitialViewController()!
+            let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
+            window.setRootViewController(login, options: transitionOptions)
+        }
+        return mainWindow?.rootViewController
     }
 
     func switchToLogin401() {
         SessionManager.shared.logout()
         UserManager.shared.logout()
 
-        let login = UIStoryboard(name: "Login", bundle: nil).instantiateInitialViewController()!
-        let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
-        AppManager.shared.setup()
-        AppManager.shared.mainWindow?.setRootViewController(login, options: transitionOptions)
+        guard let login = showLoginInAllWindows() else { return }
 
         let alertController = UIAlertController(title: "Logged Out",
                                                 message: "You have been automatically logged out of Trakt. You must sign in to Trakt again.\nRebooting your device may help if the problem persists.",
@@ -476,10 +520,7 @@ public extension UIApplication {
         SessionManager.shared.logout()
         UserManager.shared.logout()
 
-        let login = UIStoryboard(name: "Login", bundle: nil).instantiateInitialViewController()!
-        let transitionOptions = TransitionOptions(direction: .fade, style: .easeInOut)
-        AppManager.shared.setup()
-        AppManager.shared.mainWindow?.setRootViewController(login, options: transitionOptions)
+        guard let login = showLoginInAllWindows() else { return }
 
         let alertController = UIAlertController(title: "Locked User Account",
                                                 message: "Please contact Trakt support (forums.trakt.tv) so they can unlock your account.",
@@ -509,21 +550,37 @@ public extension UIApplication {
         present(alertController)
     }
 
-    func accountLimitExceeded() {
-        let alertController = UIAlertController(title: "Trakt Limit Reached",
-                                                message: "You have reach a limit imposed by Trakt. Upgrading to Track VIP may help. If you are VIP, you've just hit a hard limit.",
-                                                preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
+    /// Offers Trakt VIP to free accounts. VIP accounts see their limits instead.
+    func presentAccountLimitReached() {
+        if UserManager.shared.isCurrentVIP {
+            presentTraktLimits(limitReached: true)
+        } else {
+            switchToPurchase()
+        }
+    }
 
-        alertController.addAction(UIAlertAction(title: "Get Trakt VIP", style: .default, handler: { _ in
-            if let url = URL(string: "https://app.trakt.tv/vip"),
-               UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
-            }
-        }))
-
+    internal func presentTraktLimits(limitReached: Bool = false) {
         AppManager.shared.setup()
-        present(alertController)
+        var presented = AppManager.shared.mainWindow?.rootViewController
+        while let controller = presented {
+            if controller is RipppleHostingController<TraktLimitsView> { return }
+            presented = controller.presentedViewController
+        }
+        let controller = RipppleHostingController(rootView: TraktLimitsView(limitReached: limitReached, close: {}))
+        controller.setRootView(TraktLimitsView(limitReached: limitReached, close: { [weak controller] in
+            guard let controller = controller else { return }
+            guard !controller.isBeingDismissed else { return }
+            controller.dismiss(animated: true)
+        }))
+        controller.modalPresentationStyle = .formSheet
+        controller.preferredContentSize = CGSize(width: 540, height: 700)
+        #if !targetEnvironment(macCatalyst)
+        if let sheet = controller.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        #endif
+        present(controller)
     }
 
     func comeBackToMainApp() {
@@ -554,7 +611,7 @@ public extension UIApplication {
     }
 
     internal func openStats(mode: TraktStatsViewController.StatsMode) {
-        if UserManager.shared.isCurrentVIP {
+        if UserManager.shared.canAccessStats(for: mode.user) {
             let embed = TraktStatsViewController()
             embed.mode = mode
             let navigationController = StyledNavigationController(rootViewController: embed)

@@ -116,6 +116,7 @@ final class GridViewController: UICollectionViewController {
 
         collectionView.allowsFocus = false
         collectionView.dragDelegate = self
+        collectionView.dropDelegate = self
 
         collectionView?.dragInteractionEnabled = UserDefaults.standard.bool(forKey: "GeneralSettings.dragging")
 
@@ -172,7 +173,7 @@ final class GridViewController: UICollectionViewController {
 
         onListChangedReceiver.hotOnly().listen { [weak self] lists in
             guard let self = self else { return }
-            for list in lists where self.savedFilter.path.localizedStandardContains("/lists/\(list.identifiers.trakt!)") {
+            for list in lists where list.isSource(of: self.savedFilter) {
                 DispatchQueue.main.async {
                     self.reloadData()
                 }
@@ -568,36 +569,25 @@ final class GridViewController: UICollectionViewController {
     }
 }
 
+extension GridViewController: UICollectionViewDropDelegate {
+    func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {
+        return false
+    }
+
+    func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {}
+}
+
 extension GridViewController: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell else { return [] }
-        guard let media = cell.media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell else { return [] }
-        guard let media = cell.media else { return [] }
-
-        let itemProvider = NSItemProvider(object: media.traktWebsiteMediaLink! as NSURL)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = media
-
-        return [dragItem]
+        return UIDragItem.mediaItems(from: collectionView.cellForItem(at: indexPath) as? MediaDragSource)
     }
 
     func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? L1BrowseCollectionViewCell else { return nil }
-        guard let poster = cell.poster else { return nil }
-
-        let parameters = UIDragPreviewParameters()
-        parameters.backgroundColor = .clear
-        parameters.visiblePath = UIBezierPath(roundedRect: poster.convert(poster.frame, to: cell), cornerRadius: poster.layer.cornerRadius)
-        return parameters
+        guard let cell = collectionView.cellForItem(at: indexPath), let source = cell as? MediaDragSource else { return nil }
+        return UIDragItem.dragPreviewParameters(from: source.dragPreviewView, in: cell)
     }
 }

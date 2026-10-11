@@ -39,6 +39,7 @@ final class CommentModel: Equatable, Hashable {
     let spoilerStrategy: SpoilerStrategy
 
     var commentAttributedString: NSAttributedString?
+    private(set) var hidesCommentMedia = true
     var commentWordCount: Int?
     var userAttributedString: NSAttributedString?
 
@@ -200,15 +201,33 @@ extension CommentModel {
     }
 
     private func processComment() async {
-        commentAttributedString = await attributedString(markdownParser: markdownParser)
+        // Parse off the main thread, but publish on it: cells read these properties on the main thread.
+        let markdownParser = await markdownParser
+        let commentAttributedString = await attributedString(markdownParser: markdownParser)
+        let hidesCommentMedia = markdownParser.spoilerStrategy == .hideAllSpoilers
+        let commentWordCount = comment.body.wordCount
 
-        commentWordCount = comment.body.wordCount
-
+        let userAttributedString: NSAttributedString
         if comment.parentIdentifier != 0 {
             userAttributedString = await markdownUserParser.parse("by **\(comment.user.name)**")
         } else {
             userAttributedString = await markdownUserParser.parse("\(commentLabel.rawValue) by **\(comment.user.name)**")
         }
+
+        await publish(commentAttributedString: commentAttributedString,
+                      hidesCommentMedia: hidesCommentMedia,
+                      commentWordCount: commentWordCount,
+                      userAttributedString: userAttributedString)
+    }
+
+    @MainActor private func publish(commentAttributedString: NSAttributedString,
+                                    hidesCommentMedia: Bool,
+                                    commentWordCount: Int?,
+                                    userAttributedString: NSAttributedString) {
+        self.commentAttributedString = commentAttributedString
+        self.hidesCommentMedia = hidesCommentMedia
+        self.commentWordCount = commentWordCount
+        self.userAttributedString = userAttributedString
 
         commentModelRefreshedTransmitter.broadcast(self)
     }

@@ -235,6 +235,7 @@ final class MediaViewController: UITableViewController {
     }
 
     var isDeeplink = false
+    var isStandaloneWindow = false
 
     private enum Section: Int {
         case content
@@ -494,7 +495,7 @@ final class MediaViewController: UITableViewController {
             break
         }
 
-        if navigationController?.viewControllers.first == self || isDeeplink {
+        if !isStandaloneWindow, navigationController?.viewControllers.first == self || isDeeplink {
             navigationController?.isNavigationBarHidden = false
             navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close,
                                                                target: self,
@@ -552,21 +553,29 @@ final class MediaViewController: UITableViewController {
         }.disposed(by: disposeBag)
 
         onNotesChangedReceiver.hotOnly().listen { [weak self] _ in
-            guard let self = self else { return }
-            let media = self.media
-            self.media = media
-        }.disposed(by: disposeBag)
-
-        onProgressCacheChangedReceiver.listen { [weak self] progress in
-            guard let self = self else { return }
-            if progress.show == self.media.show {
-                self.progress = progress.showProgress
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                let media = self.media
+                self.media = media
             }
         }.disposed(by: disposeBag)
 
+        // Progress is computed and broadcast from background queues
+        onProgressCacheChangedReceiver.listen { [weak self] progress in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if progress.show == self.media.show {
+                    self.progress = progress.showProgress
+                }
+            }
+        }.disposed(by: disposeBag)
+
+        let requestedMedia = media
         media.progress { [weak self] progress in
-            guard let self = self else { return }
-            self.progress = progress
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.media == requestedMedia else { return }
+                self.progress = progress
+            }
         }
 
         episodeListTitlesReceiver.listen { [weak self] _ in
@@ -596,6 +605,7 @@ final class MediaViewController: UITableViewController {
 
     @objc func respondToSwipeGesture(gesture: UIGestureRecognizer) {
         if view.window == nil { return }
+        guard let navigationController = navigationController else { return }
 
         let trans = CATransition()
         trans.type = .push
@@ -625,7 +635,7 @@ final class MediaViewController: UITableViewController {
                 guard let firstSeason = seasons.first else { return }
                 guard let firstEpisode = firstSeason.episodes?.first else { return }
 
-                navigationController!.view.layer.add(trans, forKey: nil)
+                navigationController.view.layer.add(trans, forKey: nil)
 
                 guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                     fatalError()
@@ -633,10 +643,10 @@ final class MediaViewController: UITableViewController {
 
                 mediaViewController.media = firstEpisode.mediaModel(given: show)
 
-                var stack = navigationController!.viewControllers
+                var stack = navigationController.viewControllers
                 stack.removeLast()
                 stack.append(mediaViewController)
-                navigationController!.setViewControllers(stack, animated: false)
+                navigationController.setViewControllers(stack, animated: false)
 
                 return
             }
@@ -647,7 +657,7 @@ final class MediaViewController: UITableViewController {
                 guard let firstEpisode = firstSeason.episodes?.first else { return }
 
                 if episode == firstEpisode {
-                    navigationController!.view.layer.add(trans, forKey: nil)
+                    navigationController.view.layer.add(trans, forKey: nil)
 
                     guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                         fatalError()
@@ -655,10 +665,10 @@ final class MediaViewController: UITableViewController {
 
                     mediaViewController.media = show.mediaModel
 
-                    var stack = navigationController!.viewControllers
+                    var stack = navigationController.viewControllers
                     stack.removeLast()
                     stack.append(mediaViewController)
-                    navigationController!.setViewControllers(stack, animated: false)
+                    navigationController.setViewControllers(stack, animated: false)
 
                     return
                 }
@@ -668,7 +678,7 @@ final class MediaViewController: UITableViewController {
                     if season.episodes == nil { continue }
                     for nextEpisode in season.episodes! {
                         if nextEpisode == episode {
-                            navigationController!.view.layer.add(trans, forKey: nil)
+                            navigationController.view.layer.add(trans, forKey: nil)
 
                             guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                                 fatalError()
@@ -676,10 +686,10 @@ final class MediaViewController: UITableViewController {
 
                             mediaViewController.media = before.mediaModel(given: show)
 
-                            var stack = navigationController!.viewControllers
+                            var stack = navigationController.viewControllers
                             stack.removeLast()
                             stack.append(mediaViewController)
-                            navigationController!.setViewControllers(stack, animated: false)
+                            navigationController.setViewControllers(stack, animated: false)
 
                             return
                         }
@@ -698,7 +708,7 @@ final class MediaViewController: UITableViewController {
                     if season.episodes == nil { continue }
                     for nextEpisode in season.episodes!.reversed() {
                         if nextEpisode == episode {
-                            navigationController!.view.layer.add(trans, forKey: nil)
+                            navigationController.view.layer.add(trans, forKey: nil)
 
                             guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                                 fatalError()
@@ -706,10 +716,10 @@ final class MediaViewController: UITableViewController {
 
                             mediaViewController.media = after.mediaModel(given: show)
 
-                            var stack = navigationController!.viewControllers
+                            var stack = navigationController.viewControllers
                             stack.removeLast()
                             stack.append(mediaViewController)
-                            navigationController!.setViewControllers(stack, animated: false)
+                            navigationController.setViewControllers(stack, animated: false)
 
                             return
                         }
@@ -728,7 +738,7 @@ final class MediaViewController: UITableViewController {
                 var before = firstSeason
                 for nextSeason in seasons {
                     if nextSeason == season {
-                        navigationController!.view.layer.add(trans, forKey: nil)
+                        navigationController.view.layer.add(trans, forKey: nil)
 
                         guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                             fatalError()
@@ -736,10 +746,10 @@ final class MediaViewController: UITableViewController {
 
                         mediaViewController.media = before.mediaModel(given: show)
 
-                        var stack = navigationController!.viewControllers
+                        var stack = navigationController.viewControllers
                         stack.removeLast()
                         stack.append(mediaViewController)
-                        navigationController!.setViewControllers(stack, animated: false)
+                        navigationController.setViewControllers(stack, animated: false)
 
                         return
                     }
@@ -754,7 +764,7 @@ final class MediaViewController: UITableViewController {
                 var after = lastSeason
                 for nextSeason in seasons.reversed() {
                     if nextSeason == season {
-                        navigationController!.view.layer.add(trans, forKey: nil)
+                        navigationController.view.layer.add(trans, forKey: nil)
 
                         guard let mediaViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "MediaViewController") as? MediaViewController else {
                             fatalError()
@@ -762,10 +772,10 @@ final class MediaViewController: UITableViewController {
 
                         mediaViewController.media = after.mediaModel(given: show)
 
-                        var stack = navigationController!.viewControllers
+                        var stack = navigationController.viewControllers
                         stack.removeLast()
                         stack.append(mediaViewController)
-                        navigationController!.setViewControllers(stack, animated: false)
+                        navigationController.setViewControllers(stack, animated: false)
 
                         return
                     }
@@ -1131,7 +1141,7 @@ extension MediaViewController {
         case .backdrop:
             return view.frame.width * 0.5
         case .poster:
-            return min((tableView.bounds.width - 18.0) * 1.5, 650.0)
+            return UITableView.automaticDimension
         case .title:
             return UITableView.automaticDimension
         case .activity:
@@ -1223,84 +1233,20 @@ extension MediaViewController {
 
 extension MediaViewController: UITableViewDragDelegate {
     func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell {
-            guard let image = cell.posterImageView.image else { return [] }
-            guard let media = cell.media else { return [] }
-
-            let provider = NSItemProvider(object: image)
-            let item = UIDragItem(itemProvider: provider)
-            item.localObject = media
-
-            return [item]
-        }
-
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaTitleTableViewCell {
-            guard let media = cell.media else { return [] }
-
-            let textProvider = NSItemProvider(object: media.mediaTitle as NSString)
-            let textItem = UIDragItem(itemProvider: textProvider)
-            textItem.localObject = media
-
-            if let traktURL = media.traktWebsiteMediaLink {
-                let linkProvider = NSItemProvider(object: traktURL as NSURL)
-                let linkItem = UIDragItem(itemProvider: linkProvider)
-                linkItem.localObject = media
-                return [textItem, linkItem]
-            }
-
-            return [textItem]
-        }
-
-        return []
+        return dragItems(at: indexPath)
     }
 
     func tableView(_ tableView: UITableView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell {
-            guard let image = cell.posterImageView.image else { return [] }
+        return dragItems(at: indexPath)
+    }
 
-            let provider = NSItemProvider(object: image)
-            let item = UIDragItem(itemProvider: provider)
-            item.localObject = image
-
-            return [item]
-        }
-
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaTitleTableViewCell {
-            guard let media = cell.media else { return [] }
-
-            let textProvider = NSItemProvider(object: media.mediaTitle as NSString)
-            let textItem = UIDragItem(itemProvider: textProvider)
-            textItem.localObject = media
-
-            if let traktURL = media.traktWebsiteMediaLink {
-                let linkProvider = NSItemProvider(object: traktURL as NSURL)
-                let linkItem = UIDragItem(itemProvider: linkProvider)
-                linkItem.localObject = media
-                return [textItem, linkItem]
-            }
-
-            return [textItem]
-        }
-
-        return []
+    private func dragItems(at indexPath: IndexPath) -> [UIDragItem] {
+        return UIDragItem.mediaItems(from: tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell)
     }
 
     func tableView(_ tableView: UITableView, dragPreviewParametersForRowAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell {
-            let parameters = UIDragPreviewParameters()
-            parameters.backgroundColor = .clear
-            parameters.visiblePath = UIBezierPath(roundedRect: cell.cardView.frame, cornerRadius: cell.cardView.layer.cornerRadius)
-            return parameters
-        }
-
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaTitleTableViewCell {
-            let parameters = UIDragPreviewParameters()
-            parameters.backgroundColor = .clear
-            parameters.visiblePath = UIBezierPath(roundedRect: cell.cardView.frame, cornerRadius: cell.cardView.layer.cornerRadius)
-            return parameters
-        }
-
-        return nil
+        guard let cell = tableView.cellForRow(at: indexPath), let source = cell as? MediaDragSource else { return nil }
+        return UIDragItem.dragPreviewParameters(from: source.dragPreviewView, in: cell)
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {

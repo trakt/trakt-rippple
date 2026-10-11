@@ -1,1 +1,6 @@
 ErrorDocument 404 /index.html
+
+<Files "apple-app-site-association">
+    ForceType application/json
+    Header set Cache-Control "max-age=3600"
+</Files>

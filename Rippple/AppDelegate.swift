@@ -109,6 +109,7 @@ class RipppleHostingController<Content: View>: UIHostingController<RipppleHosted
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     private let disposeBag = DisposeBag()
+    private var backgroundRefresh: BackgroundRefresh?
     private var lastRegisteredPushInformation: PushInformationModel?
 
     override init() {
@@ -133,6 +134,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard SessionManager.shared.isLoggedOut, let endpointARN = endpointARN else { return }
         guard let self = self else { return }
         self.removePushInformation(endpointARN: endpointARN)
+    }
+
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        let mode = [SceneDelegate.WindowMode.media, .profile].first { mode in
+            options.userActivities.contains { $0.activityType == mode.activityType }
+        } ?? .main
+        return UISceneConfiguration(name: mode.rawValue, sessionRole: connectingSceneSession.role)
+    }
+
+    func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
+        for session in sceneSessions {
+            SceneDelegate.discardMediaWindow(for: session)
+        }
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -265,9 +279,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         view.tintColor = UIColor(asset: .globalTint)
         #endif
         AppManager.shared.setup()
+        #if targetEnvironment(macCatalyst)
+        MCPServerManager.shared.setup()
+        #endif
 
         UISwitch.appearance().onTintColor = RipppleAppearance.switchTintColor
-        UIProgressView.appearance().trackTintColor = UIColor(asset: .globalTint).withAlphaComponent(0.25)
         NVActivityIndicatorView.DEFAULT_COLOR = UIColor(asset: .globalTint)
 
         UserManager.shared.startManaging()
@@ -340,8 +356,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // End remote push stuff
 
         WidgetManager.shared.setup()
-        SavedFiltersManager.shared.setup()
+        // Trakt saved filters were replaced by smart lists: drop the cache left by earlier versions.
+        UserDefaults.standard.removeObject(forKey: "SavedFiltersManager.savedFilters")
         RecentSearchManager.shared.setup()
+        TrendingSearchManager.shared.setup()
         OpenActionManager.shared.setup()
 
         WatchlistManager.shared.setup()
@@ -366,32 +384,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         CalendarManager.shared.setup()
 
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: "tv.trakt.towatch.refresh", using: nil) { task in
-            #if !targetEnvironment(macCatalyst)
-            Task {
-                await LiveActivityManager.shared.stopActivityIfNeeded()
-            }
-            #endif
-
-            // If purchase not active or badge turned off, complete quickly
-            guard UserDefaults.standard.integer(forKey: "Badge.mode") >= 1 else {
-                // Reschedule next refresh
-                AppManager.shared.scheduleNewBackgroundRefresh()
-
-                task.setTaskCompleted(success: true)
-
-                return
-            }
-
-            MovieToWatchManager.shared.forcedUserRefresh()
-            EpisodeToWatchManager.shared.forcedUserRefresh()
-
-            let timeout: DispatchTime = .now() + 20
-            DispatchQueue.global(qos: .utility).asyncAfter(deadline: timeout) {
-                // Reschedule next refresh
-                AppManager.shared.scheduleNewBackgroundRefresh()
-
-                task.setTaskCompleted(success: true)
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: "tv.trakt.towatch.refresh", using: .main) { [weak self] task in
+            MainActor.assumeIsolated {
+                guard let self = self else { return }
+                let refresh = BackgroundRefresh(task: task)
+                self.backgroundRefresh = refresh
+                refresh.start()
             }
         }
 
@@ -406,7 +404,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let menuConfiguration = UIMainMenuSystem.Configuration()
 
         menuConfiguration.findingConfiguration.style = .search
-        menuConfiguration.newScenePreference = .removed
+        menuConfiguration.newScenePreference = .included
         menuConfiguration.documentPreference = .removed
         menuConfiguration.printingPreference = .removed
         menuConfiguration.findingPreference = .included
@@ -484,7 +482,7 @@ extension AppDelegate {
         guard SessionManager.shared.isLoggedIn else { return }
 
         let tokenParts = deviceToken.map { data -> String in
-            return String(format: "%02.2hhx", data)
+            String(format: "%02.2hhx", data)
         }
 
         let latestToken = tokenParts.joined()
@@ -661,5 +659,72 @@ extension AppDelegate {
            DeeplinkManager.shared.shouldOpenDeeplink() {
             UIApplication.shared.switchToDeeplink()
         }
+    }
+}
+
+@MainActor
+private final class BackgroundRefresh {
+    private var task: BGTask?
+    private var cleanupTask: Task<Void, Never>?
+    private var remainingRefreshes = 2
+    private var refreshSucceeded = true
+
+    init(task: BGTask) {
+        self.task = task
+    }
+
+    func start() {
+        task?.expirationHandler = { [weak self] in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.finish(success: false)
+            }
+        }
+
+        cleanupTask = Task { [weak self] in
+            guard let self = self else { return }
+            #if !targetEnvironment(macCatalyst)
+            await LiveActivityManager.shared.stopActivityIfNeeded()
+            #endif
+            guard self.task != nil else { return }
+
+            guard SessionManager.shared.isLoggedIn,
+                  UserDefaults.standard.integer(forKey: "Badge.mode") >= 1 else {
+                self.finish(success: true)
+                return
+            }
+
+            MovieToWatchManager.shared.refreshForBackgroundTask { [weak self] success in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.refreshCompleted(success: success)
+                }
+            }
+            EpisodeToWatchManager.shared.refreshForBackgroundTask { [weak self] success in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.refreshCompleted(success: success)
+                }
+            }
+        }
+    }
+
+    private func refreshCompleted(success: Bool) {
+        guard task != nil else { return }
+        refreshSucceeded = refreshSucceeded && success
+        remainingRefreshes -= 1
+        if remainingRefreshes == 0 {
+            finish(success: refreshSucceeded)
+        }
+    }
+
+    private func finish(success: Bool) {
+        guard let task = task else { return }
+        self.task = nil
+        task.expirationHandler = nil
+        cleanupTask?.cancel()
+        cleanupTask = nil
+        AppManager.shared.scheduleNewBackgroundRefresh()
+        task.setTaskCompleted(success: success)
     }
 }

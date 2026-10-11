@@ -13,6 +13,35 @@ final class PulseViewController: UITableViewController {
     var media: MediaModel!
     private let disposeBag = DisposeBag()
     private var calendarData: CalendarData?
+    private var activityItems: [ActivityItem]?
+    private let filterButtonItem = UIBarButtonItem()
+    private var hiddenActivityTypes = Set(UserDefaults.standard.stringArray(forKey: "PulseViewController.hiddenActivityTypes") ?? [])
+
+    private enum ActivityType: String, CaseIterable {
+        case history
+        case ratings
+        case comments
+        case notes
+        case lists
+        case watchlist
+        case favorites
+        case collection
+        case releases
+
+        var title: String {
+            switch self {
+            case .history: return "Watches"
+            case .ratings: return "Ratings"
+            case .comments: return "Comments"
+            case .notes: return "Notes"
+            case .lists: return "Lists"
+            case .watchlist: return "Watchlist"
+            case .favorites: return "Favorites"
+            case .collection: return "Library"
+            case .releases: return "Releases & Air Dates"
+            }
+        }
+    }
 
     private let relativeDateTimeFormatter: RelativeDateTimeFormatter = {
         let dateFormatter = RelativeDateTimeFormatter()
@@ -30,6 +59,7 @@ final class PulseViewController: UITableViewController {
 
     private struct ActivityItem: Hashable {
         let identifier: String
+        let type: ActivityType?
         let activity: String
         let title: String
         let notes: String
@@ -41,7 +71,8 @@ final class PulseViewController: UITableViewController {
         let actions: [ActivityAction]
         let origin: ActivityOrigin
 
-        init(activity: String,
+        init(type: ActivityType?,
+             activity: String,
              title: String,
              notes: String,
              meta: String,
@@ -52,6 +83,7 @@ final class PulseViewController: UITableViewController {
              actions: [ActivityAction] = [],
              origin: ActivityOrigin = .standard,
              identifier: String) {
+            self.type = type
             self.identifier = identifier
             self.activity = activity
             self.title = title
@@ -225,7 +257,8 @@ final class PulseViewController: UITableViewController {
                     meta.append(Locale(identifier: "en_US").localizedCountry(for: releaseCountryCode))
                 }
 
-                return ActivityItem(activity: release.tag,
+                return ActivityItem(type: .releases,
+                                    activity: release.tag,
                                     title: dateFormatter.string(from: release.released),
                                     notes: "",
                                     meta: meta.joined(separator: " · "),
@@ -674,6 +707,7 @@ final class PulseViewController: UITableViewController {
         refresh(forced: true)
 
         configureOptionButton()
+        configureFilterButton()
     }
 
     private func configureOptionButton() {
@@ -809,6 +843,67 @@ final class PulseViewController: UITableViewController {
         navigationItem.rightBarButtonItems = [UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu)]
     }
 
+    private func configureFilterButton() {
+        filterButtonItem.accessibilityLabel = "Filter Pulse"
+        filterButtonItem.image = UIImage(systemName: "line.3.horizontal.decrease")
+        filterButtonItem.menu = filterMenu()
+        navigationItem.rightBarButtonItems?.append(filterButtonItem)
+    }
+
+    private func filterMenu() -> UIMenu {
+        let deferredMenuElement = UIDeferredMenuElement.uncached { [weak self] completion in
+            guard let self = self else {
+                completion([])
+                return
+            }
+            let actions = ActivityType.allCases.map { type in
+                let count = self.activityItems?.filter { $0.type == type }.count ?? 0
+                return UIAction(title: "\(type.title) · \(count)",
+                                attributes: .keepsMenuPresented,
+                                state: self.hiddenActivityTypes.contains(type.rawValue) ? .off : .on) { [weak self] _ in
+                    guard let self = self else { return }
+                    self.toggleFilter(type)
+                    self.filterButtonItem.menu = self.filterMenu()
+                }
+            }
+            completion([UIMenu(title: "What do you want to see?", options: .displayInline, children: actions)])
+        }
+        return UIMenu(children: [deferredMenuElement])
+    }
+
+    private func toggleFilter(_ type: ActivityType) {
+        if hiddenActivityTypes.contains(type.rawValue) {
+            hiddenActivityTypes.remove(type.rawValue)
+        } else {
+            hiddenActivityTypes.insert(type.rawValue)
+        }
+        UserDefaults.standard.set(hiddenActivityTypes.sorted(), forKey: "PulseViewController.hiddenActivityTypes")
+        updateDataSource()
+    }
+
+    private func updateDataSource(reconfigure: Bool = false) {
+        guard let activityItems = activityItems else { return }
+        let filteredItems = activityItems.filter { item in
+            guard let type = item.type else { return true }
+            return !hiddenActivityTypes.contains(type.rawValue)
+        }
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
+        snapshot.appendSections([.content])
+        if filteredItems.contains(where: { $0.type != nil }) {
+            snapshot.appendItems(filteredItems.map { .activity($0) })
+        } else {
+            snapshot.appendItems([.empty("😵",
+                                         "No Pulse",
+                                         "There are currently no activities to show",
+                                         "Try changing your filters or come back later.")])
+        }
+        if reconfigure {
+            snapshot.reconfigureItems(snapshot.itemIdentifiers)
+        }
+        dataSource.defaultRowAnimation = .fade
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+
     private func refresh(forced: Bool = false) {
         if isRefreshing { return }
         isRefreshing = true
@@ -823,9 +918,6 @@ final class PulseViewController: UITableViewController {
         }
 
         Task {
-            var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
-            snapshot.appendSections([.content])
-
             var activityItems = [ActivityItem]()
 
             if let episode = media.episode, let show = media.show {
@@ -845,7 +937,8 @@ final class PulseViewController: UITableViewController {
                         meta.append(certification)
                     }
 
-                    let item = ActivityItem(activity: "First Aired",
+                    let item = ActivityItem(type: .releases,
+                                            activity: "First Aired",
                                             title: "\(dateFormatter.string(from: firstAired))",
                                             notes: "",
                                             meta: meta.joined(separator: " · "),
@@ -874,7 +967,8 @@ final class PulseViewController: UITableViewController {
                         meta.append(certification)
                     }
 
-                    let item = ActivityItem(activity: "First Aired",
+                    let item = ActivityItem(type: .releases,
+                                            activity: "First Aired",
                                             title: "\(dateFormatter.string(from: firstAired))",
                                             notes: "",
                                             meta: meta.joined(separator: " · "),
@@ -907,7 +1001,8 @@ final class PulseViewController: UITableViewController {
                         meta.append(certification)
                     }
 
-                    let item = ActivityItem(activity: "First Aired",
+                    let item = ActivityItem(type: .releases,
+                                            activity: "First Aired",
                                             title: "\(dateFormatter.string(from: firstAired))",
                                             notes: "",
                                             meta: meta.joined(separator: " · "),
@@ -926,7 +1021,8 @@ final class PulseViewController: UITableViewController {
                         return dateFormatter
                     }()
 
-                    let item = ActivityItem(activity: "Last Aired Episode",
+                    let item = ActivityItem(type: .releases,
+                                            activity: "Last Aired Episode",
                                             title: "\(dateFormatter.string(from: firstAired))",
                                             notes: "",
                                             meta: "\(lastEpisode.localizedEpisodeNumber)",
@@ -946,7 +1042,8 @@ final class PulseViewController: UITableViewController {
                         return dateFormatter
                     }()
 
-                    let item = ActivityItem(activity: "Next Airing Episode",
+                    let item = ActivityItem(type: .releases,
+                                            activity: "Next Airing Episode",
                                             title: "\(dateFormatter.string(from: firstAired))",
                                             notes: "",
                                             meta: "\(nextEpisode.localizedEpisodeNumber)",
@@ -978,7 +1075,8 @@ final class PulseViewController: UITableViewController {
                         meta.append(certification)
                     }
 
-                    let item = ActivityItem(activity: "\(activity.releaseType.localizedCapitalized) Release",
+                    let item = ActivityItem(type: .releases,
+                                            activity: "\(activity.releaseType.localizedCapitalized) Release",
                                             title: "\(dateFormatter.string(from: activity.releaseDate))",
                                             notes: activity.note ?? "",
                                             meta: meta.joined(separator: " · "),
@@ -1007,7 +1105,8 @@ final class PulseViewController: UITableViewController {
 
                 for list in lists {
                     if let item = await fetchItem(in: list) {
-                        let activityItem = ActivityItem(activity: "Listed",
+                        let activityItem = ActivityItem(type: .lists,
+                                                        activity: "Listed",
                                                         title: "\(dateFormatter.string(from: item.listedAt))",
                                                         notes: item.notes ?? "",
                                                         meta: "Added to \(list.name)",
@@ -1029,7 +1128,8 @@ final class PulseViewController: UITableViewController {
                     return dateFormatter
                 }()
 
-                let item = ActivityItem(activity: "Watchlisted",
+                let item = ActivityItem(type: .watchlist,
+                                        activity: "Watchlisted",
                                         title: "\(dateFormatter.string(from: watchlistedAt))",
                                         notes: watchlistMediaItem.notes ?? "",
                                         meta: "",
@@ -1048,7 +1148,8 @@ final class PulseViewController: UITableViewController {
                     return dateFormatter
                 }()
 
-                let item = ActivityItem(activity: "Favorited",
+                let item = ActivityItem(type: .favorites,
+                                        activity: "Favorited",
                                         title: "\(dateFormatter.string(from: favoritedAt))",
                                         notes: userFavoriteMediaItem.notes ?? "",
                                         meta: "",
@@ -1068,7 +1169,8 @@ final class PulseViewController: UITableViewController {
                     return dateFormatter
                 }()
 
-                let item = ActivityItem(activity: "Collected",
+                let item = ActivityItem(type: .collection,
+                                        activity: "Collected",
                                         title: "\(dateFormatter.string(from: collectedAt))",
                                         notes: collectedMediaItem.notes ?? "",
                                         meta: "",
@@ -1087,7 +1189,8 @@ final class PulseViewController: UITableViewController {
                     return dateFormatter
                 }()
 
-                let item = ActivityItem(activity: "Collected",
+                let item = ActivityItem(type: .collection,
+                                        activity: "Collected",
                                         title: "\(dateFormatter.string(from: collectedAt))",
                                         notes: collectedMediaItem.notes ?? "",
                                         meta: "",
@@ -1111,7 +1214,8 @@ final class PulseViewController: UITableViewController {
 
                     switch media {
                     case .movie:
-                        let item = ActivityItem(activity: "Rated Movie",
+                        let item = ActivityItem(type: .ratings,
+                                                activity: "Rated Movie",
                                                 title: "\(dateFormatter.string(from: ratedMediaItem.rateDate))",
                                                 notes: ratedMediaItem.note ?? "",
                                                 meta: "",
@@ -1122,7 +1226,8 @@ final class PulseViewController: UITableViewController {
                                                 identifier: identifier)
                         activityItems.append(item)
                     case .show:
-                        let item = ActivityItem(activity: "Rated Show",
+                        let item = ActivityItem(type: .ratings,
+                                                activity: "Rated Show",
                                                 title: "\(dateFormatter.string(from: ratedMediaItem.rateDate))",
                                                 notes: ratedMediaItem.note ?? "",
                                                 meta: "",
@@ -1133,7 +1238,8 @@ final class PulseViewController: UITableViewController {
                                                 identifier: identifier)
                         activityItems.append(item)
                     case .season(let season, _):
-                        let item = ActivityItem(activity: "Rated \(season.localizedSeasonNumber)",
+                        let item = ActivityItem(type: .ratings,
+                                                activity: "Rated \(season.localizedSeasonNumber)",
                                                 title: "\(dateFormatter.string(from: ratedMediaItem.rateDate))",
                                                 notes: ratedMediaItem.note ?? "",
                                                 meta: "",
@@ -1144,7 +1250,8 @@ final class PulseViewController: UITableViewController {
                                                 identifier: identifier)
                         activityItems.append(item)
                     case .episode(let episode, _):
-                        let item = ActivityItem(activity: "Rated \(episode.localizedEpisodeNumber)",
+                        let item = ActivityItem(type: .ratings,
+                                                activity: "Rated \(episode.localizedEpisodeNumber)",
                                                 title: "\(dateFormatter.string(from: ratedMediaItem.rateDate))",
                                                 notes: ratedMediaItem.note ?? "",
                                                 meta: "",
@@ -1198,7 +1305,8 @@ final class PulseViewController: UITableViewController {
                         meta.append("Spoiler Alert!")
                     }
 
-                    let item = ActivityItem(activity: "Note Added",
+                    let item = ActivityItem(type: .notes,
+                                            activity: "Note Added",
                                             title: "\(dateFormatter.string(from: noteItem.note.createdAt))",
                                             notes: noteItem.note.notes,
                                             meta: meta.joined(separator: " · "),
@@ -1219,7 +1327,8 @@ final class PulseViewController: UITableViewController {
                     return dateFormatter
                 }()
 
-                let item = ActivityItem(activity: "Commented",
+                let item = ActivityItem(type: .comments,
+                                        activity: "Commented",
                                         title: "\(dateFormatter.string(from: commentItem.comment.createDate))",
                                         notes: commentItem.comment.body,
                                         meta: "\(CommentModel(commentItem: commentItem, spoilerStrategy: .showAllSpoilers).media.mediaTitle)",
@@ -1259,7 +1368,8 @@ final class PulseViewController: UITableViewController {
                             if let title = episode.title {
                                 "\(episode.localizedEpisodeNumber) - \(title)"
                             } else { episode.localizedEpisodeNumber }
-                        let item = ActivityItem(activity: header,
+                        let item = ActivityItem(type: .history,
+                                                activity: header,
                                                 title: "\(dateFormatter.string(from: activity.watchDate))",
                                                 notes: activity.note ?? "",
                                                 meta: meta,
@@ -1272,7 +1382,8 @@ final class PulseViewController: UITableViewController {
                     } else {
                         let meta =
                             "\(formatter.string(from: ordinalCount as NSNumber) ?? "1st") watch"
-                        let item = ActivityItem(activity: header,
+                        let item = ActivityItem(type: .history,
+                                                activity: header,
                                                 title: "\(dateFormatter.string(from: activity.watchDate))",
                                                 notes: activity.note ?? "",
                                                 meta: meta,
@@ -1293,7 +1404,8 @@ final class PulseViewController: UITableViewController {
                 dateFormatter.timeStyle = .none
                 return dateFormatter
             }()
-            let today = ActivityItem(activity: "Today",
+            let today = ActivityItem(type: nil,
+                                     activity: "Today",
                                      title: dateFormatter.string(from: .now),
                                      notes: "",
                                      meta: "",
@@ -1303,20 +1415,9 @@ final class PulseViewController: UITableViewController {
             activityItems.append(today)
 
             let sortedActivityItems = activityItems.sorted { $0.date > $1.date }.removingDuplicates()
-            snapshot.appendItems(sortedActivityItems.map { .activity($0) })
-
-            if snapshot.itemIdentifiers(inSection: .content).count == 0 {
-                snapshot.appendItems([.empty("😵",
-                                             "No Pulse",
-                                             "There are currently no activities to show",
-                                             "Come back later to see something new... or don't.")])
-            }
-
-            dataSource.defaultRowAnimation = .fade
-            snapshot.reconfigureItems(snapshot.itemIdentifiers)
-
             DispatchQueue.main.async {
-                self.dataSource.apply(snapshot, animatingDifferences: true)
+                self.activityItems = sortedActivityItems
+                self.updateDataSource(reconfigure: true)
                 self.navigationItem.subtitle = self.media.mediaTitle
                 self.isRefreshing = false
             }

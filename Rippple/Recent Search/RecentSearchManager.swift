@@ -9,11 +9,40 @@
 import Foundation
 import Receiver
 
-typealias RecentSearch = SavedFilter
+struct RecentSearch: Codable, Hashable {
+    let section: String
+    let name: String
+    let path: String
+    let query: String
+    let limit: Int?
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(section)
+        hasher.combine(name)
+        hasher.combine(path)
+        hasher.combine(query)
+        hasher.combine(limit)
+    }
+}
 
 let (onRecentSearchChangedTransmitter, onRecentSearchChangedReceiver) = Receiver<[RecentSearch]>.make(with: .warm(upTo: 1))
 
 extension RecentSearch {
+    var displayTitle: String {
+        name.hasPrefix("@") ? name : searchFieldQuery
+    }
+
+    var scopeTitle: String {
+        if name.hasPrefix("@") { return "Users" }
+        switch path {
+        case "/search/movie": return "Movies"
+        case "/search/show": return "TV"
+        case "/search/person": return "People"
+        case "/search/list": return "Lists"
+        default: return "Movies & TV"
+        }
+    }
+
     var searchFieldQuery: String {
         if let value = queryParameter(named: "query"),
            value.isEmpty == false {
@@ -56,7 +85,7 @@ final class RecentSearchManager {
             if recentSearches != oldValue {
                 recentSearches.removeDuplicates()
 
-                while recentSearches.count > 5 {
+                while recentSearches.count > 250 {
                     recentSearches.removeLast()
                 }
 
@@ -67,7 +96,7 @@ final class RecentSearchManager {
     }
 
     func setup() {
-        if let data = NSUbiquitousKeyValueStore.default.data(forKey: "RecentSearchManager.recentSearches"), let array = try? PropertyListDecoder().decode([SavedFilter].self, from: data) {
+        if let data = NSUbiquitousKeyValueStore.default.data(forKey: "RecentSearchManager.recentSearches"), let array = try? PropertyListDecoder().decode([RecentSearch].self, from: data) {
             recentSearches = array
         }
 
@@ -78,7 +107,7 @@ final class RecentSearchManager {
     }
 
     @objc private func reloadSearch() {
-        if let data = NSUbiquitousKeyValueStore.default.data(forKey: "RecentSearchManager.recentSearches"), let array = try? PropertyListDecoder().decode([SavedFilter].self, from: data) {
+        if let data = NSUbiquitousKeyValueStore.default.data(forKey: "RecentSearchManager.recentSearches"), let array = try? PropertyListDecoder().decode([RecentSearch].self, from: data) {
             recentSearches = array
         }
     }

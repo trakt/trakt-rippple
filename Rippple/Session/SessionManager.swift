@@ -7,8 +7,10 @@
 //
 
 import AuthenticationServices
+import CryptoKit
 import Foundation
 import Moya
+import Security
 
 class SessionManager: NSObject {
     static let shared = SessionManager()
@@ -67,44 +69,69 @@ class SessionManager: NSObject {
     }
 
     func initiateTraktLogin(completion: @escaping (_ isLoggedIn: Bool) -> Void) {
-        guard let authURL = URL(string: "\(TraktAPIConfiguration.authBaseURL)/oauth/authorize?response_type=code&client_id=\(TraktAPIConfiguration.clientId)&redirect_uri=\(TraktAPIConfiguration.callbackURL)") else {
+        guard let callbackURL = URL(string: TraktAPIConfiguration.callbackURL),
+              let authCallback = makeAuthCallback(for: callbackURL) else {
+            completion(isLoggedIn)
+            return
+        }
+
+        let codeVerifier: String?
+        if TraktAPIConfiguration.secretId.isEmpty {
+            guard let verifier = makeCodeVerifier() else {
+                completion(isLoggedIn)
+                return
+            }
+            codeVerifier = verifier
+        } else {
+            codeVerifier = nil
+        }
+
+        guard let authURL = makeAuthorizationURL(codeVerifier: codeVerifier) else {
             completion(isLoggedIn)
             return
         }
 
         authSession = ASWebAuthenticationSession(url: authURL,
-                                                 callbackURLScheme: "ripl") { callback, error in
+                                                 callback: authCallback) { [weak self] callback, error in
+            guard let self = self else { return }
             guard error == nil, let successURL = callback else {
                 print("ASWebAuthenticationSession error \(String(describing: error))")
-                print("ASWebAuthenticationSession callback \(String(describing: callback))")
                 completion(self.isLoggedIn)
                 return
             }
-            guard let code = NSURLComponents(string: successURL.absoluteString)?.queryItems?.filter({ $0.name == "code" }).first?.value else {
+            guard successURL.scheme == callbackURL.scheme,
+                  successURL.host == callbackURL.host,
+                  successURL.port == callbackURL.port,
+                  successURL.path == callbackURL.path,
+                  let code = URLComponents(url: successURL, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "code" })?.value,
+                  !code.isEmpty else {
                 completion(self.isLoggedIn)
                 return
             }
 
-            TraktAPIProvider.noRatingProvider.request(.token(code: code),
-                                                      callbackQueue: .global(qos: .userInitiated)) { result in
-                defer {
-                    completion(self.isLoggedIn)
-                }
-
+            TraktAPIProvider.noRatingProvider.request(.token(code: code, codeVerifier: codeVerifier),
+                                                      callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
+                var newToken: Token?
                 switch result {
                 case .success(let moyaResponse):
                     print("Token request status code \(moyaResponse.statusCode)")
                     do {
                         let response = try moyaResponse.filterSuccessfulStatusCodes()
-                        let tokenResponse = try response.map(Token.self)
-                        self.token = tokenResponse
-                        TraktAPIProvider.source.token = tokenResponse.accessToken
-                        UserManager.shared.reloadSettings()
+                        newToken = try response.map(Token.self)
                     } catch {
                         print("Token request JSON mapping failed! \(error)")
                     }
                 case .failure(let error):
                     print("Token request failure \(error)")
+                }
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    if let newToken = newToken {
+                        self.token = newToken
+                        TraktAPIProvider.source.token = newToken.accessToken
+                        UserManager.shared.reloadSettings()
+                    }
+                    completion(self.isLoggedIn)
                 }
             }
         }
@@ -130,9 +157,67 @@ class SessionManager: NSObject {
     }
 }
 
+// MARK: - Trakt login configuration
+
+extension SessionManager {
+    private func makeAuthCallback(for callbackURL: URL) -> ASWebAuthenticationSession.Callback? {
+        guard let host = callbackURL.host, !host.isEmpty else { return nil }
+
+        #if DEBUG
+        // Contributors can use their own Trakt client secret with the ripl:// callback.
+        if !TraktAPIConfiguration.secretId.isEmpty {
+            guard callbackURL.scheme == "ripl" else {
+                print("SessionManager - Debug login with a client secret requires a ripl:// callback.")
+                return nil
+            }
+            print("SessionManager - login with client secret and custom scheme 🧪")
+            return .customScheme("ripl")
+        }
+        #endif
+
+        // Team Debug builds and all Release builds use PKCE with an HTTPS callback.
+        guard TraktAPIConfiguration.secretId.isEmpty,
+              callbackURL.scheme == "https" else {
+            print("SessionManager - PKCE login requires an empty client secret and an HTTPS callback.")
+            return nil
+        }
+        print("SessionManager - login with PKCE and https:// callback ✅")
+        return .https(host: host, path: callbackURL.path)
+    }
+
+    private func makeAuthorizationURL(codeVerifier: String?) -> URL? {
+        var components = URLComponents(string: "\(TraktAPIConfiguration.authBaseURL)/oauth/authorize")
+        var queryItems = [
+            URLQueryItem(name: "response_type", value: "code"),
+            URLQueryItem(name: "client_id", value: TraktAPIConfiguration.clientId),
+            URLQueryItem(name: "redirect_uri", value: TraktAPIConfiguration.callbackURL)
+        ]
+        if let codeVerifier = codeVerifier {
+            let codeChallenge = base64URLEncoded(Data(SHA256.hash(data: Data(codeVerifier.utf8))))
+            queryItems.append(URLQueryItem(name: "code_challenge", value: codeChallenge))
+            queryItems.append(URLQueryItem(name: "code_challenge_method", value: "S256"))
+        }
+        components?.queryItems = queryItems
+        return components?.url
+    }
+}
+
 // MARK: Helpers
 
 extension SessionManager {
+    private func makeCodeVerifier() -> String? {
+        var bytes = [UInt8](repeating: 0, count: 32)
+        guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else { return nil }
+        return base64URLEncoded(Data(bytes))
+    }
+
+    private func base64URLEncoded(_ data: Data) -> String {
+        return data.base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+
     private func refreshToken(refreshToken: String, completion: @escaping (_ token: Token?) -> Void) {
         print("SessionManager - refreshing token (API call)")
         TraktAPIProvider.noRatingProvider.request(.refresh(refreshToken: refreshToken),

@@ -66,6 +66,9 @@ struct MovieToWatchListItem: Codable, Identifiable, Hashable {
         case .smartSearch:
             return "smart-\(smartSearch?.uuid ?? smartSearch?.name ?? UUID().uuidString)"
         case .customList, .likedList, .collaboration:
+            if let smartListSlug = list?.smartListSlug {
+                return "\(kind.rawValue)-smart-\(smartListSlug)"
+            }
             if let trakt = list?.identifiers.trakt {
                 return "\(kind.rawValue)-\(trakt)"
             }
@@ -89,7 +92,7 @@ struct MovieToWatchListItem: Codable, Identifiable, Hashable {
 
     var title: String {
         if let smartSearch {
-            return smartSearch.name ?? "A Smart List"
+            return smartSearch.name ?? "A Smart Search"
         }
         if let list {
             return list.name.emojiUnescapedString
@@ -100,9 +103,9 @@ struct MovieToWatchListItem: Codable, Identifiable, Hashable {
     var subtitle: String? {
         switch kind {
         case .smartSearch:
-            return "Smart List"
+            return "Smart Search"
         case .customList:
-            return "Custom List"
+            return list?.isSmartList == true ? "Smart List" : "Custom List"
         case .likedList:
             return "Liked List"
         case .collaboration:
@@ -180,7 +183,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
         groupMode = MovieToWatchGroupMode.currentValue()
 
         availableSmartSearches = SmartSearch.smartSearches(for: .movie)
-        availableCustomLists = ListsManager.shared.lists
+        availableCustomLists = ListsManager.shared.ownedLists
         availableLikedLists = [] // Will be set by the receiver once it's binded
         availableCollaborations = CollaborationsManager.shared.collaborations
         otherListItems = [] // Will be set by the receiver once it's binded
@@ -441,7 +444,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
             syncFromSettings()
         }.disposed(by: disposeBag)
 
-        onCustomListsChangedReceiver.hotOnly().listen { [weak self] lists in
+        onOwnedListsChangedReceiver.hotOnly().listen { [weak self] lists in
             guard let self else { return }
             availableCustomLists = lists
             pruneUnavailableOtherLists()
@@ -696,9 +699,11 @@ struct MovieAddListPickerView: View {
     var body: some View {
         NavigationStack {
             RipppleList {
-                smartSearchSection
                 listSection(title: "Custom Lists",
-                            lists: viewModel.availableCustomLists,
+                            lists: viewModel.availableCustomLists.filter { !$0.isSmartList },
+                            kind: .customList)
+                listSection(title: "Smart Lists",
+                            lists: viewModel.availableCustomLists.filter { $0.isSmartList },
                             kind: .customList)
                 listSection(title: "Liked Lists",
                             lists: viewModel.availableLikedLists,
@@ -706,9 +711,10 @@ struct MovieAddListPickerView: View {
                 listSection(title: "Collaborations",
                             lists: viewModel.availableCollaborations,
                             kind: .collaboration)
+                smartSearchSection
                 if hasNoResults {
                     Section {
-                        Text("No Smart Search, Custom List, Liked List or Collaboration found.")
+                        Text("No Custom List, Smart List, Liked List, Collaboration or Smart Search found.")
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -739,7 +745,7 @@ struct MovieAddListPickerView: View {
     }
 
     private var filteredSmartSearches: [SmartSearch] {
-        viewModel.availableSmartSearches.filter { matchesSearch($0.name ?? "A Smart List") }
+        viewModel.availableSmartSearches.filter { matchesSearch($0.name ?? "A Smart Search") }
     }
 
     private var filteredCustomLists: [List] {
@@ -757,13 +763,13 @@ struct MovieAddListPickerView: View {
     @ViewBuilder
     private var smartSearchSection: some View {
         if filteredSmartSearches.isEmpty == false {
-            Section("Smart Lists") {
+            Section("Smart Searches") {
                 ForEach(filteredSmartSearches, id: \.self) { smartSearch in
                     let id = MovieToWatchListItem.identifier(kind: .smartSearch,
                                                              smartSearch: smartSearch,
                                                              list: nil)
                     selectionRow(id: id,
-                                 title: smartSearch.name ?? "A Smart List",
+                                 title: smartSearch.name ?? "A Smart Search",
                                  subtitle: itemCountText(count: smartSearch.count))
                 }
             }
@@ -783,7 +789,7 @@ struct MovieAddListPickerView: View {
                                                              list: list)
                     selectionRow(id: id,
                                  title: list.name.emojiUnescapedString,
-                                 subtitle: itemCountText(count: list.itemCount))
+                                 subtitle: list.isSmartList ? list.description ?? "Smart List" : itemCountText(count: list.itemCount))
                 }
             }
         }
@@ -802,6 +808,7 @@ struct MovieAddListPickerView: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
                 Spacer()
                 if selectedIDs.contains(id) {
@@ -905,7 +912,7 @@ final class MovieToWatchSettings {
         ensureSequentialRanks()
         setDefaultIfNeeded()
 
-        onCustomListsChangedReceiver.hotOnly().listen { [weak self] lists in
+        onOwnedListsChangedReceiver.hotOnly().listen { [weak self] lists in
             guard let self else { return }
             refreshOtherLists(customLists: lists)
         }.disposed(by: disposeBag)
@@ -1031,6 +1038,17 @@ final class MovieToWatchSettings {
         if normalized != otherLists {
             otherLists = normalized
         }
+    }
+
+    /// Removes a deleted list so refreshes stop requesting it.
+    func remove(list: List) {
+        guard otherLists.contains(where: { $0.list == list }) else { return }
+        otherLists = otherLists.filter { $0.list != list }.enumerated().map { index, item in
+            var copy = item
+            copy.rank = index
+            return copy
+        }
+        movieToWatchSettingsUpdatedTransmitter.broadcast(self)
     }
 
     private func refreshOtherLists(customLists: [List]? = nil,

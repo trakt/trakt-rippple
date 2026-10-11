@@ -21,43 +21,70 @@ final class MirTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var moreButton: UIButton!
 
     private let disposeBag = DisposeBag()
+    private var vipNudgeView: StatsVIPNudgeView?
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cancelCancellables()
+        user = nil
+    }
 
     override func awakeFromNib() {
         super.awakeFromNib()
+        vipNudgeView = StatsVIPNudgeView.install(in: contentView)
+        onSettingsChangedReceiver.listen { [weak self] _ in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, let user = self.user else { return }
+                self.update(with: user)
+            }
+        }.disposed(by: disposeBag)
+        onVIPChangedReceiver.listen { [weak self] _ in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, let user = self.user else { return }
+                self.update(with: user)
+            }
+        }.disposed(by: disposeBag)
 
         RatingsManager.shared.onRatedItemsChangedReceiver.skip(count: 1).listen { [weak self] _ in
-            guard let self = self else { return }
-            self.cancelCancellable()
-            self.cancellable = self.fetchMir()
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.refreshStats()
+            }
         }.disposed(by: disposeBag)
 
         onOwnCommentsChangedReceiver.listen { [weak self] _ in
-            guard let self = self else { return }
-            self.cancelCancellable()
-            self.cancellable = self.fetchMir()
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.refreshStats()
+            }
         }.disposed(by: disposeBag)
 
         WatchingManager.shared.onWatchingItemChangedReceiver.hotOnly().listen { [weak self] _ in
-            guard let self = self else { return }
-            self.cancelCancellable()
-            self.cancellable = self.fetchMir()
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.refreshStats()
+            }
         }.disposed(by: disposeBag)
 
         onMarkWatchedReceiver.listen { [weak self] _ in
-            guard let self = self else { return }
-            self.cancelCancellable()
-            self.cancellable = self.fetchMir()
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.refreshStats()
+            }
         }.disposed(by: disposeBag)
 
         onRemoveWatchReceiver.listen { [weak self] _ in
-            guard let self = self else { return }
-            self.cancelCancellable()
-            self.cancellable = self.fetchMir()
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.refreshStats()
+            }
         }.disposed(by: disposeBag)
     }
 
     func setup(user: User, year: Int, month: Int) {
-        if self.user == user, self.year == year, self.month == month {
+        if self.user == user, self.user?.isTraktVIP == user.isTraktVIP,
+           self.user?.isPrivate == user.isPrivate,
+           self.year == year, self.month == month {
             return
         }
 
@@ -103,20 +130,20 @@ final class MirTableViewCell: TintedCanvasTableViewCell {
     private var month: Int!
     private var user: User!
 
-    private var cancellable: Cancellable? {
-        willSet {
-            cancelCancellable()
-        }
-    }
+    private var cancellables: [Cancellable] = []
+    private var statsRequestID = 0
 
     deinit {
-        cancelCancellable()
+        cancelCancellables()
     }
 
     private let numberFormatter: NumberFormatter = .init()
     private let dateFormatter = DateComponentsFormatter()
 
     private func update(with user: User) {
+        vipNudgeView?.setLocked(!UserManager.shared.canAccessStats(for: user))
+        minutes.superview?.isHidden = !(user.isCurrentUser ? UserManager.shared.isCurrentVIP : user.isTraktVIP)
+
         numberFormatter.numberStyle = .decimal
 
         dateFormatter.unitsStyle = .brief
@@ -124,28 +151,24 @@ final class MirTableViewCell: TintedCanvasTableViewCell {
         calendar.locale = Locale(identifier: "en_US")
         dateFormatter.calendar = calendar
 
-        plays.text = "0"
         plays.method = .easeInOut
         plays.formatBlock = { [weak self] value in
             guard let self = self else { return "0" }
             return "\(self.numberFormatter.string(from: NSNumber(value: Int(value))) ?? "0")"
         }
 
-        ratings.text = "0"
         ratings.method = .easeInOut
         ratings.formatBlock = { [weak self] value in
             guard let self = self else { return "0" }
             return "\(self.numberFormatter.string(from: NSNumber(value: Int(value))) ?? "0")"
         }
 
-        comments.text = "0"
         comments.method = .easeInOut
         comments.formatBlock = { [weak self] value in
             guard let self = self else { return "0" }
             return "\(self.numberFormatter.string(from: NSNumber(value: Int(value))) ?? "0")"
         }
 
-        minutes.text = "0 min"
         minutes.method = .easeInOut
         minutes.formatBlock = { [weak self] value in
             guard let self = self else { return "0 min" }
@@ -157,8 +180,7 @@ final class MirTableViewCell: TintedCanvasTableViewCell {
             return self.dateFormatter.string(from: TimeInterval(value * 60))!
         }
 
-        cancelCancellable()
-        cancellable = fetchMir()
+        refreshStats()
     }
 
     private func updatePlaysWith(plays: Int?) {
@@ -177,36 +199,116 @@ final class MirTableViewCell: TintedCanvasTableViewCell {
         self.ratings.countFromCurrentValueTo(CGFloat(ratings ?? 0), withDuration: 0.7)
     }
 
-    private func cancelCancellable() {
-        if let cancellable = cancellable {
-            cancellable.cancel()
+    private func cancelCancellables() {
+        statsRequestID += 1
+        cancellables.forEach { $0.cancel() }
+        cancellables.removeAll()
+    }
+
+    private func refreshStats() {
+        cancelCancellables()
+        for label in [plays, minutes, ratings, comments] {
+            label?.countFrom(0, to: 0, withDuration: 0)
+        }
+        guard let user = user, UserManager.shared.canAccessStats(for: user) else {
+            showUnavailableStats()
+            return
+        }
+        if user.isCurrentUser || user.isTraktVIP {
+            if let cancellable = fetchMir() {
+                cancellables.append(cancellable)
+            }
+        } else {
+            fetchFallbackCounts()
         }
     }
 
-    private func fetchMir() -> Cancellable {
-        return TraktAPIProvider.provider.request(.mir(slug: user.slug,
-                                                      year: year,
-                                                      month: month),
-                                                 callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+    private func showUnavailableStats() {
+        for label in [plays, minutes, ratings, comments] {
+            label?.text = "—"
+        }
+    }
 
-                    let stats = try response.map(IRUserStats.self, using: TraktAPIProvider.decoder).stats.all
+    private func fetchFallbackCounts() {
+        guard let requestedUser = user, let requestedYear = year, let requestedMonth = month,
+              let date = Calendar.current.date(from: DateComponents(year: requestedYear, month: requestedMonth)),
+              let interval = Calendar.current.dateInterval(of: .month, for: date) else {
+            showUnavailableStats()
+            return
+        }
+        let requestID = statsRequestID
+        let viewer = UserManager.shared.currentUser
 
-                    DispatchQueue.main.async {
-                        self.updateRatingsWith(ratings: stats.ratingsCounts.total)
-                        self.updatePlaysWith(plays: stats.playCounts.total)
-                        self.updateMinutesWith(minutes: stats.minutes.total)
-                        self.updateCommentsWith(comments: stats.commentsCounts.total)
+        let counts: [(UserCountType, EFCountingLabel)] = [(.plays, plays), (.ratings, ratings), (.comments, comments)]
+        for (type, label) in counts {
+            let completion: (Result<Int, Error>) -> Void = { [weak self] result in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self, self.user == requestedUser,
+                          self.statsRequestID == requestID,
+                          UserManager.shared.currentUser == viewer,
+                          self.user?.isTraktVIP == requestedUser.isTraktVIP,
+                          self.year == requestedYear, self.month == requestedMonth,
+                          UserManager.shared.canAccessStats(for: self.user) else { return }
+                    switch result {
+                    case .success(let count):
+                        label.countFromCurrentValueTo(CGFloat(count), withDuration: 0.7)
+                    case .failure(let error):
+                        label.text = "—"
+                        print("Monthly user count request failed! \(error)")
                     }
-                } catch {
-                    print("fetchMir request JSON mapping failed! \(error)")
                 }
-            case .failure(let error):
-                print("fetchMir request failure \(error)")
+            }
+            let cancellable: Cancellable
+            if type == .plays {
+                cancellable = TraktAPIProvider.fetchUserCount(slug: requestedUser.slug,
+                                                              type: type,
+                                                              startDate: interval.start,
+                                                              endDate: interval.end.addingTimeInterval(-0.001),
+                                                              completion: completion)
+            } else {
+                cancellable = TraktAPIProvider.fetchMonthlyUserCount(slug: requestedUser.slug,
+                                                                     type: type,
+                                                                     startDate: interval.start,
+                                                                     endDate: interval.end,
+                                                                     completion: completion)
+            }
+            cancellables.append(cancellable)
+        }
+    }
+
+    private func fetchMir() -> Cancellable? {
+        guard UserManager.shared.canAccessStats(for: user), let requestedUser = user,
+              let requestedYear = year, let requestedMonth = month else {
+            showUnavailableStats()
+            return nil
+        }
+        let requestID = statsRequestID
+        let viewer = UserManager.shared.currentUser
+        return TraktAPIProvider.provider.request(.mir(slug: requestedUser.slug,
+                                                      year: requestedYear,
+                                                      month: requestedMonth),
+                                                 callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
+            let statsResult = Result {
+                try result.get().filterSuccessfulStatusCodes()
+                    .map(IRUserStats.self, using: TraktAPIProvider.decoder).stats.all
+            }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.user == requestedUser,
+                      self.statsRequestID == requestID,
+                      UserManager.shared.currentUser == viewer,
+                      self.user?.isTraktVIP == requestedUser.isTraktVIP,
+                      self.year == requestedYear, self.month == requestedMonth,
+                      UserManager.shared.canAccessStats(for: self.user) else { return }
+                switch statsResult {
+                case .success(let stats):
+                    self.updateRatingsWith(ratings: stats.ratingsCounts.total)
+                    self.updatePlaysWith(plays: stats.playCounts.total)
+                    self.updateMinutesWith(minutes: stats.minutes.total)
+                    self.updateCommentsWith(comments: stats.commentsCounts.total)
+                case .failure(let error):
+                    self.showUnavailableStats()
+                    print("fetchMir request failed! \(error)")
+                }
             }
         }
     }

@@ -29,10 +29,6 @@ enum TmdbAPIService {
     case providersForMovieInRegion(String)
     case providersForTVInRegion(String)
 
-    /// For search
-    case trending
-    case search(String)
-
     /// For Stingers
     case movieKeywords(Int64)
 }
@@ -55,10 +51,6 @@ extension TmdbAPIService: TargetType {
         case .movieProviders:
             return .successCodes
         case .showProviders:
-            return .successCodes
-        case .trending:
-            return .successCodes
-        case .search:
             return .successCodes
         case .movieKeywords:
             return .successCodes
@@ -93,10 +85,6 @@ extension TmdbAPIService: TargetType {
             return "/movie/\(tmdbId)/watch/providers"
         case .showProviders(let tmdbId):
             return "/tv/\(tmdbId)/watch/providers"
-        case .trending:
-            return "/trending/all/day"
-        case .search:
-            return "/search/multi"
         case .movieKeywords(let tmdbId):
             return "/movie/\(tmdbId)/keywords"
         case .seasonProviders(let tmdbId, let seasonNumber):
@@ -112,7 +100,7 @@ extension TmdbAPIService: TargetType {
 
     var method: Moya.Method {
         switch self {
-        case .configuration, .movieImages, .tvImages, .people, .episode, .movieProviders, .showProviders, .trending, .search, .movieKeywords, .seasonProviders, .providersForMovieInRegion, .providersForTVInRegion, .season:
+        case .configuration, .movieImages, .tvImages, .people, .episode, .movieProviders, .showProviders, .movieKeywords, .seasonProviders, .providersForMovieInRegion, .providersForTVInRegion, .season:
             return .get
         }
     }
@@ -142,13 +130,6 @@ extension TmdbAPIService: TargetType {
                                       encoding: URLEncoding.default)
         case .showProviders:
             return .requestParameters(parameters: ["api_key": TmdbAPIConfiguration.apiKey],
-                                      encoding: URLEncoding.default)
-        case .trending:
-            return .requestParameters(parameters: ["api_key": TmdbAPIConfiguration.apiKey],
-                                      encoding: URLEncoding.default)
-        case .search(let query):
-            return .requestParameters(parameters: ["api_key": TmdbAPIConfiguration.apiKey,
-                                                   "query": query],
                                       encoding: URLEncoding.default)
         case .movieKeywords:
             return .requestParameters(parameters: ["api_key": TmdbAPIConfiguration.apiKey],

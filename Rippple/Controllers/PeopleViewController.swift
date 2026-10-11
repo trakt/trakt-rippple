@@ -415,7 +415,7 @@ final class PeopleViewController: UITableViewController {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     if response.statusCode == 204 {
                         DispatchQueue.main.async {
-                            self.movies = People(cast: [], crew: nil)
+                            self.movies = People(cast: [], crew: nil, guestStars: nil)
                         }
                         return
                     }
@@ -451,7 +451,7 @@ final class PeopleViewController: UITableViewController {
                     let response = try moyaResponse.filterSuccessfulStatusCodes()
                     if response.statusCode == 204 {
                         DispatchQueue.main.async {
-                            self.shows = People(cast: [], crew: nil)
+                            self.shows = People(cast: [], crew: nil, guestStars: nil)
                         }
                         return
                     }
@@ -822,7 +822,7 @@ extension PeopleViewController {
                                                                                                            height: 500 * 1.5)
                                                   return mediaPreviewViewController
                                               }, actionProvider: { _ -> UIMenu? in
-                                                  return UIMenu(children: [])
+                                                  UIMenu(children: [])
                                               })
         }
 

@@ -636,8 +636,7 @@ private final class NavigationManager: ObservableObject {
 struct SheetView: View {
     @Environment(\.dismiss) var dismiss
 
-    @State var lists = ListsManager.shared.lists
-    @State var savedFilters = [SavedFilter]()
+    @State var lists = ListsManager.shared.ownedLists
     @State var showsSmartSearches = SmartSearch.smartSearches(for: .show)
     @State var moviesSmartSearches = SmartSearch.smartSearches(for: .movie)
     @State var collaborations = CollaborationsManager.shared.collaborations
@@ -1338,40 +1337,6 @@ struct SheetView: View {
                     }
                 }
 
-                if !savedFilters.isEmpty {
-                    Section {
-                        ForEach(savedFilters, id: \.self) { savedFilter in
-                            HStack {
-                                if savedFilter.isShelved {
-                                    Button {
-                                        savedFilter.unshelf()
-                                    } label: {
-                                        Label("Shelved", systemImage: "checkmark.circle.fill")
-                                    }.labelStyle(.iconOnly)
-                                        .font(.title2)
-                                        .id(refreshView)
-                                } else {
-                                    Button {
-                                        savedFilter.shelf(onTop: false)
-                                    } label: {
-                                        Label("Unshelved", systemImage: "circle")
-                                    }.tint(.secondary)
-                                        .labelStyle(.iconOnly)
-                                        .font(.title2)
-                                        .id(refreshView)
-                                }
-                                Text(savedFilter.name)
-                                    .lineLimit(1)
-                            }
-                        }
-                    } header: {
-                        VStack(alignment: .leading) {
-                            Text("Saved Filters on Trakt")
-                                .font(.callout)
-                        }
-                    }
-                }
-
                 if !showsSmartSearches.isEmpty {
                     Section {
                         ForEach(showsSmartSearches, id: \.self) { smartSearch in
@@ -1551,10 +1516,6 @@ struct SheetView: View {
                     }
                 }
         }.onAppear {
-            onSavedFiltersChangedReceiver.listen { savedFilters in
-                self.savedFilters = savedFilters
-            }.disposed(by: disposeBag)
-
             onShowSmartSearchChangedReceiver.listen { _ in
                 self.showsSmartSearches = SmartSearch.smartSearches(for: .show)
             }.disposed(by: disposeBag)
@@ -1563,8 +1524,8 @@ struct SheetView: View {
                 self.moviesSmartSearches = SmartSearch.smartSearches(for: .movie)
             }.disposed(by: disposeBag)
 
-            onCustomListsChangedReceiver.hotOnly().listen { _ in
-                self.lists = ListsManager.shared.lists
+            onOwnedListsChangedReceiver.hotOnly().listen { _ in
+                self.lists = ListsManager.shared.ownedLists
             }.disposed(by: disposeBag)
 
             onShelfChangedReceiver.hotOnly().listen { _ in

@@ -1333,20 +1333,12 @@ Keeping things private for private users...</string>
                                 </connections>
                             </button>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="Edit" id="exe-6y-Pts">
-                            <connections>
-                                <action selector="editTableViewWithSender:" destination="qHj-Dm-cz1" id="7t0-tK-MLm"/>
-                            </connections>
-                        </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <outlet property="editBarButtonItem" destination="exe-6y-Pts" id="aSs-Op-4TE"/>
                         <segue destination="Ar2-el-Dtq" kind="show" identifier="results" id="e9p-rv-CKT"/>
-                        <segue destination="Ar2-el-Dtq" kind="show" identifier="browse" id="etV-Sj-p4s"/>
                         <segue destination="MEa-Fw-siX" kind="show" identifier="user" id="ot1-Pb-TOu"/>
                         <segue destination="ioV-zc-UU0" kind="show" identifier="people" id="lms-Vj-xll"/>
                         <segue destination="Zqa-6j-kaq" kind="show" identifier="lists" id="frn-AU-ku0"/>
-                        <segue destination="oHT-rP-8qn" kind="presentation" identifier="smartSearch" id="Kiv-Dp-uxJ"/>
                         <segue destination="crF-lO-TE2" kind="show" identifier="details" id="vYh-Je-i9H"/>
                     </connections>
                 </tableViewController>
@@ -2629,7 +2621,7 @@ Are you sure about this people name's spelling?</string>
                         <sections>
                             <tableViewSection id="wmq-zo-vog">
                                 <cells>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="56" id="bA7-yq-A4n" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" id="bA7-yq-A4n" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="18" width="374" height="56"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="bA7-yq-A4n" id="LR7-WC-sTD">
@@ -2638,6 +2630,9 @@ Are you sure about this people name's spelling?</string>
                                             <subviews>
                                                 <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Name your list" textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="KOi-F0-GRZ">
                                                     <rect key="frame" x="20" y="11" width="334" height="34"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="34" id="lFm-Tf-001"/>
+                                                    </constraints>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences" returnKeyType="next"/>
                                                 </textField>
@@ -2650,7 +2645,7 @@ Are you sure about this people name's spelling?</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="56" id="Fmj-47-3ZK" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" id="Fmj-47-3ZK" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="74" width="374" height="56"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Fmj-47-3ZK" id="3mh-QY-nwe">
@@ -2659,6 +2654,9 @@ Are you sure about this people name's spelling?</string>
                                             <subviews>
                                                 <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Optional description" textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="xRa-Hs-Dm3">
                                                     <rect key="frame" x="20" y="11" width="334" height="34"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="34" id="lFm-Tf-002"/>
+                                                    </constraints>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences" returnKeyType="done"/>
                                                 </textField>
@@ -2671,7 +2669,7 @@ Are you sure about this people name's spelling?</string>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="53" id="gGA-s4-FZw" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" id="gGA-s4-FZw" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="130" width="374" height="53"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="gGA-s4-FZw" id="ppH-lh-dDS">
@@ -2691,18 +2689,19 @@ Are you sure about this people name's spelling?</string>
                                             <constraints>
                                                 <constraint firstItem="K1J-ON-kl5" firstAttribute="trailing" secondItem="ppH-lh-dDS" secondAttribute="trailingMargin" id="PeK-sT-3nC"/>
                                                 <constraint firstItem="K1J-ON-kl5" firstAttribute="leading" secondItem="ppH-lh-dDS" secondAttribute="leadingMargin" id="XyF-en-HjA"/>
-                                                <constraint firstItem="K1J-ON-kl5" firstAttribute="centerY" secondItem="ppH-lh-dDS" secondAttribute="centerY" id="ocp-6N-KOi"/>
+                                                <constraint firstItem="K1J-ON-kl5" firstAttribute="top" secondItem="ppH-lh-dDS" secondAttribute="topMargin" id="ocp-6N-KOi"/>
+                                                <constraint firstAttribute="bottomMargin" secondItem="K1J-ON-kl5" secondAttribute="bottom" id="lFm-Sc-001"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="47" id="LW1-DS-Zik" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" id="LW1-DS-Zik" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="183" width="374" height="47"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="LW1-DS-Zik" id="4ic-Cb-Cs9">
                                             <rect key="frame" x="0.0" y="0.0" width="374" height="47"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Allow comments" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lnj-wv-Q4X">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Allow comments" textAlignment="natural" numberOfLines="0" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lnj-wv-Q4X">
                                                     <rect key="frame" x="20.000000000000007" y="17" width="125.66666666666669" height="13"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <nil key="textColor"/>
@@ -2715,22 +2714,23 @@ Are you sure about this people name's spelling?</string>
                                             <constraints>
                                                 <constraint firstAttribute="bottomMargin" secondItem="lnj-wv-Q4X" secondAttribute="bottom" constant="2" id="0zN-sg-Z5o"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="Ozh-xq-txX" secondAttribute="trailing" id="1CL-6f-ICD"/>
-                                                <constraint firstAttribute="bottom" secondItem="Ozh-xq-txX" secondAttribute="bottom" constant="8" id="Ils-Kd-mi6"/>
+                                                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Ozh-xq-txX" secondAttribute="bottom" constant="8" id="Ils-Kd-mi6"/>
                                                 <constraint firstItem="lnj-wv-Q4X" firstAttribute="top" secondItem="4ic-Cb-Cs9" secondAttribute="topMargin" constant="2" id="UBW-C1-a00"/>
-                                                <constraint firstItem="Ozh-xq-txX" firstAttribute="top" secondItem="4ic-Cb-Cs9" secondAttribute="top" constant="8" id="YWk-bA-Nzm"/>
+                                                <constraint firstItem="Ozh-xq-txX" firstAttribute="top" relation="greaterThanOrEqual" secondItem="4ic-Cb-Cs9" secondAttribute="top" constant="8" id="YWk-bA-Nzm"/>
+                                                <constraint firstItem="Ozh-xq-txX" firstAttribute="centerY" secondItem="4ic-Cb-Cs9" secondAttribute="centerY" id="lFm-Sw-001"/>
                                                 <constraint firstItem="Ozh-xq-txX" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="lnj-wv-Q4X" secondAttribute="trailing" constant="8" symbolic="YES" id="tSf-zm-fUl"/>
                                                 <constraint firstItem="lnj-wv-Q4X" firstAttribute="leading" secondItem="4ic-Cb-Cs9" secondAttribute="leadingMargin" id="vMi-1C-qnl"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" rowHeight="47" id="VvN-vT-Nhn" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" id="VvN-vT-Nhn" customClass="TintedTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="230" width="374" height="47"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="VvN-vT-Nhn" id="kbZ-uC-IkL">
                                             <rect key="frame" x="0.0" y="0.0" width="374" height="47"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Display rank" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ncd-H3-Ry5">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Display rank" textAlignment="natural" numberOfLines="0" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ncd-H3-Ry5">
                                                     <rect key="frame" x="19.999999999999993" y="17" width="93.333333333333314" height="13"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <nil key="textColor"/>
@@ -2741,13 +2741,14 @@ Are you sure about this people name's spelling?</string>
                                                 </switch>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstAttribute="bottom" secondItem="ee7-58-6tj" secondAttribute="bottom" constant="8" id="89Y-aJ-zJm"/>
+                                                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="ee7-58-6tj" secondAttribute="bottom" constant="8" id="89Y-aJ-zJm"/>
                                                 <constraint firstAttribute="bottomMargin" secondItem="Ncd-H3-Ry5" secondAttribute="bottom" constant="2" id="HEL-vH-hM0"/>
                                                 <constraint firstItem="Ncd-H3-Ry5" firstAttribute="top" secondItem="kbZ-uC-IkL" secondAttribute="topMargin" constant="2" id="JWX-3L-xvB"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="ee7-58-6tj" secondAttribute="trailing" id="RIS-hJ-Lmb"/>
                                                 <constraint firstItem="ee7-58-6tj" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Ncd-H3-Ry5" secondAttribute="trailing" constant="8" symbolic="YES" id="bRo-BR-ilm"/>
                                                 <constraint firstItem="Ncd-H3-Ry5" firstAttribute="leading" secondItem="kbZ-uC-IkL" secondAttribute="leadingMargin" id="hCc-3O-88E"/>
-                                                <constraint firstItem="ee7-58-6tj" firstAttribute="top" secondItem="kbZ-uC-IkL" secondAttribute="top" constant="8" id="hbT-3m-8J0"/>
+                                                <constraint firstItem="ee7-58-6tj" firstAttribute="top" relation="greaterThanOrEqual" secondItem="kbZ-uC-IkL" secondAttribute="top" constant="8" id="hbT-3m-8J0"/>
+                                                <constraint firstItem="ee7-58-6tj" firstAttribute="centerY" secondItem="kbZ-uC-IkL" secondAttribute="centerY" id="lFm-Sw-002"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -2765,7 +2766,7 @@ Are you sure about this people name's spelling?</string>
                                 <action selector="cancel:" destination="Wb3-UU-xw1" id="IYG-ou-EcA"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="Add" id="urB-J0-xY7">
+                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="urB-J0-xY7">
                             <connections>
                                 <action selector="add:" destination="Wb3-UU-xw1" id="X1b-8b-cZJ"/>
                             </connections>
@@ -3130,7 +3131,7 @@ Are you sure about this people name's spelling?</string>
         <!--List Search Results View Controller-->
         <scene sceneID="AVS-Y2-628">
             <objects>
-                <tableViewController id="Zqa-6j-kaq" customClass="ListSearchResultsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="ListSearchResultsViewController" id="Zqa-6j-kaq" customClass="ListSearchResultsViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="100" sectionHeaderHeight="28" sectionFooterHeight="28" id="7EN-St-yfK" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -4785,8 +4786,6 @@ Keeping things private for private users...</string>
         <segue reference="gZk-zu-rat"/>
         <segue reference="TRC-u5-3rw"/>
         <segue reference="lGe-Ne-T6L"/>
-        <segue reference="etV-Sj-p4s"/>
-        <segue reference="Kiv-Dp-uxJ"/>
         <segue reference="iRx-Qf-nvv"/>
         <segue reference="lUX-57-seM"/>
         <segue reference="fIG-dL-sAE"/>

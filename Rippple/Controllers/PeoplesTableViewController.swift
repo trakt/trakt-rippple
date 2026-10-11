@@ -26,18 +26,18 @@ final class PeoplesTableViewController: UITableViewController {
     }
 
     private var filteredCast: [Cast] {
-        if let people = people {
-            return people.cast.filter { cast in
-                if searchQuery.isEmpty { return true }
-                if searchQuery == "" { return true }
-                if let person = cast.person, person.name.localizedCaseInsensitiveContains(searchQuery) { return true }
-                for character in cast.characters where character.localizedCaseInsensitiveContains(searchQuery) {
-                    return true
-                }
-                return false
-            }
-        } else {
-            return [Cast]()
+        return filterCast(people?.cast ?? [])
+    }
+
+    private var filteredGuestStars: [Cast] {
+        return filterCast(people?.guestStars ?? [])
+    }
+
+    private func filterCast(_ cast: [Cast]) -> [Cast] {
+        return cast.filter { cast in
+            if searchQuery.isEmpty { return true }
+            if let person = cast.person, person.name.localizedCaseInsensitiveContains(searchQuery) { return true }
+            return cast.characters.contains { $0.localizedCaseInsensitiveContains(searchQuery) }
         }
     }
 
@@ -59,9 +59,18 @@ final class PeoplesTableViewController: UITableViewController {
 
         func appendCast() {
             guard !filteredCast.isEmpty else { return }
-            snapshot.appendItems([.header("Cast", "\(filteredCast.count) member\(filteredCast.count > 1 ? "s" : "")")])
+            let title = people?.guestStars?.isEmpty == false ? "Main Cast" : "Cast"
+            snapshot.appendItems([.header(title, "\(filteredCast.count) member\(filteredCast.count > 1 ? "s" : "")")])
             for cast in filteredCast {
                 snapshot.appendItems([.cast(cast)])
+            }
+        }
+
+        func appendGuestStars() {
+            guard !filteredGuestStars.isEmpty else { return }
+            snapshot.appendItems([.header("Supporting Cast", "\(filteredGuestStars.count) member\(filteredGuestStars.count > 1 ? "s" : "")")])
+            for guest in filteredGuestStars {
+                snapshot.appendItems([.guest(guest)])
             }
         }
 
@@ -74,6 +83,7 @@ final class PeoplesTableViewController: UITableViewController {
         }
 
         appendCast()
+        appendGuestStars()
         appendCrew()
 
         DispatchQueue.main.async {
@@ -131,6 +141,7 @@ final class PeoplesTableViewController: UITableViewController {
 
     private enum Wrapper: Hashable {
         case cast(Cast)
+        case guest(Cast)
         case crew(Job)
         case header(String, String)
     }
@@ -139,7 +150,7 @@ final class PeoplesTableViewController: UITableViewController {
         guard let self = self else { return nil }
 
         switch item {
-        case .cast(let cast):
+        case .cast(let cast), .guest(let cast):
             let cell = tableView.dequeueReusableCell(withIdentifier: "people") as! PeopleTableViewCell
             cell.showsEpisodeCount = self.media.episode == nil
             cell.cast = cast
@@ -268,7 +279,7 @@ final class PeoplesTableViewController: UITableViewController {
                 }
             }
         case .show(let show):
-            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleShow(id: show.identifiers.trakt!, extended: nil),
+            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleShow(id: show.identifiers.trakt!, extended: .guestStars),
                                                             callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
 
@@ -309,7 +320,7 @@ final class PeoplesTableViewController: UITableViewController {
                 }
             }
         case .episode(let episode, let show):
-            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleEpisode(id: show.identifiers.trakt!, season: episode.season, episode: episode.number, extended: nil),
+            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleEpisode(id: show.identifiers.trakt!, season: episode.season, episode: episode.number, extended: .guestStars),
                                                             callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
 
@@ -350,7 +361,7 @@ final class PeoplesTableViewController: UITableViewController {
                 }
             }
         case .season(let season, let show):
-            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleSeason(id: show.identifiers.trakt!, season: season.number, extended: nil),
+            cancellable = TraktAPIProvider.provider.request(TraktAPIService.peopleSeason(id: show.identifiers.trakt!, season: season.number, extended: .guestStars),
                                                             callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
                 guard let self = self else { return }
 
@@ -410,7 +421,7 @@ extension PeoplesTableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         switch item {
-        case .cast(let cast):
+        case .cast(let cast), .guest(let cast):
             performSegue(withIdentifier: "people", sender: cast)
         case .crew(let crew):
             performSegue(withIdentifier: "people", sender: crew)
@@ -431,7 +442,7 @@ extension PeoplesTableViewController {
                                                                                                 bundle: nil).instantiateInitialViewController() as! PeoplePreviewViewController
 
                                                   switch item {
-                                                  case .cast(let cast):
+                                                  case .cast(let cast), .guest(let cast):
                                                       mediaPreviewViewController.person = cast.person
                                                   case .crew(let crew):
                                                       mediaPreviewViewController.person = crew.person
@@ -443,7 +454,7 @@ extension PeoplesTableViewController {
                                                                                                            height: 500 * 1.5)
                                                   return mediaPreviewViewController
                                               }, actionProvider: { _ -> UIMenu? in
-                                                  return UIMenu(children: [])
+                                                  UIMenu(children: [])
                                               })
         }
 
@@ -471,7 +482,7 @@ extension PeoplesTableViewController {
 
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         switch item {
-        case .cast(let cast):
+        case .cast(let cast), .guest(let cast):
             performSegue(withIdentifier: "people", sender: cast)
         case .crew(let crew):
             performSegue(withIdentifier: "people", sender: crew)

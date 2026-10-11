@@ -17,6 +17,7 @@ final class CustomListsViewController: UITableViewController {
         case error
         case standard
         case content
+        case smart
         case liked
     }
 
@@ -42,6 +43,19 @@ final class CustomListsViewController: UITableViewController {
             guard editingStyle == .delete else { return }
             guard let item = itemIdentifier(for: indexPath) else { return }
             guard case .list(let list, let isLiked) = item, isLiked == false else { return }
+
+            if list.isSmartList {
+                SwiftMessages.show(message: "Deleting List...", style: .loading)
+                ListsManager.shared.delete(smartList: list) { result in
+                    switch result {
+                    case .success:
+                        SwiftMessages.show(message: "👍 Your list has been deleted")
+                    case .failure(let error):
+                        SwiftMessages.show(message: "😓 Error deleting", style: .error(error))
+                    }
+                }
+                return
+            }
 
             if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") {
                 UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/mylists")!))
@@ -72,8 +86,8 @@ final class CustomListsViewController: UITableViewController {
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
             guard let item = itemIdentifier(for: indexPath) else { return false }
             switch item {
-            case .list(_, let isLiked):
-                return !isLiked
+            case .list(let list, let isLiked):
+                return !isLiked && !list.isSmartList
             default:
                 return false
             }
@@ -112,7 +126,13 @@ final class CustomListsViewController: UITableViewController {
         super.init(coder: aDecoder)
     }
 
+    private var listsSubtitle = "Loading..."
+    private var listBarButtonItems: [UIBarButtonItem]?
+    private let listsSearchResults = ListsSearchViewController()
+    private lazy var searchController = UISearchController(searchResultsController: listsSearchResults)
+
     private var lists = [List]()
+    private var smartLists = [List]()
     private var likedLists = [List]()
 
     private let disposeBag = DisposeBag()
@@ -196,10 +216,35 @@ final class CustomListsViewController: UITableViewController {
         }
 
         if user.isCurrentUser {
-            navigationItem.title = "Lists"
+            navigationItem.title = "Your Lists"
         } else {
             navigationItem.title = "\(user.username)'s Lists"
             navigationItem.rightBarButtonItems = nil
+        }
+
+        listBarButtonItems = navigationItem.rightBarButtonItems
+        searchController.delegate = self
+        searchController.searchResultsUpdater = listsSearchResults
+        searchController.showsSearchResultsController = true
+        searchController.searchBar.placeholder = "Search Lists"
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = true
+        definesPresentationContext = true
+        listsSearchResults.listDelegate = self
+        listsSearchResults.onSubtitleChanged = { [weak self] subtitle in
+            guard let self = self, self.searchController.isActive else { return }
+            self.navigationItem.subtitle = subtitle
+        }
+        listsSearchResults.onSelectList = { [weak self] list in
+            guard let self = self else { return }
+            self.searchController.searchBar.resignFirstResponder()
+            self.openList(list)
+        }
+        listsSearchResults.onSelectBrowse = { [weak self] tab in
+            guard let self = self else { return }
+            self.searchController.searchBar.resignFirstResponder()
+            self.saveStandardList("\(tab.rawValue.lowercased()) lists")
+            self.openBrowseLists(tab, animated: true)
         }
 
         tableView.allowsSelectionDuringEditing = true
@@ -247,8 +292,16 @@ final class CustomListsViewController: UITableViewController {
                 self.applySnapshot(animating: true, reload: true)
                 self.updateListCreationButton()
             }.disposed(by: disposeBag)
+
+            onSmartListsChangedReceiver.listen { [weak self] smartLists in
+                guard let self = self else { return }
+                if UserManager.shared.currentUser == nil { return }
+                self.smartLists = smartLists
+                self.applySnapshot(animating: true, reload: true)
+            }.disposed(by: disposeBag)
         } else {
             fetchCustomLists()
+            fetchSmartLists()
         }
 
         navigationController?.delegate = self
@@ -276,44 +329,23 @@ final class CustomListsViewController: UITableViewController {
         updateListCreationButton()
     }
 
+    /// Both entries stay visible at the limit, so reaching it reads as an account limit rather than a missing feature.
     private func updateListCreationButton() {
-        if ListsManager.shared.lists.count < UserManager.shared.currentUserListLimit {
-            var actions = [UIAction]()
-            actions.append(UIAction(title: "New Custom List",
-                                    handler: { _ in
-                                        self.performSegue(withIdentifier: "add", sender: nil)
-                                    }))
-            actions.append(UIAction(title: "New couchmoney.tv TV List",
-                                    handler: { _ in
-                                        UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/tvaddlist")!))
-                                    }))
-            actions.append(UIAction(title: "New couchmoney.tv Movie List",
-                                    handler: { _ in
-                                        UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/addlist")!))
-                                    }))
-            addListBarButtonItem?.menu = UIMenu(children: actions)
-            addListBarButtonItem?.target = nil
-            addListBarButtonItem?.action = nil
-        } else {
-            addListBarButtonItem?.menu = nil
-            addListBarButtonItem?.target = self
-            addListBarButtonItem?.action = #selector(VIPLimit)
+        let newSmartList = UIAction(title: "New Smart List", image: UIImage(systemName: "sparkles")) { [weak self] _ in
+            guard let self = self else { return }
+            SmartListBuilderViewController.present(from: self)
         }
-    }
-
-    @objc func VIPLimit() {
-        let alertController = UIAlertController(title: "Trakt Limit Reached",
-                                                message: "You are currently limited to \(UserManager.shared.currentUserListLimit) lists on Trakt. You can delete a custom list. Upgrading to Track VIP may also help. If you are VIP, you've just hit a hard limit.",
-                                                preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
-
-        alertController.addAction(UIAlertAction(title: "Get Trakt VIP", style: .default, handler: { _ in
-            if let url = URL(string: "https://app.trakt.tv/vip"),
-               UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
+        let newCustomList = UIAction(title: "New Custom List", image: UIImage(systemName: "list.bullet")) { [weak self] _ in
+            guard let self = self else { return }
+            if ListsManager.shared.lists.count < UserManager.shared.currentUserListLimit {
+                self.performSegue(withIdentifier: "add", sender: nil)
+            } else {
+                UIApplication.shared.presentAccountLimitReached()
             }
-        }))
-        present(alertController, animated: true)
+        }
+        addListBarButtonItem?.menu = UIMenu(children: [newSmartList, newCustomList])
+        addListBarButtonItem?.target = nil
+        addListBarButtonItem?.action = nil
     }
 
     private func restore() {
@@ -341,6 +373,13 @@ final class CustomListsViewController: UITableViewController {
                     UIView.setAnimationsEnabled(false)
                     performSegue(withIdentifier: "collaborations-no-animation", sender: self)
                     UIView.setAnimationsEnabled(true)
+                } else if UserDefaults.standard.string(forKey: "CustomListsViewController.standardList") == "smart searches", user.isCurrentUser {
+                    UserDefaults.standard.removeObject(forKey: "CustomListsViewController.standardList")
+                    UserDefaults.standard.removeObject(forKey: "CustomListsViewController.displayList")
+                } else if user.isCurrentUser,
+                          let identifier = UserDefaults.standard.string(forKey: "CustomListsViewController.standardList"),
+                          let category = browseListsCategory(identifier) {
+                    openBrowseLists(category, animated: false)
                 } else { // watchlist or default behaviour (retro-compatibility)
                     UIView.setAnimationsEnabled(false)
                     performSegue(withIdentifier: "watchlist-no-animation", sender: self)
@@ -355,6 +394,7 @@ final class CustomListsViewController: UITableViewController {
             ListsManager.shared.refresh()
         } else {
             fetchCustomLists()
+            fetchSmartLists()
         }
     }
 
@@ -362,7 +402,12 @@ final class CustomListsViewController: UITableViewController {
         showLoading = true
         error = nil
         applySnapshot(animating: true)
-        fetchCustomLists()
+        if user.isCurrentUser {
+            ListsManager.shared.refresh()
+        } else {
+            fetchCustomLists()
+            fetchSmartLists()
+        }
     }
 
     @IBAction func edit(_ sender: UIBarButtonItem) {
@@ -376,16 +421,17 @@ final class CustomListsViewController: UITableViewController {
     }
 
     private func applySnapshot(animating: Bool = false, reload: Bool = false) {
+        listsSearchResults.additionalLists = lists + smartLists
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
 
         let contentItems = lists.map { Wrapper.list($0, isLiked: false) }
 
         if showLoading {
-            navigationItem.subtitle = "Loading..."
+            listsSubtitle = "Loading..."
             snapshot.appendSections([.loading])
             snapshot.appendItems([.spacer(100)], toSection: .loading)
         } else if error != nil {
-            navigationItem.subtitle = "Error!"
+            listsSubtitle = "Error"
             snapshot.appendSections([.error])
             snapshot.appendItems([.spacer(101)], toSection: .error)
         } else {
@@ -404,11 +450,21 @@ final class CustomListsViewController: UITableViewController {
             }
 
             // Content (custom lists)
-            navigationItem.subtitle = "\(lists.count) Custom List\(lists.count > 1 ? "s" : "")"
             snapshot.appendSections([.content])
             snapshot.appendItems(contentItems, toSection: .content)
             if reload {
                 snapshot.reloadItems(contentItems)
+            }
+
+            // Smart lists stay visible while editing so they can be edited or deleted.
+            if smartLists.isEmpty == false {
+                let smartItems = smartLists.map { Wrapper.list($0, isLiked: false) }
+                snapshot.appendSections([.smart])
+                snapshot.appendItems([.spacer(11), .header("Smart Lists", "\(smartLists.count) list\(smartLists.count > 1 ? "s" : "")")], toSection: .smart)
+                snapshot.appendItems(smartItems, toSection: .smart)
+                if reload {
+                    snapshot.reloadItems(smartItems)
+                }
             }
 
             if user.isCurrentUser, tableView.isEditing == false {
@@ -421,6 +477,12 @@ final class CustomListsViewController: UITableViewController {
             }
         }
 
+        if !showLoading, error == nil {
+            listsSubtitle = user.isCurrentUser
+                ? "\(lists.count) curated, \(smartLists.count) smart, \(likedLists.count) liked"
+                : (smartLists.isEmpty ? "\(lists.count) curated" : "\(lists.count) curated, \(smartLists.count) smart")
+        }
+        navigationItem.subtitle = searchController.isActive ? listsSearchResults.subtitle : listsSubtitle
         DispatchQueue.main.async {
             self.dataSource.apply(snapshot, animatingDifferences: false)
         }
@@ -458,6 +520,64 @@ final class CustomListsViewController: UITableViewController {
                 }
             }
         }
+    }
+
+    /// Only public smart lists are returned for other users.
+    private func fetchSmartLists() {
+        guard SessionManager.shared.isLoggedOut == false, let user = user else { return }
+        TraktAPIProvider.fetchSmartLists(user: user) { [weak self] result in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.user == user else { return }
+                switch result {
+                case .success(let smartLists):
+                    self.smartLists = smartLists
+                    self.applySnapshot(animating: true, reload: true)
+                case .failure(let error):
+                    print("smartLists request failure \(error)")
+                }
+            }
+        }
+    }
+
+    private func openList(_ list: List) {
+        if navigationController?.viewControllers.first == self,
+           let encoded = try? JSONEncoder().encode(list) {
+            UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
+            UserDefaults.standard.set(encoded, forKey: "CustomListsViewController.customList")
+            UserDefaults.standard.removeObject(forKey: "CustomListsViewController.standardList")
+        }
+        performSegue(withIdentifier: "list", sender: list)
+    }
+
+    private func saveStandardList(_ identifier: String) {
+        guard navigationController?.viewControllers.first == self else { return }
+        UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
+        UserDefaults.standard.set(identifier, forKey: "CustomListsViewController.standardList")
+        UserDefaults.standard.removeObject(forKey: "CustomListsViewController.customList")
+    }
+
+    private func openStandardList(_ identifier: String) {
+        saveStandardList(identifier)
+        if let category = browseListsCategory(identifier) {
+            openBrowseLists(category, animated: true)
+        } else {
+            performSegue(withIdentifier: identifier, sender: self)
+        }
+    }
+
+    private func browseListsCategory(_ identifier: String) -> BrowseListsViewController.Category? {
+        switch identifier {
+        case "browseLists", "browse lists", "trendingLists", "trending lists": return .trending
+        case "officialLists", "official lists", "trakt official lists": return .official
+        case "popularLists", "popular lists": return .popular
+        default: return nil
+        }
+    }
+
+    private func openBrowseLists(_ category: BrowseListsViewController.Category, animated: Bool) {
+        let controller = BrowseListsViewController()
+        controller.category = category
+        navigationController?.pushViewController(controller, animated: animated)
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -523,7 +643,9 @@ extension CustomListsViewController {
                     // Don't allow editing liked lists
                     break
                 }
-                if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") == false {
+                if list.isSmartList {
+                    SmartListBuilderViewController.present(from: self, list: list)
+                } else if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") == false {
                     performSegue(withIdentifier: "edit", sender: list)
                 } else {
                     UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://couchmoney.tv/mylists")!))
@@ -531,31 +653,12 @@ extension CustomListsViewController {
             default:
                 break
             }
-        } else if navigationController?.viewControllers.first == self {
-            switch item {
-            case .standard(let name, _, let segueId):
-                UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
-                UserDefaults.standard.set(name.lowercased(), forKey: "CustomListsViewController.standardList")
-                UserDefaults.standard.removeObject(forKey: "CustomListsViewController.customList")
-                UserDefaults.standard.synchronize()
-                performSegue(withIdentifier: segueId, sender: self)
-            case .list(let list, _):
-                if let encoded = try? JSONEncoder().encode(list) {
-                    UserDefaults.standard.set(true, forKey: "CustomListsViewController.displayList")
-                    UserDefaults.standard.set(encoded, forKey: "CustomListsViewController.customList")
-                    UserDefaults.standard.removeObject(forKey: "CustomListsViewController.standardList")
-                    UserDefaults.standard.synchronize()
-                }
-                performSegue(withIdentifier: "list", sender: list)
-            default:
-                break
-            }
         } else {
             switch item {
-            case .standard(_, _, let segueId):
-                performSegue(withIdentifier: segueId, sender: self)
+            case .standard(_, _, let identifier):
+                openStandardList(identifier)
             case .list(let list, _):
-                performSegue(withIdentifier: "list", sender: list)
+                openList(list)
             default:
                 break
             }
@@ -573,7 +676,7 @@ extension CustomListsViewController {
         if sectionType == .error {
             return errorView
         }
-        if sectionType == .liked {
+        if sectionType == .liked || sectionType == .smart {
             return UIView()
         }
         return nil
@@ -627,7 +730,7 @@ extension CustomListsViewController: ListTableViewCellDelegate {
     func cell(_ cell: ListTableViewCell, action: ListTableViewCell.Action) {
         guard let list = cell.list else { return }
         if action == .touch {
-            performSegue(withIdentifier: "list", sender: list)
+            openList(list)
         } else if action == .user {
             if let type = list.type, type == "official" {
                 let alert = UIAlertController(title: "Trakt Official List",
@@ -668,10 +771,13 @@ extension CustomListsViewController: UITableViewDropDelegate {
         let snapshot = dataSource.snapshot()
         let destSection = snapshot.sectionIdentifiers[destinationIndexPath.section]
 
-        if destSection == .liked {
+        // Items cannot be added to smart lists: Trakt resolves them from their conditions.
+        if destSection == .liked || destSection == .smart {
             return UITableViewDropProposal(operation: .cancel)
         }
-        if destSection == .standard && destinationIndexPath.row == 3 {
+        if destSection == .standard,
+           case .standard(_, _, let identifier) = dataSource.itemIdentifier(for: destinationIndexPath),
+           ["watchlist", "recommended", "collection"].contains(identifier) == false {
             return UITableViewDropProposal(operation: .cancel)
         }
         tableView.cellForRow(at: destinationIndexPath)?.isSelected = true
@@ -847,5 +953,20 @@ extension CustomListsViewController: UITableViewDropDelegate {
                 }
             }
         }
+    }
+}
+
+extension CustomListsViewController: UISearchControllerDelegate {
+    func willPresentSearchController(_ searchController: UISearchController) {
+        navigationItem.title = "Lists"
+        navigationItem.setRightBarButtonItems(nil, animated: false)
+        listsSearchResults.loadViewIfNeeded()
+        navigationItem.subtitle = listsSearchResults.subtitle
+    }
+
+    func willDismissSearchController(_ searchController: UISearchController) {
+        navigationItem.title = user.isCurrentUser ? "Your Lists" : "\(user.username)'s Lists"
+        navigationItem.setRightBarButtonItems(listBarButtonItems, animated: false)
+        navigationItem.subtitle = listsSubtitle
     }
 }

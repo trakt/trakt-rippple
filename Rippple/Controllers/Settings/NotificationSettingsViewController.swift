@@ -402,6 +402,7 @@ final class NotificationSettingsViewController: RipppleHostingController<Notific
                                                                    target: self,
                                                                    action: #selector(forceUploadSettings))
     private var lastTransmittedSettings = NotificationSetting.currentValues()
+    private var isAwaitingForcedUploadResult = false
 
     private var hasPendingSettingsChanges: Bool {
         NotificationSetting.currentValues() != lastTransmittedSettings
@@ -443,6 +444,18 @@ final class NotificationSettingsViewController: RipppleHostingController<Notific
             guard case .didEnterBackground = applicationLifecycle else { return }
             self.transmitChangedSettingsIfNeeded()
         }.disposed(by: disposeBag)
+
+        pushTokenReceiveAndUpdatedReceiver.listen { [weak self] error in
+            DispatchQueue.main.async {
+                guard let self = self, self.isAwaitingForcedUploadResult else { return }
+                self.isAwaitingForcedUploadResult = false
+                if let error = error {
+                    SwiftMessages.show(message: "😓 Notification settings upload failed", style: .error(error))
+                } else {
+                    SwiftMessages.show(message: "✅ Notification settings uploaded")
+                }
+            }
+        }.disposed(by: disposeBag)
     }
 
     private func transmitChangedSettingsIfNeeded() {
@@ -455,6 +468,19 @@ final class NotificationSettingsViewController: RipppleHostingController<Notific
     @objc private func forceUploadSettings() {
         lastTransmittedSettings = NotificationSetting.currentValues()
         updateUploadSettingsButton()
+
+        // The remote upload only runs when push is configured and this device has an endpoint;
+        // otherwise nothing would answer and the user would see no feedback.
+        let canUploadRemotely = RemoteNotificationsManager.shared.isConfigured
+            && SessionManager.shared.isLoggedIn
+            && UserDefaults.standard.string(forKey: "Rippple.endpointArnForSNS") != nil
+        if canUploadRemotely {
+            isAwaitingForcedUploadResult = true
+            SwiftMessages.show(message: "Uploading Notification Settings...", style: .loading)
+        } else {
+            SwiftMessages.show(message: "Push notifications aren't registered yet. See Troubleshoot Notifications.", style: .standout)
+        }
+
         onNotificationsSettingsChangedTransmitter.broadcast(.forced)
     }
 

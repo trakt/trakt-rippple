@@ -28,17 +28,11 @@ final class SearchTableViewCell: TintedCanvasTableViewCell {
                                           value: color?.withAlphaComponent(0.7) ?? .secondaryLabel,
                                           range: (attributedString.string as NSString).range(of: subtext))
             if let searchQuery = searchQuery {
-                attributedString.addAttribute(.font,
-                                              value: UIFont(descriptor: title.font.fontDescriptor.withSymbolicTraits(.traitBold)!, size: title.font.pointSize),
-                                              range: (attributedString.string as NSString).range(of: searchQuery, options: .caseInsensitive))
-                attributedString.addAttribute(.underlineStyle,
-                                              value: NSUnderlineStyle.single.rawValue,
-                                              range: (attributedString.string as NSString).range(of: searchQuery, options: .caseInsensitive))
                 for query in searchQuery.split(separator: " ").map({ String($0) }) {
-                    var searchRange = NSRange(location: 0, length: text.count)
+                    var searchRange = NSRange(location: 0, length: (text as NSString).length)
                     var foundRange = NSRange()
-                    while searchRange.location < text.count {
-                        searchRange.length = text.count - searchRange.location
+                    while searchRange.location < (text as NSString).length {
+                        searchRange.length = (text as NSString).length - searchRange.location
                         foundRange = (text as NSString).range(of: query, options: NSString.CompareOptions.caseInsensitive, range: searchRange)
                         if foundRange.location != NSNotFound {
                             attributedString.addAttribute(.font,

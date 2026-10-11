@@ -58,6 +58,7 @@ final class ImageBrowserViewController: UIViewController {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.backgroundColor = .ripppleViewBackground
         collectionView.delegate = self
+        collectionView.dragDelegate = self
         collectionView.register(ImageBrowserCell.self, forCellWithReuseIdentifier: ImageBrowserCell.reuseIdentifier)
         collectionView.register(LogoImageBrowserCell.self, forCellWithReuseIdentifier: LogoImageBrowserCell.reuseIdentifier)
         collectionView.register(EmptyCollectionViewCell.self, forCellWithReuseIdentifier: EmptyCollectionViewCell.reuseIdentifier)
@@ -128,6 +129,11 @@ final class ImageBrowserViewController: UIViewController {
         setupCloseButton()
         setupUI()
         loadImages()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        collectionView.dragInteractionEnabled = UserDefaults.standard.bool(forKey: "GeneralSettings.dragging")
     }
 
     // MARK: - Setup
@@ -824,6 +830,36 @@ extension ImageBrowserViewController: UICollectionViewDelegate {
       */
 }
 
+// MARK: - UICollectionViewDragDelegate
+
+extension ImageBrowserViewController: UICollectionViewDragDelegate {
+    func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        return dragItems(at: indexPath)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
+        return dragItems(at: indexPath)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+        guard let cell = collectionView.cellForItem(at: indexPath) else { return nil }
+        return UIDragItem.dragPreviewParameters(from: dragImageView(at: indexPath), in: cell)
+    }
+
+    private func dragImageView(at indexPath: IndexPath) -> UIImageView? {
+        let cell = collectionView.cellForItem(at: indexPath)
+        return (cell as? ImageBrowserCell)?.imageView ?? (cell as? LogoImageBrowserCell)?.imageView
+    }
+
+    private func dragItems(at indexPath: IndexPath) -> [UIDragItem] {
+        guard let imageView = dragImageView(at: indexPath), let image = imageView.image else { return [] }
+
+        let item = UIDragItem(itemProvider: NSItemProvider(object: image))
+        item.setDragPreview(from: imageView)
+        return [item]
+    }
+}
+
 // MARK: - Zoom Transition
 
 extension ImageBrowserViewController {
@@ -864,6 +900,8 @@ final class FilterHeaderView: UICollectionReusableView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        directionalLayoutMargins = NSDirectionalEdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+        preservesSuperviewLayoutMargins = true
     }
 
     @available(*, unavailable)
@@ -884,8 +922,8 @@ final class FilterHeaderView: UICollectionReusableView {
 
             NSLayoutConstraint.activate([
                 stackView.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-                stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-                stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+                stackView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+                stackView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
                 stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
                 stackView.heightAnchor.constraint(equalToConstant: 44)
             ])
