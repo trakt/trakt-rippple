@@ -8,6 +8,7 @@
 
 import Foundation
 @preconcurrency import Kingfisher
+import LRUCache
 import Moya
 import Receiver
 import UIKit
@@ -166,6 +167,14 @@ final class ImagesManager {
 
     private let peopleCache = NSCache<NSString, NSString>()
 
+    /// Trakt `images` for one media, empty when Trakt has none. Refreshed after ten minutes.
+    private struct TraktImagesEntry {
+        let images: [String: [String]]
+        let expiresAt = Date().addingTimeInterval(10 * 60)
+    }
+
+    private let traktImagesCache = LRUCache<String, TraktImagesEntry>(countLimit: 500)
+
     enum CacheMode: CaseIterable, Hashable {
         case balanced
         case offlineFirst
@@ -193,6 +202,55 @@ final class ImagesManager {
         case backdrop
         case profile
         case logo
+    }
+
+    /// Trakt artwork types returned with `extended=images`.
+    enum TraktImageKind: String {
+        case poster
+        case fanart
+        case logo
+        case screenshot
+        case headshot
+
+        /// Width of the `medium` variant; `full` is the next size up.
+        fileprivate var mediumWidth: CGFloat {
+            switch self {
+            case .poster, .headshot: return 600
+            case .fanart, .screenshot: return 1280
+            case .logo: return 400
+            }
+        }
+    }
+
+    /// Media whose Trakt artwork can stand in for a missing TMDb image.
+    enum TraktImageTarget {
+        case movie(Movie)
+        case show(Show)
+        case season(Show, Season)
+        case episode(Show, Episode)
+        case person(Person)
+
+        /// The request returning the images and the key its result is cached under. Nil without a Trakt id.
+        fileprivate var request: (service: TraktAPIService, cacheKey: String)? {
+            switch self {
+            case .movie(let movie):
+                guard let id = movie.identifiers.trakt else { return nil }
+                return (.movie(id: String(id), extended: .images), "movie-\(id)")
+            case .show(let show):
+                guard let id = show.identifiers.trakt else { return nil }
+                return (.show(id: String(id), extended: .images), "show-\(id)")
+            case .season(let show, let season):
+                guard let id = show.identifiers.trakt else { return nil }
+                return (.seasons(id: id, extended: .images), "season-\(id)-\(season.number)")
+            case .episode(let show, let episode):
+                guard let id = show.identifiers.trakt else { return nil }
+                return (.episode(id: String(id), season: episode.season, episode: episode.number, extended: .images),
+                        "episode-\(id)-\(episode.season)-\(episode.number)")
+            case .person(let person):
+                guard let id = person.ids.trakt else { return nil }
+                return (.people(id: id, extended: .images), "person-\(id)")
+            }
+        }
     }
 
     private let configurationLock = NSLock()
@@ -256,6 +314,7 @@ final class ImagesManager {
 
         cache.clearMemoryCache()
         cache.clearDiskCache()
+        traktImagesCache.removeAll()
     }
 
     private func expirationDescription(_ expiration: StorageExpiration) -> String {
@@ -381,6 +440,57 @@ final class ImagesManager {
         defer { configurationLock.unlock() }
         return work()
     }
+
+    // MARK: - Trakt fallback
+
+    /// Resolves a Trakt-hosted image for `target`, for use when TMDb has none.
+    /// `completion` runs synchronously on a cache hit, otherwise on a background queue.
+    func traktImageURL(for target: TraktImageTarget,
+                       kind: TraktImageKind,
+                       size: CGSize,
+                       completion: @escaping (URL?) -> Void) {
+        guard let request = target.request else {
+            completion(nil)
+            return
+        }
+
+        if let entry = traktImagesCache.value(forKey: request.cacheKey), entry.expiresAt > Date() {
+            completion(traktImageURL(in: entry.images, kind: kind, size: size))
+            return
+        }
+
+        TraktAPIProvider.provider.request(request.service, callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
+            guard let self = self else { return }
+
+            do {
+                let response = try result.get().filterSuccessfulStatusCodes()
+
+                let images: [String: [String]]
+                if case .season(_, let season) = target {
+                    let seasons = try response.map([TraktImages].self, using: TraktAPIProvider.decoder)
+                    images = seasons.first { $0.number == season.number }?.images ?? [:]
+                } else {
+                    images = try response.map(TraktImages.self, using: TraktAPIProvider.decoder).images ?? [:]
+                }
+
+                self.traktImagesCache.setValue(TraktImagesEntry(images: images), forKey: request.cacheKey)
+                completion(self.traktImageURL(in: images, kind: kind, size: size))
+            } catch {
+                print("Trakt images Error: \(error)")
+                completion(nil)
+            }
+        }
+    }
+
+    /// Trakt links one variant without a scheme; use `full` for targets wider than `medium`.
+    private func traktImageURL(in images: [String: [String]], kind: TraktImageKind, size: CGSize) -> URL? {
+        guard let path = images[kind.rawValue]?.first else { return nil }
+        let variant = size.width > kind.mediumWidth ? "full" : "medium"
+        let sizedPath = path.replacingOccurrences(of: "/(thumb|medium|full)/", with: "/\(variant)/", options: .regularExpression)
+        return URL(string: "https://" + sizedPath)
+    }
+
+    // MARK: - TMDb caches
 
     fileprivate func cachedShowPoster(with identifiers: Identifiers, for size: CGSize) -> URL? {
         guard let tmdb = identifiers.tmdb else { return nil }
@@ -520,6 +630,7 @@ final class ImagesManager {
             self.showLogoCache.removeAllObjects()
             self.episodeStillsCache.removeAllObjects()
             self.peopleCache.removeAllObjects()
+            self.traktImagesCache.removeAll()
             ImageCache.default.clearMemoryCache()
         }.disposed(by: disposeBag)
 
@@ -559,8 +670,10 @@ extension MediaModel {
 
         switch self {
         case .movie(let movie):
+            let fallback = { ImagesManager.shared.traktImageURL(for: .movie(movie), kind: .fanart, size: size, completion: completion) }
+
             guard let tmdbId = movie.identifiers.tmdb else {
-                completion(nil)
+                fallback()
                 return
             }
 
@@ -578,7 +691,7 @@ extension MediaModel {
                         let images = try response.map(PostersImages.self, using: TmdbAPIProvider.decoder)
 
                         if images.backdrops.isEmpty {
-                            completion(nil)
+                            fallback()
                             return
                         } // no posters
 
@@ -593,16 +706,18 @@ extension MediaModel {
                         completion(imageURL)
                     } catch {
                         print("Movie posters Error: \(error)")
-                        completion(nil)
+                        fallback()
                     }
                 case .failure(let error):
                     print("Movie posters Failure: \(error)")
-                    completion(nil)
+                    fallback()
                 }
             }
         case .show(let show), .episode(_, let show):
+            let fallback = { ImagesManager.shared.traktImageURL(for: .show(show), kind: .fanart, size: size, completion: completion) }
+
             guard let tmdbId = show.identifiers.tmdb else {
-                completion(nil)
+                fallback()
                 return
             }
 
@@ -620,7 +735,7 @@ extension MediaModel {
                         let images = try response.map(PostersImages.self, using: TmdbAPIProvider.decoder)
 
                         if images.backdrops.isEmpty {
-                            completion(nil)
+                            fallback()
                             return
                         } // no posters
 
@@ -635,11 +750,11 @@ extension MediaModel {
                         completion(imageURL)
                     } catch {
                         print("Movie posters Error: \(error)")
-                        completion(nil)
+                        fallback()
                     }
                 case .failure(let error):
                     print("Movie posters Failure: \(error)")
-                    completion(nil)
+                    fallback()
                 }
             }
         case .season:
@@ -654,8 +769,10 @@ extension MediaModel {
     func posterURL(targetSize size: CGSize, with completion: @escaping (_ url: URL?) -> Void) {
         switch self {
         case .movie(let movie):
+            let fallback = { ImagesManager.shared.traktImageURL(for: .movie(movie), kind: .poster, size: size, completion: completion) }
+
             guard let tmdbId = movie.identifiers.tmdb else {
-                completion(nil)
+                fallback()
                 return
             }
 
@@ -673,7 +790,7 @@ extension MediaModel {
                         let images = try response.map(PostersImages.self, using: TmdbAPIProvider.decoder)
 
                         if images.posters.isEmpty {
-                            completion(nil)
+                            fallback()
                             return
                         } // no posters
 
@@ -688,16 +805,18 @@ extension MediaModel {
                         completion(imageURL)
                     } catch {
                         print("Movie posters Error: \(error)")
-                        completion(nil)
+                        fallback()
                     }
                 case .failure(let error):
                     print("Movie posters Failure: \(error)")
-                    completion(nil)
+                    fallback()
                 }
             }
         case .show(let show):
+            let fallback = { ImagesManager.shared.traktImageURL(for: .show(show), kind: .poster, size: size, completion: completion) }
+
             guard let tmdbId = show.identifiers.tmdb else {
-                completion(nil)
+                fallback()
                 return
             }
 
@@ -715,7 +834,7 @@ extension MediaModel {
                         let images = try response.map(PostersImages.self, using: TmdbAPIProvider.decoder)
 
                         if images.posters.isEmpty {
-                            completion(nil)
+                            fallback()
                             return
                         } // no posters
 
@@ -730,11 +849,11 @@ extension MediaModel {
                         completion(imageURL)
                     } catch {
                         print("Movie posters Error: \(error)")
-                        completion(nil)
+                        fallback()
                     }
                 case .failure(let error):
                     print("Movie posters Failure: \(error)")
-                    completion(nil)
+                    fallback()
                 }
             }
         case .episode:
@@ -864,6 +983,20 @@ final class PosterImageView: UIImageView {
         }
     }
 
+    private func loadTraktPoster(for target: ImagesManager.TraktImageTarget, ifCurrent isCurrent: @escaping () -> Bool) {
+        ImagesManager.shared.traktImageURL(for: target, kind: .poster, size: size) { [weak self] imageURL in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, isCurrent() else { return }
+                guard let imageURL = imageURL else {
+                    self.image = nil
+                    if let completion = self.completion { completion(false) }
+                    return
+                }
+                self.setPosterImage(with: imageURL, ifCurrent: isCurrent)
+            }
+        }
+    }
+
     private func loadMoviePoster() {
         setup()
 
@@ -871,8 +1004,13 @@ final class PosterImageView: UIImageView {
 
         image = nil
 
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return movie == self.movie
+        }
+
         guard let tmdbId = movie.identifiers.tmdb else {
-            if let completion = completion { completion(false) }
+            loadTraktPoster(for: .movie(movie), ifCurrent: isCurrent)
             return
         }
 
@@ -896,11 +1034,7 @@ final class PosterImageView: UIImageView {
                     let images = try response.map(PostersImages.self, using: TmdbAPIProvider.decoder)
 
                     if images.posters.isEmpty {
-                        DispatchQueue.main.async {
-                            if movie != self.movie { return }
-                            self.image = nil
-                            if let completion = self.completion { completion(false) }
-                        }
+                        self.loadTraktPoster(for: .movie(movie), ifCurrent: isCurrent)
                         return
                     } // no posters
 
@@ -924,19 +1058,11 @@ final class PosterImageView: UIImageView {
 
                 } catch {
                     print("Movie posters Error: \(error)")
-                    DispatchQueue.main.async {
-                        if movie != self.movie { return }
-                        self.image = nil
-                        if let completion = self.completion { completion(false) }
-                    }
+                    self.loadTraktPoster(for: .movie(movie), ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Movie posters Failure: \(error)")
-                DispatchQueue.main.async {
-                    if movie != self.movie { return }
-                    self.image = nil
-                    if let completion = self.completion { completion(false) }
-                }
+                self.loadTraktPoster(for: .movie(movie), ifCurrent: isCurrent)
             }
         }
     }
@@ -948,8 +1074,13 @@ final class PosterImageView: UIImageView {
 
         image = nil
 
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return show == self.show
+        }
+
         guard let tmdbId = show.identifiers.tmdb else {
-            if let completion = completion { completion(false) }
+            loadTraktPoster(for: .show(show), ifCurrent: isCurrent)
             return
         }
 
@@ -973,11 +1104,7 @@ final class PosterImageView: UIImageView {
                     let images = try response.map(PostersImages.self, using: TmdbAPIProvider.decoder)
 
                     if images.posters.isEmpty {
-                        DispatchQueue.main.async {
-                            if show != self.show { return }
-                            self.image = nil
-                            if let completion = self.completion { completion(false) }
-                        }
+                        self.loadTraktPoster(for: .show(show), ifCurrent: isCurrent)
                         return
                     } // no posters
 
@@ -1001,19 +1128,11 @@ final class PosterImageView: UIImageView {
 
                 } catch {
                     print("Tv posters Error: \(error)")
-                    DispatchQueue.main.async {
-                        if show != self.show { return }
-                        self.image = nil
-                        if let completion = self.completion { completion(false) }
-                    }
+                    self.loadTraktPoster(for: .show(show), ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Tv posters Failure: \(error)")
-                DispatchQueue.main.async {
-                    if show != self.show { return }
-                    self.image = nil
-                    if let completion = self.completion { completion(false) }
-                }
+                self.loadTraktPoster(for: .show(show), ifCurrent: isCurrent)
             }
         }
     }
@@ -1025,8 +1144,13 @@ final class PosterImageView: UIImageView {
 
         image = nil
 
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return season.0 == self.season?.0 && season.1 == self.season?.1
+        }
+
         guard let tmdbId = season.0.identifiers.tmdb else {
-            if let completion = completion { completion(false) }
+            loadTraktPoster(for: .season(season.0, season.1), ifCurrent: isCurrent)
             return
         }
 
@@ -1051,11 +1175,7 @@ final class PosterImageView: UIImageView {
                     let images = try response.map(PostersOnlyImages.self, using: TmdbAPIProvider.decoder)
 
                     if images.posters.isEmpty {
-                        DispatchQueue.main.async {
-                            if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
-                            self.image = nil
-                            if let completion = self.completion { completion(false) }
-                        }
+                        self.loadTraktPoster(for: .season(season.0, season.1), ifCurrent: isCurrent)
                         return
                     } // no posters
 
@@ -1079,19 +1199,11 @@ final class PosterImageView: UIImageView {
 
                 } catch {
                     print("Season posters Error: \(error)")
-                    DispatchQueue.main.async {
-                        if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
-                        self.image = nil
-                        if let completion = self.completion { completion(false) }
-                    }
+                    self.loadTraktPoster(for: .season(season.0, season.1), ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Season posters Failure: \(error)")
-                DispatchQueue.main.async {
-                    if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
-                    self.image = nil
-                    if let completion = self.completion { completion(false) }
-                }
+                self.loadTraktPoster(for: .season(season.0, season.1), ifCurrent: isCurrent)
             }
         }
     }
@@ -1124,14 +1236,36 @@ final class PeopleProfileImageView: UIImageView {
         backgroundColor = UIColor.tertiarySystemFill
     }
 
+    private func loadTraktHeadshot(for person: Person, ifCurrent isCurrent: @escaping () -> Bool) {
+        ImagesManager.shared.traktImageURL(for: .person(person), kind: .headshot, size: size) { [weak self] imageURL in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, isCurrent() else { return }
+                guard let imageURL = imageURL else {
+                    self.image = nil
+                    return
+                }
+                self.kf.setImage(with: imageURL,
+                                 placeholder: nil,
+                                 options: ImagesManager.shared.options(adding: [.processor(self.filter)]))
+            }
+        }
+    }
+
     private func loadProfileImage() {
         setup()
 
         guard let person = person else { return }
 
         image = nil
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return person.ids == self.person?.ids
+        }
 
-        guard let tmdbId = person.ids.tmdb else { return }
+        guard let tmdbId = person.ids.tmdb else {
+            loadTraktHeadshot(for: person, ifCurrent: isCurrent)
+            return
+        }
 
         if let imageURL = ImagesManager.shared.cachedPeopleImage(with: person.ids, for: size) {
             kf.setImage(with: imageURL,
@@ -1151,10 +1285,7 @@ final class PeopleProfileImageView: UIImageView {
                     let images = try response.map(ProfilesImages.self, using: TmdbAPIProvider.decoder)
 
                     if images.profiles.isEmpty {
-                        DispatchQueue.main.async {
-                            if person.ids != self.person?.ids { return }
-                            self.image = nil
-                        }
+                        self.loadTraktHeadshot(for: person, ifCurrent: isCurrent)
                         return
                     } // no posters
 
@@ -1175,17 +1306,11 @@ final class PeopleProfileImageView: UIImageView {
 
                 } catch {
                     print("Tv posters Error: \(error)")
-                    DispatchQueue.main.async {
-                        if person.ids != self.person?.ids { return }
-                        self.image = nil
-                    }
+                    self.loadTraktHeadshot(for: person, ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Tv posters Failure: \(error)")
-                DispatchQueue.main.async {
-                    if person.ids != self.person?.ids { return }
-                    self.image = nil
-                }
+                self.loadTraktHeadshot(for: person, ifCurrent: isCurrent)
             }
         }
     }
@@ -1245,14 +1370,34 @@ final class BigPeopleProfileImageView: UIImageView {
         }
     }
 
+    private func loadTraktHeadshot(for person: Person, ifCurrent isCurrent: @escaping () -> Bool) {
+        ImagesManager.shared.traktImageURL(for: .person(person), kind: .headshot, size: size) { [weak self] imageURL in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, isCurrent() else { return }
+                guard let imageURL = imageURL else {
+                    self.image = nil
+                    return
+                }
+                self.setProfileImage(with: imageURL, ifCurrent: isCurrent)
+            }
+        }
+    }
+
     private func loadProfileImage() {
         setup()
 
         guard let person = person else { return }
 
         image = nil
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return person.ids == self.person?.ids
+        }
 
-        guard let tmdbId = person.ids.tmdb else { return }
+        guard let tmdbId = person.ids.tmdb else {
+            loadTraktHeadshot(for: person, ifCurrent: isCurrent)
+            return
+        }
 
         if let imageURL = ImagesManager.shared.cachedPeopleImage(with: person.ids, for: size) {
             setProfileImage(with: imageURL) { [weak self] in
@@ -1273,10 +1418,7 @@ final class BigPeopleProfileImageView: UIImageView {
                     let images = try response.map(ProfilesImages.self, using: TmdbAPIProvider.decoder)
 
                     if images.profiles.isEmpty {
-                        DispatchQueue.main.async {
-                            if person.ids != self.person?.ids { return }
-                            self.image = nil
-                        }
+                        self.loadTraktHeadshot(for: person, ifCurrent: isCurrent)
                         return
                     } // no posters
 
@@ -1299,17 +1441,11 @@ final class BigPeopleProfileImageView: UIImageView {
 
                 } catch {
                     print("Tv posters Error: \(error)")
-                    DispatchQueue.main.async {
-                        if person.ids != self.person?.ids { return }
-                        self.image = nil
-                    }
+                    self.loadTraktHeadshot(for: person, ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Tv posters Failure: \(error)")
-                DispatchQueue.main.async {
-                    if person.ids != self.person?.ids { return }
-                    self.image = nil
-                }
+                self.loadTraktHeadshot(for: person, ifCurrent: isCurrent)
             }
         }
     }
@@ -1373,14 +1509,37 @@ final class PosterButton: UIButton {
         backgroundColor = UIColor.tertiarySystemFill
     }
 
+    private func loadTraktPoster(for target: ImagesManager.TraktImageTarget, ifCurrent isCurrent: @escaping () -> Bool) {
+        ImagesManager.shared.traktImageURL(for: target, kind: .poster, size: size) { [weak self] imageURL in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, isCurrent() else { return }
+                guard let imageURL = imageURL else {
+                    self.setImage(nil, for: .normal)
+                    return
+                }
+                self.kf.setImage(with: imageURL,
+                                 for: .normal,
+                                 placeholder: nil,
+                                 options: ImagesManager.shared.options(adding: [.processor(self.filter)]))
+            }
+        }
+    }
+
     private func loadMoviePoster() {
         setup()
 
         guard let movie = movie else { return }
 
         setImage(nil, for: .normal)
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return movie == self.movie
+        }
 
-        guard let tmdbId = movie.identifiers.tmdb else { return }
+        guard let tmdbId = movie.identifiers.tmdb else {
+            loadTraktPoster(for: .movie(movie), ifCurrent: isCurrent)
+            return
+        }
 
         if let imageURL = ImagesManager.shared.cachedMoviePoster(with: movie.identifiers,
                                                                  for: size) {
@@ -1402,10 +1561,7 @@ final class PosterButton: UIButton {
                     let images = try response.map(PostersImages.self, using: TmdbAPIProvider.decoder)
 
                     if images.posters.isEmpty {
-                        DispatchQueue.main.async {
-                            if movie != self.movie { return }
-                            self.setImage(nil, for: .normal)
-                        }
+                        self.loadTraktPoster(for: .movie(movie), ifCurrent: isCurrent)
                         return
                     } // no posters
 
@@ -1428,17 +1584,11 @@ final class PosterButton: UIButton {
 
                 } catch {
                     print("Movie posters Error: \(error)")
-                    DispatchQueue.main.async {
-                        if movie != self.movie { return }
-                        self.setImage(nil, for: .normal)
-                    }
+                    self.loadTraktPoster(for: .movie(movie), ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Movie posters Failure: \(error)")
-                DispatchQueue.main.async {
-                    if movie != self.movie { return }
-                    self.setImage(nil, for: .normal)
-                }
+                self.loadTraktPoster(for: .movie(movie), ifCurrent: isCurrent)
             }
         }
     }
@@ -1449,8 +1599,15 @@ final class PosterButton: UIButton {
         guard let show = show else { return }
 
         setImage(nil, for: .normal)
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return show == self.show
+        }
 
-        guard let tmdbId = show.identifiers.tmdb else { return }
+        guard let tmdbId = show.identifiers.tmdb else {
+            loadTraktPoster(for: .show(show), ifCurrent: isCurrent)
+            return
+        }
 
         if let imageURL = ImagesManager.shared.cachedShowPoster(with: show.identifiers,
                                                                 for: size) {
@@ -1472,10 +1629,7 @@ final class PosterButton: UIButton {
                     let images = try response.map(PostersImages.self, using: TmdbAPIProvider.decoder)
 
                     if images.posters.isEmpty {
-                        DispatchQueue.main.async {
-                            if show != self.show { return }
-                            self.setImage(nil, for: .normal)
-                        }
+                        self.loadTraktPoster(for: .show(show), ifCurrent: isCurrent)
                         return
                     } // no posters
 
@@ -1498,17 +1652,11 @@ final class PosterButton: UIButton {
 
                 } catch {
                     print("Tv posters Error: \(error)")
-                    DispatchQueue.main.async {
-                        if show != self.show { return }
-                        self.setImage(nil, for: .normal)
-                    }
+                    self.loadTraktPoster(for: .show(show), ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Tv posters Failure: \(error)")
-                DispatchQueue.main.async {
-                    if show != self.show { return }
-                    self.setImage(nil, for: .normal)
-                }
+                self.loadTraktPoster(for: .show(show), ifCurrent: isCurrent)
             }
         }
     }
@@ -1519,8 +1667,15 @@ final class PosterButton: UIButton {
         guard let season = season else { return }
 
         setImage(nil, for: .normal)
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return season.0 == self.season?.0 && season.1 == self.season?.1
+        }
 
-        guard let tmdbId = season.0.identifiers.tmdb else { return }
+        guard let tmdbId = season.0.identifiers.tmdb else {
+            loadTraktPoster(for: .season(season.0, season.1), ifCurrent: isCurrent)
+            return
+        }
 
         if let imageURL = ImagesManager.shared.cachedSeasonPoster(with: season.0.identifiers,
                                                                   season: season.1.number,
@@ -1543,10 +1698,7 @@ final class PosterButton: UIButton {
                     let images = try response.map(PostersOnlyImages.self, using: TmdbAPIProvider.decoder)
 
                     if images.posters.isEmpty {
-                        DispatchQueue.main.async {
-                            if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
-                            self.setImage(nil, for: .normal)
-                        }
+                        self.loadTraktPoster(for: .season(season.0, season.1), ifCurrent: isCurrent)
                         return
                     } // no posters
 
@@ -1569,17 +1721,11 @@ final class PosterButton: UIButton {
 
                 } catch {
                     print("Season posters Error: \(error)")
-                    DispatchQueue.main.async {
-                        if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
-                        self.setImage(nil, for: .normal)
-                    }
+                    self.loadTraktPoster(for: .season(season.0, season.1), ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Season posters Failure: \(error)")
-                DispatchQueue.main.async {
-                    if season.0 != self.season?.0 || season.1 != self.season?.1 { return }
-                    self.setImage(nil, for: .normal)
-                }
+                self.loadTraktPoster(for: .season(season.0, season.1), ifCurrent: isCurrent)
             }
         }
     }
@@ -1737,6 +1883,25 @@ final class BackdropImageView: UIImageView {
         }
     }
 
+    private func loadTraktBackdrop(for target: ImagesManager.TraktImageTarget,
+                                   kind: ImagesManager.TraktImageKind = .fanart,
+                                   defaultTransitionDuration: TimeInterval? = nil,
+                                   ifCurrent isCurrent: @escaping () -> Bool) {
+        ImagesManager.shared.traktImageURL(for: target, kind: kind, size: size) { [weak self] imageURL in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, isCurrent() else { return }
+                guard let imageURL = imageURL else {
+                    self.image = nil
+                    if let completion = self.completion { completion(false) }
+                    return
+                }
+                self.setBackdropImage(with: imageURL,
+                                      defaultTransitionDuration: defaultTransitionDuration,
+                                      ifCurrent: isCurrent)
+            }
+        }
+    }
+
     private func loadMovieBackdrop() {
         setup()
 
@@ -1744,8 +1909,13 @@ final class BackdropImageView: UIImageView {
 
         image = nil
 
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return movie == self.media?.movie
+        }
+
         guard let tmdbId = movie.identifiers.tmdb else {
-            if let completion = completion { completion(false) }
+            loadTraktBackdrop(for: .movie(movie), ifCurrent: isCurrent)
             return
         }
 
@@ -1769,11 +1939,7 @@ final class BackdropImageView: UIImageView {
                     let images = try response.map(PostersImages.self, using: TmdbAPIProvider.decoder)
 
                     if images.backdrops.isEmpty {
-                        DispatchQueue.main.async {
-                            if movie != self.media?.movie { return }
-                            self.image = nil
-                            if let completion = self.completion { completion(false) }
-                        }
+                        self.loadTraktBackdrop(for: .movie(movie), ifCurrent: isCurrent)
                         return
                     } // no posters
 
@@ -1797,19 +1963,11 @@ final class BackdropImageView: UIImageView {
 
                 } catch {
                     print("Movie posters Error: \(error)")
-                    DispatchQueue.main.async {
-                        if movie != self.media?.movie { return }
-                        self.image = nil
-                        if let completion = self.completion { completion(false) }
-                    }
+                    self.loadTraktBackdrop(for: .movie(movie), ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Movie posters Failure: \(error)")
-                DispatchQueue.main.async {
-                    if movie != self.media?.movie { return }
-                    self.image = nil
-                    if let completion = self.completion { completion(false) }
-                }
+                self.loadTraktBackdrop(for: .movie(movie), ifCurrent: isCurrent)
             }
         }
     }
@@ -1821,8 +1979,13 @@ final class BackdropImageView: UIImageView {
 
         image = nil
 
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return self.isCurrentShowBackdrop(for: show)
+        }
+
         guard let tmdbId = show.identifiers.tmdb else {
-            if let completion = completion { completion(false) }
+            loadTraktBackdrop(for: .show(show), ifCurrent: isCurrent)
             return
         }
 
@@ -1846,11 +2009,7 @@ final class BackdropImageView: UIImageView {
                     let images = try response.map(PostersImages.self, using: TmdbAPIProvider.decoder)
 
                     if images.backdrops.isEmpty {
-                        DispatchQueue.main.async {
-                            guard self.isCurrentShowBackdrop(for: show) else { return }
-                            self.image = nil
-                            if let completion = self.completion { completion(false) }
-                        }
+                        self.loadTraktBackdrop(for: .show(show), ifCurrent: isCurrent)
                         return
                     } // no posters
 
@@ -1874,19 +2033,11 @@ final class BackdropImageView: UIImageView {
 
                 } catch {
                     print("Tv posters Error: \(error)")
-                    DispatchQueue.main.async {
-                        guard self.isCurrentShowBackdrop(for: show) else { return }
-                        self.image = nil
-                        if let completion = self.completion { completion(false) }
-                    }
+                    self.loadTraktBackdrop(for: .show(show), ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Tv posters Failure: \(error)")
-                DispatchQueue.main.async {
-                    guard self.isCurrentShowBackdrop(for: show) else { return }
-                    self.image = nil
-                    if let completion = self.completion { completion(false) }
-                }
+                self.loadTraktBackdrop(for: .show(show), ifCurrent: isCurrent)
             }
         }
     }
@@ -1903,8 +2054,13 @@ final class BackdropImageView: UIImageView {
 
         image = nil
 
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return self.isCurrentEpisodeBackdrop(for: episode)
+        }
+
         guard let tmdbId = show.identifiers.tmdb else {
-            if let completion = completion { completion(false) }
+            loadTraktBackdrop(for: .episode(show, episode), kind: .screenshot, defaultTransitionDuration: 0.6, ifCurrent: isCurrent)
             return
         }
 
@@ -1929,11 +2085,7 @@ final class BackdropImageView: UIImageView {
                     let images = try response.map(StillsImages.self, using: TmdbAPIProvider.decoder)
 
                     if images.stills.isEmpty {
-                        DispatchQueue.main.async {
-                            guard self.isCurrentEpisodeBackdrop(for: episode) else { return }
-                            self.image = nil
-                            if let completion = self.completion { completion(false) }
-                        }
+                        self.loadTraktBackdrop(for: .episode(show, episode), kind: .screenshot, defaultTransitionDuration: 0.6, ifCurrent: isCurrent)
                         return
                     } // no posters
 
@@ -1954,19 +2106,11 @@ final class BackdropImageView: UIImageView {
 
                 } catch {
                     print("Tv posters Error: \(error)")
-                    DispatchQueue.main.async {
-                        guard self.isCurrentEpisodeBackdrop(for: episode) else { return }
-                        self.image = nil
-                        if let completion = self.completion { completion(false) }
-                    }
+                    self.loadTraktBackdrop(for: .episode(show, episode), kind: .screenshot, defaultTransitionDuration: 0.6, ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Tv posters Failure: \(error)")
-                DispatchQueue.main.async {
-                    guard self.isCurrentEpisodeBackdrop(for: episode) else { return }
-                    self.image = nil
-                    if let completion = self.completion { completion(false) }
-                }
+                self.loadTraktBackdrop(for: .episode(show, episode), kind: .screenshot, defaultTransitionDuration: 0.6, ifCurrent: isCurrent)
             }
         }
     }
@@ -2022,6 +2166,25 @@ final class LogoImageView: UIImageView {
         filter = DownsamplingImageProcessor(size: size)
     }
 
+    private func loadTraktLogo(for target: ImagesManager.TraktImageTarget, ifCurrent isCurrent: @escaping () -> Bool) {
+        ImagesManager.shared.traktImageURL(for: target, kind: .logo, size: size) { [weak self] imageURL in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, isCurrent() else { return }
+                guard let imageURL = imageURL else {
+                    self.image = nil
+                    if let completion = self.completion { completion(false) }
+                    return
+                }
+                self.kf.setImage(with: imageURL,
+                                 placeholder: nil,
+                                 options: ImagesManager.shared.options(adding: [.processor(self.filter)])) { [weak self] _ in
+                    guard let self = self else { return }
+                    if let completion = self.completion { completion(true) }
+                }
+            }
+        }
+    }
+
     private func loadMovieLogo() {
         setup()
 
@@ -2029,8 +2192,13 @@ final class LogoImageView: UIImageView {
 
         image = nil
 
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return movie == self.media?.movie
+        }
+
         guard let tmdbId = movie.identifiers.tmdb else {
-            if let completion = completion { completion(false) }
+            loadTraktLogo(for: .movie(movie), ifCurrent: isCurrent)
             return
         }
 
@@ -2068,11 +2236,7 @@ final class LogoImageView: UIImageView {
 
                     // If no english and no no-language, don't show anything!
                     guard let imagePath = imagePath else {
-                        DispatchQueue.main.async {
-                            if movie != self.media?.movie { return }
-                            self.image = nil
-                            if let completion = self.completion { completion(false) }
-                        }
+                        self.loadTraktLogo(for: .movie(movie), ifCurrent: isCurrent)
                         return
                     }
 
@@ -2092,19 +2256,11 @@ final class LogoImageView: UIImageView {
 
                 } catch {
                     print("Movie Logo Error: \(error)")
-                    DispatchQueue.main.async {
-                        if movie != self.media?.movie { return }
-                        self.image = nil
-                        if let completion = self.completion { completion(false) }
-                    }
+                    self.loadTraktLogo(for: .movie(movie), ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Movie Logo Failure: \(error)")
-                DispatchQueue.main.async {
-                    if movie != self.media?.movie { return }
-                    self.image = nil
-                    if let completion = self.completion { completion(false) }
-                }
+                self.loadTraktLogo(for: .movie(movie), ifCurrent: isCurrent)
             }
         }
     }
@@ -2116,8 +2272,13 @@ final class LogoImageView: UIImageView {
 
         image = nil
 
+        let isCurrent: () -> Bool = { [weak self] in
+            guard let self = self else { return false }
+            return show == self.media?.show
+        }
+
         guard let tmdbId = show.identifiers.tmdb else {
-            if let completion = completion { completion(false) }
+            loadTraktLogo(for: .show(show), ifCurrent: isCurrent)
             return
         }
 
@@ -2155,11 +2316,7 @@ final class LogoImageView: UIImageView {
 
                     // If no english and no no-language, don't show anything!
                     guard let imagePath = imagePath else {
-                        DispatchQueue.main.async {
-                            if show != self.media?.show { return }
-                            self.image = nil
-                            if let completion = self.completion { completion(false) }
-                        }
+                        self.loadTraktLogo(for: .show(show), ifCurrent: isCurrent)
                         return
                     }
 
@@ -2179,19 +2336,11 @@ final class LogoImageView: UIImageView {
 
                 } catch {
                     print("Tv Logo Error: \(error)")
-                    DispatchQueue.main.async {
-                        if show != self.media?.show { return }
-                        self.image = nil
-                        if let completion = self.completion { completion(false) }
-                    }
+                    self.loadTraktLogo(for: .show(show), ifCurrent: isCurrent)
                 }
             case .failure(let error):
                 print("Tv Logo Failure: \(error)")
-                DispatchQueue.main.async {
-                    if show != self.media?.show { return }
-                    self.image = nil
-                    if let completion = self.completion { completion(false) }
-                }
+                self.loadTraktLogo(for: .show(show), ifCurrent: isCurrent)
             }
         }
     }

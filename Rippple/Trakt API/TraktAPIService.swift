@@ -180,6 +180,8 @@ enum Extended: String {
     case full
     case noseasons
     case fullnoseasons = "full,noseasons"
+    case fullEpisodes = "episodes,full"
+    case images
     case min
 }
 
@@ -323,7 +325,7 @@ enum TraktAPIService {
     case showRelatedSmart(id: String, pageInfo: PageInfo)
     case movieRelatedSmart(id: String, pageInfo: PageInfo)
     case comment(id: Int64)
-    case episode(id: String, season: Int, episode: Int)
+    case episode(id: String, season: Int, episode: Int, extended: Extended = .full)
     case user(id: String)
 
     case commentMediaItem(id: Int64)
@@ -342,7 +344,7 @@ enum TraktAPIService {
     case trendingLists(type: ListType?)
     case popularLists(type: ListType?)
 
-    case seasons(id: Int64)
+    case seasons(id: Int64, extended: Extended = .fullEpisodes)
     case episodes(id: Int64, season: Int)
 
     case ratings(type: TraktObjectType)
@@ -382,7 +384,7 @@ enum TraktAPIService {
     case peopleEpisode(id: Int64, season: Int, episode: Int, extended: Extended?)
     case peopleSeason(id: Int64, season: Int, extended: Extended?)
 
-    case people(id: Int64)
+    case people(id: Int64, extended: Extended = .full)
     case peopleSlug(slug: String)
 
     case peopleMovies(id: Int64)
@@ -726,7 +728,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/movies/\(id)/related/smart"
         case .comment(let id):
             return "/comments/\(id)"
-        case .episode(let id, let season, let episode):
+        case .episode(let id, let season, let episode, _):
             return "/shows/\(id)/seasons/\(season)/episodes/\(episode)"
         case .user(let id):
             return "/users/\(id)"
@@ -768,7 +770,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/movies/anticipated"
         case .anticipatedShows:
             return "/shows/anticipated"
-        case .seasons(let id):
+        case .seasons(let id, _):
             return "/shows/\(id)/seasons"
         case .episodes(let id, let season):
             return "/shows/\(id)/seasons/\(season)"
@@ -860,7 +862,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/shows/\(showId)/seasons/\(season)/episodes/\(episode)/people"
         case .peopleSeason(let showId, let season, _):
             return "/shows/\(showId)/seasons/\(season)/people"
-        case .people(let peopleId):
+        case .people(let peopleId, _):
             return "/people/\(peopleId)"
         case .peopleSlug(let slug):
             return "/people/\(slug)"
@@ -1518,8 +1520,8 @@ extension TraktAPIService: AuthorizedTargetType {
         case .comment:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
-        case .episode:
-            return .requestParameters(parameters: ["extended": "full"],
+        case .episode(_, _, _, let extended):
+            return .requestParameters(parameters: ["extended": extended.rawValue],
                                       encoding: URLEncoding.default)
         case .user:
             return .requestParameters(parameters: ["extended": "full,vip"],
@@ -1591,8 +1593,8 @@ extension TraktAPIService: AuthorizedTargetType {
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
-        case .seasons:
-            return .requestParameters(parameters: ["extended": "episodes,full"],
+        case .seasons(_, let extended):
+            return .requestParameters(parameters: ["extended": extended.rawValue],
                                       encoding: URLEncoding.default)
         case .episodes:
             return .requestParameters(parameters: ["extended": "full"],
@@ -1757,7 +1759,10 @@ extension TraktAPIService: AuthorizedTargetType {
             } else {
                 return .requestPlain
             }
-        case .people, .peopleSlug, .peopleShows, .peopleMovies:
+        case .people(_, let extended):
+            return .requestParameters(parameters: ["extended": extended.rawValue],
+                                      encoding: URLEncoding.default)
+        case .peopleSlug, .peopleShows, .peopleMovies:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
         case .customLists(_, let pageInfo):

@@ -722,6 +722,13 @@ struct Images: Codable {
     let avatar: ImageSet
 }
 
+/// Artwork returned with `extended=images`, keyed by type (`poster`, `fanart`, `logo`, `screenshot`, `headshot`…).
+/// URLs come without a scheme. `number` identifies the season in a seasons list.
+struct TraktImages: Codable {
+    let number: Int?
+    let images: [String: [String]]?
+}
+
 // MARK: - Settings
 
 struct Account: Codable {
