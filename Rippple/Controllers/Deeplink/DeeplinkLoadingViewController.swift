@@ -742,6 +742,8 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                         "CustomListsViewController.customList",
                                         "CustomListsViewController.displayList",
                                         "CustomListsViewController.standardList",
+                                        "EmojiReactionsSettings.enabled",
+                                        "EmojiReactionsSettings.shower",
                                         "EpisodeNotificationsManager.groupEpisodes",
                                         "EpisodeNotificationsManager.toWatchEpisodeRelease",
                                         "EpisodeNotificationsManager.toWatchSeasonPremiere",

@@ -205,7 +205,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                   "ToWatchViewController.currentType": 1,
                                                   "CountryManager.displayInLists": true,
                                                   "AppManager.tintedAppearance": false,
-                                                  "GeneralSettings.commentscount": 1])
+                                                  "GeneralSettings.commentscount": 1,
+                                                  "EmojiReactionsSettings.enabled": true,
+                                                  "EmojiReactionsSettings.shower": true])
 
         let dispatchGroup = DispatchGroup()
         dispatchGroup.enter()
@@ -299,6 +301,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         LikeManager.shared.startManaging()
         ReactionsManager.shared.startManaging()
+        MediaReactionsManager.shared.startManaging()
 
         ToWatchSearchManager.shared.setup()
         HiddenMediaManager.shared.setup()

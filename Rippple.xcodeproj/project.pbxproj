@@ -43,6 +43,9 @@
 		09A1B2C32FB3C4D500E6F701 /* SFSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 09A1B2C22FB3C4D500E6F701 /* SFSymbols */; };
 		09A1B2C42E7C000100000001 /* StreamingMovieNotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A1B2C22E7C000100000001 /* StreamingMovieNotificationsManager.swift */; };
 		09A1B2C52FB3C4D500E6F701 /* HTMLEntities in Frameworks */ = {isa = PBXBuildFile; productRef = 09A1B2C42FB3C4D500E6F701 /* HTMLEntities */; };
+		09A1F3022FD0C00100079A2C /* MediaReactionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A1F3012FD0C00100079A2C /* MediaReactionsManager.swift */; };
+		09A1F3042FD0C00100079A2C /* MediaReactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A1F3032FD0C00100079A2C /* MediaReactionsView.swift */; };
+		09A1F3062FD0C00100079A2C /* CommunityReactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A1F3052FD0C00100079A2C /* CommunityReactionsView.swift */; };
 		09A2F1012FC9000000A10001 /* RemoteNotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A2F1002FC9000000A10000 /* RemoteNotificationsManager.swift */; };
 		09A5A0F62E96A52300BFC59C /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A5A0F52E96A52300BFC59C /* TransactionsView.swift */; };
 		09A5A0F82E98F00100BFC59C /* CalendarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A5A0F72E98F00100BFC59C /* CalendarManager.swift */; };
@@ -142,6 +145,7 @@
 		3A1B95162A3C7E220044972F /* L1BrowseCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A1B95152A3C7E220044972F /* L1BrowseCollectionViewCell.xib */; };
 		3A1C8CC82D7AE0750046B3A0 /* BlockedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1C8CC72D7AE0670046B3A0 /* BlockedViewController.swift */; };
 		3A1C8CCA2D831A030046B3A0 /* AutomationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1C8CC92D831A030046B3A0 /* AutomationSettingsView.swift */; };
+		09A1F3082FD0C00100079A2C /* EmojiReactionsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A1F3072FD0C00100079A2C /* EmojiReactionsSettingsView.swift */; };
 		3A1C9072275E5CF400061AE9 /* HiddenTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1C9071275E5CF400061AE9 /* HiddenTableViewController.swift */; };
 		3A1C9C6E2210355200A805D1 /* ActionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1C9C6D2210355200A805D1 /* ActionTableViewCell.swift */; };
 		3A1D2E732591EDE900099144 /* ActivityHeaderTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A1D2E722591EDE900099144 /* ActivityHeaderTableViewCell.xib */; };
@@ -637,6 +641,9 @@
 		0998A7B62E2D2B9900079A2C /* CommentReactionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentReactionButton.swift; sourceTree = "<group>"; };
 		0998A7BC2E322FDA00079A2C /* ReactionsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactionsManager.swift; sourceTree = "<group>"; };
 		09A1B2C22E7C000100000001 /* StreamingMovieNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingMovieNotificationsManager.swift; sourceTree = "<group>"; };
+		09A1F3012FD0C00100079A2C /* MediaReactionsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaReactionsManager.swift; sourceTree = "<group>"; };
+		09A1F3032FD0C00100079A2C /* MediaReactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaReactionsView.swift; sourceTree = "<group>"; };
+		09A1F3052FD0C00100079A2C /* CommunityReactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityReactionsView.swift; sourceTree = "<group>"; };
 		09A2F1002FC9000000A10000 /* RemoteNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteNotificationsManager.swift; sourceTree = "<group>"; };
 		09A5A0F52E96A52300BFC59C /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		09A5A0F72E98F00100BFC59C /* CalendarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarManager.swift; sourceTree = "<group>"; };
@@ -739,6 +746,7 @@
 		3A1B95152A3C7E220044972F /* L1BrowseCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = L1BrowseCollectionViewCell.xib; sourceTree = "<group>"; };
 		3A1C8CC72D7AE0670046B3A0 /* BlockedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedViewController.swift; sourceTree = "<group>"; };
 		3A1C8CC92D831A030046B3A0 /* AutomationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationSettingsView.swift; sourceTree = "<group>"; };
+		09A1F3072FD0C00100079A2C /* EmojiReactionsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiReactionsSettingsView.swift; sourceTree = "<group>"; };
 		3A1C9071275E5CF400061AE9 /* HiddenTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenTableViewController.swift; sourceTree = "<group>"; };
 		3A1C9C6D2210355200A805D1 /* ActionTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionTableViewCell.swift; sourceTree = "<group>"; };
 		3A1D2E722591EDE900099144 /* ActivityHeaderTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ActivityHeaderTableViewCell.xib; sourceTree = "<group>"; };
@@ -1226,6 +1234,8 @@
 			isa = PBXGroup;
 			children = (
 				0998A7BC2E322FDA00079A2C /* ReactionsManager.swift */,
+				09A1F3012FD0C00100079A2C /* MediaReactionsManager.swift */,
+				09A1F3032FD0C00100079A2C /* MediaReactionsView.swift */,
 			);
 			path = Reactions;
 			sourceTree = "<group>";
@@ -1398,6 +1408,7 @@
 				3A1878A4283B9B7800E54540 /* PinnedImageView.swift */,
 				0998A7B42E2D28B000079A2C /* ReplyCountButton.swift */,
 				0998A7B62E2D2B9900079A2C /* CommentReactionButton.swift */,
+				09A1F3052FD0C00100079A2C /* CommunityReactionsView.swift */,
 			);
 			path = Stats;
 			sourceTree = "<group>";
@@ -1875,6 +1886,7 @@
 				3A1A784C281C59F7004A6D0E /* TabBarCustomizationViewController.swift */,
 				3AEBEE2228C4C05000948CCD /* AutomationViewController.swift */,
 				3A1C8CC92D831A030046B3A0 /* AutomationSettingsView.swift */,
+				09A1F3072FD0C00100079A2C /* EmojiReactionsSettingsView.swift */,
 				3AB0EF2429BB9C0B008F0201 /* SpoilersViewController.swift */,
 				3A0D03692C9DB2EF00D0DDD7 /* App Icon SwiftUI */,
 				09A5A0F52E96A52300BFC59C /* TransactionsView.swift */,
@@ -3332,6 +3344,7 @@
 				09C0DE250000000000000040 /* MCPToolsView.swift in Sources */,
 				3AC8308C1FD7079400088486 /* LikeManager.swift in Sources */,
 				3A1C8CCA2D831A030046B3A0 /* AutomationSettingsView.swift in Sources */,
+				09A1F3082FD0C00100079A2C /* EmojiReactionsSettingsView.swift in Sources */,
 				3AF9C66A235F1AE30073BEC8 /* ConfettiView.swift in Sources */,
 				3A40A99E286C94F000737201 /* ListStatsTableViewCell.swift in Sources */,
 				3AD62F59253ED28000F541EB /* EpisodeShowTableViewCell.swift in Sources */,
@@ -3469,6 +3482,9 @@
 				3A7B6DAF23452F860014A0D8 /* PeopleInfoTableViewCell.swift in Sources */,
 				3A464555201A2D8C00A05B9F /* PushInformationModel.swift in Sources */,
 				0998A7BD2E322FDA00079A2C /* ReactionsManager.swift in Sources */,
+				09A1F3022FD0C00100079A2C /* MediaReactionsManager.swift in Sources */,
+				09A1F3042FD0C00100079A2C /* MediaReactionsView.swift in Sources */,
+				09A1F3062FD0C00100079A2C /* CommunityReactionsView.swift in Sources */,
 				3AF138D125D701BA00910ED8 /* CommentedImageView.swift in Sources */,
 				3AB973252C85B21D0068BCDF /* ShelfConfigView.swift in Sources */,
 				3ABC59C221D5253300E957ED /* ProfileButton.swift in Sources */,

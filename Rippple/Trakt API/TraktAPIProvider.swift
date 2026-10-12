@@ -16,6 +16,7 @@ enum TraktAPIProvider {
 
     private static let commentsCacheBuster = CommentsCacheBuster()
     private static let listsCacheBuster = ListsCacheBuster()
+    private static let mediaReactionsCacheBuster = MediaReactionsCacheBuster()
 
     static let networkLogger = NetworkLoggerPlugin(configuration: NetworkLoggerPlugin.Configuration(logOptions: .verbose))
 
@@ -23,32 +24,37 @@ enum TraktAPIProvider {
                                                               plugins: [networkLogger,
                                                                         AuthPlugin { source.token },
                                                                         commentsCacheBuster,
-                                                                        listsCacheBuster])
+                                                                        listsCacheBuster,
+                                                                        mediaReactionsCacheBuster])
 
     static let provider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy(),
                                                                          eventMonitors: [checkRatingMonitor]),
                                                         plugins: [AuthPlugin { source.token },
                                                                   commentsCacheBuster,
-                                                                  listsCacheBuster])
+                                                                  listsCacheBuster,
+                                                                  mediaReactionsCacheBuster])
 
     static let noRatingProvider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy()),
                                                                 plugins: [AuthPlugin { source.token },
                                                                           commentsCacheBuster,
-                                                                          listsCacheBuster])
+                                                                          listsCacheBuster,
+                                                                          mediaReactionsCacheBuster])
 
     static let noChacheProvider = MoyaProvider<TraktAPIService>(requestClosure: requestClosure,
                                                                 session: Session(interceptor: RipppleRetryPolicy(),
                                                                                  eventMonitors: [checkRatingMonitor]),
                                                                 plugins: [AuthPlugin { source.token },
                                                                           commentsCacheBuster,
-                                                                          listsCacheBuster])
+                                                                          listsCacheBuster,
+                                                                          mediaReactionsCacheBuster])
     static let noChacheDebugProvider = MoyaProvider<TraktAPIService>(requestClosure: requestClosure,
                                                                      session: Session(interceptor: RipppleRetryPolicy(),
                                                                                       eventMonitors: [checkRatingMonitor]),
                                                                      plugins: [networkLogger,
                                                                                AuthPlugin { source.token },
                                                                                commentsCacheBuster,
-                                                                               listsCacheBuster])
+                                                                               listsCacheBuster,
+                                                                               mediaReactionsCacheBuster])
 
     #if targetEnvironment(macCatalyst)
     /// MCP reports upstream failures directly; mutations must never be retried automatically.
@@ -317,6 +323,51 @@ private extension URLRequest {
         var request = self
         request.url = url
         return request
+    }
+}
+
+// MARK: - MediaReactionsCacheBuster
+
+/// The API edge-caches reaction reads by URL for a few minutes and does not purge them on mutation.
+private final class MediaReactionsCacheBuster: PluginType {
+    private let lock = NSLock()
+    private var markers = [MediaReactionsTarget: String]()
+
+    func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
+        guard let target = target as? TraktAPIService else { return request }
+
+        let reactionsTarget: MediaReactionsTarget
+        switch target {
+        case .mediaReactionsSummary(let mediaTarget), .userMediaReactions(let mediaTarget):
+            reactionsTarget = mediaTarget
+        default:
+            return request
+        }
+
+        lock.lock()
+        let marker = markers[reactionsTarget]
+        lock.unlock()
+
+        guard let marker = marker else { return request }
+        return request.addingCacheMarker(marker)
+    }
+
+    func didReceive(_ result: Result<Response, MoyaError>, target: TargetType) {
+        guard let target = target as? TraktAPIService,
+              case .success(let response) = result,
+              (200..<300).contains(response.statusCode) else { return }
+
+        let reactionsTarget: MediaReactionsTarget
+        switch target {
+        case .addMediaReaction(let mediaTarget, _), .removeMediaReactions(let mediaTarget, _):
+            reactionsTarget = mediaTarget
+        default:
+            return
+        }
+
+        lock.lock()
+        markers[reactionsTarget] = UUID().uuidString
+        lock.unlock()
     }
 }
 

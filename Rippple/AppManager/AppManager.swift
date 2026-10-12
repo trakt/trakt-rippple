@@ -269,10 +269,14 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
     }
 
     func emitEmoji(emoji: String) {
+        emitEmojis([emoji, emoji])
+    }
+
+    func emitEmojis(_ emojis: [String]) {
         DispatchQueue.main.async {
             let confettiView = ConfettiView()
             self.confettiWindow?.addSubview(confettiView)
-            confettiView.emit(with: [.text(emoji), .text(emoji)])
+            confettiView.emit(with: emojis.map { .text($0) })
             Timer.scheduledTimer(withTimeInterval: 2.0,
                                  repeats: false) { _ in
                 UIView.animate(withDuration: 0.5,

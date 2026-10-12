@@ -530,9 +530,21 @@ enum TraktAPIService {
     case commentReactions(id: Int64, pageInfo: PageInfo)
     case commentReactionsSummary(id: Int64)
     case userCommentsReactions
+    case mediaReactionTypes
+    case mediaReactionsSummary(target: MediaReactionsTarget)
+    case userMediaReactions(target: MediaReactionsTarget)
+    case addMediaReaction(target: MediaReactionsTarget, reaction: String)
+    case removeMediaReactions(target: MediaReactionsTarget, ids: [Int64])
 
     case verifyIAP(transactionId: UInt64, userId: Int64)
     case verifySandboxIAP(transactionId: UInt64, userId: Int64)
+}
+
+private extension MediaReactionsTarget {
+    var reactionsPath: String {
+        let reference = reference.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) ?? reference
+        return "/v3/\(type.rawValue)s/\(reference)/reactions"
+    }
 }
 
 // MARK: - TargetType Protocol Implementation
@@ -1099,6 +1111,16 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/comments/\(id)/reactions"
         case .commentReactionsSummary(let id):
             return "/comments/\(id)/reactions/summary"
+        case .mediaReactionTypes:
+            return "/v3/reactions/media"
+        case .mediaReactionsSummary(let target):
+            return "\(target.reactionsPath)/summary"
+        case .userMediaReactions(let target):
+            return "/v3/users/me/\(target.type.rawValue)/\(target.traktId)"
+        case .addMediaReaction(let target, let reaction):
+            return "\(target.reactionsPath)/\(reaction)"
+        case .removeMediaReactions(let target, let ids):
+            return "\(target.reactionsPath)/\(ids.map { String($0) }.joined(separator: ","))"
         case .verifyIAP:
             return "/vip/apple/v2/verify"
         case .verifySandboxIAP:
@@ -1344,6 +1366,12 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .userCommentsReactions:
             return .get
+        case .mediaReactionTypes, .mediaReactionsSummary, .userMediaReactions:
+            return .get
+        case .addMediaReaction:
+            return .put
+        case .removeMediaReactions:
+            return .delete
         case .verifyIAP, .verifySandboxIAP:
             return .post
         }
@@ -2142,6 +2170,8 @@ extension TraktAPIService: AuthorizedTargetType {
         case .userCommentsReactions:
             return .requestParameters(parameters: ["extended": "min", "limit": "all"],
                                       encoding: URLEncoding.default)
+        case .mediaReactionTypes, .mediaReactionsSummary, .userMediaReactions, .addMediaReaction, .removeMediaReactions:
+            return .requestPlain
         case .verifyIAP(let transactionId, let userId), .verifySandboxIAP(let transactionId, let userId):
             return .requestParameters(parameters: ["transaction_id": transactionId,
                                                    "user_id": userId],
@@ -2186,7 +2216,7 @@ extension TraktAPIService: AuthorizedTargetType {
                 return true
             }
             return false
-        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .searchExact, .searchTrending, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .watchNowSources, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary:
+        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .searchExact, .searchTrending, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .watchNowSources, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary, .mediaReactionTypes, .mediaReactionsSummary:
             return false
         case .stats(let type):
             switch type {

@@ -39,6 +39,17 @@ final class CommentCountLabel: UILabel {
                 }
             }
         }.disposed(by: disposeBag)
+
+        onMediaReactionsChangedReceiver.listen { [weak self] target in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                guard self.mode == .text,
+                      UserDefaults.standard.integer(forKey: "GeneralSettings.commentscount") == 4,
+                      let media = self.media,
+                      MediaReactionsTarget(media: media) == target else { return }
+                self.renderReactions(MediaReactionsManager.shared.summary(for: target))
+            }
+        }.disposed(by: disposeBag)
     }
 
     private var cancellable: Cancellable? {
@@ -94,6 +105,9 @@ final class CommentCountLabel: UILabel {
                     attributedText = fullString
                     return
                 }
+            } else if UserDefaults.standard.integer(forKey: "GeneralSettings.commentscount") == 4 {
+                updateReactions(with: media)
+                return
             } else {
                 attributedText = NSMutableAttributedString(string: "")
                 return
@@ -156,6 +170,9 @@ final class CommentCountLabel: UILabel {
                             attributedText = fullString
                             return
                         }
+                    } else if UserDefaults.standard.integer(forKey: "GeneralSettings.commentscount") == 4 {
+                        // Reactions are rendered by updateReactions(with:), a late comment count must not overwrite them
+                        return
                     } else {
                         attributedText = NSMutableAttributedString(string: "")
                         return
@@ -178,6 +195,24 @@ final class CommentCountLabel: UILabel {
                 attributedText = fullString
             }
         }
+    }
+
+    private func updateReactions(with media: MediaModel) {
+        guard let target = MediaReactionsTarget(media: media) else {
+            text = nil
+            return
+        }
+        renderReactions(MediaReactionsManager.shared.summary(for: target))
+
+        let requestedMedia = media
+        cancellable = MediaReactionsManager.shared.fetchSummary(for: target) { [weak self] summary in
+            guard let self = self, self.media == requestedMedia, let summary = summary else { return }
+            self.renderReactions(summary)
+        }
+    }
+
+    private func renderReactions(_ summary: MediaReactionsSummary?) {
+        text = summary?.topReactions(using: MediaReactionsManager.shared.possibleReactions).map { $0.emoji }.joined()
     }
 
     private func cancelCancellable() {

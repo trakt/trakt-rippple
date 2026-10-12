@@ -3108,6 +3108,79 @@ struct ReactionType: Codable, Equatable, Hashable, Identifiable {
     }
 }
 
+extension ReactionType {
+    /// Readable reaction name, for example "mind_blown" becomes "Mind Blown".
+    var displayName: String {
+        return type.replacingOccurrences(of: "_", with: " ").capitalized
+    }
+}
+
+struct MediaReactionsTarget: Hashable {
+    enum MediaType: String {
+        case movie
+        case show
+        case season
+        case episode
+    }
+
+    let type: MediaType
+    let reference: String
+    let traktId: Int64
+
+    /// Movies and shows are referenced by slug, seasons and episodes by Trakt id.
+    init?(media: MediaModel?) {
+        let identifiers: Identifiers
+        switch media {
+        case .movie(let movie):
+            type = .movie
+            identifiers = movie.identifiers
+        case .show(let show):
+            type = .show
+            identifiers = show.identifiers
+        case .season(let season, _):
+            type = .season
+            identifiers = season.identifiers
+        case .episode(let episode, _):
+            type = .episode
+            identifiers = episode.identifiers
+        default:
+            return nil
+        }
+        guard let traktId = identifiers.trakt else { return nil }
+        self.traktId = traktId
+        if type == .movie || type == .show, let slug = identifiers.slug, !slug.isEmpty {
+            reference = slug
+        } else {
+            reference = String(traktId)
+        }
+    }
+}
+
+struct MediaReactionsSummary: Codable {
+    let reactionCount: Int
+    let distribution: [String: Int]
+
+    enum CodingKeys: String, CodingKey {
+        case reactionCount = "reaction_count"
+        case distribution
+    }
+
+    /// The most sent reactions, most sent first. The API already emits the distribution in that order, but a Swift
+    /// dictionary loses it, so the counts are sorted again; the stable sort keeps ties in the order of `reactions`.
+    func topReactions(using reactions: [ReactionType], limit: Int = 3) -> [ReactionType] {
+        return reactions
+            .filter { distribution[$0.type, default: 0] > 0 }
+            .sorted { distribution[$0.type, default: 0] > distribution[$1.type, default: 0] }
+            .prefix(limit)
+            .map { $0 }
+    }
+}
+
+struct UserMediaReaction: Codable {
+    let id: Int64
+    let reaction: ReactionType
+}
+
 // MARK: - IAP Verification
 
 struct RemoteIAPInfo: Encodable {

@@ -50,6 +50,7 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
         case presentShow
         case presentCertifications
         case presentMedia(MediaModel)
+        case presentReactions
     }
 
     weak var delegate: MediaTitleTableViewCellDelegate?
@@ -61,6 +62,7 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet private var certificationButton: UIButton!
 
     private let parentalGuideIndicators = ParentalGuideIndicatorsView()
+    private let reactionsView = CommunityReactionsView(frame: .zero)
     private var parentalGuideRequest: Cancellable?
     private var parentalGuideRequestID = UUID()
 
@@ -141,6 +143,26 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
         certificationBorderView.layer.borderColor = UIColor.secondaryLabel.cgColor
         certificationBorderView.layer.cornerRadius = 5.0
         certificationBorderView.layer.cornerCurve = .continuous
+
+        // Community reactions sit on the card's trailing edge, vertically centered on the runtime. They live outside
+        // the baseline-aligned runtime row, which ends just before them so the stinger label never runs underneath.
+        if let runtimeStack = runtimeLabel.superview as? UIStackView,
+           let cardContentStack = runtimeStack.superview?.superview,
+           let cardContentView = cardContentStack.superview {
+            reactionsView.translatesAutoresizingMaskIntoConstraints = false
+            cardContentView.addSubview(reactionsView)
+            stingerLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+            stingerLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+            NSLayoutConstraint.activate([
+                reactionsView.trailingAnchor.constraint(equalTo: cardContentStack.trailingAnchor),
+                reactionsView.centerYAnchor.constraint(equalTo: runtimeLabel.centerYAnchor),
+                runtimeStack.trailingAnchor.constraint(equalTo: reactionsView.leadingAnchor, constant: -8)
+            ])
+        }
+        reactionsView.addAction(UIAction { [weak self] _ in
+            guard let self = self else { return }
+            self.delegate?.cell(self, action: .presentReactions)
+        }, for: .touchUpInside)
 
         onShowsToWatchChangedReceiver.hotOnly().listen { [weak self] _ in
             guard let self = self else { return }
@@ -347,6 +369,7 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
             case .showProgress:
                 fatalError()
             }
+            reactionsView.media = media
             updateParentalGuide()
             debouncedUpdateQuickActions.fireNow()
 
@@ -359,6 +382,7 @@ final class MediaTitleTableViewCell: TintedCanvasTableViewCell {
         parentalGuideRequest?.cancel()
         parentalGuideRequestID = UUID()
         parentalGuideIndicators.configure(guide: nil)
+        reactionsView.media = nil
         media = nil
     }
 

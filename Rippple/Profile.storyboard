@@ -300,6 +300,28 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="Emj-Rx-l01" imageView="Emj-Rx-i01" style="IBUITableViewCellStyleDefault" id="Emj-Rx-c01" customClass="TintedSettingsTableViewCell" customModule="Rippple" customModuleProvider="target">
+                                        <rect key="frame" x="20" y="948.66666793823242" width="374" height="51"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Emj-Rx-c01" id="Emj-Rx-v01">
+                                            <rect key="frame" x="0.0" y="0.0" width="355.66666666666669" height="51"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" ambiguous="YES" insetsLayoutMarginsFromSafeArea="NO" text="Emoji Reactions" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Emj-Rx-l01">
+                                                    <rect key="frame" x="47" y="0.0" width="300.66666666666669" height="51"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" insetsLayoutMarginsFromSafeArea="NO" id="Emj-Rx-i01">
+                                                    <rect key="frame" x="10.333333333333334" y="16.333333333333329" width="19.333333333333332" height="17.999999999999996"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <imageReference key="image" image="face.smiling" catalog="system" symbolScale="default"/>
+                                                </imageView>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="nt2-Va-jgb" imageView="0fQ-nm-KSs" style="IBUITableViewCellStyleDefault" id="GLs-ue-zhU" customClass="TintedSettingsTableViewCell" customModule="Rippple" customModuleProvider="target">
                                         <rect key="frame" x="20" y="540.66666793823242" width="374" height="51"/>
                                         <autoresizingMask key="autoresizingMask"/>

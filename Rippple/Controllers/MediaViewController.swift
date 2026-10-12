@@ -423,6 +423,8 @@ final class MediaViewController: UITableViewController {
 
         precondition(media != nil, "Media should not be nil")
 
+        showHeldReactions()
+
         // reset the cache for that show
         if case .show(let show) = media {
             ProgressManager.shared.refreshProgress(for: show)
@@ -1337,6 +1339,21 @@ extension MediaViewController: RelatedMediaTableViewCellDelegate {
     }
 }
 
+// MARK: - Reactions
+
+extension MediaViewController {
+    /// Showers the user's own reactions once, when the media page is loaded.
+    private func showHeldReactions() {
+        guard MediaReactionsManager.isShowerEnabled, MediaReactionsManager.showsReactions(for: media),
+              let target = MediaReactionsTarget(media: media) else { return }
+        let requestedMedia = media
+        MediaReactionsManager.shared.fetchHeldReactions(for: target) { [weak self] held in
+            guard let self = self, self.media == requestedMedia, let held = held, !held.isEmpty else { return }
+            AppManager.shared.emitEmojis(held.map { $0.reaction.emoji })
+        }
+    }
+}
+
 extension MediaViewController: MediaTitleTableViewCellDelegate {
     func cell(_ cell: MediaTitleTableViewCell, action: MediaTitleTableViewCell.Action) {
         switch action {
@@ -1346,7 +1363,29 @@ extension MediaViewController: MediaTitleTableViewCellDelegate {
             performSegue(withIdentifier: "certifications", sender: nil)
         case .presentMedia(let media):
             performSegue(withIdentifier: "media", sender: media)
+        case .presentReactions:
+            presentReactions()
         }
+    }
+
+    private func presentReactions() {
+        guard let media = media else { return }
+        let controller = RipppleHostingController(rootView: MediaReactionsView(media: media))
+        controller.modalPresentationStyle = .formSheet
+        controller.preferredContentSize = CGSize(width: 540, height: 640)
+        #if !targetEnvironment(macCatalyst)
+        if let sheet = controller.sheetPresentationController {
+            // Tall enough for the whole picker grid on iPhone.
+            let reactionsDetent = UISheetPresentationController.Detent.custom(identifier: .init("reactions")) { context in
+                min(context.maximumDetentValue, 480)
+            }
+            sheet.detents = [reactionsDetent, .large()]
+            sheet.selectedDetentIdentifier = reactionsDetent.identifier
+            sheet.prefersGrabberVisible = true
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = true
+        }
+        #endif
+        present(controller, animated: true)
     }
 }
 
