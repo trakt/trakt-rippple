@@ -794,8 +794,6 @@
 		3A41DE8925AAF8B5008F133A /* WatchedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchedManager.swift; sourceTree = "<group>"; };
 		3A432E8220FFCC5A0091D504 /* UserInListTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UserInListTableViewCell.xib; sourceTree = "<group>"; };
 		3A4342802BCFE5F700FD85FE /* PersonPreview.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = PersonPreview.storyboard; sourceTree = "<group>"; };
-		3A4342832BDF947F00FD85FE /* new-blog-aws.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "new-blog-aws.json"; sourceTree = "<group>"; };
-		3A4342842BDF94A200FD85FE /* new-version-aws.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "new-version-aws.json"; sourceTree = "<group>"; };
 		3A43DF2C2182EE36009AF3A4 /* RatingsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingsTableViewCell.swift; sourceTree = "<group>"; };
 		3A43DF2D2182EE36009AF3A4 /* RatingsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RatingsTableViewCell.xib; sourceTree = "<group>"; };
 		3A44BF391FD2C3060026AADE /* Compose.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Compose.storyboard; sourceTree = "<group>"; };
@@ -1095,8 +1093,6 @@
 		3AEA58052A42D8FA00B64165 /* GridViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridViewController.swift; sourceTree = "<group>"; };
 		3AEA95C029DDE75000BE9BA4 /* Calendar.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Calendar.storyboard; sourceTree = "<group>"; };
 		3AEA95C229DDEA2C00BE9BA4 /* CalendarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewController.swift; sourceTree = "<group>"; };
-		3AEAA8FB2BD6A97B0054653A /* new-version-payload.apns */ = {isa = PBXFileReference; lastKnownFileType = text; path = "new-version-payload.apns"; sourceTree = "<group>"; };
-		3AEAA8FC2BD7B8FF0054653A /* new-blog-payload.apns */ = {isa = PBXFileReference; lastKnownFileType = text; path = "new-blog-payload.apns"; sourceTree = "<group>"; };
 		3AEAA8FD2BDA78DE0054653A /* WhereToWatchSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhereToWatchSettingsView.swift; sourceTree = "<group>"; };
 		3AEADF51248D12D3003C4481 /* ActivityNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityNotificationsManager.swift; sourceTree = "<group>"; };
 		3AEBEE2228C4C05000948CCD /* AutomationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationViewController.swift; sourceTree = "<group>"; };
@@ -1452,7 +1448,7 @@
 			path = Actions;
 			sourceTree = "<group>";
 		};
-		3A1D48C72B9AFAF200A32C64 /* rippple.app association */ = {
+		3A1D48C72B9AFAF200A32C64 /* rippple.app */ = {
 			isa = PBXGroup;
 			children = (
 				3A1D48C02B9A3DAD00A32C64 /* apple-app-site-association */,
@@ -1461,7 +1457,7 @@
 				3A1D48C32B9A4DBE00A32C64 /* .htaccess */,
 				3A1D48C52B9A4EB300A32C64 /* style.css */,
 			);
-			path = "rippple.app association";
+			path = rippple.app;
 			sourceTree = "<group>";
 		};
 		3A1D48F22BB41B2D00A32C64 /* Where To Watch Image View */ = {
@@ -1599,18 +1595,6 @@
 				3AC0DE012DFE000100000001 /* SyncWatchedManager.swift */,
 			);
 			path = "Watched Manager";
-			sourceTree = "<group>";
-		};
-		3A4342822BDF945400FD85FE /* Notifications */ = {
-			isa = PBXGroup;
-			children = (
-				3AEAA8FC2BD7B8FF0054653A /* new-blog-payload.apns */,
-				3AEAA8FB2BD6A97B0054653A /* new-version-payload.apns */,
-				3A4342832BDF947F00FD85FE /* new-blog-aws.json */,
-				3A4342842BDF94A200FD85FE /* new-version-aws.json */,
-			);
-			name = Notifications;
-			path = "rippple.app association/Notifications";
 			sourceTree = "<group>";
 		};
 		3A43DF2B2182EE2A009AF3A4 /* Ratings */ = {
@@ -2234,8 +2218,7 @@
 				3A77A85629FC193B0006177D /* RipppleDebug.entitlements */,
 				3A68078624D437DA00EBF3F6 /* Configuration.storekit */,
 				3AE3FB262BB465FB0017CA13 /* PrivacyInfo.xcprivacy */,
-				3A4342822BDF945400FD85FE /* Notifications */,
-				3A1D48C72B9AFAF200A32C64 /* rippple.app association */,
+				3A1D48C72B9AFAF200A32C64 /* rippple.app */,
 			);
 			path = Rippple;
 			sourceTree = "<group>";
