@@ -28,6 +28,8 @@ final class UserTableViewCell: TintedCanvasTableViewCell {
 
     @IBOutlet var privateStatus: UIImageView?
 
+    @IBOutlet private var contentStackView: UIStackView?
+
     private let disposeBag = DisposeBag()
 
     @IBOutlet var cardView: CardView?
@@ -86,6 +88,22 @@ final class UserTableViewCell: TintedCanvasTableViewCell {
             VIPLabel.layer.cornerCurve = .circular
             VIPLabel.layer.cornerRadius = VIPLabel.bounds.height / 2.0
             VIPLabel.clipsToBounds = true
+        }
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        accessoryControl = nil
+    }
+
+    /// A trailing control shown inside the card, such as an add or remove button.
+    var accessoryControl: UIView? {
+        didSet {
+            guard accessoryControl !== oldValue else { return }
+            oldValue?.removeFromSuperview()
+            if let accessoryControl = accessoryControl {
+                contentStackView?.addArrangedSubview(accessoryControl)
+            }
         }
     }
 

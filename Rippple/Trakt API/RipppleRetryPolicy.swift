@@ -327,8 +327,11 @@ final class RipppleRetryPolicy: RequestInterceptor {
         if let statusCode = request.response?.statusCode,
            // Account Limit Exceeded - list count, item count, etc
            statusCode == 420 {
-            DispatchQueue.main.async {
-                UIApplication.shared.presentTraktLimits(limitReached: true)
+            // The per-list collaborator limit isn't an account limit: the caller reports it.
+            if request.request?.url?.path.contains("/collaborators/") != true {
+                DispatchQueue.main.async {
+                    UIApplication.shared.presentTraktLimits(limitReached: true)
+                }
             }
             completion(.doNotRetry)
             return

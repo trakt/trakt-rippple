@@ -399,6 +399,9 @@ enum TraktAPIService {
     case deleteList(id: Int64)
     case reorderLists(ids: [Int64])
     case updateList(id: Int64, name: String, description: String, privacy: ListPrivacy, displayNumbers: Bool, allowComments: Bool)
+    case listCollaborators(id: Int64)
+    case addListCollaborator(id: Int64, userSlug: String)
+    case removeListCollaborator(id: Int64, userSlug: String)
 
     case smartLists(slug: String = "me")
     case smartList(userSlug: String = "me", slug: String)
@@ -911,6 +914,10 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/me/lists/reorder"
         case .updateList(let listId, _, _, _, _, _):
             return "/users/me/lists/\(listId)"
+        case .listCollaborators(let listId):
+            return "/lists/\(listId)/collaborators"
+        case .addListCollaborator(let listId, let userSlug), .removeListCollaborator(let listId, let userSlug):
+            return "/lists/\(listId)/collaborators/\(userSlug)"
         case .updateListItem(_, let userId, let listId, let itemId):
             return "/users/\(userId)/lists/\(listId)/items/\(itemId)"
         case .updateWatchlistItem(_, let itemId):
@@ -1243,6 +1250,12 @@ extension TraktAPIService: AuthorizedTargetType {
             return .post
         case .updateList:
             return .put
+        case .listCollaborators:
+            return .get
+        case .addListCollaborator:
+            return .post
+        case .removeListCollaborator:
+            return .delete
         case .addToList, .removeFromList, .addToListWithNotes:
             return .post
         case .reorderListItems, .reorderWatchlistItems, .reorderFavoriteItems:
@@ -1814,6 +1827,11 @@ extension TraktAPIService: AuthorizedTargetType {
                                                    "display_numbers": displayNumbers,
                                                    "allow_comments": allowComments],
                                       encoding: JSONEncoding.default)
+        case .listCollaborators:
+            return .requestParameters(parameters: ["extended": "full"],
+                                      encoding: URLEncoding.default)
+        case .addListCollaborator, .removeListCollaborator:
+            return .requestPlain
         case .addToList(_, _, let item), .removeFromList(_, _, let item):
             return .requestJSONEncodable(item)
         case .reorderListItems(_, _, let ids), .reorderWatchlistItems(let ids), .reorderFavoriteItems(let ids):

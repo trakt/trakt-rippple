@@ -230,3 +230,76 @@ private extension WatchlistItem {
         }
     }
 }
+
+// MARK: - Collaborators
+
+enum ListCollaboratorError: LocalizedError {
+    case missingIdentifier
+    case limitReached
+    case signedOut
+
+    var errorDescription: String? {
+        switch self {
+        case .missingIdentifier:
+            return "This list couldn't be found."
+        case .limitReached:
+            return "This list has reached its collaborator limit."
+        case .signedOut:
+            return "You need to be signed in."
+        }
+    }
+}
+
+extension TraktAPIProvider {
+    static func fetchListCollaborators(list: List) async throws -> [User] {
+        guard let id = list.identifiers.trakt else { throw ListCollaboratorError.missingIdentifier }
+        return try await withCheckedThrowingContinuation { continuation in
+            noChacheProvider.request(.listCollaborators(id: id),
+                                     callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                continuation.resume(with: Result {
+                    let response = try result.get().filterSuccessfulStatusCodes()
+                    if response.statusCode == 204 { return [] }
+                    return try response.map([User].self, using: TraktAPIProvider.decoder)
+                })
+            }
+        }
+    }
+
+    static func fetchFollowUsers(_ service: TraktAPIService) async throws -> [User] {
+        return try await withCheckedThrowingContinuation { continuation in
+            noChacheProvider.request(service,
+                                     callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                continuation.resume(with: Result {
+                    let response = try result.get().filterSuccessfulStatusCodes()
+                    return try response.map([Follow].self, using: TraktAPIProvider.decoder).map(\.user).removingDuplicates()
+                })
+            }
+        }
+    }
+
+    /// Trakt only accepts people who follow the list owner, up to a per-list limit.
+    static func addListCollaborator(_ user: User, to list: List) async throws {
+        guard let id = list.identifiers.trakt else { throw ListCollaboratorError.missingIdentifier }
+        try await requestCollaboratorChange(.addListCollaborator(id: id, userSlug: user.slug))
+    }
+
+    static func removeListCollaborator(_ user: User, from list: List) async throws {
+        guard let id = list.identifiers.trakt else { throw ListCollaboratorError.missingIdentifier }
+        try await requestCollaboratorChange(.removeListCollaborator(id: id, userSlug: user.slug))
+    }
+
+    private static func requestCollaboratorChange(_ service: TraktAPIService) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            provider.request(service,
+                             callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                continuation.resume(with: Result {
+                    do {
+                        _ = try result.get().filterSuccessfulStatusCodes()
+                    } catch let error as MoyaError where error.response?.statusCode == 420 {
+                        throw ListCollaboratorError.limitReached
+                    }
+                })
+            }
+        }
+    }
+}

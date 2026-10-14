@@ -74,6 +74,7 @@
             <connections>
                 <outlet property="avatarImageView" destination="QOH-pI-BIJ" id="Wau-k5-m9M"/>
                 <outlet property="commentReactionsLabel" destination="8bP-g8-G8R" id="rtc-pK-rFx"/>
+                <outlet property="contentStackView" destination="mSu-DH-Gld" id="cSv-Ac-c01"/>
                 <outlet property="nameLabel" destination="UBL-Vb-SQa" id="xyb-fJ-65a"/>
                 <outlet property="usernameLabel" destination="XJf-cY-hsZ" id="J1T-dw-4Rf"/>
             </connections>

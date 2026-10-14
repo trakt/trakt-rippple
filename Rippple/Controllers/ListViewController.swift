@@ -710,6 +710,18 @@ final class ListViewController: UITableViewController {
             }
         }
 
+        let collaborators = UIAction(title: "Collaborators", image: UIImage(systemName: "person.2")) { [weak self] _ in
+            guard let self = self else { return }
+            let navigation = UINavigationController(rootViewController: ListCollaboratorsViewController(list: self.list))
+            navigation.modalPresentationStyle = .pageSheet
+            self.present(navigation, animated: true)
+        }
+
+        let leave = UIAction(title: "Leave Collaboration", image: UIImage(systemName: "rectangle.portrait.and.arrow.right"), attributes: .destructive) { [weak self] _ in
+            guard let self = self else { return }
+            self.confirmLeave()
+        }
+
         let duplicate = UIAction(title: "Duplicate", image: UIImage(systemName: "plus.square.on.square")) { [weak self] _ in
             guard let self = self else { return }
             SmartListBuilderViewController.present(from: self, duplicating: self.list)
@@ -814,16 +826,17 @@ final class ListViewController: UITableViewController {
                 if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") {
                     return UIMenu(children: reorderMenu + [UIMenu(options: .displayInline, children: [couchMoney]), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
                 } else {
-                    return UIMenu(children: reorderMenu + [UIMenu(options: .displayInline, children: [edit, delete]), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
+                    return UIMenu(children: reorderMenu + [UIMenu(options: .displayInline, children: [edit, collaborators, delete]), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
                 }
             } else {
                 if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") {
                     return UIMenu(children: reorderMenu + [couchMoney, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
                 } else {
-                    return UIMenu(children: reorderMenu + [edit, delete, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
+                    return UIMenu(children: reorderMenu + [edit, collaborators, delete, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
                 }
             }
         } else {
+            let leaveMenu = CollaborationsManager.shared.collaborations.contains(list) ? [UIMenu(options: .displayInline, children: [leave])] : []
             if let shareLink = list.shareLink, list.privacy == .all {
                 let share = UIAction(title: "Share",
                                      image: UIImage(systemName: "square.and.arrow.up")) { _ in
@@ -831,11 +844,39 @@ final class ListViewController: UITableViewController {
                     let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
                     UIApplication.shared.present(activityViewController)
                 }
-                return UIMenu(children: reorderMenu + [list.liked ? unlike : like, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
+                return UIMenu(children: reorderMenu + [list.liked ? unlike : like] + leaveMenu + [shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
             } else {
-                return UIMenu(children: reorderMenu + [list.liked ? unlike : like, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
+                return UIMenu(children: reorderMenu + [list.liked ? unlike : like] + leaveMenu + [shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
             }
         }
+    }
+
+    private func confirmLeave() {
+        let name = list.name.emojiUnescapedString
+        let alert = UIAlertController(title: "Leave Collaboration?",
+                                      message: "You’ll no longer be able to add or remove items on \(name).",
+                                      preferredStyle: .alert)
+
+        let leave = UIAlertAction(title: "Leave", style: .destructive) { [weak self] _ in
+            guard let self = self else { return }
+            SwiftMessages.show(message: "Leaving Collaboration...", style: .loading)
+
+            CollaborationsManager.shared.leave(self.list) { [weak self] result in
+                // Always replace the loading message, even if this screen is gone.
+                switch result {
+                case .success:
+                    SwiftMessages.show(message: "👋 You left the collaboration on \(name)")
+                    guard let self = self else { return }
+                    self.navigationController?.popViewController(animated: true)
+                case .failure(let error):
+                    SwiftMessages.show(message: "😓 Error leaving collaboration", style: .error(error))
+                }
+            }
+        }
+        alert.addAction(leave)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        present(alert, animated: true)
     }
 
     deinit {
