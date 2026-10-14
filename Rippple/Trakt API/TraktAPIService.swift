@@ -395,6 +395,7 @@ enum TraktAPIService {
     case customList(userSlug: String, listSlug: String)
     case collaborations(slug: String = "me")
     case listItems(slug: String?, id: Int64, type: ListMediaType?, extended: Extended?, pageInfo: PageInfo)
+    case listFeaturedPeople(id: Int64)
     case createList(name: String, description: String, privacy: ListPrivacy, displayNumbers: Bool, allowComments: Bool)
     case deleteList(id: Int64)
     case reorderLists(ids: [Int64])
@@ -907,6 +908,8 @@ extension TraktAPIService: AuthorizedTargetType {
                     return "/lists/\(listId)/items/movie,show,season,episode"
                 }
             }
+        case .listFeaturedPeople(let listId):
+            return "/lists/\(listId)"
         case .createList:
             return "/users/me/lists"
         case .smartLists(let slug):
@@ -1254,7 +1257,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .customLists, .customList, .collaborations:
             return .get
-        case .listItems:
+        case .listItems, .listFeaturedPeople:
             return .get
         case .createList:
             return .post
@@ -1827,6 +1830,9 @@ extension TraktAPIService: AuthorizedTargetType {
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             }
+        case .listFeaturedPeople:
+            return .requestParameters(parameters: ["extended": "featured"],
+                                      encoding: URLEncoding.default)
         case .smartLists, .smartList, .deleteSmartList:
             return .requestPlain
         case .smartListItems(_, let pageInfo):

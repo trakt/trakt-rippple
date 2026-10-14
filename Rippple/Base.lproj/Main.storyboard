@@ -1620,7 +1620,7 @@ Try with complete original titles.</string>
         <!--Peoples Table View Controller-->
         <scene sceneID="csU-Un-Gdf">
             <objects>
-                <tableViewController id="wce-dX-i1I" customClass="PeoplesTableViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="PeoplesTableViewController" id="wce-dX-i1I" customClass="PeoplesTableViewController" customModule="Rippple" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="100" sectionHeaderHeight="1" sectionFooterHeight="1" id="b4p-r6-Tqq" customClass="TintedTableView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

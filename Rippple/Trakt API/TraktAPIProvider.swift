@@ -294,7 +294,7 @@ private final class ListsCacheBuster: PluginType {
     /// Smart list items are also read through shelf rails and grids, as `/smart-lists/:slug/items` saved filters.
     private func itemsKey(for target: TraktAPIService) -> Key? {
         switch target {
-        case .listItems(_, let id, _, _, _):
+        case .listItems(_, let id, _, _, _), .listFeaturedPeople(let id):
             return .list(id)
         case .smartListItems(let slug, _):
             return .smartList(slug)

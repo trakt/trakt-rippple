@@ -25,6 +25,24 @@ final class PeoplesTableViewController: UITableViewController {
         }
     }
 
+    private var featuredPeople: [Person]? {
+        didSet {
+            updateDatasource()
+        }
+    }
+
+    private var featuredPeopleTask: _Concurrency.Task<Void, Never>?
+
+    /// A list shows its featured people instead of a title's cast and crew.
+    private var showsFeaturedPeople: Bool {
+        if case .list = media! { return true }
+        return false
+    }
+
+    private var filteredFeaturedPeople: [Person] {
+        return (featuredPeople ?? []).filter { searchQuery.isEmpty || $0.name.localizedCaseInsensitiveContains(searchQuery) }
+    }
+
     private var filteredCast: [Cast] {
         return filterCast(people?.cast ?? [])
     }
@@ -82,6 +100,14 @@ final class PeoplesTableViewController: UITableViewController {
             }
         }
 
+        func appendFeaturedPeople() {
+            let people = filteredFeaturedPeople
+            guard !people.isEmpty else { return }
+            snapshot.appendItems([.header("Featured People", "\(people.count) \(people.count > 1 ? "people" : "person")")])
+            snapshot.appendItems(people.map { .person($0) })
+        }
+
+        appendFeaturedPeople()
         appendCast()
         appendGuestStars()
         appendCrew()
@@ -118,6 +144,7 @@ final class PeoplesTableViewController: UITableViewController {
         if let cancellable = cancellable {
             cancellable.cancel()
         }
+        featuredPeopleTask?.cancel()
     }
 
     /// Empty
@@ -143,6 +170,7 @@ final class PeoplesTableViewController: UITableViewController {
         case cast(Cast)
         case guest(Cast)
         case crew(Job)
+        case person(Person)
         case header(String, String)
     }
 
@@ -158,6 +186,10 @@ final class PeoplesTableViewController: UITableViewController {
         case .crew(let crew):
             let cell = tableView.dequeueReusableCell(withIdentifier: "people") as! PeopleTableViewCell
             cell.crew = crew
+            return cell
+        case .person(let person):
+            let cell = tableView.dequeueReusableCell(withIdentifier: "people") as! PeopleTableViewCell
+            cell.person = person
             return cell
         case .header(let title, let subtitle):
             let cell = tableView.dequeueReusableCell(withIdentifier: "header") as! ActivityHeaderTableViewCell
@@ -181,7 +213,9 @@ final class PeoplesTableViewController: UITableViewController {
                                  primaryAction: UIAction { [weak self] _ in
                                      self?.scrollToPreviousSectionHeader()
                                  })
-        navigationItem.rightBarButtonItems = [down, up]
+        if showsFeaturedPeople == false {
+            navigationItem.rightBarButtonItems = [down, up]
+        }
 
         tableView.allowsFocus = false
         tableView.register(UINib(nibName: "PeopleTableViewCell", bundle: nil), forCellReuseIdentifier: "people")
@@ -192,7 +226,7 @@ final class PeoplesTableViewController: UITableViewController {
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.hidesNavigationBarDuringPresentation = false
 
-        searchController.searchBar.placeholder = "Search name, character, or job"
+        searchController.searchBar.placeholder = showsFeaturedPeople ? "Search name" : "Search name, character, or job"
         searchController.searchBar.tintColor = UIColor(asset: .globalTint)
         searchController.searchBar.delegate = self
         searchController.searchBar.barTintColor = nil
@@ -401,10 +435,39 @@ final class PeoplesTableViewController: UITableViewController {
                     }
                 }
             }
-        case .list:
-            fatalError()
+        case .list(let list):
+            fetchFeaturedPeople(of: list)
         case .showProgress:
             fatalError()
+        }
+    }
+
+    private func fetchFeaturedPeople(of list: List) {
+        featuredPeopleTask?.cancel()
+        featuredPeopleTask = _Concurrency.Task { [weak self] in
+            let result: Result<[Person], Error>
+            do {
+                result = try .success(await TraktAPIProvider.fetchFeaturedPeople(list: list))
+            } catch {
+                result = .failure(error)
+            }
+
+            await MainActor.run { [weak self] in
+                guard let self = self, _Concurrency.Task.isCancelled == false else { return }
+                self.refreshControl?.isEnabled = true
+                self.refreshControl?.endRefreshing()
+                self.showLoading = false
+
+                switch result {
+                case .success(let people):
+                    self.error = nil
+                    self.featuredPeople = people
+                case .failure(let error):
+                    print("Failed fetching featured people \(error)")
+                    self.error = error
+                    self.tableView.reloadData()
+                }
+            }
         }
     }
 
@@ -425,6 +488,8 @@ extension PeoplesTableViewController {
             performSegue(withIdentifier: "people", sender: cast)
         case .crew(let crew):
             performSegue(withIdentifier: "people", sender: crew)
+        case .person(let person):
+            performSegue(withIdentifier: "people", sender: person)
         case .header:
             return
         }
@@ -446,6 +511,8 @@ extension PeoplesTableViewController {
                                                       mediaPreviewViewController.person = cast.person
                                                   case .crew(let crew):
                                                       mediaPreviewViewController.person = crew.person
+                                                  case .person(let person):
+                                                      mediaPreviewViewController.person = person
                                                   case .header:
                                                       fatalError()
                                                   }
@@ -486,6 +553,8 @@ extension PeoplesTableViewController {
             performSegue(withIdentifier: "people", sender: cast)
         case .crew(let crew):
             performSegue(withIdentifier: "people", sender: crew)
+        case .person(let person):
+            performSegue(withIdentifier: "people", sender: person)
         case .header:
             return
         }
@@ -506,7 +575,7 @@ private extension PeoplesTableViewController {
         if showLoading {
             navigationItem.subtitle = "Loading..."
         } else {
-            navigationItem.subtitle = "Cast & Crew"
+            navigationItem.subtitle = showsFeaturedPeople ? "Featured People" : "Cast & Crew"
         }
     }
 

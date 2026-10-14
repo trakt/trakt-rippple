@@ -265,6 +265,21 @@ extension TraktAPIProvider {
         }
     }
 
+    /// Cast and crew appearing in more than one title of the list, in Trakt's ranked order.
+    static func fetchFeaturedPeople(list: List) async throws -> [Person] {
+        guard list.isSmartList == false, let id = list.identifiers.trakt else { return [] }
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.listFeaturedPeople(id: id),
+                             callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                continuation.resume(with: Result {
+                    let response = try result.get().filterSuccessfulStatusCodes()
+                    if response.statusCode == 204 { return [] }
+                    return try response.map(FeaturedPeopleResponse.self, using: TraktAPIProvider.decoder).featured ?? []
+                })
+            }
+        }
+    }
+
     static func fetchFollowUsers(_ service: TraktAPIService) async throws -> [User] {
         return try await withCheckedThrowingContinuation { continuation in
             noChacheProvider.request(service,
@@ -302,4 +317,9 @@ extension TraktAPIProvider {
             }
         }
     }
+}
+
+/// `extended=featured` returns the list summary with its featured people attached.
+private struct FeaturedPeopleResponse: Decodable {
+    let featured: [Person]?
 }

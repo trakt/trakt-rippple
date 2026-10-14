@@ -260,6 +260,7 @@
 		3A60AB2C259F7D5B00294DF0 /* MultiWatchedActionErrorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A60AB2B259F7D5B00294DF0 /* MultiWatchedActionErrorViewController.swift */; };
 		3A6232E8239FA9CA00D9D24B /* CustomListsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6232E7239FA9CA00D9D24B /* CustomListsViewController.swift */; };
 		3A6232EB239FAAA300D9D24B /* ListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6232EA239FAAA300D9D24B /* ListTableViewCell.swift */; };
+		4F1A7C2E9B3D5E6F70819A01 /* ListFeaturedPeopleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1A7C2E9B3D5E6F70819A02 /* ListFeaturedPeopleTableViewCell.swift */; };
 		3A67B73A23A3FAA3003C5E4D /* ListActionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A67B73923A3FAA3003C5E4D /* ListActionViewController.swift */; };
 		3A67B73C23A3FDAD003C5E4D /* ListActionTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A67B73B23A3FD9C003C5E4D /* ListActionTableViewCell.xib */; };
 		3A67B73E23A400B2003C5E4D /* ListActionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A67B73D23A400B2003C5E4D /* ListActionTableViewCell.swift */; };
@@ -869,6 +870,7 @@
 		3A60AB2B259F7D5B00294DF0 /* MultiWatchedActionErrorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiWatchedActionErrorViewController.swift; sourceTree = "<group>"; };
 		3A6232E7239FA9CA00D9D24B /* CustomListsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomListsViewController.swift; sourceTree = "<group>"; };
 		3A6232EA239FAAA300D9D24B /* ListTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTableViewCell.swift; sourceTree = "<group>"; };
+		4F1A7C2E9B3D5E6F70819A02 /* ListFeaturedPeopleTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFeaturedPeopleTableViewCell.swift; sourceTree = "<group>"; };
 		3A6232EC239FAB1700D9D24B /* StandardListTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = StandardListTableViewCell.xib; sourceTree = "<group>"; };
 		3A65AC1A2019E10900FF24A8 /* Rippple.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Rippple.entitlements; sourceTree = "<group>"; };
 		3A67B73923A3FAA3003C5E4D /* ListActionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListActionViewController.swift; sourceTree = "<group>"; };
@@ -1836,6 +1838,7 @@
 				3AECA32B2432461900A863CC /* ListMediaCollectionViewCell.swift */,
 				3AECA32A2432461700A863CC /* ListMediaCollectionViewCell.xib */,
 				3A6232EA239FAAA300D9D24B /* ListTableViewCell.swift */,
+				4F1A7C2E9B3D5E6F70819A02 /* ListFeaturedPeopleTableViewCell.swift */,
 				3AECA32824311AFE00A863CC /* CustomListTableViewCell.xib */,
 				3AECA32E24367F3F00A863CC /* LightListTableViewCell.xib */,
 				3A7FD5972519FE85001D428E /* StandardListTableViewCell.swift */,
@@ -3475,6 +3478,7 @@
 				3A67BF5A26A6BF6F0093E40B /* ToWatchStoriesTableViewCell.swift in Sources */,
 				0990B1CA2E17DFDF00D523D0 /* SpacerTableViewCell.swift in Sources */,
 				3A6232EB239FAAA300D9D24B /* ListTableViewCell.swift in Sources */,
+				4F1A7C2E9B3D5E6F70819A01 /* ListFeaturedPeopleTableViewCell.swift in Sources */,
 				3A9877D224264B4500285A5E /* RippleLoadingIndicator.swift in Sources */,
 				3A60AB2C259F7D5B00294DF0 /* MultiWatchedActionErrorViewController.swift in Sources */,
 				09E390172EB21BC800C39B30 /* InReviewBrowseRail.swift in Sources */,
