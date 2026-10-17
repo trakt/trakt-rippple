@@ -346,14 +346,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     self.debouncedUpdatePushInformation.call()
                 case .forced:
                     guard SessionManager.shared.isLoggedIn, let endpointARN = endpointARN else { return }
-                    self.updatePushInformation(endpointARN: endpointARN, force: true)
+                    self.updatePushInformation(endpointARN: endpointARN, force: true, syncTopics: true)
                 }
             }.disposed(by: disposeBag)
-
-            // Placed here because they need remote push setup first
-            TrendingNotificationsManager.shared.setup()
-            RecommendedNotificationsManager.shared.setup()
-            ManualRemoteNotificationsManager.shared.setup()
         }
 
         // End remote push stuff
@@ -490,16 +485,7 @@ extension AppDelegate {
 
         let latestToken = tokenParts.joined()
 
-        if let endpointARN = endpointARN,
-           let token = token,
-           latestToken == token {
-            updateEndpoint(endpointARN: endpointARN)
-            updatePushInformation(endpointARN: endpointARN,
-                                  force: true,
-                                  deduplicateRegistration: true)
-        } else {
-            saveToken(newToken: latestToken)
-        }
+        registerEndpoint(pushToken: latestToken)
     }
 
     func application(_ application: UIApplication,
@@ -508,47 +494,45 @@ extension AppDelegate {
         pushTokenReceiveAndUpdatedTransmitter.broadcast(error)
     }
 
-    private func saveToken(newToken: String) {
-        token = newToken
+    /// Registers on every launch, as AWS recommends: SNS returns the existing endpoint for this token,
+    /// or creates a new one when the saved endpoint no longer exists.
+    private func registerEndpoint(pushToken: String) {
+        token = pushToken
 
         let customUserData = endpointCustomUserData()
 
         Task { [weak self] in
             do {
-                let createdEndpointARN = try await RemoteNotificationsManager.shared.createEndpoint(
-                    token: newToken,
+                let registeredEndpointARN = try await RemoteNotificationsManager.shared.createEndpoint(
+                    token: pushToken,
                     customUserData: customUserData
                 )
+                // Re-enables an endpoint that SNS disabled after a failed delivery.
+                try await RemoteNotificationsManager.shared.updateEndpoint(endpointARN: registeredEndpointARN,
+                                                                           customUserData: customUserData)
                 await MainActor.run {
                     guard let self = self else { return }
-                    print("🎉 endpoint ARN from remote notifications API: \(createdEndpointARN)")
-                    endpointARN = createdEndpointARN
-                    self.updatePushInformation(endpointARN: createdEndpointARN)
+                    if endpointARN != registeredEndpointARN {
+                        print("🎉 endpoint ARN from remote notifications API: \(registeredEndpointARN)")
+                        endpointARN = registeredEndpointARN
+                    }
+                    self.updatePushInformation(endpointARN: registeredEndpointARN,
+                                               force: true,
+                                               deduplicateRegistration: true)
                 }
             } catch {
                 await MainActor.run {
-                    print("💀 Remote notifications create endpoint Error: \(error)")
+                    print("💀 Remote notifications endpoint registration Error: \(error)")
                     pushTokenReceiveAndUpdatedTransmitter.broadcast(error)
                 }
             }
         }
     }
 
-    private func updateEndpoint(endpointARN: String) {
-        let customUserData = endpointCustomUserData()
-
-        Task {
-            do {
-                try await RemoteNotificationsManager.shared.updateEndpoint(endpointARN: endpointARN, customUserData: customUserData)
-            } catch {
-                print("💀 Remote notifications update endpoint Error: \(error)")
-            }
-        }
-    }
-
     private func updatePushInformation(endpointARN: String,
                                        force: Bool = false,
-                                       deduplicateRegistration: Bool = false) {
+                                       deduplicateRegistration: Bool = false,
+                                       syncTopics: Bool = false) {
         guard let traktSlug = UserManager.shared.currentUser?.slug else { return }
 
         let pushInfo = PushInformationModel(traktId: traktSlug,
@@ -565,9 +549,12 @@ extension AppDelegate {
             lastRegisteredPushInformation = pushInfo
         }
 
+        let topicSync = syncTopics ? RemoteNotificationsManager.shared.syncTopics() : nil
+
         Task {
             do {
                 let savedPushInformation = try await RemoteNotificationsManager.shared.savePushInformation(pushInfo, force: force)
+                try await topicSync?.value
                 await MainActor.run {
                     if savedPushInformation {
                         print("🎉 Push information was saved through remote notifications API.")
@@ -576,7 +563,7 @@ extension AppDelegate {
                 }
             } catch {
                 await MainActor.run {
-                    print("💀 Remote notifications save push information Error: \(error)")
+                    print("💀 Remote notifications upload Error: \(error)")
                     pushTokenReceiveAndUpdatedTransmitter.broadcast(error)
                 }
             }

@@ -38,23 +38,31 @@ enum RemoteNotificationTopic: String, Codable {
     }
 }
 
-enum RemoteNotificationTopicSyncResult {
-    case skipped
-    case subscribed
-    case unsubscribed
-}
-
-struct RemoteNotificationsCacheStatus {
-    let pushInformationCached: Bool?
-    let subscriptions: [RemoteNotificationsSubscriptionCacheStatus]
-}
-
-struct RemoteNotificationsSubscriptionCacheStatus {
+private struct RemoteNotificationTopicState {
     let topic: RemoteNotificationTopic
-    let topicARNConfigured: Bool
-    let isSubscribed: Bool?
+    let isSubscribed: Bool
 }
 
+/// Remote push reaches the device through two paths, each with its own "off" switch.
+///
+/// ACTIVITY (comment likes, replies, mentions, new followers)
+///
+///   App ── PUT /push/registrations ──▶ registration (PushInformationModel flags)
+///                                            │
+///   Trakt activity ──▶ server ── flag on? ───┴── yes ──▶ push to this endpoint ──▶ device
+///
+///   Off = the flag is false in the registration. The server checks it before each push.
+///
+/// BROADCAST (trending, favorited, blog post, app update)
+///
+///   App ── POST   /push/subscriptions ──┐ subscribe
+///       └─ DELETE /push/subscriptions ──┤ unsubscribe
+///                                       ▼
+///   server ──▶ topic ──▶ every endpoint subscribed to the topic ──▶ device
+///
+///   Off = this endpoint is not subscribed to the topic. A topic has no per-user
+///   filter, so a failed unsubscribe means the push keeps coming. That is why
+///   syncTopics() never trusts a local cache and always sends the full desired state.
 final class RemoteNotificationsManager {
     static let shared = RemoteNotificationsManager()
 
@@ -72,6 +80,11 @@ final class RemoteNotificationsManager {
     private let cacheKeyPrefix = "RemoteNotificationsManager"
 
     private var baseURL: URL?
+    private var topicSyncTask: Task<Void, Error>?
+    private lazy var debouncedTopicSync = Debouncer(delay: 1.0) { [weak self] in
+        guard let self = self else { return }
+        self.syncTopicsInBackground()
+    }
 
     private(set) var isConfigured = false
 
@@ -108,6 +121,9 @@ final class RemoteNotificationsManager {
             }
             self.userDefaults.synchronize()
         }.disposed(by: disposeBag)
+
+        removeLegacySubscriptionCache()
+        setupTopicSync()
     }
 
     func createEndpoint(token: String, customUserData: String) async throws -> String {
@@ -155,69 +171,102 @@ final class RemoteNotificationsManager {
         userDefaults.synchronize()
     }
 
-    func subscribe(endpointARN: String, to topic: RemoteNotificationTopic) async throws {
-        guard let topicARN = topic.topicARN else {
-            return
-        }
-
-        let body = TopicSubscriptionRequest(endpointARN: endpointARN, topicARN: topicARN)
-        _ = try await post(path: "/push/subscriptions", body: body)
-        saveSyncedSubscription(endpointARN: endpointARN, topicARN: topicARN, isSubscribed: true)
-    }
-
-    func unsubscribe(endpointARN: String, from topic: RemoteNotificationTopic) async throws {
-        guard let topicARN = topic.topicARN else {
-            return
-        }
-
-        let body = TopicSubscriptionRequest(endpointARN: endpointARN, topicARN: topicARN)
-        _ = try await delete(path: "/push/subscriptions", body: body)
-        saveSyncedSubscription(endpointARN: endpointARN, topicARN: topicARN, isSubscribed: false)
-    }
-
+    /// Must be called on the main thread. Topic syncs run one at a time, in call order,
+    /// so the last call always reflects the latest switch values.
     @discardableResult
-    func syncSubscription(endpointARN: String, to topic: RemoteNotificationTopic, isSubscribed: Bool, force: Bool = false) async throws -> RemoteNotificationTopicSyncResult {
-        guard let topicARN = topic.topicARN else { return .skipped }
-        guard force || syncedSubscription(endpointARN: endpointARN, topicARN: topicARN) != isSubscribed else { return .skipped }
+    func syncTopics() -> Task<Void, Error> {
+        let endpointARN = userDefaults.string(forKey: "Rippple.endpointArnForSNS")
+        let states = topicStates()
+        let previousTask = topicSyncTask
+        let task = Task { [weak self] in
+            _ = await previousTask?.result
+            guard let self = self, let endpointARN = endpointARN else { return }
+            try await self.sync(states, endpointARN: endpointARN)
+        }
+        topicSyncTask = task
+        return task
+    }
 
-        if isSubscribed {
-            try await subscribe(endpointARN: endpointARN, to: topic)
-            return .subscribed
-        } else {
-            try await unsubscribe(endpointARN: endpointARN, from: topic)
-            return .unsubscribed
+    private func setupTopicSync() {
+        debouncedTopicSync.call()
+
+        onSettingsChangedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self else { return }
+            self.debouncedTopicSync.call()
+        }.disposed(by: disposeBag)
+
+        remoteNotificationsEndpointUpdatedReceiver.hotOnly().listen { [weak self] _ in
+            guard let self = self else { return }
+            self.debouncedTopicSync.call()
+        }.disposed(by: disposeBag)
+
+        // Forced uploads call syncTopics() directly so they can report the result.
+        onNotificationsSettingsChangedReceiver.listen { [weak self] update in
+            guard let self = self, case .changed = update else { return }
+            self.debouncedTopicSync.call()
+        }.disposed(by: disposeBag)
+    }
+
+    private func syncTopicsInBackground() {
+        let task = syncTopics()
+        Task {
+            do {
+                try await task.value
+            } catch {
+                print("💀 Remote notifications topic sync Error: \(error)")
+            }
         }
     }
 
-    func cacheStatus(endpointARN: String?, topics: [RemoteNotificationTopic]) -> RemoteNotificationsCacheStatus {
-        let pushInformationCached: Bool?
-        if let endpointARN = endpointARN {
-            pushInformationCached = userDefaults.data(forKey: pushInformationCacheKey(endpointARN: endpointARN)) != nil
-        } else {
-            pushInformationCached = nil
+    private func topicStates() -> [RemoteNotificationTopicState] {
+        let canSubscribe = !SessionManager.shared.isLoggedOut
+        var states = [
+            RemoteNotificationTopicState(topic: .trendingShows, isSubscribed: canSubscribe && TrendingNotificationsManager.shared.trendingShows),
+            RemoteNotificationTopicState(topic: .trendingMovies, isSubscribed: canSubscribe && TrendingNotificationsManager.shared.trendingMovies),
+            RemoteNotificationTopicState(topic: .recommendedShows, isSubscribed: canSubscribe && RecommendedNotificationsManager.shared.recommendedShows),
+            RemoteNotificationTopicState(topic: .recommendedMovies, isSubscribed: canSubscribe && RecommendedNotificationsManager.shared.recommendedMovies),
+            RemoteNotificationTopicState(topic: .manualBlogPost, isSubscribed: canSubscribe && ManualRemoteNotificationsManager.shared.blogPost),
+            RemoteNotificationTopicState(topic: .manualUpdate, isSubscribed: canSubscribe && ManualRemoteNotificationsManager.shared.appUpdate)
+        ]
+
+        if canSubscribe, UserManager.shared.currentUser?.slug == "kcador" {
+            states.append(RemoteNotificationTopicState(topic: .test, isSubscribed: true))
         }
 
-        let subscriptions = topics.map { topic -> RemoteNotificationsSubscriptionCacheStatus in
-            guard let topicARN = topic.topicARN else {
-                return RemoteNotificationsSubscriptionCacheStatus(topic: topic,
-                                                                  topicARNConfigured: false,
-                                                                  isSubscribed: nil)
-            }
+        return states
+    }
 
-            let isSubscribed: Bool?
-            if let endpointARN = endpointARN {
-                isSubscribed = syncedSubscription(endpointARN: endpointARN, topicARN: topicARN)
-            } else {
-                isSubscribed = nil
-            }
+    /// Syncs every topic even when one fails, then throws the first error.
+    private func sync(_ states: [RemoteNotificationTopicState], endpointARN: String) async throws {
+        var firstError: Error?
 
-            return RemoteNotificationsSubscriptionCacheStatus(topic: topic,
-                                                              topicARNConfigured: true,
-                                                              isSubscribed: isSubscribed)
+        for state in states {
+            guard let topicARN = state.topic.topicARN else { continue }
+
+            let body = TopicSubscriptionRequest(endpointARN: endpointARN, topicARN: topicARN)
+            do {
+                if state.isSubscribed {
+                    _ = try await post(path: "/push/subscriptions", body: body)
+                } else {
+                    _ = try await delete(path: "/push/subscriptions", body: body)
+                }
+            } catch {
+                print("💀 Remote notifications \(state.topic) sync Error: \(error)")
+                firstError = firstError ?? error
+            }
         }
 
-        return RemoteNotificationsCacheStatus(pushInformationCached: pushInformationCached,
-                                              subscriptions: subscriptions)
+        if let firstError = firstError {
+            throw firstError
+        }
+    }
+
+    /// Earlier versions skipped topic requests when this cache matched, which let it drift from the server.
+    private func removeLegacySubscriptionCache() {
+        let legacyKeyPrefix = "\(cacheKeyPrefix).subscription."
+        for key in userDefaults.dictionaryRepresentation().keys where key.hasPrefix(legacyKeyPrefix) {
+            userDefaults.removeObject(forKey: key)
+        }
     }
 
     private func post<T: Encodable>(path: String, body: T) async throws -> Data {
@@ -326,21 +375,8 @@ final class RemoteNotificationsManager {
         return true
     }
 
-    private func syncedSubscription(endpointARN: String, topicARN: String) -> Bool? {
-        return userDefaults.object(forKey: subscriptionCacheKey(endpointARN: endpointARN, topicARN: topicARN)) as? Bool
-    }
-
-    private func saveSyncedSubscription(endpointARN: String, topicARN: String, isSubscribed: Bool) {
-        userDefaults.set(isSubscribed, forKey: subscriptionCacheKey(endpointARN: endpointARN, topicARN: topicARN))
-        userDefaults.synchronize()
-    }
-
     private func pushInformationCacheKey(endpointARN: String) -> String {
         return "\(cacheKeyPrefix).pushInformation.\(endpointARN)"
-    }
-
-    private func subscriptionCacheKey(endpointARN: String, topicARN: String) -> String {
-        return "\(cacheKeyPrefix).subscription.\(endpointARN).\(topicARN)"
     }
 }
 
