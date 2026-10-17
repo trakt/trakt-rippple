@@ -303,8 +303,8 @@ enum TraktAPIService {
     case seasonSocial(id: String, season: Int, pageInfo: PageInfo)
     case episodeSocial(id: String, season: Int, episode: Int, pageInfo: PageInfo)
 
-    case postComment(type: PostType, traktId: Int64, body: String, spoilers: Bool)
-    case postReply(id: Int64, body: String, spoilers: Bool)
+    case postComment(type: PostType, traktId: Int64, body: String, spoilers: Bool, gif: CommentGIF?)
+    case postReply(id: Int64, body: String, spoilers: Bool, gif: CommentGIF?)
 
     case deleteComment(id: Int64)
     case updateComment(id: Int64, body: String, spoilers: Bool)
@@ -550,6 +550,19 @@ private extension MediaReactionsTarget {
 
 // MARK: - TargetType Protocol Implementation
 
+private extension TraktAPIService {
+    static func commentParameters(body: String, spoilers: Bool, gif: CommentGIF?) -> [String: Any] {
+        var parameters: [String: Any] = ["comment": body, "spoiler": spoilers]
+        if let gif = gif {
+            var object: [String: Any] = ["url": gif.url]
+            object["width"] = gif.width.map { Int($0.rounded()) }
+            object["height"] = gif.height.map { Int($0.rounded()) }
+            parameters["gif"] = object
+        }
+        return parameters
+    }
+}
+
 extension TraktAPIService: AuthorizedTargetType {
     var validationType: ValidationType {
 //        return .successCodes
@@ -697,7 +710,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/shows/\(id)/seasons/\(season)/episodes/\(episode)/social"
         case .postComment:
             return "/comments"
-        case .postReply(let id, _, _):
+        case .postReply(let id, _, _, _):
             return "/comments/\(id)/replies"
         case .deleteComment(let id):
             return "/comments/\(id)"
@@ -1498,13 +1511,13 @@ extension TraktAPIService: AuthorizedTargetType {
             return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
         case .commentCount, .commentLikesCount:
             return .requestPlain
-        case .postComment(let type, let traktId, let body, let spoilers):
-            return .requestParameters(parameters: [type.rawValue: ["ids": ["trakt": traktId]],
-                                                   "comment": body,
-                                                   "spoiler": spoilers],
+        case .postComment(let type, let traktId, let body, let spoilers, let gif):
+            var parameters = TraktAPIService.commentParameters(body: body, spoilers: spoilers, gif: gif)
+            parameters[type.rawValue] = ["ids": ["trakt": traktId]]
+            return .requestParameters(parameters: parameters,
                                       encoding: JSONEncoding.default)
-        case .postReply(_, let body, let spoilers):
-            return .requestParameters(parameters: ["comment": body, "spoiler": spoilers],
+        case .postReply(_, let body, let spoilers, let gif):
+            return .requestParameters(parameters: TraktAPIService.commentParameters(body: body, spoilers: spoilers, gif: gif),
                                       encoding: JSONEncoding.default)
         case .deleteComment:
             return .requestPlain

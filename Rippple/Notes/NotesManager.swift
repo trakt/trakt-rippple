@@ -74,56 +74,36 @@ final class NotesManager {
     }
 
     func showNotes(for media: MediaModel) {
-        let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
-        let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
-        notesViewController.media = media
-        notesViewController.noteItem = media.noteItem
-        AppManager.shared.present(viewController: notesRootViewController, animated: true)
+        present(NotesComposerSession.makeViewController(context: .media(media), noteItem: media.noteItem))
     }
 
     func showNotes(for ratedItem: RatedItem) {
-        let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
-        let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
-        notesViewController.ratedItem = ratedItem
-        notesViewController.noteItem = ratedItem.noteItem
-        AppManager.shared.present(viewController: notesRootViewController, animated: true)
+        present(NotesComposerSession.makeViewController(context: .ratedItem(ratedItem), noteItem: ratedItem.noteItem))
     }
 
     func showNotes(for historyItem: HistoryItem) {
-        let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
-        let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
-        notesViewController.historyItem = historyItem
-        notesViewController.noteItem = historyItem.noteItem
-        AppManager.shared.present(viewController: notesRootViewController, animated: true)
+        present(NotesComposerSession.makeViewController(context: .historyItem(historyItem), noteItem: historyItem.noteItem))
     }
 
     func showNotes(for collectionItem: CollectionItem) {
-        let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
-        let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
-        notesViewController.collectionItem = collectionItem
-        notesViewController.noteItem = collectionItem.noteItem
-        AppManager.shared.present(viewController: notesRootViewController, animated: true)
+        present(NotesComposerSession.makeViewController(context: .collectionItem(collectionItem), noteItem: collectionItem.noteItem))
     }
 
     func showNotes(for noteItem: NoteItem) {
-        let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
-        let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
-        notesViewController.noteItem = noteItem
-        AppManager.shared.present(viewController: notesRootViewController, animated: true)
+        present(NotesComposerSession.makeViewController(context: .noteItem(noteItem), noteItem: noteItem))
     }
 
     func showNotes(for watchlistType: WatchlistType) {
-        let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
-        let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
-        notesViewController.watchlistType = watchlistType
-        AppManager.shared.present(viewController: notesRootViewController, animated: true)
+        present(NotesComposerSession.makeViewController(context: .watchlist(watchlistType), noteItem: nil))
     }
 
     func showNotes(for person: Person) {
-        let notesRootViewController = UIStoryboard(name: "Notes", bundle: nil).instantiateInitialViewController() as! UINavigationController
-        let notesViewController = notesRootViewController.topViewController as! NotesComposerViewController
-        notesViewController.person = person
-        AppManager.shared.present(viewController: notesRootViewController, animated: true)
+        present(NotesComposerSession.makeViewController(context: .person(person), noteItem: person.noteItem))
+    }
+
+    private func present(_ composer: StyledNavigationController?) {
+        guard let composer = composer else { return }
+        AppManager.shared.present(viewController: composer, animated: true)
     }
 
     func refresh() {

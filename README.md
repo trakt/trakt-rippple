@@ -65,6 +65,7 @@ With **Trakt VIP** you get:
 |--------|------------------|
 | **Trakt** | `clientId` from your [Trakt API application](https://developer.trakt.tv/apps). Required for Trakt login and sync. Leave `secretId` empty (`""`) to use PKCE. |
 | **TMDb** | `apiKey` from [The Movie Database](https://www.themoviedb.org/settings/api). Used for fetching images and “where to watch” data. |
+| **Klipy** | Optional `KlipyAPIConfiguration.apiKey` from [Klipy](https://klipy.com). Powers GIF search in the comment composer, as on trakt.tv. Leave it `nil` to hide the GIF picker. |
 | **Remote notifications** | Optional maintainer infrastructure. Public forks can leave `RemoteNotificationsConfiguration.remoteNotificationsBaseURL`, `remoteNotificationsAPIKey`, and all `AWSConfiguration` values as `nil`; remote push is disabled while local notifications still work. |
 
 Maintainer builds use a small REST API proxy for endpoint registration, push information, and topic subscription updates. Remote push backend details are intentionally not required for local development, and the app no longer depends on the AWS SDK.
@@ -79,6 +80,7 @@ The build includes a run script that fails if `Secrets.swift` is missing or stil
   - **`Controllers/`** — View controllers (Settings, Browse, To Watch, Friends, Purchase, Deeplink, Search, Calendar, etc.)
   - **`Trakt API/`** — Trakt API client, models, and provider extensions (list/library items)
   - **`Tmdb API/`** — TMDb API client and models (images, where to watch)
+  - **`Klipy API/`** — Klipy GIF search client for comment GIFs
   - **`Cells/`** — Table and collection view cells (Browse, Details, Media, Settings, Ratings, To Watch, etc.)
   - **`Model/`** — Shared domain models (e.g. `Media`, comment models)
   - **`Notifications/`** — Local (episode, movie, anticipated, DVD) and remote (trending, recommended, manual) notification logic

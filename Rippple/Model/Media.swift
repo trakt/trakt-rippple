@@ -1289,10 +1289,7 @@ extension MediaModel {
 
 extension MediaModel {
     private func writeComment(media: MediaModel) {
-        let composer = UIStoryboard(name: "Compose", bundle: nil).instantiateInitialViewController() as! ComposeNavigationController
-
-        composer.mediaModel = media
-
+        guard let composer = CommentComposerSession.makeViewController(media: media) else { return }
         UIApplication.shared.present(composer)
     }
 

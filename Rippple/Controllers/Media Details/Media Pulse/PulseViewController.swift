@@ -538,9 +538,7 @@ final class PulseViewController: UITableViewController {
     }
 
     private func showComposer(for comment: Comment?, media: MediaModel) {
-        let composer = UIStoryboard(name: "Compose", bundle: nil).instantiateInitialViewController() as! ComposeNavigationController
-        composer.mediaModel = media
-        composer.editedComment = comment
+        guard let composer = CommentComposerSession.makeViewController(media: media, editedComment: comment) else { return }
         present(composer, animated: true)
     }
 
