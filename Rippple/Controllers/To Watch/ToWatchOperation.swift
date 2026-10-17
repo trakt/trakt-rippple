@@ -25,17 +25,12 @@ class ToWatchAsyncOperation: Operation, @unchecked Sendable {
         case isFinished
     }
 
-    private var state = State.isReady {
-        willSet(newValue) {
-            willChangeValue(forKey: state.rawValue)
-            willChangeValue(forKey: newValue.rawValue)
-        }
-        didSet {
-            didChangeValue(forKey: oldValue.rawValue)
-            didChangeValue(forKey: state.rawValue)
-        }
-    }
-
+    // `finish()` and `cancel()` can run on network callback queues while the operation queue reads state.
+    // Transitions hold `transitionLock` through their KVO notifications so they never interleave, while
+    // `stateLock` only guards reads and writes, letting observers read state back synchronously.
+    private let transitionLock = NSRecursiveLock()
+    private let stateLock = NSLock()
+    private var state = State.isReady
     private var cancellables = [Cancellable]()
 
     override var isAsynchronous: Bool {
@@ -43,17 +38,17 @@ class ToWatchAsyncOperation: Operation, @unchecked Sendable {
     }
 
     override var isExecuting: Bool {
-        state == .isExecuting
+        withStateLock { state } == .isExecuting
     }
 
     override var isFinished: Bool {
+        let state = withStateLock { self.state }
         if isCancelled && state != .isExecuting { return true }
         return state == .isFinished
     }
 
     override func start() {
-        guard !isCancelled else { return }
-        state = .isExecuting
+        guard !isCancelled, transition(to: .isExecuting) else { return }
         execute()
     }
 
@@ -63,21 +58,41 @@ class ToWatchAsyncOperation: Operation, @unchecked Sendable {
     }
 
     func finish() {
-        guard state != .isFinished else { return }
-        state = .isFinished
+        transition(to: .isFinished)
     }
 
     func track(_ cancellable: Cancellable?) {
         guard let cancellable = cancellable else { return }
-        cancellables.append(cancellable)
+        withStateLock { cancellables.append(cancellable) }
     }
 
     override func cancel() {
+        let cancellables = withStateLock { self.cancellables }
         for cancellable in cancellables {
             cancellable.cancel()
         }
         super.cancel()
         finish()
+    }
+
+    private func withStateLock<T>(_ work: () -> T) -> T {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return work()
+    }
+
+    @discardableResult
+    private func transition(to newState: State) -> Bool {
+        transitionLock.lock()
+        defer { transitionLock.unlock() }
+        let oldState = withStateLock { state }
+        guard oldState != .isFinished, oldState != newState else { return false }
+        willChangeValue(forKey: oldState.rawValue)
+        willChangeValue(forKey: newState.rawValue)
+        withStateLock { state = newState }
+        didChangeValue(forKey: newState.rawValue)
+        didChangeValue(forKey: oldState.rawValue)
+        return true
     }
 }
 
