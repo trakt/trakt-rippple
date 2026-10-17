@@ -159,7 +159,8 @@ final class ShelfManager {
                                                object: NSUbiquitousKeyValueStore.default)
 
         if NSUbiquitousKeyValueStore.default.synchronize() == false {
-            fatalError("This app was not built with the proper entitlement requests.")
+            print("Couldn't synchronize the iCloud key-value store.")
+            assertionFailure("This app was not built with the proper entitlement requests.")
         }
     }
 
