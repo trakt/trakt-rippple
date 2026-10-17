@@ -16,11 +16,11 @@ let (onMovieToWatchChangedTransmitter, onMovieToWatchChangedReceiver) = Receiver
 let (onAllMoviesToWatchChangedTransmitter, onAllMoviesToWatchChangedReceiver) = Receiver<[Movie]>.make(with: .warm(upTo: 1))
 let (onMovieToWatchStatusChangedTransmitter, onMovieToWatchStatusChangedReceiver) = Receiver<MovieToWatchManager.Status>.make(with: .warm(upTo: 1))
 
-struct MovieToWatchGroup: Codable {
-    let name: String
-    let order: Int
-    let shows: Set<Movie>
-}
+private let movieReleaseDateFormatter: DateFormatter = {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd"
+    return dateFormatter
+}()
 
 private struct MovieToWatchRelease: Codable {
     let releaseType: String
@@ -76,7 +76,7 @@ final class MovieToWatchManager {
         }
     }
 
-    var moviesInList: [MovieToWatchGroup]? {
+    var moviesInList: [ToWatchGroup<Movie>]? {
         didSet {
             TinyStorage.cache.store(moviesInList, forKey: "MovieToWatchManager.moviesInList")
         }
@@ -140,11 +140,6 @@ final class MovieToWatchManager {
     }
 
     private var timer: Timer?
-    private var dateFormatter: DateFormatter {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        return dateFormatter
-    }
 
     private var futureMediaModels = [MediaModel]() {
         didSet {
@@ -155,7 +150,7 @@ final class MovieToWatchManager {
             // find the first movie that will air in the future and create a timer
             for media in futureMediaModels {
                 if let movie = media.movie, let released = movie.released,
-                   let releaseDate = dateFormatter.date(from: released), releaseDate.distance(to: .now) < 0 {
+                   let releaseDate = movieReleaseDateFormatter.date(from: released), releaseDate.distance(to: .now) < 0 {
                     timer?.invalidate()
                     print("RELEASED: \(releaseDate)")
                     timer = Timer(fire: releaseDate,
@@ -189,7 +184,7 @@ final class MovieToWatchManager {
         if let futureMediaModels = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "MovieToWatchManager.futureMediaModels") {
             self.futureMediaModels = futureMediaModels
         }
-        if let moviesInList = TinyStorage.cache.retrieve(type: [MovieToWatchGroup].self, forKey: "MovieToWatchManager.moviesInList") {
+        if let moviesInList = TinyStorage.cache.retrieve(type: [ToWatchGroup<Movie>].self, forKey: "MovieToWatchManager.moviesInList") {
             self.moviesInList = moviesInList
         }
         if let movies = TinyStorage.cache.retrieve(type: Set<Movie>.self, forKey: "MovieToWatchManager.movies") {
@@ -434,17 +429,13 @@ final class MovieToWatchManager {
 
         print("MovieToWatchManager.forceRefresh START")
 
-        let updateMoviesOperation = UpdateMoviesOperation(pinnedMovies: PinnedMoviesManager.shared.pinnedMovies)
-        updateMoviesOperation.completionBlock = { [weak self] in
-            guard let self = self else {
+        let sourcesOperation = ToWatchSourcesOperation(sources: toWatchSources(), lastKnownGroups: moviesInList ?? [])
+        sourcesOperation.completionBlock = { [weak self] in
+            guard let self = self, !sourcesOperation.isCancelled else {
                 completion?(false)
                 return
             }
-            if updateMoviesOperation.isCancelled {
-                completion?(false)
-                return
-            }
-            let movies = updateMoviesOperation.movies
+            let movies = sourcesOperation.media
             let updateMoviesWatchedOperation = UpdateMoviesWatchedOperation(movies: movies)
             updateMoviesWatchedOperation.completionBlock = { [weak self] in
                 if updateMoviesWatchedOperation.isCancelled {
@@ -457,14 +448,14 @@ final class MovieToWatchManager {
                         return
                     }
                     self.movies = movies
-                    self.moviesInList = updateMoviesOperation.moviesInList
+                    self.moviesInList = sourcesOperation.groups
                     self.releaseInfoCache = updateMoviesWatchedOperation.releaseInfoByMovieId
                     self.mediaModels = updateMoviesWatchedOperation.mediaModels
                     self.futureMediaModels = updateMoviesWatchedOperation.futureMediaModels
                     if let completion = completion {
                         self.debouncedTransmit.fireNow()
                         DispatchQueue.main.async {
-                            completion(updateMoviesOperation.completedSuccessfully && updateMoviesWatchedOperation.completedSuccessfully)
+                            completion(sourcesOperation.completedSuccessfully && updateMoviesWatchedOperation.completedSuccessfully)
                         }
                     }
                     print("MovieToWatchManager.forceRefresh STOP")
@@ -472,7 +463,29 @@ final class MovieToWatchManager {
             }
             self.operationQueue.addOperation(updateMoviesWatchedOperation)
         }
-        operationQueue.addOperation(updateMoviesOperation)
+        operationQueue.addOperation(sourcesOperation)
+    }
+
+    private func toWatchSources() -> [ToWatchSource<Movie>] {
+        let settings = MovieToWatchSettings.shared
+        var sources = [ToWatchSource<Movie>.fixed(id: "pinned", name: "Pinned", order: 0, media: PinnedMoviesManager.shared.pinnedMovies)]
+        if settings.watchlist {
+            sources.append(.watchlist(type: .movies, order: 1, media: \.movie))
+        }
+        if settings.recommended {
+            sources.append(.favorites(type: .movies, order: 2, media: \.movie))
+        }
+        if settings.collected {
+            sources.append(.collection(type: .movies, order: 3, media: \.movie))
+        }
+        for otherList in settings.otherLists where otherList.enabled {
+            if let list = otherList.list {
+                sources.append(.list(list, id: otherList.id, order: 100 + otherList.rank, type: .movies, media: \.movie))
+            } else if let smartSearch = otherList.smartSearch {
+                sources.append(.smartSearch(smartSearch, id: otherList.id, order: 100 + otherList.rank, media: \.movie))
+            }
+        }
+        return sources
     }
 
     private func refreshProgress() {
@@ -484,12 +497,14 @@ final class MovieToWatchManager {
         print("MovieToWatchManager.refreshProgress for all movies \(movies.count) START")
 
         let updateMoviesWatchedOperation = UpdateMoviesWatchedOperation(movies: movies)
-        updateMoviesWatchedOperation.completionBlock = {
-            if updateMoviesWatchedOperation.isCancelled { return }
-            self.releaseInfoCache = updateMoviesWatchedOperation.releaseInfoByMovieId
-            self.mediaModels = updateMoviesWatchedOperation.mediaModels
-            self.futureMediaModels = updateMoviesWatchedOperation.futureMediaModels
-            print("MovieToWatchManager.refreshProgress STOP")
+        updateMoviesWatchedOperation.completionBlock = { [weak self] in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, !updateMoviesWatchedOperation.isCancelled else { return }
+                self.releaseInfoCache = updateMoviesWatchedOperation.releaseInfoByMovieId
+                self.mediaModels = updateMoviesWatchedOperation.mediaModels
+                self.futureMediaModels = updateMoviesWatchedOperation.futureMediaModels
+                print("MovieToWatchManager.refreshProgress STOP")
+            }
         }
         operationQueue.addOperation(updateMoviesWatchedOperation)
     }
@@ -511,484 +526,102 @@ extension Movie {
     }
 }
 
-private class UpdateMoviesOperation: Operation, @unchecked Sendable {
-    private let resultLock = NSLock()
-    private var sourceFetchFailed = false
-
-    fileprivate var completedSuccessfully: Bool {
-        resultLock.lock()
-        defer { resultLock.unlock() }
-        return !isCancelled && !sourceFetchFailed
-    }
-
-    private func recordSourceFetchFailure() {
-        resultLock.lock()
-        sourceFetchFailed = true
-        resultLock.unlock()
-    }
-
-    private let moviesDispatchGroup = DispatchGroup()
-    private var cancellables = [Cancellable?]()
-
-    fileprivate var movies = Set<Movie>()
-    fileprivate var moviesInList = [MovieToWatchGroup]()
-
-    private let pinnedMovies: Set<Movie>
-
-    init(pinnedMovies: Set<Movie>) {
-        self.pinnedMovies = pinnedMovies
-    }
-
-    override func cancel() {
-        for cancellable in cancellables {
-            cancellable?.cancel()
-        }
-
-        state = .isFinished
-
-        super.cancel()
-    }
-
-    private enum State: String {
-        case isReady
-        case isExecuting
-        case isFinished
-    }
-
-    private var state: State = .isReady {
-        willSet(newValue) {
-            willChangeValue(forKey: state.rawValue)
-            willChangeValue(forKey: newValue.rawValue)
-        }
-        didSet {
-            didChangeValue(forKey: oldValue.rawValue)
-            didChangeValue(forKey: state.rawValue)
-        }
-    }
-
-    override var isAsynchronous: Bool {
-        true
-    }
-
-    override var isExecuting: Bool {
-        state == .isExecuting
-    }
-
-    override var isFinished: Bool {
-        if isCancelled && state != .isExecuting { return true }
-        return state == .isFinished
-    }
-
-    override func start() {
-        if isCancelled { return }
-
-        state = .isExecuting
-
-        let pinnedMovies = pinnedMovies
-        movies.formUnion(pinnedMovies)
-        moviesInList.append(MovieToWatchGroup(name: "Pinned", order: 0, shows: pinnedMovies))
-
-        let toWatchSettings = MovieToWatchSettings.shared
-        if toWatchSettings.watchlist {
-            moviesDispatchGroup.enter()
-            fetchWatchlistedMovies { [weak self] in
-                DispatchQueue.main.async {
-                    guard let self = self else { return }
-                    if self.isCancelled { return }
-                    self.moviesDispatchGroup.leave()
-                }
-            }
-        }
-        if toWatchSettings.recommended {
-            moviesDispatchGroup.enter()
-            fetchRecommendedMovies { [weak self] in
-                DispatchQueue.main.async {
-                    guard let self = self else { return }
-                    if self.isCancelled { return }
-                    self.moviesDispatchGroup.leave()
-                }
-            }
-        }
-        if toWatchSettings.collected {
-            moviesDispatchGroup.enter()
-            fetchCollectedMovies { [weak self] in
-                DispatchQueue.main.async {
-                    guard let self = self else { return }
-                    if self.isCancelled { return }
-                    self.moviesDispatchGroup.leave()
-                }
-            }
-        }
-        for otherList in toWatchSettings.otherLists where otherList.enabled == true {
-            if let list = otherList.list {
-                moviesDispatchGroup.enter()
-                fetchMovies(for: list, order: 100 + otherList.rank) { [weak self] in
-                    DispatchQueue.main.async {
-                        guard let self = self else { return }
-                        if self.isCancelled { return }
-                        self.moviesDispatchGroup.leave()
-                    }
-                }
-            } else if let smartSearch = otherList.smartSearch {
-                moviesDispatchGroup.enter()
-                fetchMovies(from: smartSearch, order: 100 + otherList.rank) { [weak self] in
-                    DispatchQueue.main.async {
-                        guard let self = self else { return }
-                        if self.isCancelled { return }
-                        self.moviesDispatchGroup.leave()
-                    }
-                }
-            }
-        }
-
-        moviesDispatchGroup.notify(queue: .global(qos: .utility)) { [weak self] in
-            guard let self = self else { return }
-
-            DispatchQueue.main.async {
-                self.state = .isFinished
-            }
-        }
-    }
-
-    private func fetchWatchlistedMovies(completion: @escaping (() -> Void)) {
-        if isCancelled {
-            completion()
-            return
-        }
-
-        TraktAPIProvider.fetchAllWatchlistItems(slug: "me",
-                                                type: .movies,
-                                                extended: .full,
-                                                sort: .none) { [weak self] result in
-            guard let self = self else { return }
-            defer { completion() }
-            if self.isCancelled { return }
-            switch result {
-            case .success(let items):
-                let movies = items.map { $0.movie! }
-                DispatchQueue.main.async {
-                    self.movies.formUnion(movies)
-                    self.moviesInList.append(MovieToWatchGroup(name: "Watchlisted", order: 1, shows: Set(movies)))
-                }
-            case .failure(let error):
-                self.recordSourceFetchFailure()
-                print("fetchWatchlistedMovies (towatch) request failure \(error)")
-            }
-        }
-    }
-
-    private func fetchRecommendedMovies(completion: @escaping (() -> Void)) {
-        if isCancelled {
-            completion()
-            return
-        }
-
-        TraktAPIProvider.fetchAllRecommendedItems(slug: "me",
-                                                  type: .movies,
-                                                  extended: .full,
-                                                  sort: .none) { [weak self] result in
-            guard let self = self else { return }
-            defer { completion() }
-            if self.isCancelled { return }
-            switch result {
-            case .success(let items):
-                let movies = items.map { $0.movie! }
-                DispatchQueue.main.async {
-                    self.movies.formUnion(movies)
-                    self.moviesInList.append(MovieToWatchGroup(name: "Favorites", order: 2, shows: Set(movies)))
-                }
-            case .failure(let error):
-                self.recordSourceFetchFailure()
-                print("fetchRecommendedMovies (towatch) request failure \(error)")
-            }
-        }
-    }
-
-    private func fetchCollectedMovies(completion: @escaping (() -> Void)) {
-        if isCancelled {
-            completion()
-            return
-        }
-
-        TraktAPIProvider.fetchAllCollectionItems(slug: "me",
-                                                 type: .movies,
-                                                 extended: .full,
-                                                 sort: .none) { [weak self] result in
-            guard let self = self else { return }
-            defer { completion() }
-            if self.isCancelled { return }
-            switch result {
-            case .success(let items):
-                let movies = items.map { $0.movie! }
-                DispatchQueue.main.async {
-                    self.movies.formUnion(movies)
-                    self.moviesInList.append(MovieToWatchGroup(name: "Collected", order: 3, shows: Set(movies)))
-                }
-            case .failure(let error):
-                self.recordSourceFetchFailure()
-                print("fetchCollectedMovies (towatch) request failure \(error)")
-            }
-        }
-    }
-
-    private func fetchMovies(for list: List, order: Int, completion: @escaping (() -> Void)) {
-        if isCancelled {
-            completion()
-            return
-        }
-
-        TraktAPIProvider.fetchAllListItems(list: list,
-                                           type: .movies,
-                                           smartListLimit: TraktAPIProvider.smartListToWatchItemsLimit) { [weak self] result in
-            guard let self = self else { return }
-            defer { completion() }
-            if self.isCancelled { return }
-            switch result {
-            case .success(let items):
-                let movies = items.map { $0.movie! }
-                DispatchQueue.main.async {
-                    self.movies.formUnion(movies)
-                    self.moviesInList.append(MovieToWatchGroup(name: list.name, order: order, shows: Set(movies)))
-                }
-            case .failure(let error):
-                self.recordSourceFetchFailure()
-                print("fetchMoviesforlist (towatch) request failure \(error)")
-            }
-        }
-    }
-
-    private func fetchMovies(from smartSearch: SmartSearch, order: Int, completion: @escaping (() -> Void)) {
-        if isCancelled {
-            completion()
-            return
-        }
-
-        let service = smartSearch.service
-        let cancellable = TraktAPIProvider.provider.request(service, callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
-            guard let self = self else {
-                return
-            }
-
-            defer {
-                completion()
-            }
-
-            switch result {
-            case .success(let moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    var searchResults: [MediaItem]
-                    if case .popularMovies = service {
-                        searchResults = try response.map([Movie].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: $0, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
-                    } else {
-                        searchResults = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
-                    }
-
-                    DispatchQueue.main.async {
-                        let movies = searchResults.compactMap { $0.movie }
-                        self.movies.formUnion(movies)
-                        self.moviesInList.append(MovieToWatchGroup(name: smartSearch.name ?? "Smart Search", order: order, shows: Set(movies)))
-                    }
-                } catch {
-                    self.recordSourceFetchFailure()
-                    print("fetchMovies for Smart Search (towatch) request JSON mapping failed! \(error)")
-                }
-            case .failure(let error):
-                self.recordSourceFetchFailure()
-                print("fetchMovies for Smart Search (towatch) request failure \(error)")
-            }
-        }
-        cancellables.append(cancellable)
-    }
-}
-
-private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
-    private let resultLock = NSLock()
-    private var sourceFetchFailed = false
-
-    fileprivate var completedSuccessfully: Bool {
-        resultLock.lock()
-        defer { resultLock.unlock() }
-        return !isCancelled && !sourceFetchFailed
-    }
-
-    private func recordSourceFetchFailure() {
-        resultLock.lock()
-        sourceFetchFailed = true
-        resultLock.unlock()
-    }
-
-    private let watchedDispatchGroup = DispatchGroup()
+private final class UpdateMoviesWatchedOperation: ToWatchAsyncOperation, @unchecked Sendable {
+    private let movies: Set<Movie>
     private let releaseCallbackQueue = DispatchQueue(label: "Movie to-watch release info callback queue")
+    private var sourceFetchFailed = false
 
-    private var cancellables = [Cancellable?]()
+    private(set) var mediaModels = [MediaModel]()
+    private(set) var futureMediaModels = [MediaModel]()
+    private(set) var releaseInfoByMovieId = [Int64: MovieToWatchRelease]()
 
-    private var unwatchedMovies = Set<Movie>()
-    private var movies = Set<Movie>()
-
-    private var dateFormatter: DateFormatter {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        return dateFormatter
+    var completedSuccessfully: Bool {
+        !isCancelled && !sourceFetchFailed
     }
-
-    fileprivate var mediaModels = [MediaModel]()
-    fileprivate var futureMediaModels = [MediaModel]()
-
-    fileprivate var releaseInfoByMovieId = [Int64: MovieToWatchRelease]()
 
     init(movies: Set<Movie>) {
         self.movies = movies
     }
 
-    override func cancel() {
-        for cancellable in cancellables {
-            cancellable?.cancel()
-        }
+    override func execute() {
+        let unwatchedMovies = movies.filter { $0.isWatched == false }
+        let releaseDispatchGroup = DispatchGroup()
+        fetchReleaseInfo(for: unwatchedMovies, in: releaseDispatchGroup)
 
-        state = .isFinished
+        releaseDispatchGroup.notify(queue: .global(qos: .utility)) { [weak self] in
+            guard let self = self, !self.isCancelled else { return }
 
-        super.cancel()
-    }
-
-    private enum State: String {
-        case isReady
-        case isExecuting
-        case isFinished
-    }
-
-    private var filteredMovies: [Movie] {
-        if isCancelled { return [Movie]() }
-        let now = Date()
-        return unwatchedMovies.filter { movie -> Bool in
-            if movie.status == "planned" || movie.status == "rumored" || movie.status == "canceled" {
-                return false
+            let excludedStatuses: Set<String?> = ["planned", "rumored", "canceled"]
+            let datedMovies = unwatchedMovies.compactMap { movie -> (movie: Movie, releaseDate: Date)? in
+                guard !excludedStatuses.contains(movie.status),
+                      let released = movie.released,
+                      let releaseDate = movieReleaseDateFormatter.date(from: released) else { return nil }
+                return (movie, releaseDate)
             }
-            if let released = movie.released,
-               let releaseDate = dateFormatter.date(from: released) {
-                return now > releaseDate
-            }
-            return false
-        }
-    }
+            let now = Date()
+            let futureCutoff = now.advanced(by: -60 * 60 * 24 * 5)
 
-    private var futureMovies: [Movie] {
-        if isCancelled { return [Movie]() }
-        let now = Date.now.advanced(by: -60 * 60 * 24 * 5)
-        return unwatchedMovies.filter { movie -> Bool in
-            if movie.status == "planned" || movie.status == "rumored" || movie.status == "canceled" {
-                return false
-            }
-            if let released = movie.released,
-               let releaseDate = dateFormatter.date(from: released) {
-                return now <= releaseDate
-            }
-            return false
-        }
-    }
-
-    private var state: State = .isReady {
-        willSet(newValue) {
-            willChangeValue(forKey: state.rawValue)
-            willChangeValue(forKey: newValue.rawValue)
-        }
-        didSet {
-            didChangeValue(forKey: oldValue.rawValue)
-            didChangeValue(forKey: state.rawValue)
-        }
-    }
-
-    override var isAsynchronous: Bool {
-        true
-    }
-
-    override var isExecuting: Bool {
-        state == .isExecuting
-    }
-
-    override var isFinished: Bool {
-        if isCancelled && state != .isExecuting { return true }
-        return state == .isFinished
-    }
-
-    override func start() {
-        guard !isCancelled else { return }
-
-        state = .isExecuting
-
-        unwatchedMovies = movies.filter { $0.isWatched == false }
-
-        fetchReleaseInfo()
-
-        watchedDispatchGroup.notify(queue: .global(qos: .utility)) { [weak self] in
-            guard let self = self else { return }
-            if self.isCancelled { return }
-
-            self.futureMediaModels = self.futureMovies.sorted {
+            self.futureMediaModels = datedMovies.filter { futureCutoff <= $0.releaseDate }.map(\.movie).sorted {
                 ($0.released ?? "0000-00-00", $0.title.sortableString) < ($1.released ?? "0000-00-00", $1.title.sortableString)
-            }.compactMap { $0.mediaModel }
-
-            self.sortByReleaseYear()
-
-            switch MovieToWatchSettings.shared.sort {
-            case .released:
-                self.sortByReleaseYear()
-            case .rating:
-                self.sortByRating()
-            case .voteCount:
-                self.sortByVotes()
-            case .runtime:
-                self.sortByRuntime()
-            case .random:
-                self.sortByRandom()
-            case .automatic:
-                self.sortByAutomatic()
-            case .title:
-                self.sortByTitle()
-            }
-
-            if MovieToWatchSettings.shared.reverse {
-                self.mediaModels.reverse()
-            }
-
-            self.state = .isFinished
+            }.map(\.mediaModel)
+            self.mediaModels = self.sortedForToWatch(datedMovies.filter { now > $0.releaseDate }.map(\.movie))
+            self.finish()
         }
     }
 
-    private func fetchReleaseInfo() {
-        if isCancelled { return }
-
-        let movies = Set(unwatchedMovies)
+    private func fetchReleaseInfo(for movies: Set<Movie>, in dispatchGroup: DispatchGroup) {
         for movie in CalendarManager.shared.movieWithReleases(in: movies) {
             guard let traktId = movie.identifiers.trakt else { continue }
 
-            watchedDispatchGroup.enter()
-            let cancellable = TraktAPIProvider.provider.request(.movieReleases(id: traktId),
-                                                                callbackQueue: releaseCallbackQueue) { [weak self] result in
-                guard let self = self else { return }
-                defer { self.watchedDispatchGroup.leave() }
-                if self.isCancelled { return }
-
-                switch result {
-                case .success(let moyaResponse):
+            dispatchGroup.enter()
+            track(TraktAPIProvider.provider.request(.movieReleases(id: traktId),
+                                                    callbackQueue: releaseCallbackQueue) { [weak self] result in
+                    defer { dispatchGroup.leave() }
+                    guard let self = self, !self.isCancelled else { return }
                     do {
-                        let response = try moyaResponse.filterSuccessfulStatusCodes()
+                        let response = try result.get().filterSuccessfulStatusCodes()
                         let activities = try response.map([MovieReleaseActivity].self, using: TraktAPIProvider.decoder)
                         if let releaseInfo = self.closestReleaseEvent(for: movie, activities: activities) {
                             self.releaseInfoByMovieId[traktId] = releaseInfo
                         }
                     } catch {
-                        self.recordSourceFetchFailure()
-                        print("MovieToWatchManager fetchMovieReleases request JSON mapping failed! \(error)")
+                        self.sourceFetchFailed = true
+                        print("MovieToWatchManager fetchMovieReleases request failed! \(error)")
                     }
-                case .failure(let error):
-                    self.recordSourceFetchFailure()
-                    print("MovieToWatchManager fetchMovieReleases request failure \(error)")
-                }
-            }
-            cancellables.append(cancellable)
+                })
         }
+    }
+
+    private func sortedForToWatch(_ movies: [Movie]) -> [MediaModel] {
+        let sortedMovies: [Movie]
+        switch MovieToWatchSettings.shared.sort {
+        case .automatic:
+            sortedMovies = movies.sorted {
+                ($0.weightedRating, $1.title.sortableString) > ($1.weightedRating, $0.title.sortableString)
+            }
+        case .released:
+            sortedMovies = movies.sorted {
+                ($0.released ?? "0000-00-00", $1.title.sortableString) > ($1.released ?? "0000-00-00", $0.title.sortableString)
+            }
+        case .rating:
+            sortedMovies = movies.sorted {
+                ($0.rating ?? 0, $1.title.sortableString) > ($1.rating ?? 0, $0.title.sortableString)
+            }
+        case .voteCount:
+            sortedMovies = movies.sorted {
+                ($0.votes ?? 0, $1.title.sortableString) > ($1.votes ?? 0, $0.title.sortableString)
+            }
+        case .runtime:
+            sortedMovies = movies.sorted {
+                ($0.runtime ?? 0, $1.title.sortableString) > ($1.runtime ?? 0, $0.title.sortableString)
+            }
+        case .random:
+            sortedMovies = movies.shuffled()
+        case .title:
+            sortedMovies = movies.sorted { $0.title.sortableString < $1.title.sortableString }
+        }
+        let mediaModels = sortedMovies.map(\.mediaModel)
+        return MovieToWatchSettings.shared.reverse ? mediaModels.reversed() : mediaModels
     }
 
     private func closestReleaseEvent(for movie: Movie, activities: [MovieReleaseActivity]) -> MovieToWatchRelease? {
@@ -1034,71 +667,14 @@ private class UpdateMoviesWatchedOperation: Operation, @unchecked Sendable {
                                 countryCode: $0.country)
         }
     }
+}
 
-    private func sortByAutomatic() {
-        if isCancelled { return }
-
-        var mediaModels = [MediaModel]()
-        for movie in filteredMovies.sorted(by: { movie, anotherMovie -> Bool in
-            let m = 3000.0
-            let C = 6.5
-            var v = Double(movie.votes ?? 0)
-            var R = movie.rating ?? 0
-            let firstWeightedRating = (v / (v + m)) * R + (m / (v + m)) * C
-            v = Double(anotherMovie.votes ?? 0)
-            R = anotherMovie.rating ?? 0
-            let secondWeightedRating = (v / (v + m)) * R + (m / (v + m)) * C
-            return (firstWeightedRating, anotherMovie.title.sortableString) > (secondWeightedRating, movie.title.sortableString)
-        }) {
-            mediaModels.append(movie.mediaModel)
-        }
-
-        self.mediaModels = mediaModels
-    }
-
-    private func sortByReleaseYear() {
-        if isCancelled { return }
-
-        mediaModels = filteredMovies.sorted {
-            ($0.released ?? "0000-00-00", $1.title.sortableString) > ($1.released ?? "0000-00-00", $0.title.sortableString)
-        }.compactMap { $0.mediaModel }
-    }
-
-    private func sortByRuntime() {
-        if isCancelled { return }
-
-        mediaModels = filteredMovies.sorted {
-            ($0.runtime ?? 0, $1.title.sortableString) > ($1.runtime ?? 0, $0.title.sortableString)
-        }.compactMap { $0.mediaModel }
-    }
-
-    private func sortByRandom() {
-        if isCancelled { return }
-
-        mediaModels = filteredMovies.shuffled().compactMap { $0.mediaModel }
-    }
-
-    private func sortByRating() {
-        if isCancelled { return }
-
-        mediaModels = filteredMovies.sorted {
-            ($0.rating ?? 0, $1.title.sortableString) > ($1.rating ?? 0, $0.title.sortableString)
-        }.compactMap { $0.mediaModel }
-    }
-
-    private func sortByTitle() {
-        if isCancelled { return }
-
-        mediaModels = filteredMovies.sorted {
-            $0.title.sortableString < $1.title.sortableString
-        }.compactMap { $0.mediaModel }
-    }
-
-    private func sortByVotes() {
-        if isCancelled { return }
-
-        mediaModels = filteredMovies.sorted {
-            ($0.votes ?? 0, $1.title.sortableString) > ($1.votes ?? 0, $0.title.sortableString)
-        }.compactMap { $0.mediaModel }
+private extension Movie {
+    var weightedRating: Double {
+        let m = 3000.0
+        let C = 6.5
+        let v = Double(votes ?? 0)
+        let R = rating ?? 0
+        return (v / (v + m)) * R + (m / (v + m)) * C
     }
 }

@@ -38,42 +38,50 @@ final class PinnedShowsManager {
         didSet {
             if pinnedShows.isEmpty == false, refreshed == false {
                 // refresh all pinned show only when the app is started to avoid doing it too much
-                _Concurrency.Task {
-                    var fullPinnedShow = Set<Show>()
-                    for show in pinnedShows {
-                        let fullShow = await fetchShow(show: show)
-                        fullPinnedShow.insert(fullShow)
-                    }
-                    for show in fullPinnedShow where show.status == "canceled" || show.status == "ended" {
-                        if let progress = await show.mediaModel.progress() {
-                            if progress.nextEpisodeToWatch == nil,
-                               progress.nextToRewatch == nil,
-                               progress.behind == 0 {
-                                fullPinnedShow.remove(show)
-                            }
+                refreshed = true
+                let showsToRefresh = pinnedShows
+                _Concurrency.Task { [weak self] in
+                    guard let self = self else { return }
+                    var fullShows = [Show]()
+                    var finishedShows = Set<Show>()
+                    for show in showsToRefresh {
+                        let fullShow = await self.fetchShow(show: show)
+                        fullShows.append(fullShow)
+                        if fullShow.status == "canceled" || fullShow.status == "ended",
+                           let progress = await fullShow.mediaModel.progress(),
+                           progress.nextEpisodeToWatch == nil,
+                           progress.nextToRewatch == nil,
+                           progress.behind == 0 {
+                            finishedShows.insert(fullShow)
                         }
                     }
-                    refreshed = true
-                    pinnedShows = fullPinnedShow
-                    storeAndTransmit(pinnedShows: pinnedShows)
+                    await self.merge(fullShows: fullShows, removing: finishedShows)
                 }
             } else if pinnedShows != oldValue {
                 // if it's not the first launch and the pinned shows changed -> update the shows that need an update
-                _Concurrency.Task {
-                    var fullPinnedShow = Set<Show>()
-                    for show in pinnedShows {
-                        if show.rating == nil {
-                            let fullShow = await fetchShow(show: show)
-                            fullPinnedShow.insert(fullShow)
-                        } else {
-                            fullPinnedShow.insert(show)
-                        }
+                let showsToRefresh = pinnedShows.filter { $0.rating == nil }
+                _Concurrency.Task { [weak self] in
+                    guard let self = self else { return }
+                    var fullShows = [Show]()
+                    for show in showsToRefresh {
+                        fullShows.append(await self.fetchShow(show: show))
                     }
-                    pinnedShows = fullPinnedShow
-                    storeAndTransmit(pinnedShows: pinnedShows)
+                    await self.merge(fullShows: fullShows, removing: [])
                 }
             }
         }
+    }
+
+    /// Merges into the current pins rather than the snapshot the fetch started from,
+    /// so a pin or unpin made while shows were loading is kept.
+    @MainActor
+    private func merge(fullShows: [Show], removing finishedShows: Set<Show>) {
+        var updatedShows = pinnedShows.subtracting(finishedShows)
+        for show in fullShows where updatedShows.contains(show) {
+            updatedShows.update(with: show)
+        }
+        pinnedShows = updatedShows
+        storeAndTransmit(pinnedShows: updatedShows)
     }
 
     private func storeAndTransmit(pinnedShows: Set<Show>) {

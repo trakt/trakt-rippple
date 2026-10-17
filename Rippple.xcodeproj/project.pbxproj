@@ -391,6 +391,7 @@
 		3AA735471FD82540004E0844 /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA735461FD82540004E0844 /* MainTabBarController.swift */; };
 		3AA735491FD82809004E0844 /* ReactButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA735481FD82809004E0844 /* ReactButton.swift */; };
 		3AA752292464823500723A87 /* EpisodeToWatchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA752282464823500723A87 /* EpisodeToWatchManager.swift */; };
+		3AD0F1E22EA2B10000C0FFEE /* ToWatchOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD0F1E12EA2B10000C0FFEE /* ToWatchOperation.swift */; };
 		3AA7522B2473011900723A87 /* MovieToWatchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA7522A2473011900723A87 /* MovieToWatchManager.swift */; };
 		3AA8CDA824633B5700BC4FF4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA8CDA724633B5700BC4FF4 /* SceneDelegate.swift */; };
 		3AAA3EC12549EFFC006AEED1 /* RipppleRetryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAA3EC02549EFFC006AEED1 /* RipppleRetryPolicy.swift */; };
@@ -1007,6 +1008,7 @@
 		3AA735461FD82540004E0844 /* MainTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 		3AA735481FD82809004E0844 /* ReactButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactButton.swift; sourceTree = "<group>"; };
 		3AA752282464823500723A87 /* EpisodeToWatchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeToWatchManager.swift; sourceTree = "<group>"; };
+		3AD0F1E12EA2B10000C0FFEE /* ToWatchOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToWatchOperation.swift; sourceTree = "<group>"; };
 		3AA7522A2473011900723A87 /* MovieToWatchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieToWatchManager.swift; sourceTree = "<group>"; };
 		3AA8CDA724633B5700BC4FF4 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		3AAA3EC02549EFFC006AEED1 /* RipppleRetryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RipppleRetryPolicy.swift; sourceTree = "<group>"; };
@@ -1912,6 +1914,7 @@
 				09A94A942F1BF69200642C38 /* ToWatchInfoView.swift */,
 				3AA7522A2473011900723A87 /* MovieToWatchManager.swift */,
 				3AA752282464823500723A87 /* EpisodeToWatchManager.swift */,
+				3AD0F1E12EA2B10000C0FFEE /* ToWatchOperation.swift */,
 				3A72F3BA2B020C6F00AB9383 /* PinnedShowsViewController.swift */,
 				3A1D48BC2B7F501300A32C64 /* CompletedShowsViewController.swift */,
 				3A609CDE2B8DF60500163A23 /* DroppedShowsViewController.swift */,
@@ -3660,6 +3663,7 @@
 				3A04E0F41FC5B46600BA11E8 /* Markdown+Spoilers.swift in Sources */,
 				3AD15D09287D99E300FD0B2F /* TraktAPIModel.swift in Sources */,
 				3AA752292464823500723A87 /* EpisodeToWatchManager.swift in Sources */,
+				3AD0F1E22EA2B10000C0FFEE /* ToWatchOperation.swift in Sources */,
 				3AD62F55253ED27300F541EB /* SeasonShowTableViewCell.swift in Sources */,
 				3ADED0FC28576604008C7AB1 /* ShowProgressBar.swift in Sources */,
 				092A51482E0A7FC000DD0C15 /* CircularProgressView.swift in Sources */,

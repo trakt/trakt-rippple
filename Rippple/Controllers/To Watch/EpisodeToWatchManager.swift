@@ -18,12 +18,6 @@ let (onEpisodeToWatchStatusChangedTransmitter, onEpisodeToWatchStatusChangedRece
 
 let (onRewatchingChangedTransmitter, onRewatchingChangedReceiver) = Receiver<Show>.make(with: .hot)
 
-struct ToWatchGroup: Codable {
-    let name: String
-    let order: Int
-    let shows: Set<Show>
-}
-
 final class EpisodeToWatchManager {
     private static let fallbackRetryDelays: [TimeInterval] = [2.0, 4.0]
 
@@ -59,7 +53,7 @@ final class EpisodeToWatchManager {
         }
     }
 
-    var showsInList: [ToWatchGroup]? {
+    var showsInList: [ToWatchGroup<Show>]? {
         didSet {
             TinyStorage.cache.store(showsInList, forKey: "EpisodeToWatchManager.showsInList")
         }
@@ -208,7 +202,7 @@ final class EpisodeToWatchManager {
     }
 
     func setup() {
-        if let showsInList = TinyStorage.cache.retrieve(type: [ToWatchGroup].self, forKey: "EpisodeToWatchManager.showsInList") {
+        if let showsInList = TinyStorage.cache.retrieve(type: [ToWatchGroup<Show>].self, forKey: "EpisodeToWatchManager.showsInList") {
             self.showsInList = showsInList
         }
         if let futureMediaModels = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "EpisodeToWatchManager.futureMediaModels") {
@@ -460,24 +454,14 @@ final class EpisodeToWatchManager {
 
         print("EpisodeToWatchManager.forceRefresh START")
 
-        let updateShowsOperation = UpdateShowsOperation(pinnedShows: PinnedShowsManager.shared.pinnedShows)
-        updateShowsOperation.completionBlock = { [weak self] in
-            guard let self = self else {
-                completion?(false)
-                return
-            }
-            guard updateShowsOperation.completedSuccessfully else {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    self.status = .content
-                    print("EpisodeToWatchManager.forceRefresh preserving the last complete result because a source failed")
-                }
+        let sourcesOperation = ToWatchSourcesOperation(sources: toWatchSources(), lastKnownGroups: showsInList ?? [])
+        sourcesOperation.completionBlock = { [weak self] in
+            guard let self = self, !sourcesOperation.isCancelled else {
                 completion?(false)
                 return
             }
 
-            let shows = updateShowsOperation.shows
-            let updateShowsProgressOperation = UpdateShowsProgressOperation(shows: shows)
+            let updateShowsProgressOperation = UpdateShowsProgressOperation(shows: sourcesOperation.media)
             updateShowsProgressOperation.completionBlock = { [weak self] in
                 guard !updateShowsProgressOperation.isCancelled else {
                     completion?(false)
@@ -488,15 +472,15 @@ final class EpisodeToWatchManager {
                         completion?(false)
                         return
                     }
-                    self.shows = updateShowsOperation.shows
-                    self.showsInList = updateShowsOperation.showsInList
+                    self.shows = sourcesOperation.media
+                    self.showsInList = sourcesOperation.groups
                     self.mediaModels = updateShowsProgressOperation.mediaModels
                     self.futureMediaModels = updateShowsProgressOperation.futureMediaModels
                     self.fallbackRetryDetection(generation: fallbackRetryGeneration)
                     if let completion = completion {
                         self.debouncedTransmit.fireNow()
                         DispatchQueue.main.async {
-                            completion(updateShowsProgressOperation.completedSuccessfully)
+                            completion(sourcesOperation.completedSuccessfully && updateShowsProgressOperation.completedSuccessfully)
                         }
                     }
                     print("EpisodeToWatchManager.forceRefresh STOP")
@@ -504,7 +488,33 @@ final class EpisodeToWatchManager {
             }
             self.operationQueue.addOperation(updateShowsProgressOperation)
         }
-        operationQueue.addOperation(updateShowsOperation)
+        operationQueue.addOperation(sourcesOperation)
+    }
+
+    private func toWatchSources() -> [ToWatchSource<Show>] {
+        let settings = EpisodeToWatchSettings.shared
+        var sources = [ToWatchSource<Show>.fixed(id: "pinned", name: "Pinned", order: 0, media: PinnedShowsManager.shared.pinnedShows)]
+        if settings.watched {
+            let watchedShows = WatchedManager.shared.watchedShowsMediaModels.compactMap { $0.show }
+            sources.append(.fixed(id: "watched", name: "Watched", order: 1, media: Set(watchedShows)))
+        }
+        if settings.watchlist {
+            sources.append(.watchlist(type: .shows, order: 2, media: \.show))
+        }
+        if settings.recommended {
+            sources.append(.favorites(type: .shows, order: 3, media: \.show))
+        }
+        if settings.collected {
+            sources.append(.collection(type: .shows, order: 4, media: \.show))
+        }
+        for otherList in settings.otherLists where otherList.enabled {
+            if let list = otherList.list {
+                sources.append(.list(list, id: otherList.id, order: 100 + otherList.rank, type: .shows, media: \.show))
+            } else if let smartSearch = otherList.smartSearch {
+                sources.append(.smartSearch(smartSearch, id: otherList.id, order: 100 + otherList.rank, media: \.show))
+            }
+        }
+        return sources
     }
 
     private func refreshProgress() {
@@ -517,12 +527,14 @@ final class EpisodeToWatchManager {
         print("EpisodeToWatchManager.refreshProgress for all shows \(shows.count) START")
 
         let updateShowsProgressOperation = UpdateShowsProgressOperation(shows: shows)
-        updateShowsProgressOperation.completionBlock = {
-            if updateShowsProgressOperation.isCancelled { return }
-            self.mediaModels = updateShowsProgressOperation.mediaModels
-            self.futureMediaModels = updateShowsProgressOperation.futureMediaModels
-            self.fallbackRetryDetection(generation: fallbackRetryGeneration)
-            print("EpisodeToWatchManager.refreshProgress STOP")
+        updateShowsProgressOperation.completionBlock = { [weak self] in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, !updateShowsProgressOperation.isCancelled else { return }
+                self.mediaModels = updateShowsProgressOperation.mediaModels
+                self.futureMediaModels = updateShowsProgressOperation.futureMediaModels
+                self.fallbackRetryDetection(generation: fallbackRetryGeneration)
+                print("EpisodeToWatchManager.refreshProgress STOP")
+            }
         }
         operationQueue.addOperation(updateShowsProgressOperation)
     }
@@ -548,13 +560,16 @@ final class EpisodeToWatchManager {
         print("EpisodeToWatchManager.refreshProgress for some shows \(shows.count) START")
 
         let updateShowsProgressOperation = UpdateShowProgressOperation(shows: shows, mediaModels: mediaModels)
-        updateShowsProgressOperation.completionBlock = {
-            if updateShowsProgressOperation.isCancelled { return }
-            guard self.isCurrentFallbackRetryGeneration(fallbackRetryGeneration) else { return }
-            self.mediaModels = updateShowsProgressOperation.mediaModels
-            self.fallbackRetryDetection(completedRetryCount: fallbackRetryAttempt,
-                                        generation: fallbackRetryGeneration)
-            print("EpisodeToWatchManager.refreshProgress for some shows \(shows.count) STOP")
+        updateShowsProgressOperation.completionBlock = { [weak self] in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self,
+                      !updateShowsProgressOperation.isCancelled,
+                      self.isCurrentFallbackRetryGeneration(fallbackRetryGeneration) else { return }
+                self.mediaModels = updateShowsProgressOperation.mediaModels
+                self.fallbackRetryDetection(completedRetryCount: fallbackRetryAttempt,
+                                            generation: fallbackRetryGeneration)
+                print("EpisodeToWatchManager.refreshProgress for some shows \(shows.count) STOP")
+            }
         }
         operationQueue.addOperation(updateShowsProgressOperation)
     }
@@ -686,419 +701,48 @@ extension EpisodeType {
     }
 }
 
-private class UpdateShowsOperation: Operation, @unchecked Sendable {
-    private let showsDispatchGroup = DispatchGroup()
-    private let resultLock = NSLock()
-    private var cancellables = [Cancellable?]()
-
-    private var sourceFetchFailed = false
-
-    fileprivate var completedSuccessfully: Bool {
-        resultLock.lock()
-        defer { resultLock.unlock() }
-        return isCancelled == false && sourceFetchFailed == false
-    }
-
-    fileprivate var shows = Set<Show>()
-    fileprivate var showsInList = [ToWatchGroup]()
-
-    private let pinnedShows: Set<Show>
-
-    init(pinnedShows: Set<Show>) {
-        self.pinnedShows = pinnedShows
-    }
-
-    private func recordSourceFetchFailure() {
-        resultLock.lock()
-        sourceFetchFailed = true
-        resultLock.unlock()
-    }
-
-    override func cancel() {
-        for cancellable in cancellables {
-            cancellable?.cancel()
-        }
-
-        state = .isFinished
-
-        super.cancel()
-    }
-
-    private enum State: String {
-        case isReady
-        case isExecuting
-        case isFinished
-    }
-
-    private var state: State = .isReady {
-        willSet(newValue) {
-            willChangeValue(forKey: state.rawValue)
-            willChangeValue(forKey: newValue.rawValue)
-        }
-        didSet {
-            didChangeValue(forKey: oldValue.rawValue)
-            didChangeValue(forKey: state.rawValue)
-        }
-    }
-
-    override var isAsynchronous: Bool {
-        true
-    }
-
-    override var isExecuting: Bool {
-        state == .isExecuting
-    }
-
-    override var isFinished: Bool {
-        if isCancelled && state != .isExecuting { return true }
-        return state == .isFinished
-    }
-
-    override func start() {
-        if isCancelled { return }
-
-        state = .isExecuting
-
-        let pinnedShows = pinnedShows
-        shows.formUnion(pinnedShows)
-        showsInList.append(ToWatchGroup(name: "Pinned", order: 0, shows: pinnedShows))
-
-        let toWatchSettings = EpisodeToWatchSettings.shared
-        if toWatchSettings.watchlist {
-            showsDispatchGroup.enter()
-            fetchWatchlistedShows { [weak self] in
-                DispatchQueue.main.async {
-                    guard let self = self else { return }
-                    if self.isCancelled { return }
-                    self.showsDispatchGroup.leave()
-                }
-            }
-        }
-        if toWatchSettings.recommended {
-            showsDispatchGroup.enter()
-            fetchRecommendedShows { [weak self] in
-                DispatchQueue.main.async {
-                    guard let self = self else { return }
-                    if self.isCancelled { return }
-                    self.showsDispatchGroup.leave()
-                }
-            }
-        }
-        if toWatchSettings.collected {
-            showsDispatchGroup.enter()
-            fetchCollectedShows { [weak self] in
-                DispatchQueue.main.async {
-                    guard let self = self else { return }
-                    if self.isCancelled { return }
-                    self.showsDispatchGroup.leave()
-                }
-            }
-        }
-        if toWatchSettings.watched {
-            showsDispatchGroup.enter()
-            let watched = WatchedManager.shared.watchedShowsMediaModels.compactMap { $0.show }
-            shows.formUnion(watched)
-            showsInList.append(ToWatchGroup(name: "Watched", order: 1, shows: Set(watched)))
-            showsDispatchGroup.leave()
-        }
-
-        for otherList in toWatchSettings.otherLists where otherList.enabled == true {
-            if let list = otherList.list {
-                showsDispatchGroup.enter()
-                fetchShows(for: list, order: 100 + otherList.rank) { [weak self] in
-                    DispatchQueue.main.async {
-                        guard let self = self else { return }
-                        if self.isCancelled { return }
-                        self.showsDispatchGroup.leave()
-                    }
-                }
-            } else if let smartSearch = otherList.smartSearch {
-                showsDispatchGroup.enter()
-                fetchShows(from: smartSearch, order: 100 + otherList.rank) { [weak self] in
-                    DispatchQueue.main.async {
-                        guard let self = self else { return }
-                        if self.isCancelled { return }
-                        self.showsDispatchGroup.leave()
-                    }
-                }
-            }
-        }
-
-        showsDispatchGroup.notify(queue: .global(qos: .utility)) { [weak self] in
-            guard let self = self else { return }
-
-            DispatchQueue.main.async {
-                self.state = .isFinished
-            }
-        }
-    }
-
-    private func fetchWatchlistedShows(completion: @escaping (() -> Void)) {
-        if isCancelled {
-            completion()
-            return
-        }
-
-        TraktAPIProvider.fetchAllWatchlistItems(slug: "me",
-                                                type: .shows,
-                                                extended: .full,
-                                                sort: .none) { [weak self] result in
-            guard let self = self else { return }
-            defer { completion() }
-            if self.isCancelled { return }
-            switch result {
-            case .success(let items):
-                let shows = items.map { $0.show! }
-                DispatchQueue.main.async {
-                    self.shows.formUnion(shows)
-                    self.showsInList.append(ToWatchGroup(name: "Watchlisted", order: 2, shows: Set(shows)))
-                }
-            case .failure(let error):
-                self.recordSourceFetchFailure()
-                print("fetchWatchlistedShows (towatch) request failure \(error)")
-            }
-        }
-    }
-
-    private func fetchRecommendedShows(completion: @escaping (() -> Void)) {
-        if isCancelled {
-            completion()
-            return
-        }
-
-        TraktAPIProvider.fetchAllRecommendedItems(slug: "me",
-                                                  type: .shows,
-                                                  extended: .full,
-                                                  sort: .none) { [weak self] result in
-            guard let self = self else { return }
-            defer { completion() }
-            if self.isCancelled { return }
-            switch result {
-            case .success(let items):
-                let shows = items.map { $0.show! }
-                DispatchQueue.main.async {
-                    self.shows.formUnion(shows)
-                    self.showsInList.append(ToWatchGroup(name: "Favorites", order: 3, shows: Set(shows)))
-                }
-            case .failure(let error):
-                self.recordSourceFetchFailure()
-                print("fetchRecommendedShows (towatch) request failure \(error)")
-            }
-        }
-    }
-
-    private func fetchCollectedShows(completion: @escaping (() -> Void)) {
-        if isCancelled {
-            completion()
-            return
-        }
-
-        TraktAPIProvider.fetchAllCollectionItems(slug: "me",
-                                                 type: .shows,
-                                                 extended: .full,
-                                                 sort: .none) { [weak self] result in
-            guard let self = self else { return }
-            defer { completion() }
-            if self.isCancelled { return }
-            switch result {
-            case .success(let items):
-                let shows = items.map { $0.show! }
-                DispatchQueue.main.async {
-                    self.shows.formUnion(shows)
-                    self.showsInList.append(ToWatchGroup(name: "Collected", order: 4, shows: Set(shows)))
-                }
-            case .failure(let error):
-                self.recordSourceFetchFailure()
-                print("fetchCollectedShows (towatch) request failure \(error)")
-            }
-        }
-    }
-
-    private func fetchShows(for list: List, order: Int, completion: @escaping (() -> Void)) {
-        if isCancelled {
-            completion()
-            return
-        }
-
-        TraktAPIProvider.fetchAllListItems(list: list,
-                                           type: .shows,
-                                           smartListLimit: TraktAPIProvider.smartListToWatchItemsLimit) { [weak self] result in
-            guard let self = self else { return }
-            defer { completion() }
-            if self.isCancelled { return }
-            switch result {
-            case .success(let items):
-                let shows = items.map { $0.show! }
-                DispatchQueue.main.async {
-                    self.shows.formUnion(shows)
-                    self.showsInList.append(ToWatchGroup(name: list.name, order: order, shows: Set(shows)))
-                }
-            case .failure(let error):
-                self.recordSourceFetchFailure()
-                print("fetchShowsforlist (towatch) request failure \(error)")
-            }
-        }
-    }
-
-    private func fetchShows(from smartSearch: SmartSearch, order: Int, completion: @escaping (() -> Void)) {
-        if isCancelled {
-            completion()
-            return
-        }
-
-        let service = smartSearch.service
-        let cancellable = TraktAPIProvider.provider.request(service, callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
-            guard let self = self else {
-                return
-            }
-
-            defer {
-                completion()
-            }
-
-            switch result {
-            case .success(let moyaResponse):
-                do {
-                    let response = try moyaResponse.filterSuccessfulStatusCodes()
-
-                    var searchResults: [MediaItem]
-                    if case .popularShows = service {
-                        searchResults = try response.map([Show].self, using: TraktAPIProvider.decoder).map { MediaItem(movie: nil, show: $0, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil) }
-                    } else {
-                        searchResults = try response.map([MediaItem].self, using: TraktAPIProvider.decoder)
-                    }
-
-                    let shows = searchResults.compactMap { $0.show }
-                    DispatchQueue.main.async {
-                        self.shows.formUnion(shows)
-                        self.showsInList.append(ToWatchGroup(name: smartSearch.name ?? "Smart Search",
-                                                             order: order,
-                                                             shows: Set(shows)))
-                    }
-                } catch {
-                    self.recordSourceFetchFailure()
-                    print("fetchShows for Smart Search (towatch) request JSON mapping failed! \(error)")
-                }
-            case .failure(let error):
-                self.recordSourceFetchFailure()
-                print("fetchShows for Smart Search (towatch) request failure \(error)")
-            }
-        }
-        cancellables.append(cancellable)
-    }
-}
-
-private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
-    private let resultLock = NSLock()
-    private var sourceFetchFailed = false
-
-    fileprivate var completedSuccessfully: Bool {
-        resultLock.lock()
-        defer { resultLock.unlock() }
-        return !isCancelled && !sourceFetchFailed
-    }
-
-    private func recordSourceFetchFailure() {
-        resultLock.lock()
-        sourceFetchFailed = true
-        resultLock.unlock()
-    }
-
-    private let progressDispatchGroup = DispatchGroup()
-
-    private var cancellables = [Cancellable?]()
-
-    private var shows = Set<Show>()
+private final class UpdateShowsProgressOperation: ToWatchAsyncOperation, @unchecked Sendable {
+    private let shows: Set<Show>
     private var showProgressMap = [Show: ShowProgress]()
+    private var sourceFetchFailed = false
 
-    fileprivate var mediaModels = [MediaModel]()
-    fileprivate var futureMediaModels = [MediaModel]()
+    private(set) var mediaModels = [MediaModel]()
+    private(set) var futureMediaModels = [MediaModel]()
+
+    var completedSuccessfully: Bool {
+        !isCancelled && !sourceFetchFailed
+    }
 
     init(shows: Set<Show>) {
         self.shows = shows
     }
 
-    override func cancel() {
-        for cancellable in cancellables {
-            cancellable?.cancel()
-        }
-
-        state = .isFinished
-
-        super.cancel()
-    }
-
-    private enum State: String {
-        case isReady
-        case isExecuting
-        case isFinished
-    }
-
-    private var filteredProgress: [Show: ShowProgress] {
-        if isCancelled { return [Show: ShowProgress]() }
-        return showProgressMap
-    }
-
-    private var state: State = .isReady {
-        willSet(newValue) {
-            willChangeValue(forKey: state.rawValue)
-            willChangeValue(forKey: newValue.rawValue)
-        }
-        didSet {
-            didChangeValue(forKey: oldValue.rawValue)
-            didChangeValue(forKey: state.rawValue)
-        }
-    }
-
-    override var isAsynchronous: Bool {
-        true
-    }
-
-    override var isExecuting: Bool {
-        state == .isExecuting
-    }
-
-    override var isFinished: Bool {
-        if isCancelled && state != .isExecuting { return true }
-        return state == .isFinished
-    }
-
-    override func start() {
-        guard !isCancelled else { return }
-
-        state = .isExecuting
-
+    override func execute() {
         print("EpisodeToWatchManager.forceRefresh shows found \(shows.count)")
 
-        // Filter completed, dropped AND hidden shows
-        let shows = shows.filter { show in
-            if show.isCompleted { return false }
-            if show.isDropped { return false }
-            if show.isHiddenFromProgress { return false }
-            return true
-        }
+        let shows = shows.filter { !$0.isCompleted && !$0.isDropped && !$0.isHiddenFromProgress }
 
         print("EpisodeToWatchManager.forceRefresh shows after filter \(shows.count)")
 
         // Reset the cache for shows that have new episodes
-        for updatedShow in shows {
-            if let oldShow = EpisodeToWatchManager.shared.shows?.first(where: { $0 == updatedShow }) {
-                if oldShow.airedEpisodes != updatedShow.airedEpisodes {
-                    print("EpisodeToWatchManager reseting cache for \(updatedShow.title) because number of aired episode is different")
-                    ProgressManager.shared.resetCache(for: updatedShow)
-                }
+        let previousShows = EpisodeToWatchManager.shared.shows ?? []
+        for show in shows {
+            if let index = previousShows.firstIndex(of: show), previousShows[index].airedEpisodes != show.airedEpisodes {
+                print("EpisodeToWatchManager reseting cache for \(show.title) because number of aired episode is different")
+                ProgressManager.shared.resetCache(for: show)
             }
         }
 
+        let progressDispatchGroup = DispatchGroup()
         for show in shows {
             progressDispatchGroup.enter()
-            _Concurrency.Task {
+            _Concurrency.Task { [weak self] in
                 let showProgress = await show.mediaModel.progress()
-                DispatchQueue.main.async {
-                    defer { self.progressDispatchGroup.leave() }
-                    guard !self.isCancelled else { return }
+                DispatchQueue.main.async { [weak self] in
+                    defer { progressDispatchGroup.leave() }
+                    guard let self = self, !self.isCancelled else { return }
                     guard let showProgress = showProgress else {
-                        self.recordSourceFetchFailure()
+                        self.sourceFetchFailed = true
                         return
                     }
                     self.showProgressMap[show] = showProgress
@@ -1106,96 +750,63 @@ private class UpdateShowsProgressOperation: Operation, @unchecked Sendable {
             }
         }
 
-        // Upcoming fetching
         progressDispatchGroup.notify(queue: .global(qos: .utility)) { [weak self] in
-            guard let self = self else { return }
-            if self.isCancelled { return }
-
-            self.progressDispatchGroup.enter()
-            TraktAPIProvider.provider.request(.showsCalendar(startDate: Calendar.current.date(byAdding: .day, value: -2, to: Date())!, days: 60, filters: [String: String]()), callbackQueue: DispatchQueue.global(qos: .utility)) { [weak self] result in
-                guard let self = self else { return }
-                defer { self.progressDispatchGroup.leave() }
-
-                // real copy of the show progress to be able to work on it
-                var showProgressMapCopy = [Show: ShowProgress]().merging(self.showProgressMap) { $1 }
-
-                switch result {
-                case .success(let moyaResponse):
-                    do {
-                        let response = try moyaResponse.filterSuccessfulStatusCodes()
-                        let showEpisodeCalendarItems = try response.map([ShowEpisodeCalendarItem].self, using: TraktAPIProvider.decoder)
-                        for showEpisodeCalendarItem in showEpisodeCalendarItems {
-                            guard let progress = showProgressMapCopy[showEpisodeCalendarItem.show] else { continue }
-
-                            // We already have a next episode in the books -> additional checks
-                            // Or we don't and we just copy the next from the calendar request
-                            if let nextEpisodeToWatch = progress.nextEpisodeToWatch, let nextEpisodeFirstAired = nextEpisodeToWatch.firstAired {
-                                // if the date of the next episode to watch is in the past, take the one from the calendar
-                                // Otherwise, take the closest airing from now
-                                if nextEpisodeFirstAired < Date.now.advanced(by: -60 * 60 * 8) {
-                                    showProgressMapCopy[showEpisodeCalendarItem.show] = progress.with(nextEpisode: showEpisodeCalendarItem.episode)
-                                } else if let episodeFirstAired = showEpisodeCalendarItem.episode.firstAired, nextEpisodeFirstAired > episodeFirstAired {
-                                    showProgressMapCopy[showEpisodeCalendarItem.show] = progress.with(nextEpisode: showEpisodeCalendarItem.episode)
-                                }
-                            } else {
-                                showProgressMapCopy[showEpisodeCalendarItem.show] = progress.with(nextEpisode: showEpisodeCalendarItem.episode)
-                            }
-                        }
-
-                        // Filter and set the futureMediaModels
-                        self.futureMediaModels = showProgressMapCopy.filter { $0.1.nextEpisodeToWatch != nil && $0.1.nextEpisodeToWatch!.season != 0 && $0.1.nextEpisodeToWatch!.firstAired != nil && $0.1.nextEpisodeToWatch!.firstAired!.distance(to: Date.now.advanced(by: -60 * 60 * 8)) < 0 }
-                            .sorted { ($0.1.nextEpisodeToWatch!.firstAired!, $0.0.title) < ($1.1.nextEpisodeToWatch!.firstAired!, $1.0.title) }
-                            .map { MediaModel.showProgress($0.key, $0.value) }
-                    } catch {
-                        self.recordSourceFetchFailure()
-                        print("showsCalendar request JSON mapping failed! \(error)")
-                    }
-                case .failure(let error):
-                    self.recordSourceFetchFailure()
-                    print("showsCalendar request failure \(error)")
-                }
-            }
-
-            self.progressDispatchGroup.notify(queue: .global(qos: .utility)) { [weak self] in
-                guard let self = self else { return }
-                if self.isCancelled { return }
-
-                switch EpisodeToWatchSettings.shared.sort {
-                case .automatic:
-                    self.mediaModels = self.filteredProgress.sortByAutomatic()
-                case .watched:
-                    self.mediaModels = self.filteredProgress.sortByLastWatched()
-                case .released:
-                    self.mediaModels = self.filteredProgress.sortByEpisodeRelease()
-                case .leastEpisodeRemaining:
-                    self.mediaModels = self.filteredProgress.sortByLeastEpisodeRemaining()
-                case .mostCompleted:
-                    self.mediaModels = self.filteredProgress.sortByMostCompleted()
-                case .mostPlayed:
-                    self.mediaModels = self.filteredProgress.sortByMostPlayed()
-                case .releaseYear:
-                    self.mediaModels = self.filteredProgress.sortByShowReleaseYear()
-                case .rating:
-                    self.mediaModels = self.filteredProgress.sortByShowRating()
-                case .voteCount:
-                    self.mediaModels = self.filteredProgress.sortByShowVotes()
-                case .random:
-                    self.mediaModels = self.filteredProgress.sortByRandom()
-                case .userRating:
-                    self.mediaModels = self.filteredProgress.sortByUserShowRating()
-                case .title:
-                    self.mediaModels = self.filteredProgress.sortByTitle()
-                case .timeLeft:
-                    self.mediaModels = self.filteredProgress.sortByTimeLeft()
-                }
-
-                if EpisodeToWatchSettings.shared.reverse {
-                    self.mediaModels.reverse()
-                }
-
-                self.state = .isFinished
+            guard let self = self, !self.isCancelled else { return }
+            self.fetchUpcomingEpisodes { [weak self] in
+                guard let self = self, !self.isCancelled else { return }
+                self.mediaModels = self.showProgressMap.sortedForToWatch()
+                self.finish()
             }
         }
+    }
+
+    private func fetchUpcomingEpisodes(completion: @escaping () -> Void) {
+        let startDate = Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date()
+        track(TraktAPIProvider.provider.request(.showsCalendar(startDate: startDate, days: 60, filters: [String: String]()),
+                                                callbackQueue: .global(qos: .utility)) { [weak self] result in
+                guard let self = self else { return }
+                defer { completion() }
+                do {
+                    let response = try result.get().filterSuccessfulStatusCodes()
+                    let calendarItems = try response.map([ShowEpisodeCalendarItem].self, using: TraktAPIProvider.decoder)
+                    self.futureMediaModels = self.futureMediaModels(with: calendarItems)
+                } catch {
+                    self.sourceFetchFailed = true
+                    print("showsCalendar request failed! \(error)")
+                }
+            })
+    }
+
+    private func futureMediaModels(with calendarItems: [ShowEpisodeCalendarItem]) -> [MediaModel] {
+        let airedCutoff = Date.now.advanced(by: -60 * 60 * 8)
+        var progressByShow = showProgressMap
+        for calendarItem in calendarItems {
+            guard let progress = progressByShow[calendarItem.show] else { continue }
+
+            // We already have a next episode in the books -> additional checks
+            // Or we don't and we just copy the next from the calendar request
+            if let nextEpisodeFirstAired = progress.nextEpisodeToWatch?.firstAired {
+                // if the date of the next episode to watch is in the past, take the one from the calendar
+                // Otherwise, take the closest airing from now
+                if nextEpisodeFirstAired < airedCutoff {
+                    progressByShow[calendarItem.show] = progress.with(nextEpisode: calendarItem.episode)
+                } else if let episodeFirstAired = calendarItem.episode.firstAired, nextEpisodeFirstAired > episodeFirstAired {
+                    progressByShow[calendarItem.show] = progress.with(nextEpisode: calendarItem.episode)
+                }
+            } else {
+                progressByShow[calendarItem.show] = progress.with(nextEpisode: calendarItem.episode)
+            }
+        }
+
+        return progressByShow.compactMap { show, progress -> (firstAired: Date, show: Show, progress: ShowProgress)? in
+            guard let nextEpisode = progress.nextEpisodeToWatch,
+                  nextEpisode.season != 0,
+                  let firstAired = nextEpisode.firstAired,
+                  firstAired > airedCutoff else { return nil }
+            return (firstAired, show, progress)
+        }
+        .sorted { ($0.firstAired, $0.show.title) < ($1.firstAired, $1.show.title) }
+        .map { MediaModel.showProgress($0.show, $0.progress) }
     }
 }
 
@@ -1210,134 +821,75 @@ extension Show {
     }
 }
 
-private class UpdateShowProgressOperation: Operation, @unchecked Sendable {
-    private let progressDispatchGroup = DispatchGroup()
-
-    private var cancellables = [Cancellable?]()
-
-    private var shows: [Show]!
+private final class UpdateShowProgressOperation: ToWatchAsyncOperation, @unchecked Sendable {
+    private let shows: [Show]
     private var showProgressMap = [Show: ShowProgress]()
 
-    fileprivate var mediaModels: [MediaModel]!
+    private(set) var mediaModels = [MediaModel]()
 
     init(shows: [Show], mediaModels: [MediaModel]) {
         self.shows = shows
-        for mediaModel in mediaModels {
-            switch mediaModel {
-            case .showProgress(let show, let showProgress):
-                showProgressMap[show] = showProgress
-            default:
-                fatalError()
-            }
+        for case .showProgress(let show, let showProgress) in mediaModels {
+            showProgressMap[show] = showProgress
         }
     }
 
-    override func cancel() {
-        for cancellable in cancellables {
-            cancellable?.cancel()
-        }
-
-        state = .isFinished
-
-        super.cancel()
-    }
-
-    private enum State: String {
-        case isReady
-        case isExecuting
-        case isFinished
-    }
-
-    private var filteredProgress: [Show: ShowProgress] {
-        if isCancelled { return [Show: ShowProgress]() }
-        return showProgressMap
-    }
-
-    private var state: State = .isReady {
-        willSet(newValue) {
-            willChangeValue(forKey: state.rawValue)
-            willChangeValue(forKey: newValue.rawValue)
-        }
-        didSet {
-            didChangeValue(forKey: oldValue.rawValue)
-            didChangeValue(forKey: state.rawValue)
-        }
-    }
-
-    override var isAsynchronous: Bool {
-        true
-    }
-
-    override var isExecuting: Bool {
-        state == .isExecuting
-    }
-
-    override var isFinished: Bool {
-        if isCancelled && state != .isExecuting { return true }
-        return state == .isFinished
-    }
-
-    override func start() {
-        guard !isCancelled else { return }
-
-        state = .isExecuting
-
+    override func execute() {
+        let progressDispatchGroup = DispatchGroup()
         for show in shows {
             progressDispatchGroup.enter()
-            let progressDispatchGroup = progressDispatchGroup
-            _Concurrency.Task {
+            _Concurrency.Task { [weak self] in
                 let showProgress = await show.mediaModel.progress()
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
                     defer { progressDispatchGroup.leave() }
-                    guard !self.isCancelled, let showProgress = showProgress else { return }
+                    guard let self = self, !self.isCancelled, let showProgress = showProgress else { return }
                     self.showProgressMap[show] = showProgress
                 }
             }
         }
 
         progressDispatchGroup.notify(queue: .global(qos: .utility)) { [weak self] in
-            guard let self = self else { return }
-            if self.isCancelled { return }
-
-            switch EpisodeToWatchSettings.shared.sort {
-            case .automatic:
-                self.mediaModels = self.filteredProgress.sortByAutomatic()
-            case .watched:
-                self.mediaModels = self.filteredProgress.sortByLastWatched()
-            case .released:
-                self.mediaModels = self.filteredProgress.sortByEpisodeRelease()
-            case .leastEpisodeRemaining:
-                self.mediaModels = self.filteredProgress.sortByLeastEpisodeRemaining()
-            case .mostCompleted:
-                self.mediaModels = self.filteredProgress.sortByMostCompleted()
-            case .mostPlayed:
-                self.mediaModels = self.filteredProgress.sortByMostPlayed()
-            case .releaseYear:
-                self.mediaModels = self.filteredProgress.sortByShowReleaseYear()
-            case .rating:
-                self.mediaModels = self.filteredProgress.sortByShowRating()
-            case .voteCount:
-                self.mediaModels = self.filteredProgress.sortByShowVotes()
-            case .random:
-                self.mediaModels = self.filteredProgress.sortByRandom()
-            case .userRating:
-                self.mediaModels = self.filteredProgress.sortByUserShowRating()
-            case .title:
-                self.mediaModels = self.filteredProgress.sortByTitle()
-            case .timeLeft:
-                self.mediaModels = self.filteredProgress.sortByTimeLeft()
-            }
-
-            if EpisodeToWatchSettings.shared.reverse {
-                self.mediaModels.reverse()
-            }
-
-            self.state = .isFinished
+            guard let self = self, !self.isCancelled else { return }
+            self.mediaModels = self.showProgressMap.sortedForToWatch()
+            self.finish()
         }
     }
 }
 
 private extension Dictionary where Key == Show, Value == ShowProgress {
+    func sortedForToWatch() -> [MediaModel] {
+        let mediaModels: [MediaModel]
+        switch EpisodeToWatchSettings.shared.sort {
+        case .automatic:
+            mediaModels = sortByAutomatic()
+        case .watched:
+            mediaModels = sortByLastWatched()
+        case .released:
+            mediaModels = sortByEpisodeRelease()
+        case .leastEpisodeRemaining:
+            mediaModels = sortByLeastEpisodeRemaining()
+        case .mostCompleted:
+            mediaModels = sortByMostCompleted()
+        case .mostPlayed:
+            mediaModels = sortByMostPlayed()
+        case .releaseYear:
+            mediaModels = sortByShowReleaseYear()
+        case .rating:
+            mediaModels = sortByShowRating()
+        case .voteCount:
+            mediaModels = sortByShowVotes()
+        case .random:
+            mediaModels = sortByRandom()
+        case .userRating:
+            mediaModels = sortByUserShowRating()
+        case .title:
+            mediaModels = sortByTitle()
+        case .timeLeft:
+            mediaModels = sortByTimeLeft()
+        }
+        return EpisodeToWatchSettings.shared.reverse ? mediaModels.reversed() : mediaModels
+    }
+
     func sortByRandom() -> [MediaModel] {
         return shuffled().compactMap { MediaModel.showProgress($0.key, $0.value) }
     }
