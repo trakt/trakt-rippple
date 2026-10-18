@@ -64,7 +64,7 @@ final class NotesComposerSession: ComposerSession {
         case person(Person)
         case ratedItem(RatedItem)
         case historyItem(HistoryItem)
-        case collectionItem(CollectionItem)
+        case collection(MediaModel)
         case noteItem(NoteItem)
         case watchlist(WatchlistType)
     }
@@ -242,8 +242,15 @@ final class NotesComposerSession: ComposerSession {
             target = (NoteType(rawValue: "\(ratedItem.type.rawValue)Rating"), MediaModel(item: ratedItem).composerTraktId)
         case .historyItem(let historyItem):
             target = (.history, historyItem.identifier)
-        case .collectionItem(let collectionItem):
-            target = (NoteType(rawValue: "\(collectionItem.type.rawValue)Collection"), MediaModel(item: collectionItem).composerTraktId)
+        case .collection(let media):
+            switch media {
+            case .movie:
+                target = (.movieCollection, media.composerTraktId)
+            case .show:
+                target = (.showCollection, media.composerTraktId)
+            default:
+                return nil
+            }
         case .noteItem, .watchlist:
             return nil
         }
@@ -275,8 +282,8 @@ final class NotesComposerSession: ComposerSession {
             return .media(MediaModel(item: ratedItem))
         case .historyItem(let historyItem):
             return MediaModel(item: historyItem).map { .media($0) }
-        case .collectionItem(let collectionItem):
-            return .media(MediaModel(item: collectionItem))
+        case .collection(let media):
+            return .media(media)
         case .watchlist(let watchlistType):
             return .media(MediaModel(item: watchlistType.listItem))
         case .noteItem:
@@ -306,8 +313,7 @@ final class NotesComposerSession: ComposerSession {
             let media = MediaModel(item: ratedItem)
             guard let traktId = media.composerTraktId else { return nil }
             return noteItem(for: media, attachment: NoteAttachement(type: .rating, identifier: traktId), note: emptyNote(""))
-        case .collectionItem(let collectionItem):
-            let media = MediaModel(item: collectionItem)
+        case .collection(let media):
             guard media.movie != nil || media.showShow != nil, let traktId = media.composerTraktId else { return nil }
             return noteItem(for: media, attachment: NoteAttachement(type: .collection, identifier: traktId), note: emptyNote(""))
         case .historyItem(let historyItem):

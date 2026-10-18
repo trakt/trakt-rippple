@@ -451,6 +451,27 @@ final class PulseViewController: UITableViewController {
         return [open, notes, remove]
     }
 
+    /// Trakt only stores Library notes on movies and shows.
+    private func buildCollectionActivityActions(for media: MediaModel) -> [ActivityAction] {
+        switch media {
+        case .movie, .show:
+            break
+        default:
+            return []
+        }
+
+        let hasNote = media.collectionNoteItem != nil
+        let notes = ActivityAction(type: .note,
+                                   title: hasNote ? "Edit Library Note" : "Add Library Note",
+                                   shortTitle: hasNote ? "Edit Note" : "Add Note",
+                                   systemImageName: "note.text.badge.plus",
+                                   handler: {
+                                       NotesManager.shared.showCollectionNotes(for: media)
+                                       UISelectionFeedbackGenerator().selectionChanged()
+                                   })
+        return [notes]
+    }
+
     private func buildFavoriteActivityActions(for favoriteItem: WatchlistItem) -> [ActivityAction] {
         let hasNote = favoriteItem.notes?.isEmpty == false
         let notes = ActivityAction(type: .note,
@@ -1173,6 +1194,7 @@ final class PulseViewController: UITableViewController {
                                         meta: "",
                                         date: collectedAt,
                                         systemImageName: "book.circle",
+                                        actions: buildCollectionActivityActions(for: media),
                                         identifier: "collected-\(media.traktId)-\(collectedAt.timeIntervalSinceReferenceDate)")
                 activityItems.append(item)
             }

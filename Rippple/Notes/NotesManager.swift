@@ -86,7 +86,11 @@ final class NotesManager {
     }
 
     func showNotes(for collectionItem: CollectionItem) {
-        present(NotesComposerSession.makeViewController(context: .collectionItem(collectionItem), noteItem: collectionItem.noteItem))
+        showCollectionNotes(for: MediaModel(item: collectionItem))
+    }
+
+    func showCollectionNotes(for media: MediaModel) {
+        present(NotesComposerSession.makeViewController(context: .collection(media), noteItem: media.collectionNoteItem))
     }
 
     func showNotes(for noteItem: NoteItem) {
