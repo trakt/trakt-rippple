@@ -28,6 +28,7 @@ final class PeopleViewController: UITableViewController {
     private let job: Job?
 
     private var socials = 0
+    private var didRecordView = false
 
     /// fetched for full info
     private var person: Person? {
@@ -317,6 +318,13 @@ final class PeopleViewController: UITableViewController {
         loadingView.removeFromSuperview()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard didRecordView == false, let viewedPerson = person ?? cast?.person ?? job?.person else { return }
+        didRecordView = true
+        RecentlyViewedManager.shared.record(viewedPerson)
+    }
+
     @objc func refresh(_ sender: Any) {
         fetchPerson()
     }
@@ -352,6 +360,9 @@ final class PeopleViewController: UITableViewController {
 
                     DispatchQueue.main.async {
                         self.person = person
+                        if self.didRecordView, self.viewIfLoaded?.window != nil {
+                            RecentlyViewedManager.shared.record(person)
+                        }
                     }
                 } catch {
                     DispatchQueue.main.async {

@@ -76,7 +76,8 @@ final class CommentCountLabel: UILabel {
 
     var media: MediaModel? {
         didSet {
-            if media == oldValue { return }
+            // Same media can arrive again with its full data, so a new rating still re-renders.
+            if media == oldValue, media?.rating == oldValue?.rating { return }
             update(with: media)
         }
     }

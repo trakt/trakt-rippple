@@ -32,6 +32,8 @@ final class MediaViewController: UITableViewController {
         }
     }
 
+    private var didRecordView = false
+
     private var didDownloadPoster = true {
         didSet {
             if didDownloadPoster == false {
@@ -809,6 +811,10 @@ final class MediaViewController: UITableViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         updateMediaUserActivity(with: media)
+        if didRecordView == false {
+            didRecordView = true
+            RecentlyViewedManager.shared.record(media)
+        }
 
         if let navigationController = navigationController, media.episode != nil {
             let index = navigationController.viewControllers.count - 2

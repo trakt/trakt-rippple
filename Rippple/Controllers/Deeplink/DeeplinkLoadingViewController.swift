@@ -832,7 +832,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                    "MovieToWatchManager.pinnedMovies",
                                    "SmartSearch.movies",
                                    "SmartSearch.shows",
-                                   "RecentSearchManager.recentSearches",
+                                   "RecentlyViewedManager.items",
                                    "CommentDraftManager.drafts"]
 
         let dataUserDefaultsKeys: Set = ["CustomListsViewController.customList",
@@ -848,7 +848,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                        "MovieToWatchManager.pinnedMovies",
                                        "SmartSearch.movies",
                                        "SmartSearch.shows",
-                                       "RecentSearchManager.recentSearches",
+                                       "RecentlyViewedManager.items",
                                        "CommentDraftManager.drafts"]
 
         // Combine all allowed keys

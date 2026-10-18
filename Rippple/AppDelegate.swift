@@ -356,7 +356,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         WidgetManager.shared.setup()
         // Trakt saved filters were replaced by smart lists: drop the cache left by earlier versions.
         UserDefaults.standard.removeObject(forKey: "SavedFiltersManager.savedFilters")
-        RecentSearchManager.shared.setup()
+        RecentlyViewedManager.shared.setup()
         TrendingSearchManager.shared.setup()
         OpenActionManager.shared.setup()
 
