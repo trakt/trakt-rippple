@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import LRUCache
 import Receiver
 import UIKit
 
@@ -42,6 +43,7 @@ final class CollectionManager: @unchecked Sendable {
             self.movieCollection.removeAll()
             self.showCollection.removeAll()
             self.episodeCollection.removeAll()
+            self.invalidateLibraryItems()
         }.disposed(by: disposeBag)
 
         refresh()
@@ -54,10 +56,39 @@ final class CollectionManager: @unchecked Sendable {
 
     static let shared = CollectionManager()
 
+    /// Library items for the current user by type, dropped whenever that type's collection changes.
+    private let libraryItemsCache = LRUCache<ListMediaType, [CollectionItem]>(countLimit: 3)
+
+    func cachedLibraryItems(for type: ListMediaType) -> [CollectionItem]? {
+        libraryItemsCache.value(forKey: type)
+    }
+
+    /// Bumped on every invalidation so a request started before it cannot repopulate the cache with older data.
+    private var libraryItemsGenerations = [ListMediaType: Int]()
+
+    func libraryItemsGeneration(for type: ListMediaType) -> Int {
+        libraryItemsGenerations[type, default: 0]
+    }
+
+    func cacheLibraryItems(_ items: [CollectionItem], for type: ListMediaType, generation: Int) {
+        guard generation == libraryItemsGeneration(for: type) else { return }
+        libraryItemsCache.setValue(items, forKey: type)
+    }
+
+    func invalidateLibraryItems() {
+        [ListMediaType.movies, .shows, .episodes].forEach { invalidateLibraryItems(for: $0) }
+    }
+
+    private func invalidateLibraryItems(for type: ListMediaType) {
+        libraryItemsGenerations[type, default: 0] += 1
+        libraryItemsCache.removeValue(forKey: type)
+    }
+
     /// Collected dates keyed by Trakt id. Shows use their latest collected episode.
     fileprivate var movieCollection = [Int64: Date]() {
         didSet {
             if movieCollection != oldValue {
+                invalidateLibraryItems(for: .movies)
                 onMovieCollectionChangedTransmitter.broadcast(Array(movieCollection.keys))
             }
         }
@@ -66,6 +97,7 @@ final class CollectionManager: @unchecked Sendable {
     fileprivate var showCollection = [Int64: Date]() {
         didSet {
             if showCollection != oldValue {
+                invalidateLibraryItems(for: .shows)
                 onShowCollectionChangedTransmitter.broadcast(Array(showCollection.keys))
             }
         }
@@ -74,6 +106,7 @@ final class CollectionManager: @unchecked Sendable {
     fileprivate var episodeCollection = [Int64: Date]() {
         didSet {
             if episodeCollection != oldValue {
+                invalidateLibraryItems(for: .episodes)
                 onEpisodeCollectionChangedTransmitter.broadcast(Array(episodeCollection.keys))
             }
         }

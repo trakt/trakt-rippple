@@ -545,6 +545,7 @@ final class CollectionViewController: UITableViewController {
     }
 
     @objc func refresh(_ sender: Any) {
+        CollectionManager.shared.invalidateLibraryItems()
         CollectionManager.shared.refresh()
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.loading])
@@ -562,7 +563,21 @@ final class CollectionViewController: UITableViewController {
 
     private func reset() {
         fetchTask?.cancel()
+        if let cachedLibraryItems = cachedLibraryItems {
+            watchlistItems = cachedLibraryItems
+            return
+        }
         retry(self)
+    }
+
+    private var cachedLibraryItems: [CollectionItem]? {
+        guard user.isCurrentUser, case .collection(_, .some(let type), _, _, _) = service else { return nil }
+        return CollectionManager.shared.cachedLibraryItems(for: type)
+    }
+
+    private func isShowing(type: ListMediaType?) -> Bool {
+        guard case .collection(_, let currentType, _, _, _) = service else { return false }
+        return currentType == type
     }
 
     func fetch() {
@@ -579,6 +594,7 @@ final class CollectionViewController: UITableViewController {
 
         fetchTask?.cancel()
         guard case .collection(let slug, let type, let extended, let sort, let pageInfo) = service else { return }
+        let cacheGeneration = type.map { CollectionManager.shared.libraryItemsGeneration(for: $0) }
         TraktAPIProvider.fetchAllCollectionItems(slug: slug,
                                                  type: type,
                                                  extended: extended,
@@ -587,8 +603,13 @@ final class CollectionViewController: UITableViewController {
             guard let self = self else { return }
             switch result {
             case .success(let results):
+                let items = Array(Set(results))
                 DispatchQueue.main.async {
-                    self.watchlistItems = Array(Set(results))
+                    if self.user.isCurrentUser, let type = type, let cacheGeneration = cacheGeneration {
+                        CollectionManager.shared.cacheLibraryItems(items, for: type, generation: cacheGeneration)
+                    }
+                    guard self.isShowing(type: type) else { return }
+                    self.watchlistItems = items
                 }
             case .failure(let error):
                 print("Comments request JSON mapping failed! \(error)")
@@ -596,6 +617,7 @@ final class CollectionViewController: UITableViewController {
                 var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
                 snapshot.appendSections([.error])
                 DispatchQueue.main.async {
+                    guard self.isShowing(type: type) else { return }
                     self.error = error
                     self.dataSource.apply(snapshot, animatingDifferences: false)
                 }
