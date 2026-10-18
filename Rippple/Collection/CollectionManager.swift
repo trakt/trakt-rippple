@@ -34,7 +34,9 @@ final class CollectionManager: @unchecked Sendable {
             }
         }.disposed(by: disposeBag)
 
-        onSettingsChangedReceiver.listen { _ in
+        // Settings load at every launch; only a different signed-in user needs a new collection.
+        onSettingsChangedReceiver.listen { [weak self] settings in
+            guard let self = self, let settings = settings, settings.user != self.lastRefreshedUser else { return }
             self.refresh()
         }.disposed(by: disposeBag)
 
@@ -44,17 +46,19 @@ final class CollectionManager: @unchecked Sendable {
             self.showCollection.removeAll()
             self.episodeCollection.removeAll()
             self.invalidateLibraryItems()
+            self.lastRefreshedUser = nil
         }.disposed(by: disposeBag)
-
-        refresh()
     }
 
     func refresh() {
+        lastRefreshedUser = UserManager.shared.currentUser
         refreshMovieCollection()
         refreshShowCollection()
     }
 
     static let shared = CollectionManager()
+
+    private var lastRefreshedUser: User?
 
     /// Library items for the current user by type, dropped whenever that type's collection changes.
     private let libraryItemsCache = LRUCache<ListMediaType, [CollectionItem]>(countLimit: 3)

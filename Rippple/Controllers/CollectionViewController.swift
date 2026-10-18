@@ -184,8 +184,6 @@ final class CollectionViewController: UITableViewController {
         }
     }
 
-    private var fetchTask: Task<Void, Never>?
-
     private let disposeBag = DisposeBag()
 
     private let contextMenu = ContextMenuHelper()
@@ -540,10 +538,6 @@ final class CollectionViewController: UITableViewController {
         }.disposed(by: disposeBag)
     }
 
-    deinit {
-        fetchTask?.cancel()
-    }
-
     @objc func refresh(_ sender: Any) {
         CollectionManager.shared.invalidateLibraryItems()
         CollectionManager.shared.refresh()
@@ -562,7 +556,6 @@ final class CollectionViewController: UITableViewController {
     }
 
     private func reset() {
-        fetchTask?.cancel()
         if let cachedLibraryItems = cachedLibraryItems {
             watchlistItems = cachedLibraryItems
             return
@@ -592,7 +585,6 @@ final class CollectionViewController: UITableViewController {
             }
         }
 
-        fetchTask?.cancel()
         guard case .collection(let slug, let type, let extended, let sort, let pageInfo) = service else { return }
         let cacheGeneration = type.map { CollectionManager.shared.libraryItemsGeneration(for: $0) }
         TraktAPIProvider.fetchAllCollectionItems(slug: slug,
