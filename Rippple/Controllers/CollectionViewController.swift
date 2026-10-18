@@ -11,6 +11,13 @@ import Receiver
 import UIKit
 
 extension CollectionItem {
+    private static let releaseDateFormatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        return dateFormatter
+    }()
+
     var title: String {
         switch type {
         case .movie:
@@ -44,9 +51,7 @@ extension CollectionItem {
     var releaseDate: Date {
         switch type {
         case .movie:
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            return dateFormatter.date(from: movie!.released ?? "1900-01-01") ?? Date.distantPast
+            return CollectionItem.releaseDateFormatter.date(from: movie!.released ?? "1900-01-01") ?? Date.distantPast
         case .show:
             return show!.firstAired ?? Date.distantPast
         case .season:
@@ -173,7 +178,7 @@ final class CollectionViewController: UITableViewController {
         case episodes
     }
 
-    private var service: TraktAPIService = .collection(type: .movies, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 1000)) {
+    private var service: TraktAPIService = .collection(type: .movies, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 250)) {
         didSet {
             reset()
         }
@@ -222,17 +227,17 @@ final class CollectionViewController: UITableViewController {
             switch currentFilter {
             case .movies:
                 filterButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
-                service = .collection(slug: user.slug, type: .movies, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 1000))
+                service = .collection(slug: user.slug, type: .movies, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 250))
                 navigationItem.title = "Library"
                 navigationItem.subtitle = "Movies"
             case .shows:
                 filterButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
-                service = .collection(slug: user.slug, type: .shows, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 1000))
+                service = .collection(slug: user.slug, type: .shows, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 250))
                 navigationItem.title = "Library"
                 navigationItem.subtitle = "Shows"
             case .episodes:
                 filterButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
-                service = .collection(slug: user.slug, type: .episodes, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 1000))
+                service = .collection(slug: user.slug, type: .episodes, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 250))
                 navigationItem.title = "Library"
                 navigationItem.subtitle = "Episodes"
             }
@@ -573,11 +578,12 @@ final class CollectionViewController: UITableViewController {
         }
 
         fetchTask?.cancel()
-        guard case .collection(let slug, let type, let extended, let sort, _) = service else { return }
+        guard case .collection(let slug, let type, let extended, let sort, let pageInfo) = service else { return }
         TraktAPIProvider.fetchAllCollectionItems(slug: slug,
                                                  type: type,
                                                  extended: extended,
-                                                 sort: sort) { [weak self] result in
+                                                 sort: sort,
+                                                 limit: pageInfo.limit) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let results):

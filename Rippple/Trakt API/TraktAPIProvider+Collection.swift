@@ -14,7 +14,7 @@ extension TraktAPIProvider {
                                         type: ListMediaType?,
                                         extended: Extended?,
                                         sort: WatchlistSort?,
-                                        limit: Int = 1000,
+                                        limit: Int = 250,
                                         completion: @escaping (Result<[CollectionItem], Error>) -> Void) {
         _Concurrency.Task {
             do {
@@ -25,6 +25,41 @@ extension TraktAPIProvider {
                                                                    limit: limit)
                 completion(.success(items))
             } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+
+    static func fetchMinimalMovieCollection(completion: @escaping (Result<[Int64: Date], Error>) -> Void) {
+        fetchMinimalCollection(type: .movies, as: [String: Date].self) { result in
+            completion(result.map { movies in
+                Dictionary(uniqueKeysWithValues: movies.compactMap { key, collectedAt in
+                    Int64(key).map { ($0, collectedAt) }
+                })
+            })
+        }
+    }
+
+    /// Keyed by show id, then season id, then episode id.
+    static func fetchMinimalShowCollection(completion: @escaping (Result<[String: [String: [String: Date]]], Error>) -> Void) {
+        fetchMinimalCollection(type: .shows, as: [String: [String: [String: Date]]].self, completion: completion)
+    }
+
+    private static func fetchMinimalCollection<T: Decodable>(type: ListMediaType,
+                                                             as decodedType: T.Type,
+                                                             completion: @escaping (Result<T, Error>) -> Void) {
+        TraktAPIProvider.provider.request(.collectionMinimal(type: type),
+                                          callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+                    let collection = try response.map(decodedType, using: TraktAPIProvider.decoder)
+                    completion(.success(collection))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
                 completion(.failure(error))
             }
         }

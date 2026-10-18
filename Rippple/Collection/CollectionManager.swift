@@ -42,9 +42,6 @@ final class CollectionManager: @unchecked Sendable {
             self.movieCollection.removeAll()
             self.showCollection.removeAll()
             self.episodeCollection.removeAll()
-            self.collectedMovieItems.removeAll()
-            self.collectedShowItems.removeAll()
-            self.collectedEpisodeItems.removeAll()
         }.disposed(by: disposeBag)
 
         refresh()
@@ -53,38 +50,34 @@ final class CollectionManager: @unchecked Sendable {
     func refresh() {
         refreshMovieCollection()
         refreshShowCollection()
-        refreshEpisodeCollection()
     }
 
     static let shared = CollectionManager()
 
-    fileprivate var movieCollection = [Int64]() {
+    /// Collected dates keyed by Trakt id. Shows use their latest collected episode.
+    fileprivate var movieCollection = [Int64: Date]() {
         didSet {
             if movieCollection != oldValue {
-                onMovieCollectionChangedTransmitter.broadcast(movieCollection)
+                onMovieCollectionChangedTransmitter.broadcast(Array(movieCollection.keys))
             }
         }
     }
 
-    fileprivate var showCollection = [Int64]() {
+    fileprivate var showCollection = [Int64: Date]() {
         didSet {
             if showCollection != oldValue {
-                onShowCollectionChangedTransmitter.broadcast(showCollection)
+                onShowCollectionChangedTransmitter.broadcast(Array(showCollection.keys))
             }
         }
     }
 
-    fileprivate var episodeCollection = [Int64]() {
+    fileprivate var episodeCollection = [Int64: Date]() {
         didSet {
             if episodeCollection != oldValue {
-                onEpisodeCollectionChangedTransmitter.broadcast(episodeCollection)
+                onEpisodeCollectionChangedTransmitter.broadcast(Array(episodeCollection.keys))
             }
         }
     }
-
-    fileprivate var collectedMovieItems = [CollectionItem]()
-    fileprivate var collectedShowItems = [CollectionItem]()
-    fileprivate var collectedEpisodeItems = [CollectionItem]()
 }
 
 private extension CollectionManager {
@@ -92,23 +85,12 @@ private extension CollectionManager {
         if SessionManager.shared.isLoggedOut {
             return
         }
-        TraktAPIProvider.fetchAllCollectionItems(slug: "me",
-                                                 type: .movies,
-                                                 extended: nil,
-                                                 sort: .added) { [weak self] result in
+        TraktAPIProvider.fetchMinimalMovieCollection { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case .success(let collectionItems):
-                var ids = [Int64]()
-                for item in collectionItems {
-                    if let traktId = item.movie?.identifiers.trakt {
-                        ids.append(traktId)
-                    }
-                }
-
+            case .success(let movies):
                 DispatchQueue.main.async {
-                    self.movieCollection = ids
-                    self.collectedMovieItems = collectionItems
+                    self.movieCollection = movies
                 }
             case .failure(let error):
                 print("refreshMovieCollection request failure \(error)")
@@ -116,58 +98,34 @@ private extension CollectionManager {
         }
     }
 
+    /// The shows payload nests every collected episode, so it also fills the episode collection.
     private func refreshShowCollection() {
         if SessionManager.shared.isLoggedOut {
             return
         }
-        TraktAPIProvider.fetchAllCollectionItems(slug: "me",
-                                                 type: .shows,
-                                                 extended: nil,
-                                                 sort: .added) { [weak self] result in
+        TraktAPIProvider.fetchMinimalShowCollection { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case .success(let collectionItems):
-                var ids = [Int64]()
-                for item in collectionItems {
-                    if let traktId = item.show?.identifiers.trakt {
-                        ids.append(traktId)
+            case .success(let shows):
+                var showCollection = [Int64: Date]()
+                var episodeCollection = [Int64: Date]()
+                for (showKey, seasons) in shows {
+                    guard let showId = Int64(showKey) else { continue }
+                    for episodes in seasons.values {
+                        for (episodeKey, collectedAt) in episodes {
+                            guard let episodeId = Int64(episodeKey) else { continue }
+                            episodeCollection[episodeId] = collectedAt
+                            showCollection[showId] = max(showCollection[showId] ?? collectedAt, collectedAt)
+                        }
                     }
                 }
 
                 DispatchQueue.main.async {
-                    self.showCollection = ids
-                    self.collectedShowItems = collectionItems
+                    self.showCollection = showCollection
+                    self.episodeCollection = episodeCollection
                 }
             case .failure(let error):
                 print("refreshShowCollection request failure \(error)")
-            }
-        }
-    }
-
-    private func refreshEpisodeCollection() {
-        if SessionManager.shared.isLoggedOut {
-            return
-        }
-        TraktAPIProvider.fetchAllCollectionItems(slug: "me",
-                                                 type: .episodes,
-                                                 extended: nil,
-                                                 sort: .added) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let collectionItems):
-                var ids = [Int64]()
-                for item in collectionItems {
-                    if let traktId = item.episode?.identifiers.trakt {
-                        ids.append(traktId)
-                    }
-                }
-
-                DispatchQueue.main.async {
-                    self.episodeCollection = ids
-                    self.collectedEpisodeItems = collectionItems
-                }
-            case .failure(let error):
-                print("refreshEpisodeCollection request failure \(error)")
             }
         }
     }
@@ -187,14 +145,14 @@ extension MediaModel {
         }
     }
 
-    var collectedMediaItem: CollectionItem? {
+    var collectedAt: Date? {
         switch self {
         case .movie(let movie):
-            return CollectionManager.shared.collectedMovieItems.first(where: { $0.movie == movie })
+            return movie.identifiers.trakt.flatMap { CollectionManager.shared.movieCollection[$0] }
         case .show(let show):
-            return CollectionManager.shared.collectedShowItems.first(where: { $0.show == show })
-        case .episode(let episode, let show):
-            return CollectionManager.shared.collectedEpisodeItems.first(where: { $0.episode == episode && $0.show == show })
+            return show.identifiers.trakt.flatMap { CollectionManager.shared.showCollection[$0] }
+        case .episode(let episode, _):
+            return episode.identifiers.trakt.flatMap { CollectionManager.shared.episodeCollection[$0] }
         default:
             return nil
         }
@@ -204,21 +162,21 @@ extension MediaModel {
 extension Movie {
     var isInCollection: Bool {
         guard let traktId = identifiers.trakt else { return false }
-        return CollectionManager.shared.movieCollection.contains(traktId)
+        return CollectionManager.shared.movieCollection[traktId] != nil
     }
 }
 
 extension Show {
     var isInCollection: Bool {
         guard let traktId = identifiers.trakt else { return false }
-        return CollectionManager.shared.showCollection.contains(traktId)
+        return CollectionManager.shared.showCollection[traktId] != nil
     }
 }
 
 extension Episode {
     var isInCollection: Bool {
         guard let traktId = identifiers.trakt else { return false }
-        return CollectionManager.shared.episodeCollection.contains(traktId)
+        return CollectionManager.shared.episodeCollection[traktId] != nil
     }
 }
 

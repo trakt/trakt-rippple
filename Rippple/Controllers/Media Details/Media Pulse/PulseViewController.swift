@@ -1158,8 +1158,7 @@ final class PulseViewController: UITableViewController {
                 activityItems.append(item)
             }
 
-            if let collectedMediaItem = media.collectedMediaItem,
-               let collectedAt = collectedMediaItem.collectedAt {
+            if let collectedAt = media.collectedAt {
                 let dateFormatter: DateFormatter = {
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateStyle = .medium
@@ -1170,27 +1169,7 @@ final class PulseViewController: UITableViewController {
                 let item = ActivityItem(type: .collection,
                                         activity: "Collected",
                                         title: "\(dateFormatter.string(from: collectedAt))",
-                                        notes: collectedMediaItem.notes ?? "",
-                                        meta: "",
-                                        date: collectedAt,
-                                        systemImageName: "book.circle",
-                                        identifier: "collected-\(media.traktId)-\(collectedAt.timeIntervalSinceReferenceDate)")
-                activityItems.append(item)
-            }
-
-            if let collectedMediaItem = media.collectedMediaItem,
-               let collectedAt = collectedMediaItem.lastCollectedAt {
-                let dateFormatter: DateFormatter = {
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateStyle = .medium
-                    dateFormatter.timeStyle = .short
-                    return dateFormatter
-                }()
-
-                let item = ActivityItem(type: .collection,
-                                        activity: "Collected",
-                                        title: "\(dateFormatter.string(from: collectedAt))",
-                                        notes: collectedMediaItem.notes ?? "",
+                                        notes: media.collectionNoteItem?.note.notes ?? "",
                                         meta: "",
                                         date: collectedAt,
                                         systemImageName: "book.circle",

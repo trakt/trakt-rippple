@@ -369,6 +369,7 @@ enum TraktAPIService {
     case watchlist(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
     case recommended(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
     case collection(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
+    case collectionMinimal(type: ListMediaType)
 
     case addToWatchlist(item: WatchlistedItem)
     case removeFromWatchlist(item: WatchlistedItem)
@@ -865,6 +866,8 @@ extension TraktAPIService: AuthorizedTargetType {
             default:
                 return "/users/\(slug)/collection"
             }
+        case .collectionMinimal(let type):
+            return "/sync/collection/minimal/\(type)"
         case .addToWatchlist:
             return "/sync/watchlist"
         case .removeFromWatchlist:
@@ -1316,7 +1319,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .post
         case .recommended:
             return .get
-        case .collection:
+        case .collection, .collectionMinimal:
             return .get
         case .resetProgress:
             return .post
@@ -1481,7 +1484,7 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: URLEncoding.default)
         case .likeComment, .unlikeComment, .likeList, .unlikeList:
             return .requestPlain
-        case .stats:
+        case .stats, .collectionMinimal:
             return .requestPlain
         case .movieSocial(_, let pageInfo),
              .showSocial(_, let pageInfo),
