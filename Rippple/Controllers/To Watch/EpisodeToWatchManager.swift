@@ -55,6 +55,7 @@ final class EpisodeToWatchManager {
 
     var showsInList: [ToWatchGroup<Show>]? {
         didSet {
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(showsInList, forKey: "EpisodeToWatchManager.showsInList")
         }
     }
@@ -88,6 +89,7 @@ final class EpisodeToWatchManager {
 
                 onShowsToWatchChangedTransmitter.broadcast([Show](filteredShows))
 
+                guard !isRestoringFromCache else { return }
                 TinyStorage.cache.store(shows, forKey: "EpisodeToWatchManager.shows")
             } else {
                 TinyStorage.cache.remove(key: "EpisodeToWatchManager.shows")
@@ -103,6 +105,7 @@ final class EpisodeToWatchManager {
                 debouncedTransmit.call()
             }
 
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(mediaModels, forKey: "EpisodeToWatchManager.mediaModels")
         }
     }
@@ -112,7 +115,9 @@ final class EpisodeToWatchManager {
         didSet {
             debouncedTransmit.call()
 
-            TinyStorage.cache.store(futureMediaModels, forKey: "EpisodeToWatchManager.futureMediaModels")
+            if !isRestoringFromCache {
+                TinyStorage.cache.store(futureMediaModels, forKey: "EpisodeToWatchManager.futureMediaModels")
+            }
 
             // find the first episode that will air in the future and create a timer
             for media in futureMediaModels {
@@ -201,7 +206,13 @@ final class EpisodeToWatchManager {
         }
     }
 
-    func setup() {
+    /// Values restored at launch already match the cache, so they skip re-storing it.
+    private var isRestoringFromCache = false
+
+    private func loadCachedItems() {
+        isRestoringFromCache = true
+        defer { isRestoringFromCache = false }
+
         if let showsInList = TinyStorage.cache.retrieve(type: [ToWatchGroup<Show>].self, forKey: "EpisodeToWatchManager.showsInList") {
             self.showsInList = showsInList
         }
@@ -214,6 +225,10 @@ final class EpisodeToWatchManager {
         if let mediaModels = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "EpisodeToWatchManager.mediaModels") {
             self.mediaModels = mediaModels
         }
+    }
+
+    func setup() {
+        loadCachedItems()
 
         onUserLoggedOutReceiver.listen { [weak self] _ in
             guard let self = self else { return }

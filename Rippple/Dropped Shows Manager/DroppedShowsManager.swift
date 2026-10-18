@@ -28,15 +28,7 @@ final class DroppedShowsManager {
 
     private var debouncedTransmit: Debouncer!
 
-    private var droppedShows = [DroppedShow]() {
-        didSet {
-            if Set(oldValue) != Set(droppedShows) {
-                TinyStorage.cache.store(droppedShows, forKey: "DroppedShowsManager.droppedShows")
-                debouncedTransmit.call()
-            }
-        }
-    }
-
+    private var droppedShows = [DroppedShow]()
     private var hiddenShows: [MediaModel]?
     private var manuallyDroppedShows: [HiddenShow]?
     private var droppedShowsSet = Set<Show>()
@@ -50,14 +42,18 @@ final class DroppedShowsManager {
 
         if let array = TinyStorage.cache.retrieve(type: [DroppedShow].self, forKey: "DroppedShowsManager.droppedShows") {
             withStateLock {
-                droppedShows = array
+                updateDroppedShows(storesInCache: false) { droppedShows in
+                    droppedShows = array
+                }
             }
         }
 
         onUserLoggedOutReceiver.listen { [weak self] _ in
             guard let self = self else { return }
             self.withStateLock {
-                self.droppedShows.removeAll()
+                self.updateDroppedShows { droppedShows in
+                    droppedShows.removeAll()
+                }
                 self.hiddenShows = nil
                 self.manuallyDroppedShows = nil
                 self.droppedShowsSet.removeAll()
@@ -157,7 +153,9 @@ final class DroppedShowsManager {
 
     private func removeDroppedShow(_ show: Show) {
         withStateLock {
-            droppedShows.removeAll(where: { $0.show == show })
+            updateDroppedShows { droppedShows in
+                droppedShows.removeAll(where: { $0.show == show })
+            }
         }
     }
 
@@ -165,9 +163,22 @@ final class DroppedShowsManager {
         withStateLock {
             guard hiddenShows != nil, manuallyDroppedShows != nil else { return }
             guard droppedShows.contains(where: { $0.show == show }) == false else { return }
-            droppedShows.append(DroppedShow(show: show,
-                                            droppedDate: droppedDate))
+            updateDroppedShows { droppedShows in
+                droppedShows.append(DroppedShow(show: show,
+                                                droppedDate: droppedDate))
+            }
         }
+    }
+
+    /// Must be called while holding `stateLock`.
+    private func updateDroppedShows(storesInCache: Bool = true, _ update: (inout [DroppedShow]) -> Void) {
+        let oldShows = droppedShows
+        update(&droppedShows)
+        guard Set(oldShows) != Set(droppedShows) else { return }
+        if storesInCache {
+            TinyStorage.cache.store(droppedShows, forKey: "DroppedShowsManager.droppedShows")
+        }
+        debouncedTransmit.call()
     }
 
     private func transmit() {

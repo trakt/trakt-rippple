@@ -78,6 +78,7 @@ final class MovieToWatchManager {
 
     var moviesInList: [ToWatchGroup<Movie>]? {
         didSet {
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(moviesInList, forKey: "MovieToWatchManager.moviesInList")
         }
     }
@@ -103,6 +104,7 @@ final class MovieToWatchManager {
             if let movies = movies {
                 print("MovieToWatchManager.movies didSet -> Transmitting moviesToWatch")
                 onAllMoviesToWatchChangedTransmitter.broadcast(Array(movies))
+                guard !isRestoringFromCache else { return }
                 TinyStorage.cache.store(movies, forKey: "MovieToWatchManager.movies")
             } else {
                 TinyStorage.cache.remove(key: "MovieToWatchManager.movies")
@@ -118,6 +120,7 @@ final class MovieToWatchManager {
                 debouncedTransmit.call()
             }
 
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(mediaModels, forKey: "MovieToWatchManager.mediaModels")
         }
     }
@@ -128,6 +131,7 @@ final class MovieToWatchManager {
 
     private var releaseInfoCache = [Int64: MovieToWatchRelease]() {
         didSet {
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(releaseInfoCache, forKey: "MovieToWatchManager.releaseInfoCache")
         }
     }
@@ -145,7 +149,9 @@ final class MovieToWatchManager {
         didSet {
             debouncedTransmit.call()
 
-            TinyStorage.cache.store(futureMediaModels, forKey: "MovieToWatchManager.futureMediaModels")
+            if !isRestoringFromCache {
+                TinyStorage.cache.store(futureMediaModels, forKey: "MovieToWatchManager.futureMediaModels")
+            }
 
             // find the first movie that will air in the future and create a timer
             for media in futureMediaModels {
@@ -180,7 +186,13 @@ final class MovieToWatchManager {
         }
     }
 
-    func setup() {
+    /// Values restored at launch already match the cache, so they skip re-storing it.
+    private var isRestoringFromCache = false
+
+    private func loadCachedItems() {
+        isRestoringFromCache = true
+        defer { isRestoringFromCache = false }
+
         if let futureMediaModels = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "MovieToWatchManager.futureMediaModels") {
             self.futureMediaModels = futureMediaModels
         }
@@ -196,6 +208,10 @@ final class MovieToWatchManager {
         if let mediaModels = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "MovieToWatchManager.mediaModels") {
             self.mediaModels = mediaModels
         }
+    }
+
+    func setup() {
+        loadCachedItems()
 
         onUserLoggedOutReceiver.listen { [weak self] _ in
             guard let self = self else { return }

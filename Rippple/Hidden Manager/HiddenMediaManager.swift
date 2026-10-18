@@ -24,8 +24,13 @@ final class HiddenMediaManager {
     private init() {}
 
     private var lastShowsCheck: Date = .now
+    /// Lists restored at launch already match the cache, so they skip re-reading and re-storing it.
+    private var isRestoringFromCache = false
 
-    func setup() {
+    private func loadCachedItems() {
+        isRestoringFromCache = true
+        defer { isRestoringFromCache = false }
+
         if let array = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "HiddenMediaManager.hiddenMediaList") {
             showsHiddenFromProgressMediaList = array
         }
@@ -49,6 +54,10 @@ final class HiddenMediaManager {
         if let array = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "HiddenMediaManager.rewatchingShowsMediaList") {
             rewatchingShowsMediaList = array
         }
+    }
+
+    func setup() {
+        loadCachedItems()
 
         onUserLoggedOutReceiver.listen { [weak self] _ in
             guard let self = self else { return }
@@ -133,7 +142,8 @@ final class HiddenMediaManager {
             guard let showsHiddenFromProgressMediaList = showsHiddenFromProgressMediaList else { return }
             if showsHiddenFromProgressMediaList == oldValue { return }
 
-            if let array = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "HiddenMediaManager.hiddenMediaList"),
+            if !isRestoringFromCache,
+               let array = TinyStorage.cache.retrieve(type: [MediaModel].self, forKey: "HiddenMediaManager.hiddenMediaList"),
                array != showsHiddenFromProgressMediaList {
                 for season in Set(showsHiddenFromProgressMediaList).symmetricDifference(Set(oldValue ?? [MediaModel]())).filter({ $0.season != nil }) {
                     ProgressManager.shared.refreshProgress(for: season.show!)
@@ -144,6 +154,7 @@ final class HiddenMediaManager {
             showsHiddenFromProgressSet = Set(showsHiddenFromProgressMediaList.compactMap { $0.showShow?.identifiers.trakt })
             onShowsHiddenFromProgressMediaChangedTransmitter.broadcast(showsHiddenFromProgressMediaList)
 
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(showsHiddenFromProgressMediaList, forKey: "HiddenMediaManager.hiddenMediaList")
         }
     }
@@ -161,6 +172,7 @@ final class HiddenMediaManager {
             let rewatchingShows = rewatchingShowsMediaList.compactMap { $0.showShow }
             rewatchingShowsSet = Set(rewatchingShows.compactMap { $0.identifiers.trakt })
             onRewatchingShowsChangedTransmitter.broadcast(rewatchingShows)
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(rewatchingShowsMediaList, forKey: "HiddenMediaManager.rewatchingShowsMediaList")
         }
     }
@@ -183,6 +195,7 @@ final class HiddenMediaManager {
             guard let showsHiddenFromCalendarMediaList = showsHiddenFromCalendarMediaList else { return }
             if showsHiddenFromCalendarMediaList == oldValue { return }
             onShowsHiddenFromCalendarMediaChangedTransmitter.broadcast(showsHiddenFromCalendarMediaList)
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(showsHiddenFromCalendarMediaList, forKey: "HiddenMediaManager.showsHiddenFromCalendarMediaList")
         }
     }
@@ -192,6 +205,7 @@ final class HiddenMediaManager {
             guard let showsDroppedList = showsDroppedList else { return }
             if showsDroppedList == oldValue { return }
             onShowsDroppedMediaChangedTransmitter.broadcast(showsDroppedList)
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(showsDroppedList, forKey: "HiddenMediaManager.showsDroppedList")
         }
     }
@@ -201,6 +215,7 @@ final class HiddenMediaManager {
             guard let moviesHiddenFromCalendarMediaList = moviesHiddenFromCalendarMediaList else { return }
             if moviesHiddenFromCalendarMediaList == oldValue { return }
             onMoviesHiddenFromCalendarMediaChangedTransmitter.broadcast(moviesHiddenFromCalendarMediaList)
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(moviesHiddenFromCalendarMediaList, forKey: "HiddenMediaManager.moviesHiddenFromCalendarMediaList")
         }
     }
@@ -210,6 +225,7 @@ final class HiddenMediaManager {
             guard let usersHiddenFromCommentsList = usersHiddenFromCommentsList else { return }
             if usersHiddenFromCommentsList == oldValue { return }
             onUsersHiddenFromCommentsChangedTransmitter.broadcast(usersHiddenFromCommentsList)
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(usersHiddenFromCommentsList, forKey: "HiddenMediaManager.usersHiddenFromCommentsList")
         }
     }
