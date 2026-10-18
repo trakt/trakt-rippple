@@ -11,13 +11,6 @@ import Receiver
 import UIKit
 
 extension CollectionItem {
-    private static let releaseDateFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        return dateFormatter
-    }()
-
     var title: String {
         switch type {
         case .movie:
@@ -51,7 +44,7 @@ extension CollectionItem {
     var releaseDate: Date {
         switch type {
         case .movie:
-            return CollectionItem.releaseDateFormatter.date(from: movie!.released ?? "1900-01-01") ?? Date.distantPast
+            return movie!.releaseSortDate
         case .show:
             return show!.firstAired ?? Date.distantPast
         case .season:

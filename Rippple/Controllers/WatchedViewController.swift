@@ -42,16 +42,10 @@ extension WatchedItem {
         }
     }
 
-    private static let dateFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        return dateFormatter
-    }()
-
     var releaseDate: Date {
         switch type {
         case .movie:
-            return WatchedItem.dateFormatter.date(from: movie!.released ?? "1900-01-01") ?? Date.distantPast
+            return movie!.releaseSortDate
         case .show:
             return show!.firstAired ?? Date.distantPast
         case .season:

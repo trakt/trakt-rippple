@@ -571,6 +571,18 @@ extension Movie {
     var mediaModel: MediaModel {
         return MediaModel(item: MediaItem(movie: self, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil))
     }
+
+    private static let releaseSortDateFormatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        return dateFormatter
+    }()
+
+    /// Release date for sorting; a movie without one sorts as released on 1900-01-01.
+    var releaseSortDate: Date {
+        return Movie.releaseSortDateFormatter.date(from: released ?? "1900-01-01") ?? Date.distantPast
+    }
 }
 
 extension Show {
