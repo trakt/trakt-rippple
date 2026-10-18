@@ -829,7 +829,8 @@ extension CollectionViewController {
         notes.backgroundColor = UIColor(resource: .ripppleGray)
         notes.image = UIImage(systemName: "note.text")
 
-        let configuration = UISwipeActionsConfiguration(actions: [notes, remove])
+        let supportsNotes = collectionItem.type == .movie || collectionItem.type == .show
+        let configuration = UISwipeActionsConfiguration(actions: supportsNotes ? [notes, remove] : [remove])
         configuration.performsFirstActionWithFullSwipe = false
         return configuration
     }

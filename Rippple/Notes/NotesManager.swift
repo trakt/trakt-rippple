@@ -194,8 +194,6 @@ extension MediaModel {
         switch self {
         case .movie(let movie):
             return NotesManager.shared.notes.first(where: { $0.type == .movie && $0.noteAttachement.type == .collection && $0.movie == movie })
-        case .episode(let episode, let show):
-            return NotesManager.shared.notes.first(where: { $0.type == .episode && $0.noteAttachement.type == .collection && $0.episode == episode && $0.show == show })
         case .show(let show):
             return NotesManager.shared.notes.first(where: { $0.type == .show && $0.noteAttachement.type == .collection && $0.show == show })
         default:
