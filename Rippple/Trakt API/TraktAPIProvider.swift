@@ -96,29 +96,29 @@ enum TraktAPIProvider {
         }
     }
 
-    private static let dateFormatter = {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
-    }
+    }()
 
-    private static let dateAndTimeFormatter = {
+    private static let dateAndTimeFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
-    }
+    }()
 
-    private static let dateAndTimeWithoutMillisecondsFormatter = {
+    private static let dateAndTimeWithoutMillisecondsFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
-    }
+    }()
 
     private static func setupJSONDecoder() -> JSONDecoder {
         let decoder = TraktJSONDecoder()
@@ -126,15 +126,15 @@ enum TraktAPIProvider {
             let container = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)
             // yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ
-            if let date = dateAndTimeFormatter().date(from: dateString) {
+            if let date = dateAndTimeFormatter.date(from: dateString) {
                 return date
             }
             // yyyy-MM-dd'T'HH:mm:ssZZZZZ
-            if let date = dateAndTimeWithoutMillisecondsFormatter().date(from: dateString) {
+            if let date = dateAndTimeWithoutMillisecondsFormatter.date(from: dateString) {
                 return date
             }
             // yyyy-MM-dd
-            if let date = dateFormatter().date(from: dateString) {
+            if let date = dateFormatter.date(from: dateString) {
                 return date
             }
             throw DecodingError.dataCorruptedError(in: container,
