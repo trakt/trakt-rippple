@@ -1,7 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "logomark.circle.white-8541834d655f22f06c0e1707bf263e8d5be59657dba152298297dffffb1f0a11 1.svg",
+      "filename" : "trakt-circlemark-placeholder.svg",
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "trakt-circlemark-placeholder-dark.svg",
       "idiom" : "universal"
     }
   ],

@@ -42,7 +42,7 @@
                                                     <constraint firstAttribute="height" constant="40" id="e3T-g8-unz"/>
                                                     <constraint firstAttribute="width" secondItem="6k2-y3-fG1" secondAttribute="height" multiplier="1:1" id="k3W-CQ-qzQ"/>
                                                 </constraints>
-                                                <state key="normal" backgroundImage="bg_placeholder_avatar_small"/>
+                                                <state key="normal" backgroundImage="ic_trakt_logo"/>
                                                 <connections>
                                                     <action selector="user:" destination="53m-ST-ukI" eventType="touchUpInside" id="eva-Bc-dY0"/>
                                                 </connections>
@@ -208,7 +208,7 @@
         </tableViewCell>
     </objects>
     <resources>
-        <image name="bg_placeholder_avatar_small" width="30" height="30"/>
+        <image name="ic_trakt_logo" width="25" height="25"/>
         <image name="lock.fill" catalog="system" width="125" height="128"/>
         <image name="person.2.fill" catalog="system" width="128" height="86"/>
         <namedColor name="Card Separator">
