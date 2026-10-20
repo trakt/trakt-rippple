@@ -168,7 +168,8 @@ public enum RipppleTintColor: Int, CaseIterable {
     case cyan
     case blue
     case indigo
-    case pink
+    case purple = 13
+    case pink = 10
     case brown
     case monochrome
 
@@ -198,6 +199,8 @@ public enum RipppleTintColor: Int, CaseIterable {
             UIColor.systemGreen
         case .indigo:
             UIColor.systemIndigo
+        case .purple:
+            UIColor(named: "Purple Tint")!
         case .orange:
             UIColor.systemOrange
         case .yellow:
@@ -229,6 +232,8 @@ public enum RipppleTintColor: Int, CaseIterable {
             UIColor.systemGreen
         case .indigo:
             UIColor.systemIndigo
+        case .purple:
+            UIColor(named: "Purple Tint")!
         case .orange:
             UIColor.systemOrange
         case .yellow:

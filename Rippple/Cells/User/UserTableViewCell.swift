@@ -88,6 +88,12 @@ final class UserTableViewCell: TintedCanvasTableViewCell {
             VIPLabel.layer.cornerCurve = .circular
             VIPLabel.layer.cornerRadius = VIPLabel.bounds.height / 2.0
             VIPLabel.clipsToBounds = true
+            // The badge carries white text, so it keeps the darker light-mode purple in every appearance.
+            VIPLabel.backgroundColor = UIColor { traitCollection in
+                RipppleTintColor.purple.color.resolvedColor(with: traitCollection.modifyingTraits { traits in
+                    traits.userInterfaceStyle = .light
+                })
+            }
         }
     }
 
