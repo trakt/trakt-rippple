@@ -411,6 +411,8 @@ enum TraktAPIService {
     case createSmartList(SmartListDraft)
     case updateSmartList(slug: String, SmartListDraft)
     case deleteSmartList(slug: String)
+    case smartListPreview(SmartListDraft, pageInfo: PageInfo)
+    case smartListFilterOptions(kind: SmartListFilterOptionKind, query: String)
 
     case addToList(slug: String? = "me", id: Int64, item: WatchlistedItem)
     case removeFromList(slug: String? = "me", id: Int64, item: WatchlistedItem)
@@ -939,6 +941,10 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/me/smart-lists"
         case .updateSmartList(let slug, _), .deleteSmartList(let slug):
             return "/users/me/smart-lists/\(slug)"
+        case .smartListPreview:
+            return "/smart-lists/preview/items"
+        case .smartListFilterOptions(let kind, _):
+            return kind == .people ? "/search/person" : "/smart-lists/filter-options/\(kind.rawValue)"
         case .deleteList(let listId):
             return "/users/me/lists/\(listId)"
         case .reorderLists:
@@ -1277,7 +1283,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .createList:
             return .post
-        case .smartLists, .smartList, .smartListItems:
+        case .smartLists, .smartList, .smartListItems, .smartListPreview, .smartListFilterOptions:
             return .get
         case .createSmartList:
             return .post
@@ -1858,6 +1864,20 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: URLEncoding.default)
         case .createSmartList(let draft), .updateSmartList(_, let draft):
             return .requestJSONEncodable(draft)
+        case .smartListPreview(let draft, let pageInfo):
+            var parameters = draft.filters.queryParameters
+            parameters["source"] = draft.source.rawValue
+            parameters["media_type"] = draft.mediaType.rawValue
+            parameters["extended"] = "full"
+            parameters["page"] = "\(pageInfo.page)"
+            parameters["limit"] = "\(pageInfo.limit)"
+            return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
+        case .smartListFilterOptions(let kind, let query):
+            var parameters = ["query": query, "limit": "20"]
+            if kind == .people {
+                parameters["fields"] = "name"
+            }
+            return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
         case .createList(let name, let description, let privacy, let displayNumbers, let allowComments):
             return .requestParameters(parameters: ["name": name,
                                                    "description": description,

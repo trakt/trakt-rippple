@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5A7C3A00000000000000000D /* SmartListAssistantTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C3A00000000000000000C /* SmartListAssistantTests.swift */; };
+		5A7C3A00000000000000000F /* SmartListAssistantTestCases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C3A00000000000000000E /* SmartListAssistantTestCases.swift */; };
 		5A7C2E1B30F0100000000017 /* KlipyAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0100000000018 /* KlipyAPI.swift */; };
 		5A7C2E1B30F0100000000015 /* ComposerInsertViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0100000000016 /* ComposerInsertViewController.swift */; };
 		5A7C2E1B30F0100000000001 /* ComposerSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0100000000002 /* ComposerSession.swift */; };
@@ -201,6 +203,12 @@
 		5A7C2E1B30F0000000000003 /* SmartListBuilderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0000000000004 /* SmartListBuilderViewController.swift */; };
 		5A7C2E1B30F0000000000007 /* SmartListAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0000000000008 /* SmartListAssistant.swift */; };
 		5A7C2E1B30F0000000000009 /* SmartListPromptViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F000000000000A /* SmartListPromptViewController.swift */; };
+		5A7C2E1B30F000000000000B /* SmartListConversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F000000000000C /* SmartListConversation.swift */; };
+		5A7C2E1B30F0000000000013 /* SmartListCondition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0000000000014 /* SmartListCondition.swift */; };
+		5A7C2E1B30F0000000000015 /* SmartListLookups.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0000000000016 /* SmartListLookups.swift */; };
+		5A7C2E1B30F000000000000D /* SmartListMatchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F000000000000E /* SmartListMatchers.swift */; };
+		5A7C2E1B30F0000000000011 /* SmartListDecider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0000000000012 /* SmartListDecider.swift */; };
+		5A7C2E1B30F000000000000F /* SmartListSpecialists.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7C2E1B30F0000000000010 /* SmartListSpecialists.swift */; };
 		3A3BC693271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3BC692271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift */; };
 		3A3EA94C2DA91BE9004D55A8 /* TinyStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 3A3EA94B2DA91BE9004D55A8 /* TinyStorage */; };
 		3A3EA9542DA96087004D55A8 /* InfoCardTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A3EA9532DA96087004D55A8 /* InfoCardTableViewCell.xib */; };
@@ -569,6 +577,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		5A7C3A000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3A9119BC1FADC7EB00457D28 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3A9119C31FADC7EB00457D28;
+			remoteInfo = Rippple;
+		};
 		3A77A84E29FC18050006177D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3A9119BC1FADC7EB00457D28 /* Project object */;
@@ -619,6 +634,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5A7C3A000000000000000002 /* SmartListAssistantTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmartListAssistantTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A7C3A00000000000000000C /* SmartListAssistantTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListAssistantTests.swift; sourceTree = "<group>"; };
+		5A7C3A00000000000000000E /* SmartListAssistantTestCases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListAssistantTestCases.swift; sourceTree = "<group>"; };
 		5A7C2E1B30F0100000000018 /* KlipyAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KlipyAPI.swift; sourceTree = "<group>"; };
 		5A7C2E1B30F0100000000016 /* ComposerInsertViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerInsertViewController.swift; sourceTree = "<group>"; };
 		5A7C2E1B30F0100000000002 /* ComposerSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerSession.swift; sourceTree = "<group>"; };
@@ -818,6 +836,12 @@
 		5A7C2E1B30F0000000000004 /* SmartListBuilderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListBuilderViewController.swift; sourceTree = "<group>"; };
 		5A7C2E1B30F0000000000008 /* SmartListAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListAssistant.swift; sourceTree = "<group>"; };
 		5A7C2E1B30F000000000000A /* SmartListPromptViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListPromptViewController.swift; sourceTree = "<group>"; };
+		5A7C2E1B30F000000000000C /* SmartListConversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListConversation.swift; sourceTree = "<group>"; };
+		5A7C2E1B30F0000000000014 /* SmartListCondition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListCondition.swift; sourceTree = "<group>"; };
+		5A7C2E1B30F0000000000016 /* SmartListLookups.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListLookups.swift; sourceTree = "<group>"; };
+		5A7C2E1B30F000000000000E /* SmartListMatchers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListMatchers.swift; sourceTree = "<group>"; };
+		5A7C2E1B30F0000000000012 /* SmartListDecider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListDecider.swift; sourceTree = "<group>"; };
+		5A7C2E1B30F0000000000010 /* SmartListSpecialists.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartListSpecialists.swift; sourceTree = "<group>"; };
 		3A3BC692271DB1C7007ED8A6 /* SmartSearchBuilderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartSearchBuilderViewController.swift; sourceTree = "<group>"; };
 		3A3EA9532DA96087004D55A8 /* InfoCardTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = InfoCardTableViewCell.xib; sourceTree = "<group>"; };
 		3A3EA9552DA96096004D55A8 /* InfoCardTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoCardTableViewCell.swift; sourceTree = "<group>"; };
@@ -1184,6 +1208,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		5A7C3A000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3A77A84629FC18050006177D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1235,6 +1266,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5A7C3A000000000000000003 /* SmartListAssistantTests */ = {
+			isa = PBXGroup;
+			children = (
+				5A7C3A00000000000000000C /* SmartListAssistantTests.swift */,
+				5A7C3A00000000000000000E /* SmartListAssistantTestCases.swift */,
+			);
+			path = SmartListAssistantTests;
+			sourceTree = "<group>";
+		};
 		092A51452E0A7FA900DD0C15 /* Checkin View */ = {
 			isa = PBXGroup;
 			children = (
@@ -1637,6 +1677,12 @@
 				5A7C2E1B30F0000000000006 /* SmartListSentence.swift */,
 				5A7C2E1B30F0000000000008 /* SmartListAssistant.swift */,
 				5A7C2E1B30F000000000000A /* SmartListPromptViewController.swift */,
+				5A7C2E1B30F000000000000C /* SmartListConversation.swift */,
+				5A7C2E1B30F0000000000014 /* SmartListCondition.swift */,
+				5A7C2E1B30F0000000000016 /* SmartListLookups.swift */,
+				5A7C2E1B30F000000000000E /* SmartListMatchers.swift */,
+				5A7C2E1B30F0000000000012 /* SmartListDecider.swift */,
+				5A7C2E1B30F0000000000010 /* SmartListSpecialists.swift */,
 				3A3BC690271DAF9B007ED8A6 /* SmartSearch.storyboard */,
 			);
 			path = "Smart Search";
@@ -2174,6 +2220,7 @@
 				3A90313E287B032600FA27D4 /* Widget */,
 				3AD15CE3287C245A00FD0B2F /* WidgetIntent */,
 				3A77A84A29FC18050006177D /* NotificationService */,
+				5A7C3A000000000000000003 /* SmartListAssistantTests */,
 				3A9119C51FADC7EB00457D28 /* Products */,
 				31F48457202A6704839BA0C4 /* Frameworks */,
 			);
@@ -2186,6 +2233,7 @@
 				3A903139287B032600FA27D4 /* WidgetExtension.appex */,
 				3AD15CE0287C245A00FD0B2F /* WidgetIntent.appex */,
 				3A77A84929FC18050006177D /* NotificationService.appex */,
+				5A7C3A000000000000000002 /* SmartListAssistantTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2970,6 +3018,24 @@
 			productReference = 3AD15CE0287C245A00FD0B2F /* WidgetIntent.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		5A7C3A000000000000000007 /* SmartListAssistantTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A7C3A00000000000000000B /* Build configuration list for PBXNativeTarget "SmartListAssistantTests" */;
+			buildPhases = (
+				5A7C3A000000000000000004 /* Sources */,
+				5A7C3A000000000000000005 /* Frameworks */,
+				5A7C3A000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5A7C3A000000000000000008 /* PBXTargetDependency */,
+			);
+			name = SmartListAssistantTests;
+			productName = SmartListAssistantTests;
+			productReference = 5A7C3A000000000000000002 /* SmartListAssistantTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -3004,6 +3070,10 @@
 					};
 					3AD15CDF287C245A00FD0B2F = {
 						CreatedOnToolsVersion = 13.4;
+					};
+					5A7C3A000000000000000007 = {
+						CreatedOnToolsVersion = 27.1;
+						TestTargetID = 3A9119C31FADC7EB00457D28;
 					};
 				};
 			};
@@ -3041,11 +3111,19 @@
 				3A903138287B032600FA27D4 /* WidgetExtension */,
 				3AD15CDF287C245A00FD0B2F /* WidgetIntent */,
 				3A77A84829FC18050006177D /* NotificationService */,
+				5A7C3A000000000000000007 /* SmartListAssistantTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5A7C3A000000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3A77A84729FC18050006177D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3286,6 +3364,15 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		5A7C3A000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5A7C3A00000000000000000D /* SmartListAssistantTests.swift in Sources */,
+				5A7C3A00000000000000000F /* SmartListAssistantTestCases.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3A77A84529FC18050006177D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3483,6 +3570,12 @@
 				5A7C2E1B30F0000000000005 /* SmartListSentence.swift in Sources */,
 				5A7C2E1B30F0000000000007 /* SmartListAssistant.swift in Sources */,
 				5A7C2E1B30F0000000000009 /* SmartListPromptViewController.swift in Sources */,
+				5A7C2E1B30F000000000000B /* SmartListConversation.swift in Sources */,
+				5A7C2E1B30F0000000000013 /* SmartListCondition.swift in Sources */,
+				5A7C2E1B30F0000000000015 /* SmartListLookups.swift in Sources */,
+				5A7C2E1B30F000000000000D /* SmartListMatchers.swift in Sources */,
+				5A7C2E1B30F0000000000011 /* SmartListDecider.swift in Sources */,
+				5A7C2E1B30F000000000000F /* SmartListSpecialists.swift in Sources */,
 				5A7C2E1B30F0100000000001 /* ComposerSession.swift in Sources */,
 				5A7C2E1B30F0100000000003 /* ComposerViewController.swift in Sources */,
 				5A7C2E1B30F0100000000005 /* ComposerSubjectHeaderView.swift in Sources */,
@@ -3711,6 +3804,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		5A7C3A000000000000000008 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3A9119C31FADC7EB00457D28 /* Rippple */;
+			targetProxy = 5A7C3A000000000000000001 /* PBXContainerItemProxy */;
+		};
 		3A77A84F29FC18050006177D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 3A77A84829FC18050006177D /* NotificationService */;
@@ -3748,6 +3846,44 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		5A7C3A000000000000000009 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GZG6JGPM44;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.smartlistassistanttests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Rippple.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Rippple";
+			};
+			name = Debug;
+		};
+		5A7C3A00000000000000000A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GZG6JGPM44;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tv.trakt.rippple.smartlistassistanttests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Rippple.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Rippple";
+			};
+			name = Release;
+		};
 		3A77A85229FC18050006177D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4238,6 +4374,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5A7C3A00000000000000000B /* Build configuration list for PBXNativeTarget "SmartListAssistantTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A7C3A000000000000000009 /* Debug */,
+				5A7C3A00000000000000000A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3A77A85429FC18050006177D /* Build configuration list for PBXNativeTarget "NotificationService" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
