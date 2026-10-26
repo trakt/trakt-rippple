@@ -78,6 +78,26 @@ final class SmartListBuilderViewController: SearchResultsViewController {
         present(from: controller, list: nil, draft: draft)
     }
 
+    /// Presents a new smart list of a person's movies and shows in `role`, started as if asked for: "Starring Tom Holland".
+    /// It's made from the person's slug rather than read from their name, so a namesake is never picked instead.
+    static func present(from controller: UIViewController, person: Person, role: SmartListFilters.PersonRole) {
+        guard let slug = person.ids.slug else { return }
+        var draft = SmartListDraft()
+        draft.source = .discover
+        draft.filters.people = [slug]
+        draft.filters.peopleRole = role == .any ? nil : role
+        guard SmartListAssistant.isModelAvailable else {
+            present(from: controller, list: nil, draft: draft)
+            return
+        }
+        guard canCreate() else { return }
+        let match = SmartListAssistant.Match(range: 0..<0, condition: .people([slug], role: role), titles: [person.name])
+        let heard = SmartListAssistant.sentence(mediaType: draft.mediaType, source: draft.source, matches: [match])
+        let reply = [SmartListAssistant.Line(kind: .kept, text: "Got it, \(heard).")]
+        let prompt = SmartListPromptViewController(prompt: SmartListAssistant.label(of: match), draft: draft, reply: reply)
+        controller.present(UINavigationController(rootViewController: prompt), animated: true)
+    }
+
     private static func present(from controller: UIViewController, list: List?, draft: SmartListDraft) {
         guard list != nil || canCreate(), let builder = make(list: list, draft: draft) else { return }
         controller.present(UINavigationController(rootViewController: builder), animated: true)

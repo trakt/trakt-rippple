@@ -24,12 +24,21 @@ final class SmartListPromptViewController: UIViewController, UITextViewDelegate,
     private var initialPrompt = ""
     /// Where the request was on screen before this one, in window coordinates, to move it from there.
     private var promptOrigin: CGPoint?
+    /// A request already made into a smart list, sent as soon as it's on screen, with what's said back.
+    private var answered: (draft: SmartListDraft, reply: [SmartListAssistant.Line])?
 
     /// Opens with a request ready to change, as typed. With `origin`, the request moves from there to where it's typed.
     convenience init(prompt: String, movingFrom origin: CGPoint? = nil) {
         self.init(nibName: nil, bundle: nil)
         initialPrompt = prompt
         promptOrigin = origin
+    }
+
+    /// Opens with a request already made into `draft`, sent as soon as it's on screen: the conversation says `reply`
+    /// and the builder continues it, as if it had been typed and read.
+    convenience init(prompt: String, draft: SmartListDraft, reply: [SmartListAssistant.Line]) {
+        self.init(prompt: prompt)
+        answered = (draft, reply)
     }
 
     private var prompt: String {
@@ -164,7 +173,15 @@ final class SmartListPromptViewController: UIViewController, UITextViewDelegate,
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        guard answered == nil else { return }
         textView.becomeFirstResponder()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard let answered = answered else { return }
+        self.answered = nil
+        answer(SmartListConversation(prompt: prompt), with: answered.reply, draft: answered.draft)
     }
 
     override func viewIsAppearing(_ animated: Bool) {
@@ -282,26 +299,32 @@ final class SmartListPromptViewController: UIViewController, UITextViewDelegate,
     /// Building it by hand goes the same way as a request, with a short reply instead of a reading, so the builder always
     /// continues a conversation that can be tapped to ask after all.
     private func skip() {
-        guard promptTask == nil else { return }
-        let conversation = SmartListConversation(prompt: "Skip and build it myself", isSkipped: true)
-        beginConversation()
         let replies = [
             "Okay, I get it, you don't need me. I'm not taking it personally.",
             "Fine, it's all yours. I'll just be over here, not reading anything.",
             "Building it yourself? Respect. I'll keep the seat warm.",
             "No problem. I wasn't that attached to it anyway."
         ]
+        answer(SmartListConversation(prompt: "Skip and build it myself", isSkipped: true), with: [
+            SmartListAssistant.Line(kind: .chose, text: replies.randomElement() ?? replies[0]),
+            SmartListAssistant.Line(kind: .note, text: "Changed your mind? Tap your message to ask me after all.")
+        ], draft: SmartListDraft())
+    }
+
+    /// Answers without reading the request, then continues to the builder with `draft`.
+    private func answer(_ conversation: SmartListConversation, with reply: [SmartListAssistant.Line], draft: SmartListDraft) {
+        guard promptTask == nil else { return }
+        beginConversation()
         promptTask = Task { @MainActor [weak self] in
             guard let self = self else { return }
             await self.startConversation(conversation)
-            conversation.show(SmartListAssistant.Step(lines: [
-                SmartListAssistant.Line(kind: .chose, text: replies.randomElement() ?? replies[0]),
-                SmartListAssistant.Line(kind: .note, text: "Changed your mind? Tap your message to ask me after all.")
-            ]))
-            await conversation.finish(with: nil)
+            let step = SmartListAssistant.Step(lines: reply)
+            conversation.show(step)
+            await conversation.finish(with: conversation.isSkipped ? nil
+                : SmartListAssistant.Definition(source: draft.source, mediaType: draft.mediaType, filters: draft.filters, steps: [step]))
             guard Task.isCancelled == false else { return }
             self.promptTask = nil
-            self.showBuilder(with: SmartListDraft(), continuing: conversation)
+            self.showBuilder(with: draft, continuing: conversation)
         }
     }
 
