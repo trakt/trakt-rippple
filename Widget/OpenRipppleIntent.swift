@@ -12,12 +12,11 @@ struct OpenRipppleIntent: AppIntent {
     static let title: LocalizedStringResource = "Open Rippple"
     static let description = IntentDescription("Opens Rippple. This action has no input and does not return a value.",
                                                categoryName: "Navigation")
-    static let openAppWhenRun = true
     static let isDiscoverable = true
 
     @MainActor
-    func perform() async throws -> some IntentResult {
-        .result()
+    func perform() async throws -> some OpensIntent {
+        .result(opensIntent: OpenURLIntent(URL(string: "ripl://")!))
     }
 }
 
@@ -29,6 +28,6 @@ struct OpenRipppleSearchIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some OpensIntent {
-        .result(opensIntent: OpenURLIntent(URL(string: "https://rippple.app/search")!))
+        .result(opensIntent: OpenURLIntent(URL(string: "ripl://search")!))
     }
 }
