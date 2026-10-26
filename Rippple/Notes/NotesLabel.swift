@@ -101,6 +101,10 @@ class LinkEnabledLabel: UILabel {
         let urlHasHttpsPrefix = urlString.hasPrefix("https://")
         let validURL = (urlHasHttpPrefix || urlHasHttpsPrefix) ? url : URL(string: "https://\(urlString)")!
 
+        if DeeplinkManager.shared.openInApp(validURL) {
+            return
+        }
+
         if UIApplication.shared.canOpenURL(validURL) {
             UIApplication.shared.open(validURL, options: [:], completionHandler: { success in
                 if success {

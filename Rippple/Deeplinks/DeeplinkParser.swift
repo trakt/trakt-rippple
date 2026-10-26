@@ -81,8 +81,7 @@ final class DeeplinkParser {
               let host = components.host else {
             return nil
         }
-        var pathComponents = components.path.components(separatedBy: "/")
-        pathComponents.removeFirst() // the first component is empty
+        let pathComponents = components.path.components(separatedBy: "/").filter { !$0.isEmpty }
 
         switch host {
         case "tmdb":
@@ -220,6 +219,35 @@ final class DeeplinkParser {
         return nil
     }
 
+    /// Link taps only intercept Trakt pages the app shows the same way; other pages (trending, a user's history…) stay in the browser.
+    func isSupportedWebLink(_ url: URL) -> Bool {
+        guard let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme),
+              let host = url.host?.lowercased(), ["app.trakt.tv", "trakt.tv", "www.trakt.tv"].contains(host) else {
+            return false
+        }
+
+        let path = url.pathComponents.filter { $0 != "/" }
+        guard let section = path.first else { return false }
+        let mediaListPages = ["anticipated", "popular", "recommended", "trending"]
+
+        switch (section, path.count) {
+        case ("movies", 2), ("shows", 2):
+            return !mediaListPages.contains(path[1])
+        case ("shows", 4):
+            return path[2] == "seasons" && Int(path[3]) != nil
+        case ("shows", 6):
+            return path[2] == "seasons" && Int(path[3]) != nil && path[4] == "episodes" && Int(path[5]) != nil
+        case ("people", 2), ("users", 2):
+            return true
+        case ("users", 4):
+            return path[2] == "lists" && path[3] != "view"
+        case ("comments", 2):
+            return Int64(path[1]) != nil
+        default:
+            return false
+        }
+    }
+
     private func cleanDeeplink(_ url: URL) -> URL {
         // https://app.trakt.tv/comments/158545 -> ripl://comments/158545
         // ripl://app.trakt.tv/comments/158545 -> ripl://comments/158545
@@ -238,14 +266,13 @@ final class DeeplinkParser {
             return cleanUrl
         }
 
-        if absoluteString.hasPrefix("https://app.trakt.tv/"),
-           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "https://app.trakt.tv/", with: "ripl://")) {
-            return cleanUrl
-        }
-
-        if absoluteString.hasPrefix("https://trakt.tv/"),
-           let cleanUrl = URL(string: absoluteString.replacingOccurrences(of: "https://trakt.tv/", with: "ripl://")) {
-            return cleanUrl
+        for host in ["app.trakt.tv/", "trakt.tv/", "www.trakt.tv/"] {
+            for prefix in ["https://" + host, "http://" + host]
+                where absoluteString.lowercased().hasPrefix(prefix) {
+                if let cleanUrl = URL(string: "ripl://" + absoluteString.dropFirst(prefix.count)) {
+                    return cleanUrl
+                }
+            }
         }
 
         if absoluteString.hasPrefix("ripl://app.trakt.tv/"),

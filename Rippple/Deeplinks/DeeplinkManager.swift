@@ -6,7 +6,7 @@
 //  Copyright © Trakt. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 final class DeeplinkManager {
     static let shared = DeeplinkManager()
@@ -48,5 +48,15 @@ final class DeeplinkManager {
         isProcessingDeeplink = false
 
         return deeplink
+    }
+
+    func openInApp(_ url: URL) -> Bool {
+        guard SessionManager.shared.isLoggedIn,
+              DeeplinkParser.shared.isSupportedWebLink(url),
+              registerDeeplink(url: url) else { return false }
+        if shouldOpenDeeplink() {
+            UIApplication.shared.switchToDeeplink()
+        }
+        return true
     }
 }
