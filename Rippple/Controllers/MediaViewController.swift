@@ -23,7 +23,15 @@ final class MediaViewController: UITableViewController {
         didSet {
             if didDownloadFull == true {
                 var snapshot = dataSource.snapshot()
-                snapshot.reloadItems([Wrapper.title, Wrapper.summary])
+                let reloadedItems = snapshot.itemIdentifiers.filter { item in
+                    switch item {
+                    case .title, .summary, .hero:
+                        return true
+                    default:
+                        return false
+                    }
+                }
+                snapshot.reloadItems(reloadedItems)
                 DispatchQueue.main.async {
                     self.dataSource.apply(snapshot,
                                           animatingDifferences: false)
@@ -34,11 +42,17 @@ final class MediaViewController: UITableViewController {
 
     private var didRecordView = false
 
-    private var didDownloadPoster = true {
+    private var posterLoadFailed = false {
         didSet {
-            if didDownloadPoster == false {
-                updateDatasource()
-            }
+            guard posterLoadFailed != oldValue else { return }
+            updateDatasource()
+        }
+    }
+
+    private var backdropLoadFailed = false {
+        didSet {
+            guard backdropLoadFailed != oldValue else { return }
+            updateDatasource()
         }
     }
 
@@ -96,44 +110,67 @@ final class MediaViewController: UITableViewController {
         }
     }
 
+    /// The media card when the width the cells get leaves room for its poster and title card side by side, on any
+    /// device. Otherwise the poster or backdrop row sits above the title card. Artwork that fails to load drops out,
+    /// down to the title card alone.
+    private var artworkItems: [Wrapper] {
+        let isEpisode = media.episode != nil
+        let showsPoster = isEpisode == false && posterLoadFailed == false
+        let hasArtwork = showsPoster || backdropLoadFailed == false
+        if hasArtwork, heroCardFits() {
+            return [.hero(showsPoster)]
+        }
+        if isEpisode {
+            return backdropLoadFailed ? [.title] : [.backdrop, .title]
+        }
+        return posterLoadFailed ? [.title] : [.poster, .title]
+    }
+
+    private var appliedArtworkItems = [Wrapper]()
+    private var lastCellContentWidth: CGFloat?
+
+    /// The width cells lay out their content in. The table runs under a floating sidebar or the Duo's side rail, and
+    /// its cells keep clear of those through the safe area, so this is narrower than the table itself.
+    private var cellContentWidth: CGFloat {
+        guard tableView.insetsContentViewsToSafeArea else { return tableView.bounds.width }
+        return tableView.bounds.width - tableView.safeAreaInsets.left - tableView.safeAreaInsets.right
+    }
+
+    /// Uses the best width known so far. Rows built at a width that turns out wrong are replaced once the page appears.
+    private func heroCardFits() -> Bool {
+        guard cellContentWidth > 0 else { return false }
+        return MediaHeroTableViewCell.fitsTitleCard(inContentWidth: cellContentWidth)
+    }
+
+    /// Rebuilds the rows only when the header artwork they'd show has changed.
+    private func updateArtworkIfNeeded() {
+        guard media != nil, artworkItems != appliedArtworkItems else { return }
+        updateDatasource()
+    }
+
+    private func updateArtworkForCurrentWidth() {
+        lastCellContentWidth = cellContentWidth
+        updateArtworkIfNeeded()
+    }
+
     private func updateDatasource() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.content])
+        appliedArtworkItems = artworkItems
+        let headerItems = [Wrapper.header] + appliedArtworkItems
+        let detailItems: [Wrapper] = [.activity, .whereToWatch, .rating, .comments, .cast, .stats, .summary]
         switch media! {
-        case .movie:
-            if didDownloadPoster {
-                snapshot.appendItems([.header, .poster, .title, .activity, .whereToWatch, .rating, .comments, .cast, .stats, .summary])
-            } else {
-                snapshot.appendItems([.header, .title, .activity, .whereToWatch, .rating, .comments, .cast, .stats, .summary])
-            }
+        case .movie, .episode:
+            snapshot.appendItems(headerItems + detailItems)
         case .show:
             if UserManager.shared.currentUser != nil {
-                if didDownloadPoster {
-                    snapshot.appendItems([.header, .poster, .title, .activity, .whereToWatch, .seasons, .rating, .comments, .cast, .stats, .summary])
-                } else {
-                    snapshot.appendItems([.header, .title, .activity, .whereToWatch, .seasons, .rating, .comments, .cast, .stats, .summary])
-                }
+                snapshot.appendItems(headerItems + [.activity, .whereToWatch, .seasons, .rating, .comments, .cast, .stats, .summary])
             } else {
-                if didDownloadPoster {
-                    snapshot.appendItems([.header, .poster, .title, .activity, .whereToWatch, .rating, .comments, .cast, .stats, .summary])
-                } else {
-                    snapshot.appendItems([.header, .title, .activity, .whereToWatch, .rating, .comments, .cast, .stats, .summary])
-                }
-            }
-        case .episode:
-            if didDownloadPoster {
-                snapshot.appendItems([.header, .backdrop, .title, .activity, .whereToWatch, .rating, .comments, .cast, .stats, .summary])
-            } else {
-                snapshot.appendItems([.header, .title, .activity, .whereToWatch, .rating, .comments, .cast, .stats, .summary])
+                snapshot.appendItems(headerItems + detailItems)
             }
         case .season(let season, let show):
+            snapshot.appendItems(headerItems + detailItems)
             if UserManager.shared.currentUser != nil {
-                if didDownloadPoster {
-                    snapshot.appendItems([.header, .poster, .title, .activity, .whereToWatch, .rating, .comments, .cast, .stats, .summary])
-                } else {
-                    snapshot.appendItems([.header, .title, .activity, .whereToWatch, .rating, .comments, .cast, .stats, .summary])
-                }
-
                 var episodeWrappers = [Wrapper]()
                 if let episodes = season.episodes {
                     episodeWrappers.append(.spacer(5.003))
@@ -152,12 +189,6 @@ final class MediaViewController: UITableViewController {
                     episodeWrappers.append(.spacer(5.004))
                 }
                 snapshot.insertItems(episodeWrappers, afterItem: .whereToWatch)
-            } else {
-                if didDownloadPoster {
-                    snapshot.appendItems([.header, .poster, .title, .activity, .whereToWatch, .rating, .comments, .cast, .stats, .summary])
-                } else {
-                    snapshot.appendItems([.header, .title, .activity, .whereToWatch, .rating, .comments, .cast, .stats, .summary])
-                }
             }
         case .list:
             break
@@ -265,6 +296,7 @@ final class MediaViewController: UITableViewController {
         case notes
         case spacer(Float)
         case header
+        case hero(Bool)
         case openIn
     }
 
@@ -274,24 +306,31 @@ final class MediaViewController: UITableViewController {
         switch item {
         case .backdrop:
             let cell = tableView.dequeueReusableCell(withIdentifier: "backdrop") as! MediaBackdropTableViewCell
-            cell.backdropDownloadResultReceiver.listen { [weak self] didDownload in
-                guard let self = self else { return }
-                self.didDownloadPoster = didDownload
-            }.disposed(by: self.disposeBag)
-            cell.media = self.media
+            cell.backdropView.delegate = self
+            self.listenToBackdropLoad(of: cell.backdropView)
+            cell.backdropView.configure(media: self.media)
             return cell
         case .poster:
             let cell = tableView.dequeueReusableCell(withIdentifier: "poster") as! MediaPosterTableViewCell
-            cell.posterDownloadResultReceiver.listen { [weak self] didDownload in
-                guard let self = self else { return }
-                self.didDownloadPoster = didDownload
-            }.disposed(by: self.disposeBag)
-            cell.media = self.media
+            cell.posterView.delegate = self
+            cell.backdropView.delegate = self
+            self.listenToPosterLoad(of: cell.posterView)
+            cell.posterView.media = self.media
+            cell.backdropView.configure(media: self.media)
             return cell
         case .title:
             let cell = tableView.dequeueReusableCell(withIdentifier: "title") as! MediaTitleTableViewCell
-            cell.media = self.media
-            cell.delegate = self
+            cell.titleCardView.media = self.media
+            cell.titleCardView.delegate = self
+            return cell
+        case .hero(let showsPoster):
+            let cell = tableView.dequeueReusableCell(withIdentifier: "hero") as! MediaHeroTableViewCell
+            cell.posterView.delegate = self
+            cell.backdropView.delegate = self
+            cell.titleCardView.delegate = self
+            self.listenToPosterLoad(of: cell.posterView)
+            self.listenToBackdropLoad(of: cell.backdropView)
+            cell.configure(media: self.media, showsPoster: showsPoster)
             return cell
         case .activity:
             let cell = tableView.dequeueReusableCell(withIdentifier: "activity") as! PulsePreviewTableViewCell
@@ -409,6 +448,20 @@ final class MediaViewController: UITableViewController {
 
     private let menuDelegate = MediaContextMenuInteractionDelegate()
 
+    private func listenToPosterLoad(of posterView: MediaPosterView) {
+        posterView.loadResultReceiver.listen { [weak self] didLoad in
+            guard let self = self else { return }
+            self.posterLoadFailed = didLoad == false
+        }.disposed(by: disposeBag)
+    }
+
+    private func listenToBackdropLoad(of backdropView: MediaBackdropView) {
+        backdropView.loadResultReceiver.listen { [weak self] didLoad in
+            guard let self = self else { return }
+            self.backdropLoadFailed = didLoad == false
+        }.disposed(by: disposeBag)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -435,11 +488,12 @@ final class MediaViewController: UITableViewController {
         tableView.allowsFocus = false
         tableView.register(UINib(nibName: "PulsePreviewTableViewCell", bundle: nil), forCellReuseIdentifier: "activity")
         tableView.register(UINib(nibName: "SocialActivityTableViewCell", bundle: nil), forCellReuseIdentifier: "social activity")
-        tableView.register(UINib(nibName: "MediaBackdropTableViewCell", bundle: nil), forCellReuseIdentifier: "backdrop")
-        tableView.register(UINib(nibName: "MediaPosterTableViewCell", bundle: nil), forCellReuseIdentifier: "poster")
+        tableView.register(MediaBackdropTableViewCell.self, forCellReuseIdentifier: "backdrop")
+        tableView.register(MediaPosterTableViewCell.self, forCellReuseIdentifier: "poster")
+        tableView.register(MediaHeroTableViewCell.self, forCellReuseIdentifier: "hero")
         tableView.register(UINib(nibName: "MediaOverviewTableViewCell", bundle: nil), forCellReuseIdentifier: "overview")
         tableView.register(UINib(nibName: "RatingsTableViewCell", bundle: nil), forCellReuseIdentifier: "ratings")
-        tableView.register(UINib(nibName: "MediaTitleTableViewCell", bundle: nil), forCellReuseIdentifier: "title")
+        tableView.register(MediaTitleTableViewCell.self, forCellReuseIdentifier: "title")
         tableView.register(UINib(nibName: "MediaCommentsTableViewCell", bundle: nil), forCellReuseIdentifier: "comments")
         tableView.register(UINib(nibName: "MediaMoreTableViewCell", bundle: nil), forCellReuseIdentifier: "more")
         tableView.register(UINib(nibName: "CastTableViewCell", bundle: nil), forCellReuseIdentifier: "cast")
@@ -533,7 +587,7 @@ final class MediaViewController: UITableViewController {
             var snapshot = self.dataSource.snapshot()
             for identifier in snapshot.itemIdentifiers {
                 switch identifier {
-                case .title:
+                case .title, .hero:
                     snapshot.reloadItems([identifier])
                 default:
                     continue
@@ -547,7 +601,7 @@ final class MediaViewController: UITableViewController {
             var snapshot = self.dataSource.snapshot()
             for identifier in snapshot.itemIdentifiers {
                 switch identifier {
-                case .backdrop:
+                case .backdrop, .hero:
                     snapshot.reloadItems([identifier])
                 default:
                     continue
@@ -922,10 +976,31 @@ final class MediaViewController: UITableViewController {
 
     private let actionButtons = UIStackView()
 
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        view.setNeedsLayout()
+    }
+
+    /// Decides the header layout before the page shows, so its rows load at the right size from the start.
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateArtworkForCurrentWidth()
+    }
+
+    /// The page's final size and safe area are only guaranteed here, in case they changed since `viewWillAppear`.
+    override func viewIsAppearing(_ animated: Bool) {
+        super.viewIsAppearing(animated)
+        updateArtworkForCurrentWidth()
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
         view.bringSubviewToFront(actionButtons)
+
+        // A resized window, a rotation, a sidebar that shows or hides or an unfolding Duo can switch layouts.
+        guard tableView.window != nil, cellContentWidth != lastCellContentWidth else { return }
+        updateArtworkForCurrentWidth()
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -1186,6 +1261,8 @@ extension MediaViewController {
             return UITableView.automaticDimension
         case .header:
             return UITableView.automaticDimension
+        case .hero:
+            return UITableView.automaticDimension
         }
     }
 
@@ -1193,12 +1270,6 @@ extension MediaViewController {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
 
         switch item {
-        case .poster, .backdrop:
-            let imageBrowserViewController = ImageBrowserViewController()
-            imageBrowserViewController.media = media
-            let browserNavigationController = UINavigationController(rootViewController: imageBrowserViewController)
-            browserNavigationController.modalPresentationStyle = .formSheet
-            present(browserNavigationController, animated: true, completion: nil)
         case .activity:
             performSegue(withIdentifier: "activities", sender: media)
         case .socialActivity:
@@ -1249,7 +1320,25 @@ extension MediaViewController: UITableViewDragDelegate {
     }
 
     private func dragItems(at indexPath: IndexPath) -> [UIDragItem] {
-        return UIDragItem.mediaItems(from: tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell)
+        switch tableView.cellForRow(at: indexPath) {
+        case let cell as MediaPosterTableViewCell:
+            return UIDragItem.mediaItems(from: cell)
+        case let cell as MediaHeroTableViewCell where media.episode == nil:
+            return UIDragItem.mediaItems(from: cell)
+        default:
+            return []
+        }
+    }
+
+    private func posterView(at indexPath: IndexPath) -> MediaPosterView? {
+        switch tableView.cellForRow(at: indexPath) {
+        case let cell as MediaPosterTableViewCell:
+            return cell.posterView
+        case let cell as MediaHeroTableViewCell where cell.posterView.isHidden == false:
+            return cell.posterView
+        default:
+            return nil
+        }
     }
 
     func tableView(_ tableView: UITableView, dragPreviewParametersForRowAt indexPath: IndexPath) -> UIDragPreviewParameters? {
@@ -1258,47 +1347,22 @@ extension MediaViewController: UITableViewDragDelegate {
     }
 
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell {
-            guard let image = cell.posterImageView.image else { return nil }
-
-            return UIContextMenuConfiguration(identifier: indexPath as NSCopying,
-                                              previewProvider: nil) { _ -> UIMenu? in
-                let copyAction = UIAction(title: "Copy Image",
-                                          image: UIImage(systemName: "doc.on.doc"),
-                                          identifier: nil) { _ in
-                    UIPasteboard.general.image = image
-                }
-                let saveAction = UIAction(title: "Save Image",
-                                          image: UIImage(systemName: "square.and.arrow.down"),
-                                          identifier: nil) { _ in
-                    self.writeToPhotoAlbum(image: image)
-                }
-                let shareAction = UIAction(title: "Share Image",
-                                           image: UIImage(systemName: "square.and.arrow.up"),
-                                           identifier: nil) { _ in
-                    self.share(image: image)
-                }
-                return UIMenu(children: [copyAction, saveAction, shareAction])
-            }
-        }
-
-        return nil
+        guard let posterView = posterView(at: indexPath),
+              posterView.bounds.contains(posterView.convert(point, from: tableView)) else { return nil }
+        return posterView.makeContextMenuConfiguration(identifier: indexPath as NSCopying)
     }
 
     override func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-        guard let indexPath = configuration.identifier as? IndexPath else { return nil }
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell {
-            return UITargetedPreview(view: cell.posterImageView, parameters: UIPreviewParameters())
-        }
-        return nil
+        return posterPreview(for: configuration)
     }
 
     override func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-        guard let indexPath = configuration.identifier as? IndexPath else { return nil }
-        if let cell = tableView.cellForRow(at: indexPath) as? MediaPosterTableViewCell {
-            return UITargetedPreview(view: cell.posterImageView, parameters: UIPreviewParameters())
-        }
-        return nil
+        return posterPreview(for: configuration)
+    }
+
+    private func posterPreview(for configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        guard let indexPath = configuration.identifier as? IndexPath, let posterView = posterView(at: indexPath) else { return nil }
+        return UITargetedPreview(view: posterView.posterImageView, parameters: UIPreviewParameters())
     }
 
     private func writeToPhotoAlbum(image: UIImage) {
@@ -1360,8 +1424,8 @@ extension MediaViewController {
     }
 }
 
-extension MediaViewController: MediaTitleTableViewCellDelegate {
-    func cell(_ cell: MediaTitleTableViewCell, action: MediaTitleTableViewCell.Action) {
+extension MediaViewController: MediaTitleCardViewDelegate {
+    func titleCardView(_ view: MediaTitleCardView, action: MediaTitleCardView.Action) {
         switch action {
         case .presentShow:
             performSegue(withIdentifier: "media", sender: nil)
@@ -1469,6 +1533,25 @@ extension MediaViewController: LinkTableViewCellDelegate {
 extension MediaViewController: MediaMoreTableViewCellDelegate {
     func cell(_ cell: MediaMoreTableViewCell, didSelect season: Season) {
         performSegue(withIdentifier: "media", sender: season.mediaModel(given: media.show!))
+    }
+}
+
+extension MediaViewController: MediaArtworkViewDelegate {
+    func artworkView(_ view: UIView, didRequestImageBrowserFor media: MediaModel, filter: ImageItem.ImageType?) {
+        let imageBrowserViewController = ImageBrowserViewController()
+        imageBrowserViewController.media = media
+        imageBrowserViewController.initialFilter = filter
+        let browserNavigationController = UINavigationController(rootViewController: imageBrowserViewController)
+        browserNavigationController.modalPresentationStyle = .formSheet
+        present(browserNavigationController, animated: true, completion: nil)
+    }
+
+    func artworkView(_ view: UIView, didRequestSaving image: UIImage) {
+        writeToPhotoAlbum(image: image)
+    }
+
+    func artworkView(_ view: UIView, didRequestSharing image: UIImage) {
+        share(image: image)
     }
 }
 

@@ -32,6 +32,8 @@ final class ImageBrowserViewController: UIViewController {
     // MARK: - Public Properties
 
     var media: MediaModel!
+    /// The tab to open on, when the media has it. Otherwise the browser opens on its default tab.
+    var initialFilter: ImageItem.ImageType?
 
     // MARK: - Private Properties
 
@@ -244,6 +246,9 @@ final class ImageBrowserViewController: UIViewController {
 
     private func defaultFilter() -> ImageItem.ImageType {
         guard let media = media else { return .poster }
+        if let initialFilter = initialFilter, availableFilters().contains(initialFilter) {
+            return initialFilter
+        }
 
         switch media {
         case .movie, .show, .season:

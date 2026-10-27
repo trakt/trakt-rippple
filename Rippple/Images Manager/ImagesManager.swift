@@ -876,6 +876,8 @@ final class PosterImageView: UIImageView {
     var isRounded = false
     var isBlurred = false
     var transitionDuration: TimeInterval?
+    /// When false, only images coming from the network fade in; cached ones show right away.
+    var fadesCachedImages = true
 
     var completion: ((Bool) -> Void)?
     var overrideBackgroundColor: UIColor?
@@ -960,7 +962,9 @@ final class PosterImageView: UIImageView {
         ]
 
         if let transitionDuration = transitionDuration {
-            options.append(.forceTransition)
+            if fadesCachedImages {
+                options.append(.forceTransition)
+            }
             options.append(.transition(.fade(transitionDuration)))
         }
 
@@ -1789,7 +1793,14 @@ final class BackdropImageView: UIImageView {
 
     var scale: CGFloat = 1.0
     var isRounded = false
+    var isBlurred = false
     var transitionDuration: TimeInterval?
+    /// When false, only images coming from the network fade in; cached ones show right away.
+    var fadesCachedImages = true
+
+    /// When true, a change of `showEpisodeSpoilers` keeps the image on screen until the other one dissolves over it.
+    var dissolvesSpoilerChanges = false
+    private var keepsImageWhileLoading = false
 
     var completion: ((Bool) -> Void)?
     var overrideBackgroundColor: UIColor?
@@ -1798,6 +1809,7 @@ final class BackdropImageView: UIImageView {
         didSet {
             guard showEpisodeSpoilers != oldValue,
                   media?.episode != nil else { return }
+            keepsImageWhileLoading = dissolvesSpoilerChanges && image != nil
             loadCurrentBackdrop()
         }
     }
@@ -1805,8 +1817,15 @@ final class BackdropImageView: UIImageView {
     var media: MediaModel? {
         didSet {
             if media == oldValue { return }
+            keepsImageWhileLoading = false
             loadCurrentBackdrop()
         }
+    }
+
+    /// Loads the backdrop again for the view's current size. The image on screen stays until the new one dissolves over it.
+    func reloadKeepingImage() {
+        keepsImageWhileLoading = image != nil
+        loadCurrentBackdrop()
     }
 
     private func loadCurrentBackdrop() {
@@ -1841,10 +1860,18 @@ final class BackdropImageView: UIImageView {
         size = size.applying(CGAffineTransform(scaleX: AppManager.shared.scale,
                                                y: AppManager.shared.scale))
         #endif
+        if isBlurred {
+            // A blur hides detail, so the smallest file is enough: TMDb's smallest backdrop is w300. The size stays
+            // the same whatever the view's bounds, so the cached blurred image is always found.
+            size = CGSize(width: 299, height: 299)
+        }
         contentMode = .scaleAspectFill
         if isRounded {
             filter = RoundCornerImageProcessor(cornerRadius: bounds.size.height / 2.0,
                                                targetSize: size)
+        } else if isBlurred {
+            filter = DownsamplingImageProcessor(size: size) |>
+                BlurImageProcessor(blurRadius: 10)
         } else {
             filter = DownsamplingImageProcessor(size: size)
         }
@@ -1857,12 +1884,22 @@ final class BackdropImageView: UIImageView {
             .loadDiskFileSynchronously
         ]
 
-        if let duration = transitionDuration ?? defaultTransitionDuration {
-            options.append(.forceTransition)
+        if keepsImageWhileLoading {
+            options.append(contentsOf: [.keepCurrentImageWhileLoading, .forceTransition, .transition(.fade(0.3))])
+        } else if let duration = transitionDuration ?? defaultTransitionDuration {
+            if fadesCachedImages {
+                options.append(.forceTransition)
+            }
             options.append(.transition(.fade(duration)))
         }
 
         return ImagesManager.shared.options(adding: options)
+    }
+
+    private func clearImageUnlessKept() {
+        if keepsImageWhileLoading == false {
+            image = nil
+        }
     }
 
     private func setBackdropImage(with imageURL: URL,
@@ -1872,6 +1909,7 @@ final class BackdropImageView: UIImageView {
                     placeholder: nil,
                     options: imageOptions(defaultTransitionDuration: defaultTransitionDuration)) { [weak self] result in
             guard let self = self, isCurrent() else { return }
+            self.keepsImageWhileLoading = false
 
             switch result {
             case .success:
@@ -1907,7 +1945,7 @@ final class BackdropImageView: UIImageView {
 
         guard let movie = media!.movie else { return }
 
-        image = nil
+        clearImageUnlessKept()
 
         let isCurrent: () -> Bool = { [weak self] in
             guard let self = self else { return false }
@@ -1977,7 +2015,7 @@ final class BackdropImageView: UIImageView {
 
         guard let show = media!.show else { return }
 
-        image = nil
+        clearImageUnlessKept()
 
         let isCurrent: () -> Bool = { [weak self] in
             guard let self = self else { return false }
@@ -2052,7 +2090,7 @@ final class BackdropImageView: UIImageView {
 
         guard case .episode(let episode, let show) = media else { return }
 
-        image = nil
+        clearImageUnlessKept()
 
         let isCurrent: () -> Bool = { [weak self] in
             guard let self = self else { return false }

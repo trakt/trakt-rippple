@@ -347,7 +347,11 @@
 		3A8B29082D9D6F6B0022574D /* SentimentsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8B29072D9D6F6B0022574D /* SentimentsTableViewCell.swift */; };
 		3A8B290A2D9D6F770022574D /* SentimentsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A8B29092D9D6F770022574D /* SentimentsTableViewCell.xib */; };
 		3A8CD21E249E5BB80075FA90 /* MediaPosterTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8CD21D249E5BB80075FA90 /* MediaPosterTableViewCell.swift */; };
-		3A8CD220249E5BCE0075FA90 /* MediaPosterTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A8CD21F249E5BCE0075FA90 /* MediaPosterTableViewCell.xib */; };
+		B559E4C15CB339C72C774C59 /* MediaCardLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A19E17D98518619BC2602E4 /* MediaCardLayout.swift */; };
+		2A4A014B1140FA60ECF32233 /* MediaTitleCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E9162C52158AA0C248995D /* MediaTitleCardView.swift */; };
+		CA6E9D8E9ED57B8394AD0A22 /* MediaPosterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54ECD5170EF2F820FEF31BB8 /* MediaPosterView.swift */; };
+		0E827B4D0819C7A44BE07BBD /* MediaBackdropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E62686124245D594A1B6891E /* MediaBackdropView.swift */; };
+		F12BE12516F23E2093AD220A /* MediaHeroTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F344BCE755CC74FC4D89A32D /* MediaHeroTableViewCell.swift */; };
 		3A8E05A424780AFC006B5B13 /* EpisodeNotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8E05A324780AFC006B5B13 /* EpisodeNotificationsManager.swift */; };
 		3A8E05A624793BCD006B5B13 /* MovieNotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8E05A524793BCD006B5B13 /* MovieNotificationsManager.swift */; };
 		3A8E05A8247ACC6A006B5B13 /* MediaWithoutActionsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A8E05A7247ACB98006B5B13 /* MediaWithoutActionsTableViewCell.xib */; };
@@ -413,7 +417,7 @@
 		3AAE4F59233BA239008FED45 /* PeopleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAE4F58233BA239008FED45 /* PeopleTableViewCell.swift */; };
 		3AAF0DB121EA1F72006BB569 /* MediaOverviewTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAF0DB021EA1F72006BB569 /* MediaOverviewTableViewCell.swift */; };
 		3AAF0DB321EA1F88006BB569 /* MediaOverviewTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AAF0DB221EA1F88006BB569 /* MediaOverviewTableViewCell.xib */; };
-		3AAF0DB821EB3C5B006BB569 /* MediaTitleTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AAF0DB721EB3C5B006BB569 /* MediaTitleTableViewCell.xib */; };
+		3AAF0DB821EB3C5B006BB569 /* MediaTitleCardView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AAF0DB721EB3C5B006BB569 /* MediaTitleCardView.xib */; };
 		3AAF0DBA21ECDA41006BB569 /* MediaTitleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAF0DB921ECDA41006BB569 /* MediaTitleTableViewCell.swift */; };
 		3AAF0DBE21EDC762006BB569 /* MediaCommentsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AAF0DBD21EDC762006BB569 /* MediaCommentsTableViewCell.swift */; };
 		3AAF0DC021EDC76F006BB569 /* MediaCommentsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AAF0DBF21EDC76F006BB569 /* MediaCommentsTableViewCell.xib */; };
@@ -511,7 +515,6 @@
 		3AE3FB2A2BB465FB0017CA13 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3AE3FB262BB465FB0017CA13 /* PrivacyInfo.xcprivacy */; };
 		3AE3FB322BD11E830017CA13 /* EpisodePreview.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3AE3FB312BD11DD60017CA13 /* EpisodePreview.storyboard */; };
 		3AE5C89724A0D67900820841 /* MediaBackdropTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE5C89624A0D67900820841 /* MediaBackdropTableViewCell.swift */; };
-		3AE5C89924A0D7C800820841 /* MediaBackdropTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AE5C89824A0D76800820841 /* MediaBackdropTableViewCell.xib */; };
 		3AE6FB301FC44F5B00DDF282 /* UserTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE6FB2F1FC44F5B00DDF282 /* UserTableViewCell.swift */; };
 		3AE6FB321FC44F6800DDF282 /* UserTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AE6FB311FC44F6800DDF282 /* UserTableViewCell.xib */; };
 		3AE6FB361FC4641500DDF282 /* ReplyTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3AE6FB351FC4641500DDF282 /* ReplyTableViewCell.xib */; };
@@ -987,7 +990,11 @@
 		3A8B29072D9D6F6B0022574D /* SentimentsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SentimentsTableViewCell.swift; sourceTree = "<group>"; };
 		3A8B29092D9D6F770022574D /* SentimentsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SentimentsTableViewCell.xib; sourceTree = "<group>"; };
 		3A8CD21D249E5BB80075FA90 /* MediaPosterTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPosterTableViewCell.swift; sourceTree = "<group>"; };
-		3A8CD21F249E5BCE0075FA90 /* MediaPosterTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaPosterTableViewCell.xib; sourceTree = "<group>"; };
+		1A19E17D98518619BC2602E4 /* MediaCardLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCardLayout.swift; sourceTree = "<group>"; };
+		79E9162C52158AA0C248995D /* MediaTitleCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTitleCardView.swift; sourceTree = "<group>"; };
+		54ECD5170EF2F820FEF31BB8 /* MediaPosterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPosterView.swift; sourceTree = "<group>"; };
+		E62686124245D594A1B6891E /* MediaBackdropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaBackdropView.swift; sourceTree = "<group>"; };
+		F344BCE755CC74FC4D89A32D /* MediaHeroTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaHeroTableViewCell.swift; sourceTree = "<group>"; };
 		3A8E05A324780AFC006B5B13 /* EpisodeNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeNotificationsManager.swift; sourceTree = "<group>"; };
 		3A8E05A524793BCD006B5B13 /* MovieNotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieNotificationsManager.swift; sourceTree = "<group>"; };
 		3A8E05A7247ACB98006B5B13 /* MediaWithoutActionsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaWithoutActionsTableViewCell.xib; sourceTree = "<group>"; };
@@ -1046,7 +1053,7 @@
 		3AAE4F58233BA239008FED45 /* PeopleTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleTableViewCell.swift; sourceTree = "<group>"; };
 		3AAF0DB021EA1F72006BB569 /* MediaOverviewTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaOverviewTableViewCell.swift; sourceTree = "<group>"; };
 		3AAF0DB221EA1F88006BB569 /* MediaOverviewTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaOverviewTableViewCell.xib; sourceTree = "<group>"; };
-		3AAF0DB721EB3C5B006BB569 /* MediaTitleTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaTitleTableViewCell.xib; sourceTree = "<group>"; };
+		3AAF0DB721EB3C5B006BB569 /* MediaTitleCardView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaTitleCardView.xib; sourceTree = "<group>"; };
 		3AAF0DB921ECDA41006BB569 /* MediaTitleTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTitleTableViewCell.swift; sourceTree = "<group>"; };
 		3AAF0DBD21EDC762006BB569 /* MediaCommentsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCommentsTableViewCell.swift; sourceTree = "<group>"; };
 		3AAF0DBF21EDC76F006BB569 /* MediaCommentsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaCommentsTableViewCell.xib; sourceTree = "<group>"; };
@@ -1140,7 +1147,6 @@
 		3AE3FB262BB465FB0017CA13 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		3AE3FB312BD11DD60017CA13 /* EpisodePreview.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = EpisodePreview.storyboard; sourceTree = "<group>"; };
 		3AE5C89624A0D67900820841 /* MediaBackdropTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaBackdropTableViewCell.swift; sourceTree = "<group>"; };
-		3AE5C89824A0D76800820841 /* MediaBackdropTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MediaBackdropTableViewCell.xib; sourceTree = "<group>"; };
 		3AE6FB2F1FC44F5B00DDF282 /* UserTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserTableViewCell.swift; sourceTree = "<group>"; };
 		3AE6FB311FC44F6800DDF282 /* UserTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UserTableViewCell.xib; sourceTree = "<group>"; };
 		3AE6FB351FC4641500DDF282 /* ReplyTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ReplyTableViewCell.xib; sourceTree = "<group>"; };
@@ -2441,11 +2447,14 @@
 				3A27032025C202A9000871A5 /* Where to watch */,
 				3ABBA4A024A891160063ACD7 /* Comment peek */,
 				3AE5C89624A0D67900820841 /* MediaBackdropTableViewCell.swift */,
-				3AE5C89824A0D76800820841 /* MediaBackdropTableViewCell.xib */,
 				3A8CD21D249E5BB80075FA90 /* MediaPosterTableViewCell.swift */,
-				3A8CD21F249E5BCE0075FA90 /* MediaPosterTableViewCell.xib */,
+				1A19E17D98518619BC2602E4 /* MediaCardLayout.swift */,
+				79E9162C52158AA0C248995D /* MediaTitleCardView.swift */,
+				54ECD5170EF2F820FEF31BB8 /* MediaPosterView.swift */,
+				E62686124245D594A1B6891E /* MediaBackdropView.swift */,
+				F344BCE755CC74FC4D89A32D /* MediaHeroTableViewCell.swift */,
 				3AAF0DB921ECDA41006BB569 /* MediaTitleTableViewCell.swift */,
-				3AAF0DB721EB3C5B006BB569 /* MediaTitleTableViewCell.xib */,
+				3AAF0DB721EB3C5B006BB569 /* MediaTitleCardView.xib */,
 				3AAF0DB021EA1F72006BB569 /* MediaOverviewTableViewCell.swift */,
 				3AAF0DB221EA1F88006BB569 /* MediaOverviewTableViewCell.xib */,
 				3AAF0DC121EDC78006BB569 /* RelatedMediaTableViewCell.swift */,
@@ -3158,7 +3167,6 @@
 				3A27031B25C2016C000871A5 /* WhereToWatchTableViewCell.xib in Resources */,
 				3A541CF12A606C0300E1A153 /* CommentsBrowseTableViewCell.xib in Resources */,
 				3A8B29052D9D45F80022574D /* SentimentsPeekCollectionViewCell.xib in Resources */,
-				3A8CD220249E5BCE0075FA90 /* MediaPosterTableViewCell.xib in Resources */,
 				3A1B95162A3C7E220044972F /* L1BrowseCollectionViewCell.xib in Resources */,
 				3ADFA0B62336601E00D8DD79 /* CastTableViewCell.xib in Resources */,
 				3A67B73C23A3FDAD003C5E4D /* ListActionTableViewCell.xib in Resources */,
@@ -3273,8 +3281,7 @@
 				3ACFB4B725C4131000BB4C12 /* WhereToWatchHeaderCollectionViewCell.xib in Resources */,
 				3AF19D5324E46324007C7238 /* SearchHeaderView.xib in Resources */,
 				3AB30A4B2A877EB700EB672D /* ServicesBrowseTableViewCell.xib in Resources */,
-				3AE5C89924A0D7C800820841 /* MediaBackdropTableViewCell.xib in Resources */,
-				3AAF0DB821EB3C5B006BB569 /* MediaTitleTableViewCell.xib in Resources */,
+				3AAF0DB821EB3C5B006BB569 /* MediaTitleCardView.xib in Resources */,
 				3A67BF5826A6BB8B0093E40B /* ToWatchStoryCollectionViewCell.xib in Resources */,
 				3A44BF421FD2CC950026AADE /* Login.storyboard in Resources */,
 				3A4342812BCFE60800FD85FE /* PersonPreview.storyboard in Resources */,
@@ -3764,6 +3771,11 @@
 				3AAF0DBA21ECDA41006BB569 /* MediaTitleTableViewCell.swift in Sources */,
 				3A02D05E2B49EB0200B6E51B /* DeepLinksViewController.swift in Sources */,
 				3A8CD21E249E5BB80075FA90 /* MediaPosterTableViewCell.swift in Sources */,
+				B559E4C15CB339C72C774C59 /* MediaCardLayout.swift in Sources */,
+				2A4A014B1140FA60ECF32233 /* MediaTitleCardView.swift in Sources */,
+				CA6E9D8E9ED57B8394AD0A22 /* MediaPosterView.swift in Sources */,
+				0E827B4D0819C7A44BE07BBD /* MediaBackdropView.swift in Sources */,
+				F12BE12516F23E2093AD220A /* MediaHeroTableViewCell.swift in Sources */,
 				3A255060213329AA005C8C41 /* CommentDraftManager.swift in Sources */,
 				3AB9099E2C516DF0005EE32D /* ShelfManager.swift in Sources */,
 				3A77A85829FC1B410006177D /* NotificationModel.swift in Sources */,

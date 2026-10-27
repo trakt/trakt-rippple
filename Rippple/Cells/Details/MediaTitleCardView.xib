@@ -10,12 +10,9 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="title" rowHeight="220" id="uqR-kW-ESU" customClass="MediaTitleTableViewCell" customModule="Rippple" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="710" height="220"/>
-            <autoresizingMask key="autoresizingMask"/>
-            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="uqR-kW-ESU" id="7qK-lE-rga">
-                <rect key="frame" x="0.0" y="0.0" width="710" height="220"/>
-                <autoresizingMask key="autoresizingMask"/>
+        <view clipsSubviews="YES" contentMode="scaleToFill" id="7qK-lE-rga" customClass="MediaTitleCardView" customModule="Rippple" customModuleProvider="target">
+                <rect key="frame" x="0.0" y="0.0" width="686" height="212"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JUe-xR-9dU" customClass="CardView" customModule="Rippple" customModuleProvider="target">
                         <rect key="frame" x="12" y="4" width="686" height="212"/>
@@ -188,37 +185,36 @@
                         <rect key="frame" x="24" y="63.5" width="79.5" height="33.5"/>
                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                         <connections>
-                            <action selector="runtimeButtonTouchedUpInside:" destination="uqR-kW-ESU" eventType="touchUpInside" id="I3j-xP-S9X"/>
+                            <action selector="runtimeButtonTouchedUpInside:" destination="7qK-lE-rga" eventType="touchUpInside" id="I3j-xP-S9X"/>
                         </connections>
                     </button>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" preferredBehavioralStyle="pad" translatesAutoresizingMaskIntoConstraints="NO" id="bcy-b4-cnr">
                         <rect key="frame" x="24" y="100" width="37.5" height="17"/>
                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                         <connections>
-                            <action selector="ageRatingCertificationButtonTouchedUpInside:" destination="uqR-kW-ESU" eventType="touchUpInside" id="M4R-Gn-tEY"/>
+                            <action selector="ageRatingCertificationButtonTouchedUpInside:" destination="7qK-lE-rga" eventType="touchUpInside" id="M4R-Gn-tEY"/>
                         </connections>
                     </button>
                 </subviews>
-                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
                     <constraint firstItem="rmb-K5-DXI" firstAttribute="leading" secondItem="XIS-Oy-9rR" secondAttribute="leading" id="2Tk-wc-s75"/>
                     <constraint firstItem="bcy-b4-cnr" firstAttribute="top" secondItem="W0f-hg-uLk" secondAttribute="top" id="9tU-xt-YMP"/>
                     <constraint firstItem="W0f-hg-uLk" firstAttribute="trailing" secondItem="GAk-y0-PaN" secondAttribute="trailing" constant="0" id="Hv2-qh-t0h"/>
                     <constraint firstItem="rmb-K5-DXI" firstAttribute="bottom" secondItem="XIS-Oy-9rR" secondAttribute="bottom" id="Kps-iv-TJs"/>
-                    <constraint firstItem="JUe-xR-9dU" firstAttribute="top" secondItem="7qK-lE-rga" secondAttribute="top" constant="4" id="Mqm-iG-b5y"/>
+                    <constraint firstItem="JUe-xR-9dU" firstAttribute="top" secondItem="7qK-lE-rga" secondAttribute="top" id="Mqm-iG-b5y"/>
                     <constraint firstItem="rmb-K5-DXI" firstAttribute="top" secondItem="XIS-Oy-9rR" secondAttribute="top" id="QQY-Vj-2Bd"/>
                     <constraint firstItem="W0f-hg-uLk" firstAttribute="bottom" secondItem="GAk-y0-PaN" secondAttribute="bottom" constant="1" id="UKA-fl-7i5"/>
-                    <constraint firstItem="JUe-xR-9dU" firstAttribute="leading" secondItem="7qK-lE-rga" secondAttribute="leading" constant="12" id="XZL-yc-XNE"/>
+                    <constraint firstItem="JUe-xR-9dU" firstAttribute="leading" secondItem="7qK-lE-rga" secondAttribute="leading" id="XZL-yc-XNE"/>
                     <constraint firstItem="W0f-hg-uLk" firstAttribute="leading" secondItem="GAk-y0-PaN" secondAttribute="leading" constant="0" id="XmK-lD-CTx"/>
                     <constraint firstItem="rmb-K5-DXI" firstAttribute="trailing" secondItem="XIS-Oy-9rR" secondAttribute="trailing" id="bLc-FJ-wbg"/>
                     <constraint firstItem="bcy-b4-cnr" firstAttribute="leading" secondItem="W0f-hg-uLk" secondAttribute="leading" id="gf6-Pv-1jJ"/>
                     <constraint firstItem="bcy-b4-cnr" firstAttribute="trailing" secondItem="W0f-hg-uLk" secondAttribute="trailing" id="lk9-uE-HuU"/>
-                    <constraint firstAttribute="bottom" secondItem="JUe-xR-9dU" secondAttribute="bottom" constant="4" id="noD-FY-TQM"/>
+                    <constraint firstAttribute="bottom" secondItem="JUe-xR-9dU" secondAttribute="bottom" id="noD-FY-TQM"/>
                     <constraint firstItem="W0f-hg-uLk" firstAttribute="top" secondItem="GAk-y0-PaN" secondAttribute="top" constant="-1" id="qJU-FZ-ypo"/>
-                    <constraint firstAttribute="trailing" secondItem="JUe-xR-9dU" secondAttribute="trailing" constant="12" id="xuY-xj-uby"/>
+                    <constraint firstAttribute="trailing" secondItem="JUe-xR-9dU" secondAttribute="trailing" id="xuY-xj-uby"/>
                     <constraint firstItem="bcy-b4-cnr" firstAttribute="bottom" secondItem="W0f-hg-uLk" secondAttribute="bottom" id="zp1-3d-XKG"/>
                 </constraints>
-            </tableViewCellContentView>
             <connections>
                 <outlet property="cardView" destination="JUe-xR-9dU" id="rVR-AR-Y8w"/>
                 <outlet property="certificationBorderView" destination="W0f-hg-uLk" id="oPZ-Cc-2Vh"/>
@@ -236,7 +232,7 @@
                 <outlet property="stingerLabel" destination="8nI-sf-CTj" id="7Bm-KN-3ND"/>
             </connections>
             <point key="canvasLocation" x="621" y="56"/>
-        </tableViewCell>
+        </view>
     </objects>
     <resources>
         <image name="Rotten_Tomatoes" width="138.75" height="141.25"/>

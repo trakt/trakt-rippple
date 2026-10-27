@@ -11,7 +11,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="cast" translatesAutoresizingMaskIntoConstraints="NO" id="QxJ-1G-vS1" customClass="CastCollectionViewCell" customModule="Rippple" customModuleProvider="target">
+        <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="cast" id="QxJ-1G-vS1" customClass="CastCollectionViewCell" customModule="Rippple" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="296" height="200"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
                 <rect key="frame" x="0.0" y="0.0" width="296" height="200"/>
@@ -44,7 +44,7 @@
                                                 <constraints>
                                                     <constraint firstAttribute="bottom" secondItem="y4G-LX-Cwd" secondAttribute="bottom" id="4Fz-aB-Xv8"/>
                                                     <constraint firstAttribute="bottom" secondItem="Zgw-m4-pnf" secondAttribute="bottom" id="6HT-6n-AEH"/>
-                                                    <constraint firstAttribute="width" constant="90" id="B4n-Fw-Wcf"/>
+                                                    <constraint firstAttribute="width" priority="999" constant="90" id="B4n-Fw-Wcf"/>
                                                     <constraint firstItem="Zgw-m4-pnf" firstAttribute="top" secondItem="1F0-K8-YKn" secondAttribute="top" id="KXn-Cd-Gcy"/>
                                                     <constraint firstAttribute="width" secondItem="1F0-K8-YKn" secondAttribute="height" multiplier="1:1" id="Mat-cf-Vhg"/>
                                                     <constraint firstItem="Zgw-m4-pnf" firstAttribute="leading" secondItem="1F0-K8-YKn" secondAttribute="leading" id="Phb-BS-ahC"/>
@@ -76,7 +76,7 @@
                                                     </label>
                                                 </subviews>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="Ac7-iK-efX"/>
+                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" priority="999" constant="100" id="Ac7-iK-efX"/>
                                                     <constraint firstAttribute="width" relation="lessThanOrEqual" constant="150" id="T5D-Rg-dyo"/>
                                                 </constraints>
                                             </stackView>

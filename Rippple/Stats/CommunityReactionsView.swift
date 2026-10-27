@@ -20,7 +20,10 @@ final class CommunityReactionsView: UIControl {
     static let reactSymbolName = "custom.face.smiling.badge.plus"
 
     private let disposeBag = DisposeBag()
-    private let font = UIFont.preferredFont(forTextStyle: .title3)
+    /// Follows the view's own text size, so a container's maximum size category applies to the emojis too.
+    private var font: UIFont {
+        return UIFont.preferredFont(forTextStyle: .title3, compatibleWith: traitCollection)
+    }
 
     /// One label per emoji, so each can slide on its own.
     private let emojiRow = UIStackView()
@@ -77,7 +80,7 @@ final class CommunityReactionsView: UIControl {
         addSubview(emojiRow)
 
         smileyView.tintColor = UIColor(asset: .globalTint)
-        smileyView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(font: font)
+        smileyView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .title3)
         smileyView.isUserInteractionEnabled = false
         smileyView.alpha = 0
         smileyView.translatesAutoresizingMaskIntoConstraints = false
@@ -93,6 +96,10 @@ final class CommunityReactionsView: UIControl {
         setContentHuggingPriority(.required, for: .horizontal)
         setContentCompressionResistancePriority(.required, for: .horizontal)
         setContentHuggingPriority(.required, for: .vertical)
+
+        registerForTraitChanges([UITraitPreferredContentSizeCategory.self]) { (view: CommunityReactionsView, _) in
+            view.invalidateIntrinsicContentSize()
+        }
 
         isAccessibilityElement = true
         accessibilityTraits = .button
@@ -208,6 +215,7 @@ final class CommunityReactionsView: UIControl {
             let label = UILabel()
             label.text = reaction.emoji
             label.font = font
+            label.adjustsFontForContentSizeCategory = true
             label.alpha = 0
             label.isAccessibilityElement = false
             // The most sent reaction stays on top while they overlap.
