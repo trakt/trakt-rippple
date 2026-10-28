@@ -117,7 +117,7 @@ final class SmartListBuilderViewController: SearchResultsViewController {
                      conversationTop: CGFloat = 0) -> SmartListBuilderViewController? {
         guard SessionManager.shared.isLoggedIn, let owner = UserManager.shared.currentUser,
               let builder = UIStoryboard(name: "SmartSearch", bundle: nil)
-              .instantiateViewController(withIdentifier: "SmartListBuilderViewController") as? SmartListBuilderViewController else { return nil }
+                  .instantiateViewController(withIdentifier: "SmartListBuilderViewController") as? SmartListBuilderViewController else { return nil }
         builder.list = list
         builder.owner = owner
         builder.original = draft

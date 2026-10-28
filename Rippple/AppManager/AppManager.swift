@@ -10,14 +10,13 @@ import AuthenticationServices
 import BackgroundTasks
 import Foundation
 import SafariServices
+import StoreKit
 import Toast
 import UIKit
+import WidgetKit
 #if !targetEnvironment(macCatalyst)
 import ActivityKit
 #endif
-
-import StoreKit
-import WidgetKit
 
 final class AppManager: NSObject, ASWebAuthenticationPresentationContextProviding {
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {

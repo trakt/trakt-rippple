@@ -14,7 +14,7 @@ If you update dependencies, update their requirements, resolved files, and the v
 - **SwiftFormat** (`SwiftFormat`)
   - **Description**: Tool to format and lint Swift source code.
   - **Source**: https://github.com/nicklockwood/SwiftFormat
-  - **Pinned version**: `0.63.0`
+  - **Pinned version**: `0.64.4`
 
 ## Swift Package Manager dependencies
 
@@ -47,7 +47,7 @@ If you update dependencies, update their requirements, resolved files, and the v
 - **Kingfisher** (`Kingfisher`)
   - **Description**: Pure Swift library for downloading and caching images from the web.
   - **Source**: https://github.com/onevcat/Kingfisher
-  - **Pinned version**: `8.12.0`
+  - **Pinned version**: `8.14.0`
 
 - **KingfisherWebP** (`KingfisherWebP`)
   - **Description**: WebP decoding and caching for Kingfisher, including animated comment attachments.

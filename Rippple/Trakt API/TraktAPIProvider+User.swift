@@ -133,9 +133,9 @@ extension TraktAPIProvider {
 
     private static func paginationValue(_ name: String, in response: Response) -> Int? {
         guard let value = response.response?.allHeaderFields.first(where: {
-            String(describing: $0.key).caseInsensitiveCompare(name) == .orderedSame
-        })?.value,
-            let count = Int(String(describing: value)), count >= 0 else { return nil }
+                  String(describing: $0.key).caseInsensitiveCompare(name) == .orderedSame
+              })?.value,
+              let count = Int(String(describing: value)), count >= 0 else { return nil }
         return count
     }
 }

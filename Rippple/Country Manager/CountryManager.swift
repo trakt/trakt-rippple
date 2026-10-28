@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Receiver
 
 enum Country: String, CaseIterable, Identifiable {
     var id: String {
@@ -157,8 +158,6 @@ enum Country: String, CaseIterable, Identifiable {
         return Locale.current.localizedString(forRegionCode: rawValue) ?? "Unknown"
     }
 }
-
-import Receiver
 
 let (onCountryChangedTransmitter, onCountryChangedReceiver) = Receiver<Country>.make(with: .hot)
 
