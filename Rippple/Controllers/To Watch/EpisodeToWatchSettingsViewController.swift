@@ -560,6 +560,10 @@ struct EpisodeToWatchSettingsView: View {
                         editMode = editMode == .active ? .inactive : .active
                     }
                 }
+            } footer: {
+                if viewModel.otherListItems.contains(where: { $0.enabled && $0.list?.isSmartList == true }) {
+                    Text("Each Smart List adds up to \(TraktAPIProvider.smartListToWatchItemsLimit) items to To Watch.")
+                }
             }
 
             Section {

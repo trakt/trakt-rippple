@@ -144,7 +144,7 @@ extension TraktAPIProvider {
 extension TraktAPIProvider {
     /// Smart lists can resolve from open-ended sources such as trending, so they are read as a single capped page.
     static let smartListDetailItemsLimit = 250
-    static let smartListToWatchItemsLimit = 100
+    static let smartListToWatchItemsLimit = 10
 
     static func fetchSmartLists(user: User,
                                 provider: MoyaProvider<TraktAPIService> = TraktAPIProvider.provider,
@@ -170,10 +170,9 @@ extension TraktAPIProvider {
         }
     }
 
-    /// Fetches the items of a custom list, or the first `smartListLimit` items a smart list currently resolves to.
+    /// Fetches the items of a custom list, or the first items a smart list currently resolves to.
     static func fetchAllListItems(list: List,
                                   type: ListMediaType?,
-                                  smartListLimit: Int = smartListDetailItemsLimit,
                                   completion: @escaping (Result<[WatchlistItem], Error>) -> Void) {
         guard let slug = list.smartListSlug else {
             guard let id = list.identifiers.trakt else {
@@ -184,7 +183,7 @@ extension TraktAPIProvider {
             return
         }
 
-        TraktAPIProvider.provider.request(.smartListItems(slug: slug, pageInfo: PageInfo.firstPage(with: smartListLimit)),
+        TraktAPIProvider.provider.request(.smartListItems(slug: slug, pageInfo: PageInfo.firstPage(with: smartListDetailItemsLimit)),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             completion(Result {
                 let response = try result.get().filterSuccessfulStatusCodes()

@@ -495,7 +495,9 @@ final class MovieToWatchManager {
             sources.append(.collection(type: .movies, order: 3, media: \.movie))
         }
         for otherList in settings.otherLists where otherList.enabled {
-            if let list = otherList.list {
+            if let smartList = otherList.list?.smartList {
+                sources.append(.smartList(smartList, id: otherList.id, order: 100 + otherList.rank, mediaType: .movies, media: \.movie))
+            } else if let list = otherList.list {
                 sources.append(.list(list, id: otherList.id, order: 100 + otherList.rank, type: .movies, media: \.movie))
             } else if let smartSearch = otherList.smartSearch {
                 sources.append(.smartSearch(smartSearch, id: otherList.id, order: 100 + otherList.rank, media: \.movie))

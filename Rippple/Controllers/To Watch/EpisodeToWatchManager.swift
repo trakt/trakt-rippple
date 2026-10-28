@@ -523,7 +523,9 @@ final class EpisodeToWatchManager {
             sources.append(.collection(type: .shows, order: 4, media: \.show))
         }
         for otherList in settings.otherLists where otherList.enabled {
-            if let list = otherList.list {
+            if let smartList = otherList.list?.smartList {
+                sources.append(.smartList(smartList, id: otherList.id, order: 100 + otherList.rank, mediaType: .shows, media: \.show))
+            } else if let list = otherList.list {
                 sources.append(.list(list, id: otherList.id, order: 100 + otherList.rank, type: .shows, media: \.show))
             } else if let smartSearch = otherList.smartSearch {
                 sources.append(.smartSearch(smartSearch, id: otherList.id, order: 100 + otherList.rank, media: \.show))

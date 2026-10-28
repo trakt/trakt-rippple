@@ -142,12 +142,36 @@ extension ToWatchSource {
 
     static func list(_ list: List, id: String, order: Int, type: ListMediaType, media: @escaping (WatchlistItem) -> Media?) -> ToWatchSource {
         ToWatchSource(id: id, name: list.name, order: order) { completion in
-            TraktAPIProvider.fetchAllListItems(list: list,
-                                               type: type,
-                                               smartListLimit: TraktAPIProvider.smartListToWatchItemsLimit) { result in
+            TraktAPIProvider.fetchAllListItems(list: list, type: type) { result in
                 completion(result.map { $0.compactMap(media) })
             }
             return nil
+        }
+    }
+
+    /// Only the first few items of the media type, so a broad smart list never floods To Watch.
+    static func smartList(_ smartList: SmartList,
+                          id: String,
+                          order: Int,
+                          mediaType: SmartListMediaType,
+                          media: @escaping (MediaItem) -> Media?) -> ToWatchSource {
+        ToWatchSource(id: id, name: smartList.name.emojiUnescapedString, order: order) { completion in
+            let includesMediaType = mediaType == .movies ? smartList.mediaType.includesMovies : smartList.mediaType.includesShows
+            guard smartList.source != .unknown, includesMediaType else {
+                completion(.success([]))
+                return nil
+            }
+            // Read through the preview, narrowed to one media type, so a mixed list still gives a full page of it.
+            var draft = SmartListDraft(smartList: smartList)
+            draft.mediaType = mediaType
+            let pageInfo = PageInfo.firstPage(with: TraktAPIProvider.smartListToWatchItemsLimit)
+            return TraktAPIProvider.provider.request(.smartListPreview(draft, pageInfo: pageInfo), callbackQueue: .global(qos: .utility)) { result in
+                completion(Result {
+                    try result.get().filterSuccessfulStatusCodes()
+                        .map([MediaItem].self, using: TraktAPIProvider.decoder)
+                        .compactMap(media)
+                })
+            }
         }
     }
 
