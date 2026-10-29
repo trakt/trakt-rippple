@@ -799,12 +799,7 @@
 		3A1C9C6D2210355200A805D1 /* ActionTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionTableViewCell.swift; sourceTree = "<group>"; };
 		3A1D2E722591EDE900099144 /* ActivityHeaderTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ActivityHeaderTableViewCell.xib; sourceTree = "<group>"; };
 		3A1D48BC2B7F501300A32C64 /* CompletedShowsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletedShowsViewController.swift; sourceTree = "<group>"; };
-		3A1D48C02B9A3DAD00A32C64 /* apple-app-site-association */ = {isa = PBXFileReference; lastKnownFileType = text; path = "apple-app-site-association"; sourceTree = "<group>"; };
-		3A1D48C12B9A4BB600A32C64 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
-		3A1D48C32B9A4DBE00A32C64 /* .htaccess */ = {isa = PBXFileReference; lastKnownFileType = text; path = .htaccess; sourceTree = "<group>"; };
-		3A1D48C52B9A4EB300A32C64 /* style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = style.css; sourceTree = "<group>"; };
 		3A1D48F32BB41B4600A32C64 /* WhereToWatchImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhereToWatchImageView.swift; sourceTree = "<group>"; };
-		3A1D48F82BB7492300A32C64 /* static.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = static.gif; sourceTree = "<group>"; };
 		3A1F001A2AC41E3B00D80DB5 /* NotesListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesListViewController.swift; sourceTree = "<group>"; };
 		3A1F001D2AC4250800D80DB5 /* NotesTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NotesTableViewCell.xib; sourceTree = "<group>"; };
 		3A1F001F2AC4251400D80DB5 /* NotesTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesTableViewCell.swift; sourceTree = "<group>"; };
@@ -1530,18 +1525,6 @@
 				3A93BCBA2520D5C10097EBC8 /* MultipleWatchTableViewCell.xib */,
 			);
 			path = Actions;
-			sourceTree = "<group>";
-		};
-		3A1D48C72B9AFAF200A32C64 /* rippple.app */ = {
-			isa = PBXGroup;
-			children = (
-				3A1D48C02B9A3DAD00A32C64 /* apple-app-site-association */,
-				3A1D48C12B9A4BB600A32C64 /* index.html */,
-				3A1D48F82BB7492300A32C64 /* static.gif */,
-				3A1D48C32B9A4DBE00A32C64 /* .htaccess */,
-				3A1D48C52B9A4EB300A32C64 /* style.css */,
-			);
-			path = rippple.app;
 			sourceTree = "<group>";
 		};
 		3A1D48F22BB41B2D00A32C64 /* Where To Watch Image View */ = {
@@ -2341,7 +2324,6 @@
 				3A77A85629FC193B0006177D /* RipppleDebug.entitlements */,
 				3A68078624D437DA00EBF3F6 /* Configuration.storekit */,
 				3AE3FB262BB465FB0017CA13 /* PrivacyInfo.xcprivacy */,
-				3A1D48C72B9AFAF200A32C64 /* rippple.app */,
 			);
 			path = Rippple;
 			sourceTree = "<group>";
