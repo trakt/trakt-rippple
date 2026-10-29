@@ -295,8 +295,6 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
         markdownParser.displaySpoiler.color = .label
         markdownParser.mention.color = .label
         markdownParser.highlight.font = UIFont.preferredFont(forTextStyle: .callout, compatibleWith: UITraitCollection(preferredContentSizeCategory: min(UIApplication.shared.preferredContentSizeCategory, .extraExtraExtraLarge)))
-        markdownParser.link.color = UIColor(asset: .globalTint)
-        markdownParser.automaticLink.color = UIColor(asset: .globalTint)
 
         markdownParser.spoilerStrategy = .showAllSpoilers
 

@@ -242,8 +242,6 @@ extension CommentModel {
         markdownParser.allSpoiler.color = .label
         markdownParser.displaySpoiler.color = .label
         markdownParser.mention.color = .label
-        markdownParser.link.color = UIColor(asset: .globalTint)
-        markdownParser.automaticLink.color = UIColor(asset: .globalTint)
 
         if comment.isFiltered {
             markdownParser.spoilerStrategy = .hideAllSpoilers

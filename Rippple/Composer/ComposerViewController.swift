@@ -627,8 +627,6 @@ final class ComposerViewController: UIViewController {
     private func renderedText() -> NSAttributedString {
         let tint = UIColor(asset: .globalTint)
         markdownParser.highlight.highlightColor = tint.withAlphaComponent(0.4)
-        markdownParser.link.color = tint
-        markdownParser.automaticLink.color = tint
         return markdownParser.parse(draft.text.htmlDecoded.emojiUnescapedString)
     }
 

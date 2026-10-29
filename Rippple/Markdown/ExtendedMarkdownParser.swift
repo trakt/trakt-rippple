@@ -18,6 +18,18 @@ final class SpoilerMarkdownParser: MarkdownParser {
     let allSpoiler = MarkdownAllSpoiler(font: UIFont.preferredFont(forTextStyle: .body), color: .label)
     let displaySpoiler = MarkdownDisplaySpoiler(font: UIFont.preferredFont(forTextStyle: .body), color: .label)
 
+    override init(font: UIFont = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize),
+                  color: UIColor = UIColor.black,
+                  automaticLinkDetectionEnabled: Bool = true,
+                  customElements: [MarkdownElement] = []) {
+        super.init(font: font,
+                   color: color,
+                   automaticLinkDetectionEnabled: automaticLinkDetectionEnabled,
+                   customElements: customElements)
+        link.color = UIColor(asset: .globalTint)
+        automaticLink.color = UIColor(asset: .globalTint)
+    }
+
     var spoilerStrategy: SpoilerStrategy? {
         didSet {
             guard let spoilerStrategy = spoilerStrategy else {
