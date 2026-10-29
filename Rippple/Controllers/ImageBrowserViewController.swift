@@ -488,6 +488,17 @@ final class ImageBrowserViewController: UIViewController {
         }
     }
 
+    static func canBrowseImages(for media: MediaModel) -> Bool {
+        switch media {
+        case .movie, .show:
+            return media.tmdbId != nil
+        case .episode(_, let show), .season(_, let show):
+            return media.tmdbId != nil && show.identifiers.tmdb != nil
+        case .list, .showProgress:
+            return false
+        }
+    }
+
     private func makeService(for media: MediaModel, tmdbId: Int64) -> TmdbAPIService? {
         switch media {
         case .movie:

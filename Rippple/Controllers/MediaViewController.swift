@@ -1538,6 +1538,7 @@ extension MediaViewController: MediaMoreTableViewCellDelegate {
 
 extension MediaViewController: MediaArtworkViewDelegate {
     func artworkView(_ view: UIView, didRequestImageBrowserFor media: MediaModel, filter: ImageItem.ImageType?) {
+        guard ImageBrowserViewController.canBrowseImages(for: media) else { return }
         let imageBrowserViewController = ImageBrowserViewController()
         imageBrowserViewController.media = media
         imageBrowserViewController.initialFilter = filter
