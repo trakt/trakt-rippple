@@ -95,6 +95,12 @@ class LinkEnabledLabel: UILabel {
         tintColor = UIColor(asset: .globalTint)
     }
 
+    /// UILabel draws `.link` ranges in the system link color and ignores their foreground color.
+    override var attributedText: NSAttributedString? {
+        get { super.attributedText }
+        set { super.attributedText = newValue.map(LinkEnabledLabel.replacingLinks) }
+    }
+
     var didTapOnURL: (URL) -> Void = { url in
         let urlString = url.absoluteString
         let urlHasHttpPrefix = urlString.hasPrefix("http://")
@@ -145,12 +151,28 @@ class LinkEnabledLabel: UILabel {
         let characterRect = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer)
         guard characterRect.contains(touchLocation) else { return nil }
 
-        if let url = textStorage.attribute(.link, at: characterIndex, effectiveRange: nil) as? URL {
-            return url
-        }
         return textStorage.attribute(LinkEnabledLabel.tappableURLAttribute,
                                      at: characterIndex,
                                      effectiveRange: nil) as? URL
+    }
+
+    private static func replacingLinks(in attributedString: NSAttributedString) -> NSAttributedString {
+        var links: [(url: URL?, range: NSRange)] = []
+        attributedString.enumerateAttribute(.link,
+                                            in: NSRange(location: 0, length: attributedString.length)) { value, range, _ in
+            guard let value = value else { return }
+            links.append(((value as? URL) ?? (value as? String).flatMap { URL(string: $0) }, range))
+        }
+        guard !links.isEmpty else { return attributedString }
+
+        let mutableString = NSMutableAttributedString(attributedString: attributedString)
+        for link in links {
+            mutableString.removeAttribute(.link, range: link.range)
+            if let url = link.url {
+                mutableString.addAttribute(LinkEnabledLabel.tappableURLAttribute, value: url, range: link.range)
+            }
+        }
+        return mutableString
     }
 
     private func preparedTextStorage() -> NSTextStorage? {
