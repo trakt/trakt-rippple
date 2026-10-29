@@ -422,6 +422,16 @@ final class MediaTableViewCell: TintedCanvasTableViewCell {
         menuButtonContainter?.isHiddenInStackView = false
     }
 
+    /// The notes button covers the note, so taps on its links are routed to the label instead.
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let hitView = super.hitTest(point, with: event)
+        guard hitView != nil,
+              let submeta = submeta,
+              submeta.isHidden == false,
+              submeta.containsURL(at: convert(point, to: submeta)) else { return hitView }
+        return submeta
+    }
+
     private func setupMovie(movie: Movie) {
         title.text = movie.title
 

@@ -124,6 +124,12 @@ class LinkEnabledLabel: UILabel {
         }
     }
 
+    /// Keeps the enclosing cell from highlighting when the touch starts on a link.
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard url(at: touches) == nil else { return }
+        super.touchesBegan(touches, with: event)
+    }
+
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let url = url(at: touches) {
             didTapOnURL(url)
@@ -136,9 +142,17 @@ class LinkEnabledLabel: UILabel {
         attributedString.addAttribute(LinkEnabledLabel.tappableURLAttribute, value: url, range: range)
     }
 
+    func containsURL(at point: CGPoint) -> Bool {
+        return url(at: point) != nil
+    }
+
     private func url(at touches: Set<UITouch>) -> URL? {
+        guard let touch = touches.sorted(by: { $0.timestamp < $1.timestamp }).last else { return nil }
+        return url(at: touch.location(in: self))
+    }
+
+    private func url(at touchLocation: CGPoint) -> URL? {
         guard let attributedText = attributedText, attributedText.length > 0 else { return nil }
-        guard let touchLocation = touches.sorted(by: { $0.timestamp < $1.timestamp }).last?.location(in: self) else { return nil }
         guard let textStorage = preparedTextStorage() else { return nil }
         let layoutManager = textStorage.layoutManagers[0]
         let textContainer = layoutManager.textContainers[0]

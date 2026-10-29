@@ -187,6 +187,15 @@ final class CommentTableViewCell: TintedCanvasTableViewCell {
         commentLabel.attributedText = nil
     }
 
+    /// The present replies button covers the comment, so taps on its links are routed to the label instead.
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let hitView = super.hitTest(point, with: event)
+        guard hitView != nil,
+              commentLabel.isHidden == false,
+              commentLabel.containsURL(at: convert(point, to: commentLabel)) else { return hitView }
+        return commentLabel
+    }
+
     var commentModel: CommentModel! {
         didSet {
             gifView.configure(with: commentModel)
