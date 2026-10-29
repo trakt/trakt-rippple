@@ -52,13 +52,14 @@ struct ComposerLink {
         self.searchId = searchId
     }
 
-    init?(person: Person, characters: [String], searchId: Int64? = nil) {
+    init?(person: Person, characters: [String], jobs: [String] = [], searchId: Int64? = nil) {
         guard ComposerLink.hasWebIdentifier(person.ids),
               let url = URL(string: "https://app.trakt.tv/people/\(person.ids.slugOrTraktId)"),
               ComposerLink.isSafe(url) else { return nil }
         title = person.name
         let characters = characters.filter { $0.isEmpty == false }
-        detail = characters.isEmpty ? (person.knownForDepartment?.capitalized ?? "Person") : "as \(characters.joined(separator: ", "))"
+        let roles = (characters.isEmpty ? [] : ["as \(characters.joined(separator: ", "))"]) + jobs.filter { $0.isEmpty == false }
+        detail = roles.isEmpty ? (person.knownForDepartment?.capitalized ?? "Person") : roles.joined(separator: " · ")
         self.url = url
         media = nil
         self.person = person
@@ -125,7 +126,12 @@ final class ComposerLinkSearch {
         case media
     }
 
-    private static let castLimit = 8
+    private struct CastMember {
+        let person: Person
+        var characters: [String]
+        var jobs: [String]
+    }
+
     private static let resultsLimit = 20
 
     var onUpdate: ((ComposerLinkSuggestions) -> Void)?
@@ -144,10 +150,11 @@ final class ComposerLinkSearch {
     }
 
     private let subject: ComposerSubject?
-    private var cast: [(person: Person, characters: [String])]?
+    private var cast: [CastMember]?
     private var castRequest: Cancellable?
     private var related: [MediaModel]?
-    private var castLinks = [ComposerLink]()
+    /// Each link keeps the folded words it can be found by: a name, the characters played, or the crew jobs.
+    private var castLinks = [(link: ComposerLink, terms: [String])]()
     private var relatedRequest: Cancellable?
     private var searchRequest: Cancellable?
     private var latestQuery = ""
@@ -172,16 +179,12 @@ final class ComposerLinkSearch {
         suggestions.isLoadingCast = true
         castRequest = TraktAPIProvider.provider.request(service,
                                                         callbackQueue: .global(qos: .userInitiated)) { [weak self] result in
-            let cast: [(person: Person, characters: [String])]? = {
+            let cast: [CastMember]? = {
                 guard case .success(let response) = result,
                       let people = try? response.filterSuccessfulStatusCodes().map(People.self, using: TraktAPIProvider.decoder) else {
                     return nil
                 }
-                var seen = Set<Person>()
-                return (people.cast + (people.guestStars ?? [])).compactMap { cast in
-                    guard let person = cast.person, seen.insert(person).inserted else { return nil }
-                    return (person, cast.characters)
-                }
+                return ComposerLinkSearch.castMembers(of: people)
             }()
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -350,36 +353,43 @@ final class ComposerLinkSearch {
         let cast = cast ?? []
         switch mode {
         case .people:
-            castLinks = cast.compactMap { ComposerLink(person: $0.person, characters: $0.characters) }
+            castLinks = cast.compactMap { member in
+                ComposerLink(person: member.person, characters: member.characters, jobs: member.jobs).map { link in
+                    (link, [member.person.name] + member.characters.map(ComposerLink.cleanCharacterName) + member.jobs)
+                }
+            }
         case .characters:
-            castLinks = cast.flatMap { entry in
-                entry.characters.compactMap { ComposerLink(character: $0, person: entry.person) }
+            castLinks = cast.flatMap { member in
+                member.characters.compactMap { character in
+                    ComposerLink(character: character, person: member.person).map { ($0, [$0.title, member.person.name]) }
+                }
             }
         case .media:
-            castLinks = (related ?? []).compactMap { ComposerLink(media: $0) }
+            castLinks = (related ?? []).compactMap { media in
+                ComposerLink(media: media).map { ($0, [$0.title]) }
+            }
         }
+        castLinks = castLinks.map { ($0.link, $0.terms.map(ComposerLinkSearch.fold)) }
         filterCast()
     }
 
     private func filterCast() {
         let query = ComposerLinkSearch.fold(latestQuery)
         guard query.isEmpty == false else {
-            suggestions.cast = Array(castLinks.prefix(ComposerLinkSearch.castLimit))
+            suggestions.cast = castLinks.map(\.link)
             return
         }
-        let ranked = castLinks.enumerated().compactMap { index, link -> (Int, Int, ComposerLink)? in
-            let names = [link.title, link.detail.hasPrefix("as ") ? String(link.detail.dropFirst(3)) : link.person?.name ?? ""].map(ComposerLinkSearch.fold)
-            if names.contains(where: { ComposerLinkSearch.hasWordPrefix(query, in: $0) }) {
-                return (0, index, link)
+        let ranked = castLinks.enumerated().compactMap { index, entry -> (Int, Int, ComposerLink)? in
+            if entry.terms.contains(where: { ComposerLinkSearch.hasWordPrefix(query, in: $0) }) {
+                return (0, index, entry.link)
             }
-            if names.contains(where: { $0.contains(query) }) {
-                return (1, index, link)
+            if entry.terms.contains(where: { $0.contains(query) }) {
+                return (1, index, entry.link)
             }
             return nil
         }
         suggestions.cast = ranked
             .sorted { $0.0 == $1.0 ? $0.1 < $1.1 : $0.0 < $1.0 }
-            .prefix(ComposerLinkSearch.castLimit)
             .map { $0.2 }
     }
 
@@ -412,6 +422,33 @@ final class ComposerLinkSearch {
 
     private func publish() {
         onUpdate?(suggestions)
+    }
+
+    /// Billed cast first, then guest stars, then crew with the best known departments first.
+    /// Someone credited more than once, like an actor who also directs, is listed once with every role.
+    private static func castMembers(of people: People) -> [CastMember] {
+        var members = [CastMember]()
+        var indexes = [Person: Int]()
+        func add(_ person: Person?, characters: [String], jobs: [String]) {
+            guard let person = person else { return }
+            guard let index = indexes[person] else {
+                indexes[person] = members.count
+                members.append(CastMember(person: person, characters: characters, jobs: jobs))
+                return
+            }
+            members[index].characters += characters.filter { members[index].characters.contains($0) == false }
+            members[index].jobs += jobs.filter { members[index].jobs.contains($0) == false }
+        }
+        for cast in people.cast + (people.guestStars ?? []) {
+            add(cast.person, characters: cast.characters, jobs: [])
+        }
+        let crew = people.crew
+        let departments = [crew?.createdBy, crew?.directing, crew?.writing, crew?.production, crew?.camera, crew?.editing,
+                           crew?.sound, crew?.art, crew?.costumeAndMakeUp, crew?.visualEffects, crew?.lighting, crew?.crew]
+        for job in departments.compactMap({ $0 }).joined() {
+            add(job.person, characters: [], jobs: job.jobs)
+        }
+        return members
     }
 
     private static func fold(_ text: String) -> String {

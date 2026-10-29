@@ -358,8 +358,8 @@ final class ComposerInsertViewController: UIViewController, UITextFieldDelegate,
         if mode == .link(.media) {
             return subjectTitle.map { "Related to \($0)" } ?? "Related"
         }
-        let noun = mode == .link(.characters) ? "characters" : "cast"
-        guard let subjectTitle = subjectTitle else { return noun.capitalized }
+        let noun = mode == .link(.characters) ? "characters" : "cast & crew"
+        guard let subjectTitle = subjectTitle else { return mode == .link(.characters) ? "Characters" : "Cast & Crew" }
         let possessive = subjectTitle.hasSuffix("s") ? "\(subjectTitle)’" : "\(subjectTitle)’s"
         return "\(possessive) \(noun)"
     }
