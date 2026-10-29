@@ -8,7 +8,6 @@
 
 import NVActivityIndicatorView
 import Receiver
-import SafariServices
 import SwiftUI
 import UIKit
 
@@ -839,7 +838,7 @@ extension BrowseViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
         if case .weeklyTrackerLink = dataSource.itemIdentifier(for: indexPath) {
-            present(SFSafariViewController(url: URL(string: "https://write.as/ripppleapp/")!),
+            present(UINavigationController(rootViewController: WeeklyTrackerViewController()),
                     animated: true,
                     completion: nil)
             tableView.deselectRow(at: indexPath, animated: true)

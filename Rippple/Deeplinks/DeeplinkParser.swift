@@ -219,10 +219,10 @@ final class DeeplinkParser {
         return nil
     }
 
-    /// Link taps only intercept Trakt pages the app shows the same way; other pages (trending, a user's history…) stay in the browser.
+    /// Link taps only intercept Trakt and Rippple pages the app shows the same way; other pages (trending, a user's history…) stay in the browser.
     func isSupportedWebLink(_ url: URL) -> Bool {
         guard let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme),
-              let host = url.host?.lowercased(), ["app.trakt.tv", "trakt.tv", "www.trakt.tv"].contains(host) else {
+              let host = url.host?.lowercased(), ["app.trakt.tv", "trakt.tv", "www.trakt.tv", "rippple.app", "www.rippple.app"].contains(host) else {
             return false
         }
 

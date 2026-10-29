@@ -154,6 +154,7 @@
 		3A1878A5283B9B7800E54540 /* PinnedImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1878A4283B9B7800E54540 /* PinnedImageView.swift */; };
 		3A1A784D281C59F7004A6D0E /* TabBarCustomizationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1A784C281C59F7004A6D0E /* TabBarCustomizationViewController.swift */; };
 		3A1B950B2A3C59DA0044972F /* BrowseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1B950A2A3C59DA0044972F /* BrowseViewController.swift */; };
+		3A0EEB022EB2000000C0FFEE /* WeeklyTrackerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0EEB012EB2000000C0FFEE /* WeeklyTrackerViewController.swift */; };
 		3A1B950D2A3C61E10044972F /* Browse.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3A1B950C2A3C61E10044972F /* Browse.storyboard */; };
 		3A1B95102A3C7D260044972F /* BrowseTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1B950F2A3C7D260044972F /* BrowseTableViewCell.swift */; };
 		3A1B95122A3C7D5D0044972F /* L1BrowseTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A1B95112A3C7D5D0044972F /* L1BrowseTableViewCell.xib */; };
@@ -785,6 +786,7 @@
 		3A1878A4283B9B7800E54540 /* PinnedImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedImageView.swift; sourceTree = "<group>"; };
 		3A1A784C281C59F7004A6D0E /* TabBarCustomizationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarCustomizationViewController.swift; sourceTree = "<group>"; };
 		3A1B950A2A3C59DA0044972F /* BrowseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseViewController.swift; sourceTree = "<group>"; };
+		3A0EEB012EB2000000C0FFEE /* WeeklyTrackerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyTrackerViewController.swift; sourceTree = "<group>"; };
 		3A1B950C2A3C61E10044972F /* Browse.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Browse.storyboard; sourceTree = "<group>"; };
 		3A1B950F2A3C7D260044972F /* BrowseTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseTableViewCell.swift; sourceTree = "<group>"; };
 		3A1B95112A3C7D5D0044972F /* L1BrowseTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = L1BrowseTableViewCell.xib; sourceTree = "<group>"; };
@@ -1494,6 +1496,7 @@
 			isa = PBXGroup;
 			children = (
 				3A1B950A2A3C59DA0044972F /* BrowseViewController.swift */,
+				3A0EEB012EB2000000C0FFEE /* WeeklyTrackerViewController.swift */,
 				3AEA58052A42D8FA00B64165 /* GridViewController.swift */,
 				3A541CF42A612C6700E1A153 /* CommentsBrowseViewController.swift */,
 				09C0DEC12F9ABCD000000001 /* CommentsTabViewController.swift */,
@@ -3561,6 +3564,7 @@
 				09A5A0F62E96A52300BFC59C /* TransactionsView.swift in Sources */,
 				3A70632A1FF2645500D3B2BB /* PurchaseViewController.swift in Sources */,
 				3A1B950B2A3C59DA0044972F /* BrowseViewController.swift in Sources */,
+				3A0EEB022EB2000000C0FFEE /* WeeklyTrackerViewController.swift in Sources */,
 				3A609CDA2B8C9A2D00163A23 /* TraktStatusCheckManager.swift in Sources */,
 				3A67BF5626A6BB780093E40B /* ToWatchStoryCollectionViewCell.swift in Sources */,
 				3AB2464B20076C08008B3A58 /* FollowManager.swift in Sources */,

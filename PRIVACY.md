@@ -40,7 +40,6 @@ The information is collected, stored and shared with us anonymously by Apple.
 
 Here’s a list of third-party services we can redirect you to from our app:
 
-- [Write.as](https://write.as/) — Weekly Tracker and Blog
 - [Bluesky](https://bsky.app/) — general purpose communication
 - [Mastodon](https://mastodon.social/) — general purpose communication
 - [Discord](https://discord.com/) — super-users feedback and updates
