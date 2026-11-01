@@ -19,7 +19,14 @@ final class EpisodeShowTableViewCell: TintedCanvasTableViewCell {
 
     @IBOutlet var card: CardView!
 
+    @IBOutlet var indicators: UIStackView!
+    @IBOutlet var ratedStatus: RatingImageView!
+    @IBOutlet var commentedStatus: CommentedImageView!
+    @IBOutlet var watchlistedStatus: WatchlistImageView!
+    @IBOutlet var collectedStatus: CollectedImageView!
+
     private let disposeBag = DisposeBag()
+    private var indicatorObservations = [NSKeyValueObservation]()
 
     private let fullDateFormatter: DateFormatter = {
         let dateFormatter = DateFormatter()
@@ -44,6 +51,10 @@ final class EpisodeShowTableViewCell: TintedCanvasTableViewCell {
         didSet {
             if media != oldValue {
                 menuButtonContextMenu.media = media
+                ratedStatus.media = media
+                commentedStatus.media = media
+                watchlistedStatus.media = media
+                collectedStatus.media = media
 
                 switch media {
                 case .episode(let episode, let show):
@@ -65,6 +76,19 @@ final class EpisodeShowTableViewCell: TintedCanvasTableViewCell {
         contentView.autoresizingMask = .flexibleHeight
 
         additionalInfo.textColor = UIColor(asset: .globalTint)
+        additionalInfo.numberOfLines = 1
+        title.numberOfLines = 1
+
+        // Each indicator hides itself; the row only takes space while one of them shows.
+        let statuses: [UIImageView] = [ratedStatus, commentedStatus, watchlistedStatus, collectedStatus]
+        statuses.forEach { $0.maximumContentSizeCategory = .extraExtraExtraLarge }
+        indicatorObservations = statuses.map { status in
+            status.observe(\.isHidden) { [weak self] _, _ in
+                guard let self = self else { return }
+                self.updateIndicatorsVisibility()
+            }
+        }
+        updateIndicatorsVisibility()
 
         var configuration = UIButton.Configuration.plain()
         configuration.buttonSize = .small
@@ -92,6 +116,13 @@ final class EpisodeShowTableViewCell: TintedCanvasTableViewCell {
         maximumContentSizeCategory = .extraExtraExtraLarge
     }
 
+    private func updateIndicatorsVisibility() {
+        let isHidden = [ratedStatus, commentedStatus, watchlistedStatus, collectedStatus].allSatisfy { $0?.isHidden != false }
+        guard indicators.isHidden != isHidden else { return }
+        indicators.isHiddenInStackView = isHidden
+        invalidateIntrinsicContentSize()
+    }
+
     private var historyRequest: Cancellable?
     override func prepareForReuse() {
         super.prepareForReuse()
@@ -113,6 +144,9 @@ final class EpisodeShowTableViewCell: TintedCanvasTableViewCell {
             title.textColor = .tertiaryLabel
             subtitle.textColor = .tertiaryLabel
         }
+
+        // The indicators lead the title line, so they take its color, dimmed for episodes not aired yet.
+        [ratedStatus, commentedStatus, watchlistedStatus, collectedStatus].forEach { $0?.tintColor = title.textColor }
 
         updateTitle(for: episode, isWatched: progress?.completed == true)
 

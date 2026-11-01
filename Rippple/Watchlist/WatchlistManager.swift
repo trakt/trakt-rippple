@@ -319,6 +319,10 @@ extension UIView {
             cell.invalidateIntrinsicContentSize()
             return
         }
+        if let cell = self as? EpisodeShowTableViewCell {
+            cell.invalidateIntrinsicContentSize()
+            return
+        }
         superview?.invalidateCellIntrinsicContentSize()
     }
 }
