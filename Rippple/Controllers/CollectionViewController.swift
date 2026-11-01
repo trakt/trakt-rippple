@@ -10,6 +10,22 @@ import NVActivityIndicatorView
 import Receiver
 import UIKit
 
+private extension CollectionItem {
+    /// The list progress works on list items, so Library items join it the way smart list items do.
+    var watchlistItem: WatchlistItem {
+        let id = episode?.identifiers.trakt ?? movie?.identifiers.trakt ?? show?.identifiers.trakt ?? 0
+        return WatchlistItem(listedAt: listedAt,
+                             rank: 0,
+                             movie: movie,
+                             show: show,
+                             episode: episode,
+                             season: season,
+                             list: nil,
+                             id: id,
+                             notes: note)
+    }
+}
+
 extension CollectionItem {
     var title: String {
         switch type {
@@ -187,6 +203,7 @@ final class CollectionViewController: UITableViewController {
 
     /// Latest items per type; a filter with several types shows once all of them have arrived.
     private var itemsByType = [ListMediaType: [CollectionItem]]()
+    private let progressContext = ListProgressContext()
 
     private let disposeBag = DisposeBag()
 
@@ -332,6 +349,11 @@ final class CollectionViewController: UITableViewController {
 
     private var watchlistItems: [CollectionItem]? {
         didSet {
+            if let watchlistItems = watchlistItems {
+                progressContext.update(items: watchlistItems.map(\.watchlistItem))
+            } else {
+                progressContext.reset()
+            }
             updateDatasource()
         }
     }
@@ -432,6 +454,8 @@ final class CollectionViewController: UITableViewController {
             }
 
             cell.mediaItems = mediaModels
+            cell.listProgressContext = progressContext
+            cell.delegate = self
 
             return cell
         }
@@ -565,6 +589,7 @@ final class CollectionViewController: UITableViewController {
 
     private func reset() {
         itemsByType.removeAll()
+        progressContext.reset()
         if user.isCurrentUser {
             for type in currentFilter.mediaTypes {
                 itemsByType[type] = CollectionManager.shared.cachedLibraryItems(for: type)
@@ -851,6 +876,43 @@ extension CollectionViewController {
         let configuration = UISwipeActionsConfiguration(actions: supportsNotes ? [notes, remove] : [remove])
         configuration.performsFirstActionWithFullSwipe = false
         return configuration
+    }
+}
+
+extension CollectionViewController: ListStatsTableViewCellDelegate {
+    func cell(_ cell: ListStatsTableViewCell, action: ListStatsTableViewCell.Action) {
+        switch action {
+        case .progress:
+            showProgress()
+        }
+    }
+
+    private func showProgress() {
+        let sorting: ListProgressViewController.Sort
+        switch currentSorting {
+        case .listed:
+            sorting = .listed
+        case .title:
+            sorting = .title
+        case .releaseDate:
+            sorting = .releaseDate
+        case .runtime:
+            sorting = .runtime
+        case .rating:
+            sorting = .rating
+        case .votes:
+            sorting = .votes
+        case .weightedRating:
+            sorting = .weightedRating
+        case .random:
+            sorting = .random
+        }
+
+        let progressViewController = ListProgressViewController(source: .library(title: navigationItem.title ?? "Library"),
+                                                                user: user,
+                                                                progressContext: progressContext,
+                                                                sorting: sorting.rawValue)
+        navigationController?.pushViewController(progressViewController, animated: true)
     }
 }
 

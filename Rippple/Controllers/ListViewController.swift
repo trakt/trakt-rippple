@@ -1197,7 +1197,7 @@ final class ListViewController: UITableViewController {
     }
 
     private func showProgress() {
-        let progressViewController = ListProgressViewController(list: list,
+        let progressViewController = ListProgressViewController(source: .list(list),
                                                                 user: user,
                                                                 progressContext: progressContext,
                                                                 sorting: currentSorting.rawValue)
