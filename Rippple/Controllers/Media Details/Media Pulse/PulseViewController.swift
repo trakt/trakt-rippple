@@ -1284,9 +1284,20 @@ final class PulseViewController: UITableViewController {
                     case .show:
                         meta.append("Show Notes")
                     case .season:
-                        meta.append("Season Notes")
+                        if let season = noteItem.season {
+                            meta.append(season.title ?? "Season \(season.number)")
+                        } else {
+                            meta.append("Season Notes")
+                        }
                     case .episode:
-                        meta.append("Episode Notes")
+                        if let episode = noteItem.episode {
+                            meta.append(episode.localizedEpisodeNumber)
+                            if let title = episode.title, !title.isEmpty {
+                                meta.append(title)
+                            }
+                        } else {
+                            meta.append("Episode Notes")
+                        }
                     default:
                         fatalError("This case shouldn't be handled here")
                     }
