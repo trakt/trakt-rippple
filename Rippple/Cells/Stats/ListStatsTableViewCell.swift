@@ -23,6 +23,7 @@ final class ListStatsTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var items: EFCountingLabel!
     @IBOutlet var watchedMovies: EFCountingLabel!
     @IBOutlet var watchedShows: EFCountingLabel!
+    @IBOutlet var watchedEpisodes: EFCountingLabel!
     @IBOutlet var rated: EFCountingLabel!
     @IBOutlet var watchlisted: EFCountingLabel!
     @IBOutlet var recommended: EFCountingLabel!
@@ -143,6 +144,13 @@ final class ListStatsTableViewCell: TintedCanvasTableViewCell {
             return "\(self.numberFormatter.string(from: NSNumber(value: Int(value))) ?? "0") of \((self.mediaItems ?? [MediaModel]()).filter { $0.showShow != nil }.count)"
         }
 
+        watchedEpisodes.text = "0"
+        watchedEpisodes.method = .easeInOut
+        watchedEpisodes.formatBlock = { [weak self] value in
+            guard let self = self else { return "0" }
+            return "\(self.numberFormatter.string(from: NSNumber(value: Int(value))) ?? "0") of \((self.mediaItems ?? [MediaModel]()).filter { $0.listedEpisode != nil }.count)"
+        }
+
         rated.text = "0"
         rated.method = .easeInOut
         rated.formatBlock = { [weak self] value in
@@ -194,10 +202,16 @@ final class ListStatsTableViewCell: TintedCanvasTableViewCell {
             return
         }
 
+        // Only the watched stats for the kinds of items listed show, for example no shows under a Movies filter.
+        watchedMovies.superview?.isHiddenInStackView = !mediaItems.contains { $0.movie != nil }
+        watchedShows.superview?.isHiddenInStackView = !mediaItems.contains { $0.showShow != nil }
+        watchedEpisodes.superview?.isHiddenInStackView = !mediaItems.contains { $0.listedEpisode != nil }
+
         DispatchQueue.global(qos: .userInteractive).async { [weak self] in
             var itemsCount = 0.0
             var watchedMoviesCount = 0.0
             var watchedShowsCount = 0.0
+            var watchedEpisodesCount = 0.0
             var commentedCount = 0.0
             var watchlistedCount = 0.0
             var collectedCount = 0.0
@@ -223,6 +237,7 @@ final class ListStatsTableViewCell: TintedCanvasTableViewCell {
                     if show.ownCommentItem != nil { commentedCount += 1 }
                 case .episode(let episode, _):
                     itemsCount += 1
+                    if episode.isWatched { watchedEpisodesCount += 1 }
                     if episode.isWatchlisted { watchlistedCount += 1 }
                     if episode.isInCollection { collectedCount += 1 }
                     if media.userRating != nil { ratedCount += 1 }
@@ -244,6 +259,7 @@ final class ListStatsTableViewCell: TintedCanvasTableViewCell {
                 self.items.countFromCurrentValueTo(itemsCount, withDuration: 0.7)
                 self.watchedMovies.countFromCurrentValueTo(watchedMoviesCount, withDuration: 0.7)
                 self.watchedShows.countFromCurrentValueTo(watchedShowsCount, withDuration: 0.7)
+                self.watchedEpisodes.countFromCurrentValueTo(watchedEpisodesCount, withDuration: 0.7)
                 self.watchlisted.countFromCurrentValueTo(watchlistedCount, withDuration: 0.7)
                 self.recommended.countFromCurrentValueTo(recommendedCount, withDuration: 0.7)
                 self.collected.countFromCurrentValueTo(collectedCount, withDuration: 0.7)
@@ -251,6 +267,16 @@ final class ListStatsTableViewCell: TintedCanvasTableViewCell {
                 self.commented.countFromCurrentValueTo(commentedCount, withDuration: 0.7)
             }
         }
+    }
+}
+
+private extension MediaModel {
+    /// Unlike `episode`, leaves out the next episode of a show's progress.
+    var listedEpisode: Episode? {
+        if case .episode(let episode, _) = self {
+            return episode
+        }
+        return nil
     }
 }
 
