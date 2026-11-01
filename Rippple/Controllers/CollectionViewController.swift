@@ -169,13 +169,24 @@ final class CollectionViewController: UITableViewController {
         case movies
         case shows
         case episodes
-    }
+        case all
 
-    private var service: TraktAPIService = .collection(type: .movies, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 250)) {
-        didSet {
-            reset()
+        var mediaTypes: [ListMediaType] {
+            switch self {
+            case .movies:
+                return [.movies]
+            case .shows:
+                return [.shows]
+            case .episodes:
+                return [.episodes]
+            case .all:
+                return [.movies, .episodes]
+            }
         }
     }
+
+    /// Latest items per type; a filter with several types shows once all of them have arrived.
+    private var itemsByType = [ListMediaType: [CollectionItem]]()
 
     private let disposeBag = DisposeBag()
 
@@ -208,7 +219,7 @@ final class CollectionViewController: UITableViewController {
 
     // Filters
     @IBOutlet var filterButtonItem: UIBarButtonItem!
-    private var currentFilter = Filter.movies {
+    private var currentFilter = Filter.all {
         didSet {
             if user.isCurrentUser {
                 UserDefaults.standard.set(currentFilter.rawValue, forKey: "CollectionViewController.currentFilter")
@@ -216,19 +227,20 @@ final class CollectionViewController: UITableViewController {
             }
 
             switch currentFilter {
+            case .all:
+                filterButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
+                navigationItem.title = "Library"
+                navigationItem.subtitle = "All"
             case .movies:
                 filterButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
-                service = .collection(slug: user.slug, type: .movies, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 250))
                 navigationItem.title = "Library"
                 navigationItem.subtitle = "Movies"
             case .shows:
                 filterButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
-                service = .collection(slug: user.slug, type: .shows, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 250))
                 navigationItem.title = "Library"
                 navigationItem.subtitle = "Shows"
             case .episodes:
                 filterButtonItem.image = UIImage(systemName: "line.horizontal.3.decrease")
-                service = .collection(slug: user.slug, type: .episodes, extended: .full, sort: nil, pageInfo: PageInfo.firstPage(with: 250))
                 navigationItem.title = "Library"
                 navigationItem.subtitle = "Episodes"
             }
@@ -238,11 +250,13 @@ final class CollectionViewController: UITableViewController {
             }
 
             searchController.searchBar.placeholder = "Search \(navigationItem.title ?? "")"
+
+            reset()
         }
     }
 
     func cycleFilter() {
-        let cycle: [Filter] = [.movies, .shows, .episodes]
+        let cycle: [Filter] = [.all, .movies, .shows, .episodes]
         guard let currentIndex = cycle.firstIndex(of: currentFilter) else {
             currentFilter = cycle[0]
             return
@@ -329,6 +343,8 @@ final class CollectionViewController: UITableViewController {
 
         let filteredWatchlistItems = watchlistItems.filter { item -> Bool in
             switch currentFilter {
+            case .all:
+                return item.movie != nil || item.episode != nil
             case .movies:
                 return item.movie != nil
             case .shows:
@@ -430,9 +446,8 @@ final class CollectionViewController: UITableViewController {
         navigationItem.style = .browser
 
         if user.isCurrentUser {
-            if let filter = Filter(rawValue: UserDefaults.standard.integer(forKey: "CollectionViewController.currentFilter")) {
-                currentFilter = filter
-            }
+            let storedFilter = UserDefaults.standard.object(forKey: "CollectionViewController.currentFilter") as? Int
+            currentFilter = storedFilter.flatMap { Filter(rawValue: $0) } ?? .all
 
             if let sort = Sort(rawValue: UserDefaults.standard.integer(forKey: "CollectionViewController.currentSorting")) {
                 currentSorting = sort
@@ -451,7 +466,7 @@ final class CollectionViewController: UITableViewController {
                 navigationItem.leftBarButtonItem = UIBarButtonItem(customView: profileButton)
             }
         } else {
-            currentFilter = Filter.movies
+            currentFilter = Filter.all
         }
 
         tableView.allowsFocus = false
@@ -469,22 +484,22 @@ final class CollectionViewController: UITableViewController {
 
         onMovieCollectionChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            if self.currentFilter == .movies {
-                self.fetch()
+            if self.currentFilter.mediaTypes.contains(.movies) {
+                self.fetch(types: [.movies])
             }
         }.disposed(by: disposeBag)
 
         onShowCollectionChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            if self.currentFilter == .shows {
-                self.fetch()
+            if self.currentFilter.mediaTypes.contains(.shows) {
+                self.fetch(types: [.shows])
             }
         }.disposed(by: disposeBag)
 
         onEpisodeCollectionChangedReceiver.listen { [weak self] _ in
             guard let self = self else { return }
-            if self.currentFilter == .episodes {
-                self.fetch()
+            if self.currentFilter.mediaTypes.contains(.episodes) {
+                self.fetch(types: [.episodes])
             }
         }.disposed(by: disposeBag)
 
@@ -532,12 +547,12 @@ final class CollectionViewController: UITableViewController {
     }
 
     @objc func refresh(_ sender: Any) {
-        CollectionManager.shared.invalidateLibraryItems()
         CollectionManager.shared.refresh()
+        itemsByType.removeAll()
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.loading])
         dataSource.apply(snapshot, animatingDifferences: false)
-        fetch()
+        fetch(fullReload: true)
     }
 
     @IBAction func retry(_ sender: Any) {
@@ -549,24 +564,31 @@ final class CollectionViewController: UITableViewController {
     }
 
     private func reset() {
-        if let cachedLibraryItems = cachedLibraryItems {
-            watchlistItems = cachedLibraryItems
+        itemsByType.removeAll()
+        if user.isCurrentUser {
+            for type in currentFilter.mediaTypes {
+                itemsByType[type] = CollectionManager.shared.cachedLibraryItems(for: type)
+            }
+        }
+
+        if showItemsIfComplete() {
+            fetch()
             return
         }
         retry(self)
     }
 
-    private var cachedLibraryItems: [CollectionItem]? {
-        guard user.isCurrentUser, case .collection(_, .some(let type), _, _, _) = service else { return nil }
-        return CollectionManager.shared.cachedLibraryItems(for: type)
+    /// Shows the current filter's items once every one of its types has arrived.
+    @discardableResult
+    private func showItemsIfComplete() -> Bool {
+        let types = currentFilter.mediaTypes
+        guard types.allSatisfy({ itemsByType[$0] != nil }) else { return false }
+        error = nil
+        watchlistItems = types.flatMap { itemsByType[$0] ?? [] }
+        return true
     }
 
-    private func isShowing(type: ListMediaType?) -> Bool {
-        guard case .collection(_, let currentType, _, _, _) = service else { return false }
-        return currentType == type
-    }
-
-    func fetch() {
+    func fetch(types: [ListMediaType]? = nil, fullReload: Bool = false) {
         if SessionManager.shared.isLoggedOut {
             return
         }
@@ -578,33 +600,31 @@ final class CollectionViewController: UITableViewController {
             }
         }
 
-        guard case .collection(let slug, let type, let extended, let sort, let pageInfo) = service else { return }
-        let cacheGeneration = type.map { CollectionManager.shared.libraryItemsGeneration(for: $0) }
-        TraktAPIProvider.fetchAllCollectionItems(slug: slug,
-                                                 type: type,
-                                                 extended: extended,
-                                                 sort: sort,
-                                                 limit: pageInfo.limit) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let results):
-                let items = Array(Set(results))
+        let filter = currentFilter
+        for type in types ?? filter.mediaTypes {
+            let update: (Result<[CollectionItem], Error>) -> Void = { [weak self] result in
                 DispatchQueue.main.async {
-                    if self.user.isCurrentUser, let type = type, let cacheGeneration = cacheGeneration {
-                        CollectionManager.shared.cacheLibraryItems(items, for: type, generation: cacheGeneration)
-                    }
-                    guard self.isShowing(type: type) else { return }
-                    self.watchlistItems = items
-                }
-            case .failure(let error):
-                print("Comments request JSON mapping failed! \(error)")
+                    guard let self = self, self.currentFilter == filter else { return }
+                    switch result {
+                    case .success(let items):
+                        self.itemsByType[type] = items
+                        self.showItemsIfComplete()
+                    case .failure(let error):
+                        print("Collection request failed! \(error)")
 
-                var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
-                snapshot.appendSections([.error])
-                DispatchQueue.main.async {
-                    guard self.isShowing(type: type) else { return }
-                    self.error = error
-                    self.dataSource.apply(snapshot, animatingDifferences: false)
+                        var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
+                        snapshot.appendSections([.error])
+                        self.error = error
+                        self.dataSource.apply(snapshot, animatingDifferences: false)
+                    }
+                }
+            }
+
+            if user.isCurrentUser {
+                CollectionManager.shared.fetchLibraryItems(for: type, fullReload: fullReload, update: update)
+            } else {
+                TraktAPIProvider.fetchAllCollectionItems(slug: user.slug, type: type, extended: .full, sort: nil) { result in
+                    update(result.map { Array(Set($0)) })
                 }
             }
         }
@@ -639,6 +659,11 @@ final class CollectionViewController: UITableViewController {
                 completion([])
                 return
             }
+            let all = UIAction(title: "All", image: nil, state: self.currentFilter == .all ? .on : .off) { [weak self] _ in
+                guard let self = self else { return }
+                self.currentFilter = .all
+            }
+
             let movies = UIAction(title: "Movies", image: nil, state: self.currentFilter == .movies ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
                 self.currentFilter = .movies
@@ -654,7 +679,7 @@ final class CollectionViewController: UITableViewController {
                 self.currentFilter = .episodes
             }
 
-            let filters = UIMenu(title: "What do you want to see?", options: .displayInline, children: [movies, shows, episodes])
+            let filters = UIMenu(title: "What do you want to see?", options: .displayInline, children: [all, movies, shows, episodes])
 
             let added = UIAction(title: "Recently Added", image: nil, state: self.currentSorting == .listed ? .on : .off) { [weak self] _ in
                 guard let self = self else { return }
@@ -839,8 +864,9 @@ extension CollectionViewController: MediaTableViewCellDelegate {
             switch watchlistItem.type {
             case .movie, .show:
                 performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel(item: watchlistItem))
-            case .episode:
-                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel(item: watchlistItem))
+            case .episode, .season:
+                guard let show = watchlistItem.show else { return }
+                performSegue(withIdentifier: ViewControllerSegue.details.rawValue, sender: MediaModel.show(show))
             default:
                 fatalError("Unhandled media type")
             }

@@ -10,11 +10,13 @@ import Foundation
 import Moya
 
 extension TraktAPIProvider {
+    /// Pages come newest first, so `collectedSince` stops at the first page that reaches older items.
     static func fetchAllCollectionItems(slug: String,
                                         type: ListMediaType?,
                                         extended: Extended?,
                                         sort: WatchlistSort?,
                                         limit: Int = 250,
+                                        collectedSince: Date? = nil,
                                         completion: @escaping (Result<[CollectionItem], Error>) -> Void) {
         _Concurrency.Task {
             do {
@@ -22,7 +24,8 @@ extension TraktAPIProvider {
                                                                    type: type,
                                                                    extended: extended,
                                                                    sort: sort,
-                                                                   limit: limit)
+                                                                   limit: limit,
+                                                                   collectedSince: collectedSince)
                 completion(.success(items))
             } catch {
                 completion(.failure(error))
@@ -69,7 +72,8 @@ extension TraktAPIProvider {
                                                      type: ListMediaType?,
                                                      extended: Extended?,
                                                      sort: WatchlistSort?,
-                                                     limit: Int) async throws -> [CollectionItem] {
+                                                     limit: Int,
+                                                     collectedSince: Date?) async throws -> [CollectionItem] {
         var pageInfo = PageInfo.firstPage(with: limit)
         var collectionItems = [CollectionItem]()
 
@@ -82,6 +86,10 @@ extension TraktAPIProvider {
             collectionItems.append(contentsOf: items)
 
             guard let nextPage = nextPage, nextPage.page <= nextPage.pageCount else {
+                return collectionItems
+            }
+
+            if let collectedSince = collectedSince, let oldestItem = items.last, oldestItem.listedAt < collectedSince {
                 return collectionItems
             }
 
