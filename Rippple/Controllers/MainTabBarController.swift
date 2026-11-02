@@ -236,7 +236,9 @@ final class MainTabBarController: UITabBarController {
     }
 
     private func updateWatchingItem() {
-        if WatchingManager.shared.watchingItem != nil {
+        if let watchingItem = WatchingManager.shared.watchingItem {
+            // A floating accessory sizes itself to its content when set, so fill it in first.
+            checkinView.update(watchingItem: watchingItem)
             setBottomAccessory(UITabAccessory(contentView: checkinView),
                                animated: true)
         } else {

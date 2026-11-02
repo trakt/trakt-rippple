@@ -120,16 +120,16 @@ final class CheckinView: UIView {
         button.translatesAutoresizingMaskIntoConstraints = false
         horizontalStackView.translatesAutoresizingMaskIntoConstraints = false
         let topConstraint = horizontalStackView.topAnchor.constraint(equalTo: topAnchor, constant: 6)
-        topConstraint.priority = .required
+        topConstraint.priority = UILayoutPriority(999)
 
         let leadingConstraint = horizontalStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6)
-        leadingConstraint.priority = .required
+        leadingConstraint.priority = UILayoutPriority(999)
 
         let trailingConstraint = horizontalStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10)
-        trailingConstraint.priority = .required
+        trailingConstraint.priority = UILayoutPriority(999)
 
         let bottomConstraint = horizontalStackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6)
-        bottomConstraint.priority = .required
+        bottomConstraint.priority = UILayoutPriority(999)
 
         NSLayoutConstraint.activate([
             topConstraint,
