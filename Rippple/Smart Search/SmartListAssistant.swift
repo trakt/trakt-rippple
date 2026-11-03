@@ -240,7 +240,7 @@ enum SmartListAssistant {
         let source = chosen.typedSource ?? (isCatalog ? .discover : .popular)
         var closing = "Here's what I came up with: \(sentence(mediaType: chosen.mediaType, source: source, matches: chosen.matches))"
         // Across all of Trakt, ratings alone surface titles rated by a handful of people.
-        if source == .discover, filters.ratings != nil || filters.metascores != nil {
+        if source == .discover, filters.ratings != nil {
             filters.votes = [1000, SmartListConditions.votesCeiling]
             closing += ", with at least 1,000 votes so a handful of ratings can't sway it"
         }

@@ -526,7 +526,6 @@ struct SmartListFilters: Codable, Hashable {
     var letterboxdRatings: [Double]?
     var malRatings: [Double]?
     var tmdbRatings: [Double]?
-    var metascores: [Int]?
     var votes: [Int]?
     var imdbVotes: [Int]?
     // Parental guide filters are accepted by Trakt but not yet documented; keep them so edits do not drop them.
@@ -572,7 +571,6 @@ struct SmartListFilters: Codable, Hashable {
         case letterboxdRatings = "letterboxd_ratings"
         case malRatings = "mal_ratings"
         case tmdbRatings = "tmdb_ratings"
-        case metascores
         case votes
         case imdbVotes = "imdb_votes"
         case parentalNudity = "parental_nudity"
@@ -1547,7 +1545,6 @@ struct Ratings: Codable {
     let trakt: TraktRatings
     let rottenTomatoes: RottenTomatoesRatings
     let imdb: IMDbRatings
-    let metascore: MetascoreRatings
     let tmdb: TMDbRatings
     let letterboxd: ExternalRatings?
     let mal: ExternalRatings?
@@ -1558,7 +1555,6 @@ struct Ratings: Codable {
         case mal
         case rottenTomatoes = "rotten_tomatoes"
         case imdb
-        case metascore
         case tmdb
     }
 }
@@ -1566,11 +1562,6 @@ struct Ratings: Codable {
 struct ExternalRatings: Codable {
     let rating: Float?
     let votes: Int?
-    let link: URL?
-}
-
-struct MetascoreRatings: Codable {
-    let rating: Int?
     let link: URL?
 }
 

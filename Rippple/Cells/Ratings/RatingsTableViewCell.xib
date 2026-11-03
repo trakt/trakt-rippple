@@ -560,49 +560,6 @@
                                                     </stackView>
                                                 </subviews>
                                             </stackView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="Ay3-KR-bDP">
-                                                <rect key="frame" x="575.5" y="13" width="158" height="50"/>
-                                                <subviews>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8FT-aK-AZW">
-                                                        <rect key="frame" x="0.0" y="0.0" width="8" height="50"/>
-                                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" constant="8" id="Xr0-sN-0j4"/>
-                                                        </constraints>
-                                                    </view>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" preferredBehavioralStyle="pad" translatesAutoresizingMaskIntoConstraints="NO" id="zkS-GG-M6G">
-                                                        <rect key="frame" x="14" y="5" width="40" height="40"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="40" id="BWY-KO-zDV"/>
-                                                            <constraint firstAttribute="width" secondItem="zkS-GG-M6G" secondAttribute="height" multiplier="1:1" id="Ymy-Se-4Ya"/>
-                                                        </constraints>
-                                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                                        <state key="normal" backgroundImage="metacritic_logo_orange"/>
-                                                    </button>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="9Bv-jW-akY">
-                                                        <rect key="frame" x="60" y="7.5" width="98" height="35"/>
-                                                        <subviews>
-                                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="firstBaseline" translatesAutoresizingMaskIntoConstraints="NO" id="7dL-u8-VEP">
-                                                                <rect key="frame" x="0.0" y="0.0" width="98" height="20.5"/>
-                                                                <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="50" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dUk-40-MXf" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
-                                                                        <rect key="frame" x="0.0" y="0.0" width="98" height="20.5"/>
-                                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                                                                        <nil key="textColor"/>
-                                                                        <nil key="highlightedColor"/>
-                                                                    </label>
-                                                                </subviews>
-                                                            </stackView>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Mixed or Average" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ipU-AL-eEh">
-                                                                <rect key="frame" x="0.0" y="20.5" width="98" height="14.5"/>
-                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
-                                                                <nil key="highlightedColor"/>
-                                                            </label>
-                                                        </subviews>
-                                                    </stackView>
-                                                </subviews>
-                                            </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="i0l-FV-Q9T">
                                                 <rect key="frame" x="739.5" y="13" width="93.5" height="50"/>
                                                 <subviews>
@@ -748,10 +705,6 @@
                 <outlet property="imdbRating" destination="Joo-Ka-Lgo" id="6fQ-sw-fRH"/>
                 <outlet property="imdbStack" destination="apk-nn-c8l" id="mNH-b9-avM"/>
                 <outlet property="imdbVotes" destination="FpU-VQ-gXQ" id="q2n-f9-LzE"/>
-                <outlet property="metacriticImage" destination="zkS-GG-M6G" id="Kau-pF-5qL"/>
-                <outlet property="metacriticLabel" destination="ipU-AL-eEh" id="cdO-qv-UZl"/>
-                <outlet property="metacriticRating" destination="dUk-40-MXf" id="RU5-HA-P0G"/>
-                <outlet property="metacriticStack" destination="Ay3-KR-bDP" id="iSu-Ff-fbI"/>
                 <outlet property="moreAction" destination="JBc-Am-hwQ" id="Ago-Jf-B9c"/>
                 <outlet property="rateAction" destination="1y2-h1-cXw" id="Rhi-4Q-2rd"/>
                 <outlet property="rating" destination="lkt-dq-yxn" id="Pc3-pC-eHr"/>
@@ -806,7 +759,6 @@
         <image name="letterboxd_logo" width="500" height="500"/>
         <image name="myanimelist_logo" width="192" height="192"/>
         <image name="imdb_logo" width="512" height="512"/>
-        <image name="metacritic_logo_orange" width="40" height="40"/>
         <image name="rotten_tomatoes_certified_fresh" width="528" height="528"/>
         <image name="rotten_tomatoes_rotten" width="145" height="140"/>
         <image name="tmdbIconSmall" width="25" height="25"/>

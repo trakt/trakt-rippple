@@ -19,7 +19,6 @@ extension SmartListAssistant {
         case rottenTomatoes
         /// Rotten Tomatoes' audience score, rather than critics'.
         case rottenTomatoesAudience
-        case metacritic
         /// A site or score with no filter, as Letterboxd, read so it's left out with its reason.
         case unsupported(String)
     }
@@ -193,7 +192,6 @@ extension SmartListAssistant {
                 case .imdb: filters.imdbRatings = [max(Double(minimum) / 10, filters.imdbRatings?.first ?? 0), 10]
                 case .rottenTomatoes: filters.rtMeters = [max(minimum, filters.rtMeters?.first ?? 0), 100]
                 case .rottenTomatoesAudience: filters.rtUserMeters = [max(minimum, filters.rtUserMeters?.first ?? 0), 100]
-                case .metacritic: filters.metascores = [max(minimum, filters.metascores?.first ?? 0), 100]
                 }
             case .parental(let category, let most, _):
                 guard let guide = parentalGuide[category] else { break }
@@ -230,7 +228,6 @@ extension SmartListAssistant {
         case .imdb: (name, shown) = ("IMDb rating", { String(format: "%.1f", Double($0) / 10) })
         case .rottenTomatoes: (name, shown) = ("Rotten Tomatoes score", { "\($0)%" })
         case .rottenTomatoesAudience: (name, shown) = ("Rotten Tomatoes audience score", { "\($0)%" })
-        case .metacritic: (name, shown) = ("Metascore", { "\($0)" })
         case .unsupported(let site): return "\(site) rating"
         }
         return maximum.map { "\(name) of \(shown($0)) or lower" } ?? "\(name) of \(shown(minimum)) or higher"
@@ -465,7 +462,6 @@ extension SmartListAssistant {
             case .imdb: return "rated \(String(format: "%.1f", Double(minimum) / 10))+ on IMDb"
             case .rottenTomatoes: return "at \(minimum)%+ on Rotten Tomatoes"
             case .rottenTomatoesAudience: return "at \(minimum)%+ with Rotten Tomatoes audiences"
-            case .metacritic: return "with a Metascore of \(minimum)+"
             }
         case .parental(let category, let most, let least):
             let noun = parentalGuide[category]?.noun ?? category

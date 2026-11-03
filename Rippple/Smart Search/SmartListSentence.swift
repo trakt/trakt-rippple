@@ -421,7 +421,6 @@ enum SmartListConditions {
         let letterboxd = decimals(\.letterboxdRatings)
         let mal = decimals(\.malRatings)
         let tmdb = decimals(\.tmdbRatings)
-        let metascores = integers(\.metascores)
         return [
             // Release years stay first: the Release Date menu edits them.
             RangeCondition(title: "Release Year", get: years.0, set: years.1,
@@ -452,10 +451,7 @@ enum SmartListConditions {
                            values: Array(stride(from: 0, through: 10, by: 0.5)), initial: [7, 10], format: decimal),
             RangeCondition(title: "TMDB Rating", get: tmdb.0, set: tmdb.1,
                            singlePrefix: " with a TMDB rating of ", rangePrefix: " with a TMDB rating between ",
-                           values: Array(stride(from: 0, through: 10, by: 0.5)), initial: [7, 10], format: decimal),
-            RangeCondition(title: "Metascore", get: metascores.0, set: metascores.1,
-                           singlePrefix: " with a Metascore of ", rangePrefix: " with a Metascore between ",
-                           values: Array(stride(from: 0, through: 100, by: 5)), initial: [75, 100], format: { "\(Int($0))" })
+                           values: Array(stride(from: 0, through: 10, by: 0.5)), initial: [7, 10], format: decimal)
         ]
     }()
 

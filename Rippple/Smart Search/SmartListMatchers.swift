@@ -648,21 +648,21 @@ extension SmartListAssistant {
     private static let ratingWords: Set<String> = ["rating", "ratings", "rated", "score", "scores", "scored"]
     static let scoreNames: [String: Score] = [
         "imdb": .imdb, "rotten": .rottenTomatoes, "tomatoes": .rottenTomatoes, "tomatometer": .rottenTomatoes, "rt": .rottenTomatoes,
-        "metacritic": .metacritic, "metascore": .metacritic, "metascores": .metacritic, "trakt": .trakt
+        "trakt": .trakt
     ]
     /// Rating sites Trakt can't filter by, by name: a rating of theirs is read, and left out rather than read as a
     /// Trakt rating.
     static let otherRatingSites = [
         "letterboxd": "Letterboxd", "tmdb": "TMDB", "themoviedb": "TMDB", "tvdb": "TVDB", "thetvdb": "TVDB", "douban": "Douban",
         "kinopoisk": "Kinopoisk", "allocine": "AlloCiné", "filmaffinity": "FilmAffinity", "mubi": "MUBI", "simkl": "Simkl",
-        "anilist": "AniList", "myanimelist": "MyAnimeList", "senscritique": "SensCritique", "csfd": "ČSFD"
+        "anilist": "AniList", "myanimelist": "MyAnimeList", "senscritique": "SensCritique", "csfd": "ČSFD", "metacritic": "Metacritic",
+        "metascore": "Metacritic", "metascores": "Metacritic"
     ]
     private static let maximumWords: Set = ["under", "below", "less", "lower", "most", "max", "maximum", "beneath"]
 
-    /// A rating the request names that no filter can search, as a Letterboxd rating or a Metacritic user score.
+    /// A rating the request names that no filter can search, as a Letterboxd rating.
     static func namesOtherRating(_ words: [String]) -> Bool {
-        let isMetacriticUsers = words.contains { scoreNames[$0] == .metacritic } && words.contains(where: audienceRatingWords.contains)
-        return isMetacriticUsers || words.contains { otherRatingSites[$0] != nil }
+        words.contains { otherRatingSites[$0] != nil }
     }
 
     /// A rating site typed at `index`, and where its name ends: "IMDb", "Rotten Tomatoes", "Letterboxd".
@@ -676,13 +676,9 @@ extension SmartListAssistant {
         return (name, end)
     }
 
-    /// A site's score by its audience: Rotten Tomatoes has its own, and Metacritic's users have no filter.
+    /// A site's score by its audience: Rotten Tomatoes has its own.
     private static func audience(of score: Score) -> Score {
-        switch score {
-        case .rottenTomatoes: return .rottenTomatoesAudience
-        case .metacritic: return .unsupported("Metacritic user")
-        default: return score
-        }
+        score == .rottenTomatoes ? .rottenTomatoesAudience : score
     }
 
     /// Words that may come between a rating's name and its number: "an IMDb rating of at least 8".
@@ -787,7 +783,7 @@ extension SmartListAssistant {
             }
             guard isRating else { continue }
             // "IMDb user rating" is IMDb's, "Rotten Tomatoes audience score" its audience's. Scores up to 10 are out of 10
-            // on Trakt and IMDb, but not on Metacritic or Rotten Tomatoes.
+            // on Trakt and IMDb, but not on Rotten Tomatoes.
             let kind = isAudience ? audience(of: score ?? .trakt) : score ?? .trakt
             let isTenths = [.trakt, .imdb].contains(kind)
             let typed = isTenths ? tenths : typedPercent
@@ -804,7 +800,7 @@ extension SmartListAssistant {
     /// A number as typed with its unit, read before any condition so every matcher agrees on what it is: "8", "80%" and
     /// "8 out of 10" are scores, "90 minutes" a duration.
     enum Quantity: Equatable {
-        /// In percent: `tenths` reads a number up to 10 as out of 10, as IMDb's, and `percent` as typed, as Metascores.
+        /// In percent: `tenths` reads a number up to 10 as out of 10, as IMDb's, and `percent` as typed, as Rotten Tomatoes scores.
         case score(tenths: Int, percent: Int)
         case duration(minutes: Int)
     }
@@ -872,7 +868,7 @@ extension SmartListAssistant {
     }
 
     /// "80%", "80", "8.5", "8/10" or "8+" as a percent, with how many words after it say "percent". A number up to 10 is
-    /// out of 10 on scales people give that way, as IMDb's, but not on Metascores or Rotten Tomatoes scores.
+    /// out of 10 on scales people give that way, as IMDb's, but not on Rotten Tomatoes scores.
     static func percent(of word: String, next: String?, isOutOfTen tenths: Bool = true) -> (percent: Int, extra: Int)? {
         var text = word.replacingOccurrences(of: "+", with: "")
         let isOutOfTen = text.hasSuffix("/10")

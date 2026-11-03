@@ -574,7 +574,7 @@ extension SmartListAssistant {
                 // "Feel good" is a mood, not a rating.
                 guard parts.count == 2, let minimum = Int(parts[1]), range.lowerBound == 0 || words[range.lowerBound - 1] != "feel"
                 else { return nil }
-                let score: Score = parts[0] == "rt" ? .rottenTomatoes : parts[0] == "trakt" ? .trakt : .metacritic
+                let score: Score = parts[0] == "rt" ? .rottenTomatoes : .trakt
                 return condition(.rating(score, minimum: minimum), ratingTitle(score, minimum), range)
             }
         case .watchStatus:
@@ -634,10 +634,10 @@ extension SmartListAssistant {
         "paramount": "Paramount+ Premium"
     ]
 
-    /// Critics' praise is a Metascore: 75 and above is "generally favorable" and beyond. "Certified Fresh" is Rotten
-    /// Tomatoes' label for 75% and above. "Good" and "great" alone are Trakt ratings, as in the rules' "good rating".
-    private static let criticWords = ["critically acclaimed": "mc:75", "acclaimed by critics": "mc:75", "loved by critics": "mc:75",
-                                      "praised by critics": "mc:75", "critics love": "mc:75", "critics' favorites": "mc:75",
+    /// Critics' praise is a Rotten Tomatoes score of 75% and above, its "Certified Fresh" mark. "Good" and "great" alone
+    /// are Trakt ratings, as in the rules' "good rating".
+    private static let criticWords = ["critically acclaimed": "rt:75", "acclaimed by critics": "rt:75", "loved by critics": "rt:75",
+                                      "praised by critics": "rt:75", "critics love": "rt:75", "critics' favorites": "rt:75",
                                       "certified fresh": "rt:75", "good": "trakt:70", "great": "trakt:80", "excellent": "trakt:80",
                                       "well reviewed": "trakt:70", "well-reviewed": "trakt:70", "highly regarded": "trakt:80"]
 
@@ -791,7 +791,7 @@ extension SmartListAssistant {
         case .notOnWatchlist: return isNegated && typed.contains("watchlist")
         case .shorterThan: return typed.isDisjoint(with: maximums) == false
         case .longerThan: return typed.isDisjoint(with: minimums) == false && typed.isDisjoint(with: maximums)
-        // A rating is of the site typed, if any: "Metacritic user score" isn't a Trakt rating, and a Rotten Tomatoes
+        // A rating is of the site typed, if any: "Letterboxd rating" isn't a Trakt rating, and a Rotten Tomatoes
         // audience score isn't its critics' score.
         case .traktRating, .imdbRating, .rottenTomatoesScore:
             let named = Set(typed.compactMap { scoreNames[$0] })

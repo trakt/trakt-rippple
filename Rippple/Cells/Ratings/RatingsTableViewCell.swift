@@ -41,12 +41,6 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
     @IBOutlet var imdbVotes: EFCountingLabel!
     @IBOutlet var imdbImage: UIButton!
 
-    @IBOutlet var metacriticStack: UIStackView!
-
-    @IBOutlet var metacriticRating: EFCountingLabel!
-    @IBOutlet var metacriticLabel: UILabel!
-    @IBOutlet var metacriticImage: UIButton!
-
     @IBOutlet var tmdbStack: UIStackView!
 
     @IBOutlet var tmdbRating: EFCountingLabel!
@@ -82,7 +76,7 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
             }
         }
         rating.format = "%d"
-        for label in [rottenTomatoesCriticsRating, rottenTomatoesAudienceRating, metacriticRating, tmdbRating] {
+        for label in [rottenTomatoesCriticsRating, rottenTomatoesAudienceRating, tmdbRating] {
             label?.formatBlock = { value in
                 String(format: "%02d", Int(value))
             }
@@ -260,17 +254,17 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
 
     private var countingLabels: [EFCountingLabel] {
         [rating, votes, rottenTomatoesCriticsRating, rottenTomatoesAudienceRating,
-         imdbRating, imdbVotes, metacriticRating, tmdbRating, tmdbVotes,
+         imdbRating, imdbVotes, tmdbRating, tmdbVotes,
          letterboxdRating, letterboxdVotes, malRating, malVotes]
     }
 
     private func resetRatings() {
         for stack in [rottenTomatoesCriticsStack, rottenTomatoesAudienceStack, imdbStack,
-                      malStack, letterboxdStack, metacriticStack, tmdbStack] {
+                      malStack, letterboxdStack, tmdbStack] {
             stack?.isHidden = true
         }
         for button in [rottentTomatoesCriticsImage, rottenTomatoesAudienceImage, imdbImage,
-                       malImage, letterboxdImage, metacriticImage, tmdbImage] {
+                       malImage, letterboxdImage, tmdbImage] {
             button?.enumerateEventHandlers { action, _, event, _ in
                 if let action = action {
                     button?.removeAction(action, for: event)
@@ -282,7 +276,6 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
             label.text = nil
             label.accessibilityValue = nil
         }
-        metacriticLabel.text = nil
         for constant in distributionHeightConstant {
             constant.constant = 0
         }
@@ -347,15 +340,11 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
         updateExternalRating(ratings.letterboxd?.rating, count: ratings.letterboxd?.votes, link: ratings.letterboxd?.link,
                              stack: letterboxdStack, rating: letterboxdRating, votes: letterboxdVotes,
                              image: letterboxdImage, name: "Letterboxd", maximum: 5)
-        updateExternalRating(ratings.metascore.rating.map { Float($0) }, link: ratings.metascore.link,
-                             stack: metacriticStack, rating: metacriticRating,
-                             image: metacriticImage, name: "Metacritic", maximum: 100)
         updateExternalRating(ratings.tmdb.rating.map { $0 * 10 }, count: ratings.tmdb.votes, link: ratings.tmdb.link,
                              stack: tmdbStack, rating: tmdbRating, votes: tmdbVotes,
                              image: tmdbImage, name: "TMDb", maximum: 100)
 
         updateRottenTomatoesImages(ratings.rottenTomatoes)
-        updateMetacriticImage(ratings.metascore)
     }
 
     private func setRatingImage(_ image: UIImage, on button: UIButton) {
@@ -407,29 +396,6 @@ final class RatingsTableViewCell: TintedCanvasTableViewCell {
             }
             setRatingImage(image, on: rottenTomatoesAudienceImage)
         }
-    }
-
-    private func updateMetacriticImage(_ ratings: MetascoreRatings) {
-        guard let rating = ratings.rating else { return }
-        let image: UIImage
-        switch rating {
-        case ...19:
-            metacriticLabel.text = "Overwhelming Dislike"
-            image = UIImage(resource: .metacriticLogoRed)
-        case ...39:
-            metacriticLabel.text = "Generally Unfavorable"
-            image = UIImage(resource: .metacriticLogoRed)
-        case ...60:
-            metacriticLabel.text = "Mixed or Average"
-            image = UIImage(resource: .metacriticLogoOrange)
-        case ...80:
-            metacriticLabel.text = "Generally Favorable"
-            image = UIImage(resource: .metacriticLogoGreen)
-        default:
-            metacriticLabel.text = "Universal Acclaim"
-            image = UIImage(resource: .metacriticLogoGreen)
-        }
-        setRatingImage(image, on: metacriticImage)
     }
 
     private func fetchRatingsFor(type: TraktObjectType) -> Cancellable {
