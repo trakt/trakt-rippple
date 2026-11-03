@@ -178,6 +178,7 @@ enum SearchType: String {
 enum Extended: String {
     case guestStars = "guest_stars"
     case full
+    case fullMarkdown = "full,markdown"
     case noseasons
     case fullnoseasons = "full,noseasons"
     case fullEpisodes = "episodes,full"

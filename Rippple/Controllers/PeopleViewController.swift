@@ -370,7 +370,7 @@ final class PeopleViewController: UITableViewController {
     }
 
     private func fetchPerson() {
-        TraktAPIProvider.provider.request(TraktAPIService.people(id: identifier),
+        TraktAPIProvider.provider.request(TraktAPIService.people(id: identifier, extended: .fullMarkdown),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
 
