@@ -105,8 +105,3 @@ If you update dependencies, update their requirements, resolved files, and the v
   - **Description**: Toast-style notifications for iOS.
   - **Source**: https://github.com/BastiaanJansen/toast-swift
   - **Pinned version**: `2.1.3`
-
-- **YouTubePlayerKit** (`YouTubePlayerKit`)
-  - **Description**: Swift package for embedding and controlling YouTube videos.
-  - **Source**: https://github.com/SvenTiigi/YouTubePlayerKit
-  - **Pinned version**: `2.0.5`

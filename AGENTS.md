@@ -79,7 +79,7 @@ Use each dependency through its established boundary:
 - **Kingfisher** and **KingfisherWebP**: remote image loading and caching; **LRUCache** and **TinyStorage** cover other memory and disk caches.
 - **Haring**: Markdown rendering through the parsers in `Rippple/Markdown`.
 - **NVActivityIndicatorView**: legacy loading UI; reuse the project animation in `Rippple/RippleLoader` or a nearby cell/controller pattern.
-- **YouTubePlayerKit**, **SFSymbols**, **Emoji**, **HTMLEntities**, and **Toast**: specialized uses already isolated to trailers, symbol picking, text utilities, and app messages. Extend those call sites instead of duplicating their behavior.
+- **SFSymbols**, **Emoji**, **HTMLEntities**, and **Toast**: specialized uses already isolated to symbol picking, text utilities, and app messages. Extend those call sites instead of duplicating their behavior.
 - **ReactiveSwift**, **RxSwift**, and **libwebp** are resolved transitively; the app does not use them directly.
 
 When dependencies change, update the Xcode package references, `Rippple.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`, and `THIRD_PARTY_NOTICES.md`. CocoaPods has been removed; do not reintroduce it.
