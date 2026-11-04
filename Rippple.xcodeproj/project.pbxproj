@@ -122,6 +122,7 @@
 		3A02472A20173CF40077BBF6 /* ForYouManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A02472920173CF40077BBF6 /* ForYouManager.swift */; };
 		3A02A45927A817BB000B87A8 /* RatingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A02A45827A817BB000B87A8 /* RatingsViewController.swift */; };
 		3A02A45B27A81A89000B87A8 /* RatingsHeaderTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A02A45A27A81A63000B87A8 /* RatingsHeaderTableViewCell.xib */; };
+		F7A100000000000000010002 /* TriviaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A100000000000000010001 /* TriviaViewController.swift */; };
 		3A02D04D2B41B35000B6E51B /* CertificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A02D04C2B41B35000B6E51B /* CertificationsViewController.swift */; };
 		3A02D0502B41B6F600B6E51B /* CertificationTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A02D04F2B41B6F600B6E51B /* CertificationTableViewCell.swift */; };
 		3A02D0522B41B70000B6E51B /* CertificationTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A02D0512B41B70000B6E51B /* CertificationTableViewCell.xib */; };
@@ -753,6 +754,7 @@
 		3A02472920173CF40077BBF6 /* ForYouManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForYouManager.swift; sourceTree = "<group>"; };
 		3A02A45827A817BB000B87A8 /* RatingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingsViewController.swift; sourceTree = "<group>"; };
 		3A02A45A27A81A63000B87A8 /* RatingsHeaderTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RatingsHeaderTableViewCell.xib; sourceTree = "<group>"; };
+		F7A100000000000000010001 /* TriviaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriviaViewController.swift; sourceTree = "<group>"; };
 		3A02D04C2B41B35000B6E51B /* CertificationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificationsViewController.swift; sourceTree = "<group>"; };
 		3A02D04F2B41B6F600B6E51B /* CertificationTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificationTableViewCell.swift; sourceTree = "<group>"; };
 		3A02D0512B41B70000B6E51B /* CertificationTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CertificationTableViewCell.xib; sourceTree = "<group>"; };
@@ -1396,6 +1398,14 @@
 				3A02472920173CF40077BBF6 /* ForYouManager.swift */,
 			);
 			path = "For You";
+			sourceTree = "<group>";
+		};
+		F7A100000000000000010003 /* Trivia */ = {
+			isa = PBXGroup;
+			children = (
+				F7A100000000000000010001 /* TriviaViewController.swift */,
+			);
+			path = Trivia;
 			sourceTree = "<group>";
 		};
 		3A02D04B2B41B32000B6E51B /* Certifications */ = {
@@ -2747,6 +2757,7 @@
 				3A1B95092A3C570D0044972F /* Browse */,
 				3A38B82D2AC0923A00624B11 /* Notes */,
 				3A02D04B2B41B32000B6E51B /* Certifications */,
+				F7A100000000000000010003 /* Trivia */,
 				3AB9099F2C594148005EE32D /* Sharing */,
 				3ACCB5902CFA5AE100F5A63F /* Trailers */,
 				3AD2C1F22DDDB7000067937F /* TraktStatsViewController.swift */,
@@ -3582,6 +3593,7 @@
 				3A2AAD2A2806CA570055FCD8 /* WatchedViewController.swift in Sources */,
 				F7A100000000000000000006 /* ParentalGuideViews.swift in Sources */,
 				3A02D04D2B41B35000B6E51B /* CertificationsViewController.swift in Sources */,
+				F7A100000000000000010002 /* TriviaViewController.swift in Sources */,
 				3AD8FDC429F45E6A006A26EC /* NotificationCenterViewController.swift in Sources */,
 				3A8E05A624793BCD006B5B13 /* MovieNotificationsManager.swift in Sources */,
 				09570F952ED738E200EB91CE /* EmptyCollectionViewCell.swift in Sources */,

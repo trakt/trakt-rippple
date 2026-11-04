@@ -2090,7 +2090,45 @@ struct ParentalGuide: Decodable {
     }
 }
 
-struct ParentalGuideTarget {
+struct Trivia: Decodable {
+    struct Item: Decodable, Hashable {
+        let factId: String
+        let text: String
+        let spoiler: Bool
+        let order: Int
+
+        enum CodingKeys: String, CodingKey {
+            case factId = "fact_id"
+            case text, spoiler, order
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            factId = try container.decode(String.self, forKey: .factId)
+            text = try container.decodeIfPresent(String.self, forKey: .text) ?? ""
+            spoiler = try container.decodeIfPresent(Bool.self, forKey: .spoiler) ?? false
+            order = try container.decodeIfPresent(Int.self, forKey: .order) ?? Int.max
+        }
+    }
+
+    let summary: [String]
+    let items: [Item]
+
+    enum CodingKeys: String, CodingKey {
+        case summary, items
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        summary = try container.decodeIfPresent([String].self, forKey: .summary) ?? []
+        var seen = Set<String>()
+        items = try (container.decodeIfPresent([Item].self, forKey: .items) ?? [])
+            .filter { $0.text.isEmpty == false && seen.insert($0.factId).inserted }
+            .sorted { $0.order < $1.order }
+    }
+}
+
+struct MediaInfoTarget {
     enum MediaType: String {
         case movie
         case show

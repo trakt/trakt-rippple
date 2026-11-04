@@ -419,7 +419,7 @@ final class MediaTitleCardView: UIView {
         parentalGuideRequest?.cancel()
         parentalGuideRequestID = UUID()
         let requestID = parentalGuideRequestID
-        let target = ParentalGuideTarget(media: media)
+        let target = MediaInfoTarget(media: media)
         parentalGuideIndicators.configure(guide: nil)
         parentalGuideIndicators.isHiddenInStackView = target == nil
         certificationButton.isHidden = target == nil

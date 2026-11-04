@@ -11,6 +11,8 @@ import Haring
 import UIKit
 
 class MarkdownSpoiler: MarkdownCommonElement {
+    static let hiddenAttribute = NSAttributedString.Key("MarkdownSpoiler.hidden")
+
     fileprivate static let regex = "(\\[spoiler\\])(.*?)(\\[\\/spoiler\\])"
 
     open var font: UIFont?
@@ -39,7 +41,8 @@ class MarkdownSpoiler: MarkdownCommonElement {
         return [NSAttributedString.Key.strikethroughStyle: 7,
                 NSAttributedString.Key.baselineOffset: 0,
                 NSAttributedString.Key.foregroundColor: UIColor.clear,
-                NSAttributedString.Key.strikethroughColor: UIColor.label]
+                NSAttributedString.Key.strikethroughColor: UIColor.label,
+                MarkdownSpoiler.hiddenAttribute: true]
     }
 
     func match(_ match: NSTextCheckingResult, attributedString: NSMutableAttributedString) {

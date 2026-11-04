@@ -72,7 +72,7 @@ final class CertificationsViewController: UITableViewController {
         certificationsLoading = true
         certificationsFailed = false
         guideFailed = false
-        let target = ParentalGuideTarget(media: media)
+        let target = MediaInfoTarget(media: media)
         guideLoading = target != nil && TraktAPIProvider.source.token != nil
         reloadContent()
 
@@ -140,7 +140,7 @@ final class CertificationsViewController: UITableViewController {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Wrapper>()
         snapshot.appendSections([.content])
         snapshot.appendItems([.certification])
-        if ParentalGuideTarget(media: media) != nil {
+        if MediaInfoTarget(media: media) != nil {
             snapshot.appendItems(ParentalGuide.Category.allCases.map { .guide($0) })
             if let notice = guideNotice {
                 snapshot.appendItems([.notice(notice)])

@@ -505,7 +505,8 @@ enum TraktAPIService {
     case deleteNotes(id: Int64)
 
     case certifications(type: CertificationType)
-    case parentalGuide(target: ParentalGuideTarget)
+    case parentalGuide(target: MediaInfoTarget)
+    case trivia(target: MediaInfoTarget)
 
     case lastActivities
 
@@ -582,10 +583,12 @@ extension TraktAPIService: AuthorizedTargetType {
 //            return .successCodes
 //        }
 
-        if case .parentalGuide = self {
+        switch self {
+        case .parentalGuide, .trivia:
             return .customCodes([200, 204, 401, 404])
+        default:
+            return .customCodes([200, 201, 204, 401, 409])
         }
-        return .customCodes([200, 201, 204, 401, 409])
     }
 
     var baseURL: URL {
@@ -1080,6 +1083,9 @@ extension TraktAPIService: AuthorizedTargetType {
         case .parentalGuide(let target):
             let slug = target.slug.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) ?? target.slug
             return "/v3/media/\(target.type.rawValue)/\(slug)/info/16/version/1"
+        case .trivia(let target):
+            let slug = target.slug.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) ?? target.slug
+            return "/v3/media/\(target.type.rawValue)/\(slug)/info/5/version/2"
         case .certifications(let type):
             return "/certifications/\(type)"
         case .lastActivities:
@@ -1352,7 +1358,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .put
         case .deleteNotes:
             return .delete
-        case .certifications, .parentalGuide:
+        case .certifications, .parentalGuide, .trivia:
             return .get
         case .lastActivities:
             return .get
@@ -2168,7 +2174,7 @@ extension TraktAPIService: AuthorizedTargetType {
         case .parentalGuide:
             return .requestParameters(parameters: ["locale": Locale.preferredLanguages.first ?? "en"],
                                       encoding: URLEncoding.default)
-        case .certifications:
+        case .certifications, .trivia:
             return .requestPlain
         case .lastActivities:
             return .requestPlain

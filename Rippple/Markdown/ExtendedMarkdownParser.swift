@@ -47,6 +47,24 @@ final class SpoilerMarkdownParser: MarkdownParser {
         }
     }
 
+    /// Elements parsed after a spoiler (links, mentions, highlights) restyle its text, so hidden ranges are cleaned up at the end.
+    override func parse(_ markdown: NSAttributedString) -> NSAttributedString {
+        let attributedString = NSMutableAttributedString(attributedString: super.parse(markdown))
+        let fullRange = NSRange(location: 0, length: attributedString.length)
+        attributedString.enumerateAttribute(MarkdownSpoiler.hiddenAttribute, in: fullRange) { value, range, _ in
+            guard value != nil else { return }
+            self.hideSpoiler(in: attributedString, range: range)
+        }
+        return attributedString
+    }
+
+    func hideSpoiler(in attributedString: NSMutableAttributedString, range: NSRange) {
+        attributedString.addAttributes(allSpoiler.attributes, range: range)
+        attributedString.removeAttribute(.link, range: range)
+        attributedString.removeAttribute(.underlineStyle, range: range)
+        attributedString.removeAttribute(.backgroundColor, range: range)
+    }
+
     private lazy var _elements: [MarkdownElement] = [header, list, quote, bold, italic, highlight, mention, strike]
 
     override func elements() -> [MarkdownElement] {

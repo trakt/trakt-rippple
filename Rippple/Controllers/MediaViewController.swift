@@ -221,6 +221,11 @@ final class MediaViewController: UITableViewController {
         linkCount = 0
         snapshot.appendSections([.links])
 
+        if TraktAPIProvider.source.token != nil, media.movie != nil || media.showShow != nil {
+            snapshot.appendItems([.link("Trivia", "lightbulb", URL(string: "https://trivia")!)])
+            linkCount += 1
+        }
+
         switch media! {
         case .movie:
             snapshot.appendItems([.link("Watch Trailers & more", "play.rectangle", URL(string: "https://trailers")!)])
@@ -409,7 +414,7 @@ final class MediaViewController: UITableViewController {
             } else {
                 cell.cardType = .middle
             }
-            if url.absoluteString == "https://trailers" {
+            if url.absoluteString == "https://trailers" || url.absoluteString == "https://trivia" {
                 cell.actions.setImage(UIImage(systemName: "chevron.right"), for: .normal)
                 cell.actions.isEnabled = false
             } else {
@@ -1291,6 +1296,16 @@ extension MediaViewController {
                 let trailersViewController = TrailersViewController()
                 trailersViewController.media = media
                 navigationController?.pushViewController(trailersViewController, animated: true)
+                return
+            }
+            if url.absoluteString == "https://trivia" {
+                guard PurchaseManager.shared.purchased else {
+                    UIApplication.shared.switchToPurchase()
+                    return
+                }
+                let triviaViewController = TriviaViewController(style: .plain)
+                triviaViewController.media = media
+                navigationController?.pushViewController(triviaViewController, animated: true)
                 return
             }
             if UIApplication.shared.canOpenURL(url) {
