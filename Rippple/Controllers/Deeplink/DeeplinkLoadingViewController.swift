@@ -797,8 +797,6 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                         "MovieToWatchSettings.sort",
                                         "MovieToWatchSettings.upcoming",
                                         "MovieToWatchSettings.watchlist",
-                                        "RecommendedNotificationsManager.recommendedMovies",
-                                        "RecommendedNotificationsManager.recommendedShows",
                                         "RecommendedViewController.currentFilter",
                                         "RecommendedViewController.currentSorting",
                                         "SeasonsRatingsViewController.currentFilter",

@@ -196,8 +196,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                                   "StreamingMovieNotificationsManager.toWatchMovieRelease": true,
                                                   "TrendingNotificationsManager.trendingShows": true,
                                                   "TrendingNotificationsManager.trendingMovies": true,
-                                                  "RecommendedNotificationsManager.recommendedShows": true,
-                                                  "RecommendedNotificationsManager.recommendedMovies": true,
                                                   "AnticipatedNotificationsManager.anticipatedShows": true,
                                                   "AnticipatedNotificationsManager.anticipatedMovies": true,
                                                   "ManualRemoteNotificationsManager.appUpdate": true,

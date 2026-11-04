@@ -58,10 +58,6 @@ struct NotificationSettingsView: View {
                           footer: "Get a notification when a Movie or Show becomes trending. Delivered by realtime push notifications.",
                           settings: [.trendingMovie, .trendingShow])
 
-            toggleSection(title: "📢 Favorited",
-                          footer: "Get a notification when a Movie or Show becomes most favorited. Delivered by realtime push notifications.",
-                          settings: [.favoritedMovie, .favoritedShow])
-
             toggleSection(title: "✨ Smart Episode Releases",
                           settings: [.groupEpisodes, .reduceBasedOnProgress, .postponeNighttimeNotifications])
 
@@ -147,8 +143,6 @@ private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
     case anticipatedShow
     case trendingMovie
     case trendingShow
-    case favoritedMovie
-    case favoritedShow
     case groupEpisodes
     case reduceBasedOnProgress
     case postponeNighttimeNotifications
@@ -194,10 +188,6 @@ private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
             return "Trending Movie"
         case .trendingShow:
             return "Trending Show"
-        case .favoritedMovie:
-            return "Favorited Movie"
-        case .favoritedShow:
-            return "Favorited Show"
         case .groupEpisodes:
             return "Group Binge Releases"
         case .reduceBasedOnProgress:
@@ -263,10 +253,6 @@ private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
                 return TrendingNotificationsManager.shared.trendingMovies
             case .trendingShow:
                 return TrendingNotificationsManager.shared.trendingShows
-            case .favoritedMovie:
-                return RecommendedNotificationsManager.shared.recommendedMovies
-            case .favoritedShow:
-                return RecommendedNotificationsManager.shared.recommendedShows
             case .groupEpisodes:
                 return EpisodeNotificationsManager.shared.groupEpisodes
             case .reduceBasedOnProgress:
@@ -334,10 +320,6 @@ private enum NotificationSetting: CaseIterable, Hashable, Identifiable {
                 TrendingNotificationsManager.shared.trendingMovies = newValue
             case .trendingShow:
                 TrendingNotificationsManager.shared.trendingShows = newValue
-            case .favoritedMovie:
-                RecommendedNotificationsManager.shared.recommendedMovies = newValue
-            case .favoritedShow:
-                RecommendedNotificationsManager.shared.recommendedShows = newValue
             case .groupEpisodes:
                 EpisodeNotificationsManager.shared.groupEpisodes = newValue
             case .reduceBasedOnProgress:

@@ -12,8 +12,6 @@ import Receiver
 enum RemoteNotificationTopic: String, Codable {
     case trendingShows
     case trendingMovies
-    case recommendedShows
-    case recommendedMovies
     case manualBlogPost
     case manualUpdate
     case test
@@ -24,10 +22,6 @@ enum RemoteNotificationTopic: String, Codable {
             return AWSConfiguration.trendingShowsTopicARN
         case .trendingMovies:
             return AWSConfiguration.trendingMoviesTopicARN
-        case .recommendedShows:
-            return AWSConfiguration.recommendedShowsTopicARN
-        case .recommendedMovies:
-            return AWSConfiguration.recommendedMoviesTopicARN
         case .manualBlogPost:
             return AWSConfiguration.manualBlogPostTopicARN
         case .manualUpdate:
@@ -53,7 +47,7 @@ private struct RemoteNotificationTopicState {
 ///
 ///   Off = the flag is false in the registration. The server checks it before each push.
 ///
-/// BROADCAST (trending, favorited, blog post, app update)
+/// BROADCAST (trending, blog post, app update)
 ///
 ///   App ── POST   /push/subscriptions ──┐ subscribe
 ///       └─ DELETE /push/subscriptions ──┤ unsubscribe
@@ -223,8 +217,6 @@ final class RemoteNotificationsManager {
         var states = [
             RemoteNotificationTopicState(topic: .trendingShows, isSubscribed: canSubscribe && TrendingNotificationsManager.shared.trendingShows),
             RemoteNotificationTopicState(topic: .trendingMovies, isSubscribed: canSubscribe && TrendingNotificationsManager.shared.trendingMovies),
-            RemoteNotificationTopicState(topic: .recommendedShows, isSubscribed: canSubscribe && RecommendedNotificationsManager.shared.recommendedShows),
-            RemoteNotificationTopicState(topic: .recommendedMovies, isSubscribed: canSubscribe && RecommendedNotificationsManager.shared.recommendedMovies),
             RemoteNotificationTopicState(topic: .manualBlogPost, isSubscribed: canSubscribe && ManualRemoteNotificationsManager.shared.blogPost),
             RemoteNotificationTopicState(topic: .manualUpdate, isSubscribed: canSubscribe && ManualRemoteNotificationsManager.shared.appUpdate)
         ]

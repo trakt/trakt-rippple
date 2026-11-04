@@ -552,10 +552,6 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
             return "Trending shows"
         case .trendingMovies:
             return "Trending movies"
-        case .recommendedShows:
-            return "Recommended shows"
-        case .recommendedMovies:
-            return "Recommended movies"
         case .manualBlogPost:
             return "Blog posts"
         case .manualUpdate:
