@@ -404,7 +404,7 @@ final class CommentComposerSession: ComposerSession {
     }
 
     private static func openSupport() {
-        guard let url = URL(string: "https://forums.trakt.tv") else { return }
+        guard let url = URL(string: "https://support.trakt.tv") else { return }
         UIApplication.shared.present(SFSafariViewController(url: url))
     }
 }
