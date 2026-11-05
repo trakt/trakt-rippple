@@ -1624,7 +1624,7 @@ extension MediaModel {
 
     func stopRewatchingShow() {
         if !PurchaseManager.shared.purchased {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .rewatching)
             return
         }
 
@@ -1661,7 +1661,7 @@ extension MediaModel {
 
     func startRewatchingShow() {
         if !PurchaseManager.shared.purchased {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .rewatching)
             return
         }
 

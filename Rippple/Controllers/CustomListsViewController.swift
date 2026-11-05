@@ -340,7 +340,7 @@ final class CustomListsViewController: UITableViewController {
             if ListsManager.shared.lists.count < UserManager.shared.currentUserListLimit {
                 self.performSegue(withIdentifier: "add", sender: nil)
             } else {
-                UIApplication.shared.presentAccountLimitReached()
+                UIApplication.shared.presentAccountLimitReached(for: .limits)
             }
         }
         addListBarButtonItem?.menu = UIMenu(children: [newSmartList, newCustomList])

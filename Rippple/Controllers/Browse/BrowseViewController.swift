@@ -609,7 +609,7 @@ final class BrowseViewController: UITableViewController {
                                                              self.performSegue(withIdentifier: "customizeShelf", sender: nil)
                                                          }
                                                      } else {
-                                                         UIApplication.shared.switchToPurchase()
+                                                         UIApplication.shared.switchToPurchase(for: .shelf)
                                                      }
                                                  })
             if let menuBarButtonItem = menuBarButtonItem {

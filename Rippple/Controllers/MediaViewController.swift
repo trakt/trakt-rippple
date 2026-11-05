@@ -1300,7 +1300,7 @@ extension MediaViewController {
             }
             if url.absoluteString == "https://trivia" {
                 guard PurchaseManager.shared.purchased else {
-                    UIApplication.shared.switchToPurchase()
+                    UIApplication.shared.switchToPurchase(for: .info)
                     return
                 }
                 let triviaViewController = TriviaViewController(style: .plain)
@@ -1419,7 +1419,7 @@ extension MediaViewController: RelatedMediaTableViewCellDelegate {
         case .showMedia(let media):
             performSegue(withIdentifier: "media", sender: media)
         case .getMoreWithVIP:
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .relatedTitles)
         }
     }
 }

@@ -141,7 +141,7 @@ final class PinnedShowsManager {
 extension Show {
     func pin() {
         if !PurchaseManager.shared.purchased {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         PinnedShowsManager.shared.pinnedShows.insert(self)

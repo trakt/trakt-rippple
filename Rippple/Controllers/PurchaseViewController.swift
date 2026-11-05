@@ -23,6 +23,9 @@ final class PurchaseViewController: UIViewController {
 
     @IBOutlet var purchaseStackView: UIStackView?
 
+    /// Set before the view loads so the paywall leads with what the person just tried to use.
+    var benefit: VIPBenefit?
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -59,14 +62,13 @@ final class PurchaseViewController: UIViewController {
             }
         }.disposed(by: disposeBag)
 
-        let purchaseWhyView = PurchaseWhyView {
-            self.purchaseStackView?.arrangedSubviews[1].setNeedsLayout()
-            self.purchaseStackView?.arrangedSubviews[1].layoutIfNeeded()
-            self.purchaseStackView?.arrangedSubviews[1].invalidateIntrinsicContentSize()
-        }
-        let hostingController = RipppleHostingController(rootView: purchaseWhyView)
+        let hostingController = RipppleHostingController(rootView: PurchaseWhyView(benefit: benefit))
+        hostingController.sizingOptions = .intrinsicContentSize
         addChild(hostingController)
         purchaseStackView?.insertArrangedSubview(hostingController.view, at: 1)
+        if let purchaseStackView = purchaseStackView {
+            hostingController.view.widthAnchor.constraint(equalTo: purchaseStackView.widthAnchor).isActive = true
+        }
         hostingController.didMove(toParent: self)
     }
 
@@ -81,10 +83,15 @@ final class PurchaseViewController: UIViewController {
                                             color: .label,
                                             automaticLinkDetectionEnabled: false)
         markdownParser.bold.color = UIColor(asset: .globalTint)
-        let markdown = """
-        Unlock more with **Trakt VIP**.
-        VIP supports Trakt, unlocks powerful features, and higher limits for people who care about what they watch.
-        """
+        let markdown: String
+        if let benefit = benefit {
+            markdown = benefit.headline
+        } else {
+            markdown = """
+            Unlock more with **Trakt VIP**.
+            VIP supports Trakt, unlocks powerful features, and higher limits for people who care about what they watch.
+            """
+        }
         headerLabel?.attributedText = markdownParser.parse(markdown)
     }
 
@@ -122,7 +129,7 @@ final class PurchaseViewController: UIViewController {
 
             present(alertController, animated: true)
         } else {
-            let hostingController = RipppleHostingController(rootView: PurchaseConfirmationView())
+            let hostingController = RipppleHostingController(rootView: PurchaseConfirmationView(benefit: benefit))
             present(hostingController, animated: true)
         }
     }

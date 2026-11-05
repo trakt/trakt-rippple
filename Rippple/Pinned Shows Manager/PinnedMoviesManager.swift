@@ -128,7 +128,7 @@ final class PinnedMoviesManager {
 extension Movie {
     func pin() {
         if !PurchaseManager.shared.purchased {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         PinnedMoviesManager.shared.pinnedMovies.insert(self)

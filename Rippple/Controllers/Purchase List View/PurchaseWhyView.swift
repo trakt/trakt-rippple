@@ -8,136 +8,199 @@
 
 import SwiftUI
 
-struct PurchaseWhyView: View {
-    let callback: () -> Void
+/// What Trakt VIP unlocks in Rippple, declared from most to least valuable and sorted like https://app.trakt.tv/vip.
+enum VIPBenefit: CaseIterable {
+    case stats
+    case limits
+    case smartLists
+    case info
+    case toWatch
+    case shelf
+    case rewatching
+    case relatedTitles
+    case support
 
-    @State private var selectedSegment = 0
+    /// The benefit that matches why the paywall opened comes first, then the rest by value.
+    static func ordered(leading benefit: VIPBenefit?) -> [VIPBenefit] {
+        guard let benefit = benefit else { return allCases }
+        return [benefit] + allCases.filter { $0 != benefit }
+    }
+
+    var imageName: String {
+        switch self {
+        case .stats: return "chart.pie"
+        case .smartLists: return "sparkles"
+        case .info: return "lightbulb"
+        case .toWatch: return "checklist"
+        case .limits: return "square.stack.3d.up"
+        case .shelf: return "sparkles.rectangle.stack"
+        case .rewatching: return "backward.circle"
+        case .relatedTitles: return "rectangle.on.rectangle.angled"
+        case .support: return "heart"
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .stats: return "Advanced Stats"
+        case .smartLists: return "More Smart Lists"
+        case .info: return "More Info"
+        case .toWatch: return "Your To Watch"
+        case .limits: return "Higher Limits"
+        case .shelf: return "Your Shelf"
+        case .rewatching: return "Smarter Rewatching"
+        case .relatedTitles: return "More Related Titles"
+        case .support: return "Support Trakt & Rippple"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .stats:
+            return "Relive what you watched with Month in Review, Year in Review, and all-time stats."
+        case .smartLists:
+            return "Describe what you want to watch and keep more Smart Lists that update themselves."
+        case .info:
+            return "Learn more about the shows and movies you love, starting with trivia."
+        case .toWatch:
+            return "Pin, group, sort, and filter To Watch to plan what you'll watch next."
+        case .limits:
+            return "Keep more in your lists and track without worrying about limits."
+        case .shelf:
+            return "Arrange your Shelf and add your own rails to browse your way."
+        case .rewatching:
+            return "Start and stop rewatches so your progress and history stay accurate."
+        case .relatedTitles:
+            return "See more shows and movies like the ones you're exploring."
+        case .support:
+            return "Help keep independent media tracking going."
+        }
+    }
+
+    /// Markdown header for a paywall opened by this benefit; the bold part takes the tint color.
+    var headline: String {
+        switch self {
+        case .stats: return "Relive everything you watched with **Trakt VIP**."
+        case .smartLists: return "Keep more Smart Lists with **Trakt VIP**."
+        case .info: return "Know more about what you watch with **Trakt VIP**."
+        case .toWatch: return "Make To Watch yours with **Trakt VIP**."
+        case .limits: return "Track and save more with **Trakt VIP**."
+        case .shelf: return "Build your own Shelf with **Trakt VIP**."
+        case .rewatching: return "Track every rewatch with **Trakt VIP**."
+        case .relatedTitles: return "Find more like this with **Trakt VIP**."
+        case .support: return "Support Trakt and Rippple with **Trakt VIP**."
+        }
+    }
+}
+
+struct PurchaseWhyView: View {
+    /// Why the paywall opened. `nil` when the person came to browse VIP rather than hitting a gate.
+    let benefit: VIPBenefit?
+
+    private var otherBenefits: [VIPBenefit] {
+        VIPBenefit.ordered(leading: benefit).filter { $0 != benefit }
+    }
 
     var body: some View {
-        VStack {
-            ZStack(alignment: .center) {
-                Picker("Options", selection: $selectedSegment) {
-                    Text(verbatim: "   User Reviews   \u{200c}")
-                        .tag(0)
-                        .bold()
-                    Text("Features")
-                        .tag(1)
-                        .bold()
-                }.pickerStyle(.segmented)
-                    .onChange(of: selectedSegment) {
-                        callback()
-                    }
-                    .fixedSize()
+        VStack(alignment: .leading, spacing: 30) {
+            if let benefit = benefit {
+                FeaturedBenefitView(benefit: benefit)
+                Text("Also with VIP")
+                    .font(.title3)
+                    .bold()
+                    .padding(.bottom, -10)
             }
 
-            Spacer(minLength: 30)
-
-            if selectedSegment == 0 {
-                VStack(spacing: 10) {
-                    ReviewItemView(title: "the best",
-                                   rating: 5,
-                                   name: "xavierbarex",
-                                   review: "incredibly underrated",
-                                   country: "Canada")
-
-                    ReviewItemView(title: "Best app for Trakt",
-                                   rating: 5,
-                                   name: "_ATi_",
-                                   review: "its my favorite app so far for Trakt thanks for building such an amazing app",
-                                   country: "Türkiye")
-
-                    ReviewItemView(title: "Best APP EVER!",
-                                   rating: 5,
-                                   name: "Ace873219",
-                                   review: "My wife and I have tried many apps to track our TV/Movies. By far this app is the best! Far superior in every way, shape, and form. It connects seamlessly with your Trakt account and is a one stop shop for all of your entertainment tracking needs. Seriously thank you to the developer for an amazing app and for the dedication they put in with the amount of consistent updates we get. Every week there are new additions/improvements. Seriously, this is the best!",
-                                   country: "United States")
-
-                    ReviewItemView(title: "Best Trakt app out there",
-                                   rating: 5,
-                                   name: "Nimesh.netco",
-                                   review: "Rippple is the best trakt app out there. Better than the official trakt app. Recommended for anyone using trakt.",
-                                   country: "Sri Lanka")
-
-                    ReviewItemView(title: "Better than the official app",
-                                   rating: 5,
-                                   name: "hroyer",
-                                   review: "Beautiful UI and more features than the recently updated official Trakt app.",
-                                   country: "Canada")
-
-                    ReviewItemView(title: "No complaints",
-                                   rating: 5,
-                                   name: "zalizes",
-                                   review: "This is probably the most feature rich & customizable tracking app available, it has everything you could ever want. The only thing I wish it had was a lifetime subscription as i’d prefer to just pay more upfront and have it forever instead of having a subscription.",
-                                   country: "United States")
-
-                    ReviewItemView(title: "Good",
-                                   rating: 5,
-                                   name: "NgocThaj",
-                                   review: "This app is incredible",
-                                   country: "Japan")
-
-                    ReviewItemView(title: "Great app with bright future",
-                                   rating: 5,
-                                   name: "Not_Found_Xavi",
-                                   review: "✅ Features rich trakt app\n✅ Great Design\n✅ Talkative Developers\n✅ Fairly priced",
-                                   country: "Spain")
-
-                    ReviewItemView(title: "Superb",
-                                   rating: 5,
-                                   name: "Thanasut",
-                                   review: "Great updates today 👍",
-                                   country: "Thailand")
-
-                    ReviewItemView(title: "The best",
-                                   rating: 5,
-                                   name: "Devs.Nate",
-                                   review: "I’ve tried a LOT of apps and this is by far the best one",
-                                   country: "United States")
-
-                    ReviewItemView(title: "Ripple simply rocks",
-                                   rating: 5,
-                                   name: "Mel Van Rippple",
-                                   review: "It takes Trakt and turns into what it should be. Just one suggestion… Rippple on Apple TV!!! Rippple on macOS!!! More Rippple!!! Rippple EVERYWHERE!!!",
-                                   country: "Australia")
-
-                    ReviewItemView(title: "My favorite Trakt app.",
-                                   rating: 5,
-                                   name: "Tom Coolen",
-                                   review: "I love the look and feel of the app and the streamlined experience it provides. Great work, and this from a one man team. 👌🏻",
-                                   country: "Belgium")
-                }
-            } else {
-                VStack(spacing: 30) {
-                    FeatureItemView(imageName: "text.justify.left",
-                                    title: "Expanded Limits",
-                                    description: "Create more lists, write more notes, expand your watchlist, and rate without hitting caps.")
-
-                    FeatureItemView(imageName: "chart.pie",
-                                    title: "Advanced Stats",
-                                    description: "Explore Month in Review, Year in Review, and all-time stats with deeper insights.")
-
-                    FeatureItemView(imageName: "checklist",
-                                    title: "Your To Watch",
-                                    description: "Pin items, control sorting, and customize filters to plan what you'll watch next.")
-
-                    FeatureItemView(imageName: "sparkles.rectangle.stack",
-                                    title: "Your Shelf",
-                                    description: "Build a dynamic Shelf tailored to your taste and how you browse.")
-
-                    FeatureItemView(imageName: "sparkle.magnifyingglass",
-                                    title: "Smarter Searches",
-                                    description: "Create and save Smart Searches beyond the defaults.")
-
-                    FeatureItemView(imageName: "backward.circle",
-                                    title: "Smarter Rewatching",
-                                    description: "Track rewatches accurately and keep your viewing history meaningful.")
-
-                    FeatureItemView(imageName: "target",
-                                    title: "Support Trakt & Rippple",
-                                    description: "Unlock the complete experience and support independent media tracking.")
+            VStack(spacing: 24) {
+                ForEach(otherBenefits, id: \.self) { benefit in
+                    FeatureItemView(imageName: benefit.imageName,
+                                    title: benefit.title,
+                                    description: benefit.description)
                 }
             }
+
+            ReviewsView()
         }.padding([.leading, .trailing], 30)
+    }
+}
+
+private struct FeaturedBenefitView: View {
+    let benefit: VIPBenefit
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 15) {
+            Image(systemName: benefit.imageName)
+                .font(.title)
+                .foregroundStyle(Color(uiColor: .ripppleTintContrastingLabel))
+                .frame(width: 52, height: 52)
+                .background(Color(UIColor(asset: .globalTint)), in: RoundedRectangle(cornerRadius: 14))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(benefit.title)
+                    .font(.title3)
+                    .bold()
+                Text(benefit.description)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            }.frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding()
+        .background(Color(uiColor: .ripppleCardBackground), in: RoundedRectangle(cornerRadius: 18))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color(uiColor: .ripppleCardBorder), lineWidth: 1)
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct ReviewsView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Loved by people who track")
+                .font(.title3)
+                .bold()
+            ReviewItemView(title: "Best APP EVER!",
+                           rating: 5,
+                           name: "Ace873219",
+                           review: "My wife and I have tried many apps to track our TV/Movies. By far this app is the best! Far superior in every way, shape, and form. It connects seamlessly with your Trakt account and is a one stop shop for all of your entertainment tracking needs.",
+                           country: "United States")
+
+            ReviewItemView(title: "Great app with bright future",
+                           rating: 5,
+                           name: "Not_Found_Xavi",
+                           review: "✅ Features rich trakt app\n✅ Great Design\n✅ Talkative Developers\n✅ Fairly priced",
+                           country: "Spain")
+
+            ReviewItemView(title: "The best",
+                           rating: 5,
+                           name: "Devs.Nate",
+                           review: "I’ve tried a LOT of apps and this is by far the best one",
+                           country: "United States")
+
+            ReviewItemView(title: "My favorite Trakt app.",
+                           rating: 5,
+                           name: "Tom Coolen",
+                           review: "I love the look and feel of the app and the streamlined experience it provides.",
+                           country: "Belgium")
+
+            ReviewItemView(title: "Best app for Trakt",
+                           rating: 5,
+                           name: "_ATi_",
+                           review: "its my favorite app so far for Trakt thanks for building such an amazing app",
+                           country: "Türkiye")
+        }
+    }
+}
+
+private extension UIColor {
+    /// Same border the app's cards use.
+    static let ripppleCardBorder = UIColor { traits in
+        let separator = UIColor(asset: .separator)
+        if traits.ripppleTintedAppearance || traits.userInterfaceStyle == .dark {
+            return separator.withAlphaComponent(0.5)
+        }
+        return separator.lighter(amount: 0.15)
     }
 }
 
@@ -152,6 +215,7 @@ struct FeatureItemView: View {
                 .foregroundStyle(Color(UIColor(asset: .globalTint)))
                 .font(.title3)
                 .frame(width: 30)
+                .accessibilityHidden(true)
             VStack(alignment: .leading) {
                 Text(title)
                     .font(.headline)
@@ -161,7 +225,7 @@ struct FeatureItemView: View {
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-        }
+        }.accessibilityElement(children: .combine)
     }
 }
 
@@ -173,34 +237,44 @@ struct ReviewItemView: View {
     var country: String
 
     var body: some View {
-        ZStack {
-            VStack(alignment: .leading, spacing: 7) {
-                Text(title)
-                    .font(.headline)
-                HStack(spacing: 2) {
-                    ForEach(0..<5) { index in
-                        Image(systemName: index < rating ? "star.fill" : "star")
-                            .resizable()
-                            .frame(width: 14, height: 14)
-                            .foregroundColor(.orange)
-                    }
+        VStack(alignment: .leading, spacing: 7) {
+            Text(title)
+                .font(.headline)
+            HStack(spacing: 2) {
+                ForEach(0..<5) { index in
+                    Image(systemName: index < rating ? "star.fill" : "star")
+                        .resizable()
+                        .frame(width: 14, height: 14)
+                        .foregroundColor(.orange)
                 }
-                HStack {
-                    Text(review)
-                        .font(.body)
-                }.frame(maxWidth: .infinity, alignment: .leading)
-                Text("by **\(name)** from **\(country)**")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }.padding()
-        }.background(Color(uiColor: .ripppleCardBackground))
-            .cornerRadius(15)
-            .shadow(color: .black.opacity(0.3), radius: 8)
+            }.accessibilityElement()
+                .accessibilityLabel("\(rating) out of 5 stars")
+            Text(review)
+                .font(.body)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text("by **\(name)** from **\(country)**")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .ripppleCardBackground))
+        .cornerRadius(15)
+        .overlay {
+            RoundedRectangle(cornerRadius: 15)
+                .stroke(Color(uiColor: .ripppleCardBorder), lineWidth: 1)
+        }
     }
 }
 
-#Preview {
+#Preview("From a gate") {
     ScrollView {
-        PurchaseWhyView {}
+        PurchaseWhyView(benefit: .info)
+    }
+}
+
+#Preview("Browsing VIP") {
+    ScrollView {
+        PurchaseWhyView(benefit: nil)
     }
 }

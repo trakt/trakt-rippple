@@ -554,11 +554,11 @@ public extension UIApplication {
     }
 
     /// Offers Trakt VIP to free accounts. VIP accounts see their limits instead.
-    func presentAccountLimitReached() {
+    internal func presentAccountLimitReached(for benefit: VIPBenefit) {
         if UserManager.shared.isCurrentVIP {
             presentTraktLimits(limitReached: true)
         } else {
-            switchToPurchase()
+            switchToPurchase(for: benefit)
         }
     }
 
@@ -642,12 +642,15 @@ public extension UIApplication {
         present(main)
     }
 
-    func switchToPurchase() {
+    internal func switchToPurchase(for benefit: VIPBenefit) {
         if UserManager.shared.currentUser == nil {
             onNeedsToShowLoginTransmitter.broadcast(true)
             return
         }
         let main = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "subscribe modal")
+        if let modal = (main as? UINavigationController)?.viewControllers.first as? PurchaseModalViewController {
+            modal.benefit = benefit
+        }
         present(main)
     }
 

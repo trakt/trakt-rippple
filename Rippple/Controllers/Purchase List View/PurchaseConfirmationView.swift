@@ -21,6 +21,8 @@ struct PurchaseConfirmationView: View {
 
     @Environment(\.dismiss) var dismiss
 
+    let benefit: VIPBenefit?
+
     @State private var chosenOption = PurchaseConfirmationOptions.monthly
 
     private let productManager = ProductManager.shared
@@ -53,15 +55,7 @@ struct PurchaseConfirmationView: View {
 
                         PurchaseOptionView(chosen: chosenOption == .monthly,
                                            title: "Pay Monthly",
-                                           subtitle: """
-                                           + Expanded Limits
-                                           + Advanced Stats
-                                           + Your To Watch
-                                           + Your Shelf
-                                           + Smarter Searches
-                                           + Smarter Rewatching
-                                           + Support Trakt & Rippple
-                                           """,
+                                           subtitle: LocalizedStringKey(VIPBenefit.ordered(leading: benefit).map { "+ \($0.title)" }.joined(separator: "\n")),
                                            price: monthlySubscription.displayPrice).onTapGesture {
                             chosenOption = .monthly
                         }
@@ -212,5 +206,5 @@ struct PurchaseOptionView: View {
 }
 
 #Preview {
-    PurchaseConfirmationView()
+    PurchaseConfirmationView(benefit: .info)
 }

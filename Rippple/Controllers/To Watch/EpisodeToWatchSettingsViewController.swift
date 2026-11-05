@@ -286,7 +286,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     func setBingeableOnly(_ newValue: Bool) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         bingeableOnly = newValue
@@ -296,7 +296,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     func setHideDuplicates(_ newValue: Bool) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         hideDuplicates = newValue
@@ -306,7 +306,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     func setUpcomingEnabled(_ newValue: Bool) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         upcomingEnabled = newValue
@@ -317,7 +317,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     func setGroupMode(_ newValue: EpisodeToWatchGroupMode) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         groupMode = newValue
@@ -469,7 +469,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     private func applyChange(_ updates: () -> Void) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         updates()

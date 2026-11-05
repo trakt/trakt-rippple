@@ -268,7 +268,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
 
     func setHideDuplicates(_ newValue: Bool) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         hideDuplicates = newValue
@@ -278,7 +278,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
 
     func setUpcomingEnabled(_ newValue: Bool) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         upcomingEnabled = newValue
@@ -289,7 +289,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
 
     func setGroupMode(_ newValue: MovieToWatchGroupMode) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         groupMode = newValue
@@ -429,7 +429,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
 
     private func applyChange(_ updates: () -> Void) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         updates()

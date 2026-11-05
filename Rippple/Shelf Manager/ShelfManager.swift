@@ -200,7 +200,7 @@ private extension BrowseViewController.ModuleType {
 extension SavedFilter {
     public func shelf(onTop: Bool, module: String? = "L1") {
         if !PurchaseManager.shared.purchased {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .shelf)
             return
         }
 

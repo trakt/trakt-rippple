@@ -107,7 +107,7 @@ final class SmartListBuilderViewController: SearchResultsViewController {
     private static func canCreate() -> Bool {
         guard SessionManager.shared.isLoggedIn else { return false }
         guard ListsManager.shared.smartLists.count < UserManager.shared.currentUserSmartListLimit else {
-            UIApplication.shared.presentAccountLimitReached()
+            UIApplication.shared.presentAccountLimitReached(for: .smartLists)
             return false
         }
         return true

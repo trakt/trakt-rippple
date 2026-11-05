@@ -420,7 +420,7 @@ final class StatsVIPNudgeView: UIView {
         button.setContentCompressionResistancePriority(.required, for: .horizontal)
         button.addAction(UIAction { _ in
             guard !UserManager.shared.isCurrentVIP else { return }
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .stats)
         }, for: .touchUpInside)
 
         let row = UIStackView(arrangedSubviews: [icon, text, button])
