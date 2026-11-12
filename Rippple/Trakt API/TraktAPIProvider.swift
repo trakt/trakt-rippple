@@ -16,6 +16,7 @@ enum TraktAPIProvider {
 
     private static let commentsCacheBuster = CommentsCacheBuster()
     private static let listsCacheBuster = ListsCacheBuster()
+    private static let mediaReactionsCacheBuster = MediaReactionsCacheBuster()
 
     static let networkLogger = NetworkLoggerPlugin(configuration: NetworkLoggerPlugin.Configuration(logOptions: .verbose))
 
@@ -23,32 +24,37 @@ enum TraktAPIProvider {
                                                               plugins: [networkLogger,
                                                                         AuthPlugin { source.token },
                                                                         commentsCacheBuster,
-                                                                        listsCacheBuster])
+                                                                        listsCacheBuster,
+                                                                        mediaReactionsCacheBuster])
 
     static let provider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy(),
                                                                          eventMonitors: [checkRatingMonitor]),
                                                         plugins: [AuthPlugin { source.token },
                                                                   commentsCacheBuster,
-                                                                  listsCacheBuster])
+                                                                  listsCacheBuster,
+                                                                  mediaReactionsCacheBuster])
 
     static let noRatingProvider = MoyaProvider<TraktAPIService>(session: Session(interceptor: RipppleRetryPolicy()),
                                                                 plugins: [AuthPlugin { source.token },
                                                                           commentsCacheBuster,
-                                                                          listsCacheBuster])
+                                                                          listsCacheBuster,
+                                                                          mediaReactionsCacheBuster])
 
     static let noChacheProvider = MoyaProvider<TraktAPIService>(requestClosure: requestClosure,
                                                                 session: Session(interceptor: RipppleRetryPolicy(),
                                                                                  eventMonitors: [checkRatingMonitor]),
                                                                 plugins: [AuthPlugin { source.token },
                                                                           commentsCacheBuster,
-                                                                          listsCacheBuster])
+                                                                          listsCacheBuster,
+                                                                          mediaReactionsCacheBuster])
     static let noChacheDebugProvider = MoyaProvider<TraktAPIService>(requestClosure: requestClosure,
                                                                      session: Session(interceptor: RipppleRetryPolicy(),
                                                                                       eventMonitors: [checkRatingMonitor]),
                                                                      plugins: [networkLogger,
                                                                                AuthPlugin { source.token },
                                                                                commentsCacheBuster,
-                                                                               listsCacheBuster])
+                                                                               listsCacheBuster,
+                                                                               mediaReactionsCacheBuster])
 
     #if targetEnvironment(macCatalyst)
     /// MCP reports upstream failures directly; mutations must never be retried automatically.
@@ -90,29 +96,29 @@ enum TraktAPIProvider {
         }
     }
 
-    private static let dateFormatter = {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
-    }
+    }()
 
-    private static let dateAndTimeFormatter = {
+    private static let dateAndTimeFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
-    }
+    }()
 
-    private static let dateAndTimeWithoutMillisecondsFormatter = {
+    private static let dateAndTimeWithoutMillisecondsFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
-    }
+    }()
 
     private static func setupJSONDecoder() -> JSONDecoder {
         let decoder = TraktJSONDecoder()
@@ -120,15 +126,15 @@ enum TraktAPIProvider {
             let container = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)
             // yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ
-            if let date = dateAndTimeFormatter().date(from: dateString) {
+            if let date = dateAndTimeFormatter.date(from: dateString) {
                 return date
             }
             // yyyy-MM-dd'T'HH:mm:ssZZZZZ
-            if let date = dateAndTimeWithoutMillisecondsFormatter().date(from: dateString) {
+            if let date = dateAndTimeWithoutMillisecondsFormatter.date(from: dateString) {
                 return date
             }
             // yyyy-MM-dd
-            if let date = dateFormatter().date(from: dateString) {
+            if let date = dateFormatter.date(from: dateString) {
                 return date
             }
             throw DecodingError.dataCorruptedError(in: container,
@@ -288,7 +294,7 @@ private final class ListsCacheBuster: PluginType {
     /// Smart list items are also read through shelf rails and grids, as `/smart-lists/:slug/items` saved filters.
     private func itemsKey(for target: TraktAPIService) -> Key? {
         switch target {
-        case .listItems(_, let id, _, _, _):
+        case .listItems(_, let id, _, _, _), .listFeaturedPeople(let id):
             return .list(id)
         case .smartListItems(let slug, _):
             return .smartList(slug)
@@ -317,6 +323,51 @@ private extension URLRequest {
         var request = self
         request.url = url
         return request
+    }
+}
+
+// MARK: - MediaReactionsCacheBuster
+
+/// The API edge-caches reaction reads by URL for a few minutes and does not purge them on mutation.
+private final class MediaReactionsCacheBuster: PluginType {
+    private let lock = NSLock()
+    private var markers = [MediaReactionsTarget: String]()
+
+    func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
+        guard let target = target as? TraktAPIService else { return request }
+
+        let reactionsTarget: MediaReactionsTarget
+        switch target {
+        case .mediaReactionsSummary(let mediaTarget), .userMediaReactions(let mediaTarget):
+            reactionsTarget = mediaTarget
+        default:
+            return request
+        }
+
+        lock.lock()
+        let marker = markers[reactionsTarget]
+        lock.unlock()
+
+        guard let marker = marker else { return request }
+        return request.addingCacheMarker(marker)
+    }
+
+    func didReceive(_ result: Result<Response, MoyaError>, target: TargetType) {
+        guard let target = target as? TraktAPIService,
+              case .success(let response) = result,
+              (200..<300).contains(response.statusCode) else { return }
+
+        let reactionsTarget: MediaReactionsTarget
+        switch target {
+        case .addMediaReaction(let mediaTarget, _), .removeMediaReactions(let mediaTarget, _):
+            reactionsTarget = mediaTarget
+        default:
+            return
+        }
+
+        lock.lock()
+        markers[reactionsTarget] = UUID().uuidString
+        lock.unlock()
     }
 }
 

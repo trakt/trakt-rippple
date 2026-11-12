@@ -84,7 +84,25 @@ final class CommentGIFView: UIView {
         } else {
             stack.insertArrangedSubview(self, at: index + 1)
         }
-        let height = heightAnchor.constraint(equalToConstant: compact ? compactPlaceholderSize : maximumHeight)
+        activateHeightConstraint()
+    }
+
+    func install(in container: UIView) {
+        isCompact = false
+        maximumHeight = 280
+        translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(self)
+        NSLayoutConstraint.activate([
+            topAnchor.constraint(equalTo: container.topAnchor),
+            leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            bottomAnchor.constraint(equalTo: container.bottomAnchor)
+        ])
+        activateHeightConstraint()
+    }
+
+    private func activateHeightConstraint() {
+        let height = heightAnchor.constraint(equalToConstant: isCompact ? compactPlaceholderSize : maximumHeight)
         height.priority = .defaultHigh
         height.isActive = true
         heightConstraint = height
@@ -103,17 +121,22 @@ final class CommentGIFView: UIView {
             reset()
             return
         }
+        configure(gif: gif, isSpoilerBlurred: model.hidesCommentMedia)
+    }
+
+    func configure(gif: CommentGIF, isSpoilerBlurred: Bool) {
+        defer { setNeedsLayout() }
         guard let url = URL(string: gif.url), url.scheme?.lowercased() == "https", url.host != nil else {
             reset()
             isHidden = false
             showPlaceholder(symbol: "exclamationmark.triangle", accessibilityLabel: "GIF unavailable")
             return
         }
-        guard attachmentURL != url || isSpoilerBlurred != model.hidesCommentMedia else { return }
+        guard attachmentURL != url || self.isSpoilerBlurred != isSpoilerBlurred else { return }
         reset()
         isHidden = false
         attachmentURL = url
-        isSpoilerBlurred = model.hidesCommentMedia
+        self.isSpoilerBlurred = isSpoilerBlurred
         if let width = gif.width, let height = gif.height,
            width.isFinite, height.isFinite, width > 0, height > 0 {
             let aspectRatio = height / width
@@ -190,21 +213,8 @@ final class CommentGIFView: UIView {
         // Spoiler GIFs show a blurred still frame; blurring every animated frame would be costly.
         let isBlurred = isSpoilerBlurred
         let loadsStillFrame = isBlurred || UIAccessibility.isReduceMotionEnabled
-        imageView.autoPlayAnimatedImage = !loadsStillFrame
         imageView.accessibilityLabel = isBlurred ? "Blurred GIF. Open comment to view spoiler." : "Attached GIF"
-        let processor: ImageProcessor = isBlurred
-            ? WebPProcessor.default |> BlurImageProcessor(blurRadius: 24)
-            : WebPProcessor.default
-        var options: KingfisherOptionsInfo = [
-            .processor(processor),
-            .cacheSerializer(WebPSerializer.default)
-        ]
-        if loadsStillFrame {
-            options.append(.onlyLoadFirstFrame)
-        }
-        let resource = KF.ImageResource(downloadURL: url,
-                                        cacheKey: url.absoluteString + (loadsStillFrame ? "#still" : ""))
-        imageView.kf.setImage(with: resource, options: options) { [weak self] result in
+        imageView.setGIF(url: url, stillFrame: loadsStillFrame, blurred: isBlurred) { [weak self] result in
             guard let self = self, self.requestIdentifier == requestIdentifier else { return }
             switch result {
             case .success(let value):
@@ -263,5 +273,26 @@ final class CommentGIFView: UIView {
         let placeholderX = alignsRight ? bounds.width - placeholderSize.width : 0
         let placeholderY = isCompact ? bounds.height - placeholderSize.height : 0
         statusButton.frame = CGRect(origin: CGPoint(x: placeholderX, y: placeholderY), size: placeholderSize)
+    }
+}
+
+extension AnimatedImageView {
+    func setGIF(url: URL,
+                stillFrame: Bool,
+                blurred: Bool = false,
+                completion: (@Sendable (Result<RetrieveImageResult, KingfisherError>) -> Void)? = nil) {
+        autoPlayAnimatedImage = stillFrame == false
+        let processor: ImageProcessor = blurred
+            ? WebPProcessor.default |> BlurImageProcessor(blurRadius: 24)
+            : WebPProcessor.default
+        var options: KingfisherOptionsInfo = [
+            .processor(processor),
+            .cacheSerializer(WebPSerializer.default)
+        ]
+        if stillFrame {
+            options.append(.onlyLoadFirstFrame)
+        }
+        let resource = KF.ImageResource(downloadURL: url, cacheKey: url.absoluteString + (stillFrame ? "#still" : ""))
+        kf.setImage(with: resource, options: options, completionHandler: completion)
     }
 }

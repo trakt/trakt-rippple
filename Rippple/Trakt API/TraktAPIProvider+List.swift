@@ -144,7 +144,7 @@ extension TraktAPIProvider {
 extension TraktAPIProvider {
     /// Smart lists can resolve from open-ended sources such as trending, so they are read as a single capped page.
     static let smartListDetailItemsLimit = 250
-    static let smartListToWatchItemsLimit = 100
+    static let smartListToWatchItemsLimit = 10
 
     static func fetchSmartLists(user: User,
                                 provider: MoyaProvider<TraktAPIService> = TraktAPIProvider.provider,
@@ -170,10 +170,9 @@ extension TraktAPIProvider {
         }
     }
 
-    /// Fetches the items of a custom list, or the first `smartListLimit` items a smart list currently resolves to.
+    /// Fetches the items of a custom list, or the first items a smart list currently resolves to.
     static func fetchAllListItems(list: List,
                                   type: ListMediaType?,
-                                  smartListLimit: Int = smartListDetailItemsLimit,
                                   completion: @escaping (Result<[WatchlistItem], Error>) -> Void) {
         guard let slug = list.smartListSlug else {
             guard let id = list.identifiers.trakt else {
@@ -184,7 +183,7 @@ extension TraktAPIProvider {
             return
         }
 
-        TraktAPIProvider.provider.request(.smartListItems(slug: slug, pageInfo: PageInfo.firstPage(with: smartListLimit)),
+        TraktAPIProvider.provider.request(.smartListItems(slug: slug, pageInfo: PageInfo.firstPage(with: smartListDetailItemsLimit)),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
             completion(Result {
                 let response = try result.get().filterSuccessfulStatusCodes()
@@ -229,4 +228,97 @@ private extension WatchlistItem {
         case nil: return true
         }
     }
+}
+
+// MARK: - Collaborators
+
+enum ListCollaboratorError: LocalizedError {
+    case missingIdentifier
+    case limitReached
+    case signedOut
+
+    var errorDescription: String? {
+        switch self {
+        case .missingIdentifier:
+            return "This list couldn't be found."
+        case .limitReached:
+            return "This list has reached its collaborator limit."
+        case .signedOut:
+            return "You need to be signed in."
+        }
+    }
+}
+
+extension TraktAPIProvider {
+    static func fetchListCollaborators(list: List) async throws -> [User] {
+        guard let id = list.identifiers.trakt else { throw ListCollaboratorError.missingIdentifier }
+        return try await withCheckedThrowingContinuation { continuation in
+            noChacheProvider.request(.listCollaborators(id: id),
+                                     callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                continuation.resume(with: Result {
+                    let response = try result.get().filterSuccessfulStatusCodes()
+                    if response.statusCode == 204 { return [] }
+                    return try response.map([User].self, using: TraktAPIProvider.decoder)
+                })
+            }
+        }
+    }
+
+    /// Cast and crew appearing in more than one title of the list, in Trakt's ranked order.
+    static func fetchFeaturedPeople(list: List) async throws -> [Person] {
+        guard list.isSmartList == false, let id = list.identifiers.trakt else { return [] }
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.listFeaturedPeople(id: id),
+                             callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                continuation.resume(with: Result {
+                    let response = try result.get().filterSuccessfulStatusCodes()
+                    if response.statusCode == 204 { return [] }
+                    return try response.map(FeaturedPeopleResponse.self, using: TraktAPIProvider.decoder).featured ?? []
+                })
+            }
+        }
+    }
+
+    static func fetchFollowUsers(_ service: TraktAPIService) async throws -> [User] {
+        return try await withCheckedThrowingContinuation { continuation in
+            noChacheProvider.request(service,
+                                     callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                continuation.resume(with: Result {
+                    let response = try result.get().filterSuccessfulStatusCodes()
+                    return try response.map([Follow].self, using: TraktAPIProvider.decoder).map(\.user).removingDuplicates()
+                })
+            }
+        }
+    }
+
+    /// Trakt only accepts people who follow the list owner, up to a per-list limit.
+    static func addListCollaborator(_ user: User, to list: List) async throws {
+        guard let id = list.identifiers.trakt else { throw ListCollaboratorError.missingIdentifier }
+        try await requestCollaboratorChange(.addListCollaborator(id: id, userSlug: user.slug))
+    }
+
+    static func removeListCollaborator(_ user: User, from list: List) async throws {
+        guard let id = list.identifiers.trakt else { throw ListCollaboratorError.missingIdentifier }
+        try await requestCollaboratorChange(.removeListCollaborator(id: id, userSlug: user.slug))
+    }
+
+    private static func requestCollaboratorChange(_ service: TraktAPIService) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            provider.request(service,
+                             callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+                continuation.resume(with: Result {
+                    do {
+                        _ = try result.get().filterSuccessfulStatusCodes()
+                    } catch let error as MoyaError where error.response?.statusCode == 420 {
+                        throw ListCollaboratorError.limitReached
+                    }
+                })
+            }
+        }
+    }
+}
+
+/// `extended=featured` returns the list summary with its featured people attached.
+private struct FeaturedPeopleResponse: Decodable {
+    let featured: [Person]?
 }

@@ -58,7 +58,7 @@ struct TraktLimitsView: View {
                 if !isVIP {
                     Section {
                         Button("Explore Trakt VIP") {
-                            UIApplication.shared.switchToPurchase()
+                            UIApplication.shared.switchToPurchase(for: .limits)
                         }
                         .font(.headline)
                     } footer: {

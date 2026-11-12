@@ -357,20 +357,30 @@ class ContextMenuHelper: NSObject {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
                                                      subtitle: "\(list.privacy.rawValue.localizedCapitalized)",
-                                                     attributes: listed?.contains(list) == true ? .disabled : [],
-                                                     state: listed?.contains(list) == true ? .on : .off) { [weak self] _ in
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(movie: movie), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(movie: movie), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(movie: movie), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
                         for list in CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
-                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator") { [weak self] _ in
+                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator",
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(movie: movie), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(movie: movie), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(movie: movie), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
@@ -476,20 +486,30 @@ class ContextMenuHelper: NSObject {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
                                                      subtitle: "\(list.privacy.rawValue.localizedCapitalized)",
-                                                     attributes: listed?.contains(list) == true ? .disabled : [],
-                                                     state: listed?.contains(list) == true ? .on : .off) { [weak self] _ in
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(show: show), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(show: show), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(show: show), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
                         for list in CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
-                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator") { [weak self] _ in
+                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator",
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(show: show), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(show: show), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(show: show), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
@@ -684,20 +704,30 @@ class ContextMenuHelper: NSObject {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
                                                      subtitle: "\(list.privacy.rawValue.localizedCapitalized)",
-                                                     attributes: listed?.contains(list) == true ? .disabled : [],
-                                                     state: listed?.contains(list) == true ? .on : .off) { [weak self] _ in
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(episode: episode), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(episode: episode), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(episode: episode), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
                         for list in CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
-                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator") { [weak self] _ in
+                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator",
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(episode: episode), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(episode: episode), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(episode: episode), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
@@ -774,20 +804,30 @@ class ContextMenuHelper: NSObject {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
                                                      subtitle: "\(list.privacy.rawValue.localizedCapitalized)",
-                                                     attributes: listed?.contains(list) == true ? .disabled : [],
-                                                     state: listed?.contains(list) == true ? .on : .off) { [weak self] _ in
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(season: season), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(season: season), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(season: season), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
                         for list in CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
-                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator") { [weak self] _ in
+                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator",
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(season: season), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(season: season), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(season: season), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
@@ -1000,20 +1040,30 @@ class ContextMenuHelper: NSObject {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
                                                      subtitle: "\(list.privacy.rawValue.localizedCapitalized)",
-                                                     attributes: listed?.contains(list) == true ? .disabled : [],
-                                                     state: listed?.contains(list) == true ? .on : .off) { [weak self] _ in
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(movie: movie), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(movie: movie), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(movie: movie), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
                         for list in CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
-                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator") { [weak self] _ in
+                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator",
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(movie: movie), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(movie: movie), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(movie: movie), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
@@ -1078,20 +1128,30 @@ class ContextMenuHelper: NSObject {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
                                                      subtitle: "\(list.privacy.rawValue.localizedCapitalized)",
-                                                     attributes: listed?.contains(list) == true ? .disabled : [],
-                                                     state: listed?.contains(list) == true ? .on : .off) { [weak self] _ in
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(show: show), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(show: show), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(show: show), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
                         for list in CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
-                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator") { [weak self] _ in
+                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator",
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(show: show), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(show: show), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(show: show), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
@@ -1156,20 +1216,30 @@ class ContextMenuHelper: NSObject {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
                                                      subtitle: "\(list.privacy.rawValue.localizedCapitalized)",
-                                                     attributes: listed?.contains(list) == true ? .disabled : [],
-                                                     state: listed?.contains(list) == true ? .on : .off) { [weak self] _ in
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(episode: episode), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(episode: episode), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(episode: episode), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
                         for list in CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
-                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator") { [weak self] _ in
+                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator",
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(episode: episode), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(episode: episode), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(episode: episode), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
@@ -1220,20 +1290,30 @@ class ContextMenuHelper: NSObject {
                         var addToList = [UIAction]()
                         let listed = await media.fetchListed()
                         for list in ListsManager.shared.lists.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
                                                      subtitle: "\(list.privacy.rawValue.localizedCapitalized)",
-                                                     attributes: listed?.contains(list) == true ? .disabled : [],
-                                                     state: listed?.contains(list) == true ? .on : .off) { [weak self] _ in
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(season: season), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(season: season), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(season: season), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
                         for list in CollaborationsManager.shared.collaborations.filter({ !$0.name.localizedStandardContains("[couchmoney.tv]") }) {
+                            let isListed = listed?.contains(list) == true
                             let add = await UIAction(title: "\(list.name.emojiUnescapedString)",
-                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator") { [weak self] _ in
+                                                     subtitle: "\(list.privacy.rawValue.localizedCapitalized) · Collaborator",
+                                                     state: isListed ? .on : .off) { [weak self] _ in
                                 guard let self = self else { return }
-                                self.add(item: WatchlistedItem(season: season), in: list)
+                                if isListed {
+                                    self.remove(item: WatchlistedItem(season: season), from: list)
+                                } else {
+                                    self.add(item: WatchlistedItem(season: season), in: list)
+                                }
                             }
                             addToList.append(add)
                         }
@@ -1751,9 +1831,7 @@ class ContextMenuHelper: NSObject {
     }
 
     fileprivate func writeComment(media: MediaModel) {
-        let composer = UIStoryboard(name: "Compose", bundle: nil).instantiateInitialViewController() as! ComposeNavigationController
-
-        composer.mediaModel = media
+        guard let composer = CommentComposerSession.makeViewController(media: media) else { return }
 
         if let controller = controller {
             controller.present(composer, animated: true)
@@ -1826,6 +1904,37 @@ class ContextMenuHelper: NSObject {
             case .failure(let error):
                 DispatchQueue.main.async {
                     SwiftMessages.show(message: "😓 Adding failed", style: .error(error))
+                }
+            }
+        }
+    }
+
+    private func remove(item: WatchlistedItem, from list: List) {
+        if SessionManager.shared.isLoggedOut { return }
+
+        TraktAPIProvider.provider.request(.removeFromList(slug: list.user.slug,
+                                                          id: list.identifiers.trakt!,
+                                                          item: item),
+                                          callbackQueue: DispatchQueue.global(qos: .userInitiated)) { result in
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+
+                    if response.statusCode == 200 {
+                        DispatchQueue.main.async {
+                            SwiftMessages.show(message: "❎ Removed from list")
+                            onListChangedTransmitter.broadcast([list])
+                        }
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        SwiftMessages.show(message: "😓 Removing failed", style: .error(error))
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    SwiftMessages.show(message: "😓 Removing failed", style: .error(error))
                 }
             }
         }

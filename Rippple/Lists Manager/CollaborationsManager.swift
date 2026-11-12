@@ -73,6 +73,26 @@ final class CollaborationsManager {
     func refresh() {
         refreshCollaborations()
     }
+
+    /// Removes the current user from the collaborators of a list they don't own.
+    @MainActor
+    func leave(_ list: List, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let currentUser = UserManager.shared.currentUser else {
+            completion(.failure(ListCollaboratorError.signedOut))
+            return
+        }
+        _Concurrency.Task { @MainActor [weak self] in
+            do {
+                try await TraktAPIProvider.removeListCollaborator(currentUser, from: list)
+                guard let self = self else { return }
+                self.collaborations.removeAll { $0 == list }
+                self.refreshCollaborations()
+                completion(.success(()))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
 }
 
 private extension CollaborationsManager {

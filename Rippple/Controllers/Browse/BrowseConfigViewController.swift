@@ -169,8 +169,12 @@ final class BrowseConfigManager {
     { "module": "L1", "filter": { "section": "movies", "name": "Trending Movies", "path": "/movies/trending", "query": "" } }
     { "module": "T1", "filter": { "section": "shows", "name": "Most Watched TV Shows this month", "path": "/shows/watched/monthly", "query": "" } }
     { "module": "T1", "filter": { "section": "movies", "name": "Most Watched Movies this month", "path": "/movies/watched/monthly", "query": "" } }
+    { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes Best Movies of 2026", "path": "/lists/33527137/items", "query": "" } }
+    { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes Best TV of 2026", "path": "/lists/33527307/items", "query": "" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Anticipated TV Shows", "path": "/shows/anticipated", "query": "" } }
     { "module": "L1", "filter": { "section": "movies", "name": "Anticipated Movies", "path": "/movies/anticipated", "query": "" } }
+    { "module": "L2", "filter": { "section": "lists", "name": "IMDb Top 250 Movies", "path": "/lists/2142753/items", "query": "" } }
+    { "module": "L2", "filter": { "section": "lists", "name": "IMDb Top 250 TV Shows", "path": "/lists/2143363/items", "query": "" } }
     """
 
     let defaultConfig = """
@@ -184,6 +188,8 @@ final class BrowseConfigManager {
     { "module": "L1", "filter": { "section": "movies", "name": "Trending Movies", "path": "/movies/trending", "query": "" } }
     { "module": "T1", "filter": { "section": "shows", "name": "Most Watched TV Shows", "path": "/shows/watched/monthly", "query": "" } }
     { "module": "T1", "filter": { "section": "movies", "name": "Most Watched Movies", "path": "/movies/watched/monthly", "query": "" } }
+    { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes Best Movies of 2026", "path": "/lists/33527137/items", "query": "" } }
+    { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes Best TV of 2026", "path": "/lists/33527307/items", "query": "" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Anticipated TV Shows", "path": "/shows/anticipated", "query": "" } }
     { "module": "L1", "filter": { "section": "movies", "name": "Anticipated Movies", "path": "/movies/anticipated", "query": "" } }
     { "module": "L2", "filter": { "section": "shows", "name": "TV Shows Recommendations", "path": "/recommendations/shows", "query": "" } }
@@ -198,15 +204,21 @@ final class BrowseConfigManager {
     { "module": "Genres", "filter": { "section": "genres-movies", "name": "By Genres", "path": "", "query": "" } }
     { "module": "L2", "filter": { "section": "movies", "name": "Box Office", "path": "/movies/boxoffice", "query": "" } }
     { "module": "L1", "filter": { "section": "movies", "name": "Anticipated Movies", "path": "/movies/anticipated", "query": "" } }
-    { "module": "L2", "filter": { "section": "movies", "name": "Academy Awards Best Picture Winners", "path": "/lists/832943/items", "query": "" } }
-    { "module": "L1", "filter": { "section": "lists", "name": "2025 Academy Awards Nominees and Winners", "path": "/lists/30484958/items", "query": "" } }
-    { "module": "L1", "filter": { "section": "lists", "name": "2025 Golden Globes Nominees and Winners", "path": "/lists/30156306/items", "query": "" } }
-    { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes Best of 2024", "path": "/users/lish408/lists/rotten-tomatoes-best-of-2024/items", "query": "" } }
-    { "module": "L3", "filter": { "section": "lists", "name": "IMDb Top 250 Movies", "path": "/lists/2142753/items", "query": "" } }
+    { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes Best Movies of 2026", "path": "/lists/33527137/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "2026 Academy Awards Nominees and Winners", "path": "/lists/33802052/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "2026 Golden Globes Nominees and Winners", "path": "/lists/33516535/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "Rotten Tomatoes Best Horror Movies of 2026", "path": "/lists/33560795/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "A24", "path": "/lists/33148307/items/movie", "query": "" } }
     { "module": "T1", "filter": { "section": "movies", "name": "Most Favorited Movies", "path": "/movies/favorited/monthly", "query": "" } }
+    { "module": "L3", "filter": { "section": "lists", "name": "IMDb Top 250 Movies", "path": "/lists/2142753/items", "query": "" } }
+    { "module": "L2", "filter": { "section": "movies", "name": "Academy Awards Best Picture Winners", "path": "/lists/832943/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "1001 Movies You Must See Before You Die", "path": "/lists/37675689/items", "query": "sort_by=percentage&sort_how=desc" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "Letterboxd Top 250", "path": "/lists/22962533/items", "query": "" } }
     { "module": "L1", "filter": { "section": "lists", "name": "Marvel Cinematic Universe", "path": "/lists/1248149/items/shows,movies", "query": "" } }
-    { "module": "L1", "filter": { "section": "lists", "name": "DC Extended Universe", "path": "/lists/1257909/items", "query": "" } }
-    { "module": "L1", "filter": { "section": "lists", "name": "Disney Animated Feature Films", "path": "/lists/1406012/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "DC Universe", "path": "/lists/1257909/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "Walt Disney Animation Studios", "path": "/lists/1406012/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "Pixar", "path": "/lists/801240/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "Studio Ghibli", "path": "/lists/36748244/items", "query": "" } }
     { "module": "L1", "filter": { "section": "movies", "name": "Movies on Disney+", "path": "/movies/trending", "query": "watchnow=disney_plus" } }
     { "module": "L1", "filter": { "section": "movies", "name": "Movies on Netflix", "path": "/movies/trending", "query": "watchnow=netflix" } }
     { "module": "L1", "filter": { "section": "movies", "name": "Movies on Apple TV", "path": "/movies/trending", "query": "watchnow=apple_tv_plus" } }
@@ -223,10 +235,15 @@ final class BrowseConfigManager {
     { "module": "Genres", "filter": { "section": "genres-shows", "name": "By Genres", "path": "", "query": "" } }
     { "module": "ToWatch", "filter": { "section": "episodes_to_watch", "name": "Up Next", "path": "", "query": "" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Anticipated TV Shows", "path": "/shows/anticipated", "query": "" } }
-    { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes 2024 Best TV Shows", "path": "/users/lish408/lists/rotten-tomatoes-the-best-tv-of-2024/items", "query": "" } }
-    { "module": "L1", "filter": { "section": "lists", "name": "Rolling Stone's 100 Greatest TV Shows", "path": "/lists/2748259/items", "query": "" } }
-    { "module": "L2", "filter": { "section": "lists", "name": "IMDb Top 250 TV Shows", "path": "/lists/2143363/items", "query": "" } }
+    { "module": "L3", "filter": { "section": "lists", "name": "Rotten Tomatoes Best TV of 2026", "path": "/lists/33527307/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "IMDb Popular TV Shows", "path": "/lists/2143362/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "2026 Emmy Nominees", "path": "/lists/35933016/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "Miniseries & Limited Series", "path": "/lists/21001063/items", "query": "" } }
     { "module": "T1", "filter": { "section": "shows", "name": "Most Favorited TV Shows", "path": "/shows/favorited/monthly", "query": "" } }
+    { "module": "L2", "filter": { "section": "lists", "name": "IMDb Top 250 TV Shows", "path": "/lists/2143363/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "Rolling Stone's 100 Greatest TV Shows", "path": "/lists/2748259/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "IGN Top 100 Animated Series", "path": "/lists/37675685/items", "query": "" } }
+    { "module": "L1", "filter": { "section": "lists", "name": "100 Anime to Watch Before You Die", "path": "/lists/5707382/items", "query": "" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Shows on Netflix", "path": "/shows/trending", "query": "watchnow=netflix" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Shows on Disney+", "path": "/shows/trending", "query": "watchnow=disney_plus" } }
     { "module": "L1", "filter": { "section": "shows", "name": "Shows on Prime Video", "path": "/shows/trending", "query": "watchnow=amazon_prime_video" } }

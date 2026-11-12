@@ -72,6 +72,8 @@ final class GeneralSettingsViewController: UITableViewController {
                 cell.detailTextLabel?.text = "Ratings Only"
             } else if UserDefaults.standard.integer(forKey: "GeneralSettings.commentscount") == 0 {
                 cell.detailTextLabel?.text = "Comment Count Only"
+            } else if UserDefaults.standard.integer(forKey: "GeneralSettings.commentscount") == 4 {
+                cell.detailTextLabel?.text = "Reactions"
             } else {
                 cell.detailTextLabel?.text = "Nothing (hidden)" // = 2
             }

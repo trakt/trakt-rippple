@@ -187,7 +187,7 @@ extension TraktStatsViewController: WKNavigationDelegate {
             let urlString = url.absoluteString
             if urlString.hasPrefix("https://app.trakt.tv/shows") ||
                 urlString.hasPrefix("https://app.trakt.tv/movies"),
-                let ripppleUrl = URL(string: urlString.replacingOccurrences(of: "https://app.trakt.tv/", with: "ripl://")) {
+               let ripppleUrl = URL(string: urlString.replacingOccurrences(of: "https://app.trakt.tv/", with: "ripl://")) {
                 openURL(url: ripppleUrl)
             } else {
                 openURL(url: url)

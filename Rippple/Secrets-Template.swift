@@ -35,9 +35,12 @@ enum AWSConfiguration {
     static let platformApplicationARN: String? = nil
     static let trendingShowsTopicARN: String? = nil
     static let trendingMoviesTopicARN: String? = nil
-    static let recommendedShowsTopicARN: String? = nil
-    static let recommendedMoviesTopicARN: String? = nil
     static let manualBlogPostTopicARN: String? = nil
     static let manualUpdateTopicARN: String? = nil
     static let testTopicARN: String? = nil
+}
+
+/// Klipy powers comment GIF search, as on trakt.tv. Optional: without a key, the composer offers no GIF picker.
+enum KlipyAPIConfiguration {
+    static let apiKey: String? = nil
 }

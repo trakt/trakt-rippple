@@ -113,13 +113,11 @@ public final class ConfettiView: UIView {
                 cell.emissionLongitude = .pi
                 cell.emissionRange = .pi / 4
                 cell.spinRange = .pi * 8
-                cell.scaleRange = 0.25
-                #if targetEnvironment(macCatalyst)
-                cell.scale = 1 - cell.scaleRange
-                #else
-                cell.scale = 0.5 - cell.scaleRange
-                #endif
-                cell.contents = content.image.cgImage
+                cell.scaleRange = 0.75
+                cell.scale = 0.75
+                let image = content.image
+                cell.contentsScale = image.scale
+                cell.contents = image.cgImage
 
                 if let color = content.color {
                     cell.color = color.cgColor

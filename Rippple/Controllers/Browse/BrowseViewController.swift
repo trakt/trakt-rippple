@@ -8,7 +8,6 @@
 
 import NVActivityIndicatorView
 import Receiver
-import SafariServices
 import SwiftUI
 import UIKit
 
@@ -610,7 +609,7 @@ final class BrowseViewController: UITableViewController {
                                                              self.performSegue(withIdentifier: "customizeShelf", sender: nil)
                                                          }
                                                      } else {
-                                                         UIApplication.shared.switchToPurchase()
+                                                         UIApplication.shared.switchToPurchase(for: .shelf)
                                                      }
                                                  })
             if let menuBarButtonItem = menuBarButtonItem {
@@ -839,7 +838,7 @@ extension BrowseViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
         if case .weeklyTrackerLink = dataSource.itemIdentifier(for: indexPath) {
-            present(SFSafariViewController(url: URL(string: "https://write.as/ripppleapp/")!),
+            present(UINavigationController(rootViewController: WeeklyTrackerViewController()),
                     animated: true,
                     completion: nil)
             tableView.deselectRow(at: indexPath, animated: true)

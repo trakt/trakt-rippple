@@ -294,34 +294,19 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
 
         let customUserData = endpointCustomUserData()
         let pushInformation = currentPushInformation(endpointARN: endpointARN, traktSlug: traktSlug)
-        let topicStates = remoteNotificationTopicStates()
 
         remoteNotificationsPushInProgress = true
         updateRemoteNotificationsPushStatus(.running)
+        let topicSync = RemoteNotificationsManager.shared.syncTopics()
 
         Task { [weak self] in
             do {
                 try await RemoteNotificationsManager.shared.updateEndpoint(endpointARN: endpointARN,
                                                                            customUserData: customUserData)
                 try await RemoteNotificationsManager.shared.savePushInformation(pushInformation, force: true)
+                try await topicSync.value
 
-                var pushedTopicCount = 0
-                var skippedTopicCount = 0
-                for topicState in topicStates {
-                    let result = try await RemoteNotificationsManager.shared.syncSubscription(endpointARN: endpointARN,
-                                                                                              to: topicState.topic,
-                                                                                              isSubscribed: topicState.isSubscribed,
-                                                                                              force: true)
-                    switch result {
-                    case .skipped:
-                        skippedTopicCount += 1
-                    case .subscribed, .unsubscribed:
-                        pushedTopicCount += 1
-                    }
-                }
-
-                let skippedText = skippedTopicCount > 0 ? " \(skippedTopicCount) topic(s) were skipped because they are not configured." : ""
-                let message = "Endpoint, push information, and \(pushedTopicCount) topic subscription update(s) were pushed.\(skippedText)"
+                let message = "Endpoint, push information, and topic subscriptions were pushed."
                 await MainActor.run { [self] in
                     self?.finishRemoteNotificationsPush(with: .success(message),
                                                         completed: true)
@@ -561,34 +546,12 @@ private final class NotificationsTroubleshootViewModel: ObservableObject {
         }
     }
 
-    private func remoteNotificationTopicStates() -> [(topic: RemoteNotificationTopic, isSubscribed: Bool)] {
-        let canSubscribe = !SessionManager.shared.isLoggedOut
-        var topicStates: [(topic: RemoteNotificationTopic, isSubscribed: Bool)] = [
-            (.trendingShows, canSubscribe && TrendingNotificationsManager.shared.trendingShows),
-            (.trendingMovies, canSubscribe && TrendingNotificationsManager.shared.trendingMovies),
-            (.recommendedShows, canSubscribe && RecommendedNotificationsManager.shared.recommendedShows),
-            (.recommendedMovies, canSubscribe && RecommendedNotificationsManager.shared.recommendedMovies),
-            (.manualBlogPost, canSubscribe && ManualRemoteNotificationsManager.shared.blogPost),
-            (.manualUpdate, canSubscribe && ManualRemoteNotificationsManager.shared.appUpdate)
-        ]
-
-        if UserManager.shared.currentUser?.slug == "kcador" {
-            topicStates.append((.test, canSubscribe))
-        }
-
-        return topicStates
-    }
-
     private func topicDisplayName(_ topic: RemoteNotificationTopic) -> String {
         switch topic {
         case .trendingShows:
             return "Trending shows"
         case .trendingMovies:
             return "Trending movies"
-        case .recommendedShows:
-            return "Recommended shows"
-        case .recommendedMovies:
-            return "Recommended movies"
         case .manualBlogPost:
             return "Blog posts"
         case .manualUpdate:

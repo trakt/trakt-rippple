@@ -114,6 +114,7 @@ struct QuickAccessWidgetProvider: AppIntentTimelineProvider {
         await loadWidgetPosters(for: items,
                                 identifier: \QuickAccessWidgetItem.id,
                                 tmdbIdentifier: \QuickAccessWidgetItem.tmdbIdentifier,
+                                traktIdentifier: { $0.traktIdentifier },
                                 mediaType: \QuickAccessWidgetItem.tmdbMediaType)
     }
 }

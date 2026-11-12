@@ -9,11 +9,17 @@
 import UIKit
 
 final class PeopleBioTableViewCell: TintedCanvasTableViewCell {
-    @IBOutlet var biography: UILabel!
+    @IBOutlet var biography: LinkEnabledLabel!
+
+    private let markdownParser: SpoilerMarkdownParser = {
+        let parser = SpoilerMarkdownParser(font: UIFont.preferredFont(forTextStyle: .body), color: .secondaryLabel)
+        parser.spoilerStrategy = .showAllSpoilers
+        return parser
+    }()
 
     var person: Person! {
         didSet {
-            biography.text = person.biography ?? ""
+            biography.attributedText = markdownParser.parse(person.biography ?? "")
             setNeedsLayout()
             layoutIfNeeded()
         }

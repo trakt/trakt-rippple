@@ -98,7 +98,7 @@
                                         </subviews>
                                     </stackView>
                                 </subviews>
-                                <color key="backgroundColor" name="Confetti_4"/>
+                                <color key="backgroundColor" name="Purple Tint"/>
                                 <constraints>
                                     <constraint firstItem="c1n-aJ-SeG" firstAttribute="top" secondItem="fa5-Nl-wOu" secondAttribute="top" constant="2" id="4OX-2F-5Rh"/>
                                     <constraint firstItem="c1n-aJ-SeG" firstAttribute="leading" secondItem="fa5-Nl-wOu" secondAttribute="leading" constant="2" id="Ca1-mH-aaV"/>
@@ -152,8 +152,8 @@
         <image name="bg_placeholder_avatar_big" width="60" height="60"/>
         <image name="ic_logo_trakt" width="20" height="20"/>
         <image name="lock.circle.fill" catalog="system" width="128" height="123"/>
-        <namedColor name="Confetti_4">
-            <color red="0.94901960784313721" green="0.25882352941176473" blue="0.25882352941176473" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        <namedColor name="Purple Tint">
+            <color red="0.39215686274509803" green="0.2196078431372549" blue="0.81568627450980391" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

@@ -529,7 +529,7 @@ struct InReviewView: View {
                                     isVIP = true
                                     return
                                 }
-                                UIApplication.shared.switchToPurchase()
+                                UIApplication.shared.switchToPurchase(for: .stats)
                             }
                             .font(.headline)
                             .buttonStyle(.plain)

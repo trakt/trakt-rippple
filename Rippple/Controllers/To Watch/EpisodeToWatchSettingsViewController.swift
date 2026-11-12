@@ -286,7 +286,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     func setBingeableOnly(_ newValue: Bool) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         bingeableOnly = newValue
@@ -296,7 +296,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     func setHideDuplicates(_ newValue: Bool) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         hideDuplicates = newValue
@@ -306,7 +306,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     func setUpcomingEnabled(_ newValue: Bool) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         upcomingEnabled = newValue
@@ -317,7 +317,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     func setGroupMode(_ newValue: EpisodeToWatchGroupMode) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         groupMode = newValue
@@ -469,7 +469,7 @@ final class EpisodeToWatchSettingsViewModel: ObservableObject {
 
     private func applyChange(_ updates: () -> Void) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         updates()
@@ -559,6 +559,10 @@ struct EpisodeToWatchSettingsView: View {
                     Button(editMode == .active ? "Done" : "Edit") {
                         editMode = editMode == .active ? .inactive : .active
                     }
+                }
+            } footer: {
+                if viewModel.otherListItems.contains(where: { $0.enabled && $0.list?.isSmartList == true }) {
+                    Text("Each Smart List adds up to \(TraktAPIProvider.smartListToWatchItemsLimit) items to To Watch.")
                 }
             }
 

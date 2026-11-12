@@ -264,6 +264,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
 
         if let movie = data?.movie {
             let loadedImage = await TMDbImageLoader().loadImage(for: movie.ids.tmdb,
+                                                                traktId: movie.ids.trakt,
                                                                 mediaType: "movie",
                                                                 with: imageWidthToGet(for: context))
 
@@ -288,6 +289,7 @@ struct SingleWidgetProvider: IntentTimelineProvider {
             entries.append(entry)
         } else if let show = data?.show {
             let loadedImage = await TMDbImageLoader().loadImage(for: show.ids.tmdb,
+                                                                traktId: show.ids.trakt,
                                                                 mediaType: "tv",
                                                                 with: imageWidthToGet(for: context))
 
@@ -884,6 +886,11 @@ struct TraktShow: Codable {
     let status: String?
 }
 
+/// Artwork from `extended=images`: one scheme-less, medium-sized URL per type.
+struct TraktImages: Codable {
+    let images: [String: [String]]?
+}
+
 struct TMDbConfiguration: Codable {
     let images: TMDbImagesConfiguration
 }
@@ -929,9 +936,36 @@ struct TMDbImageLoader {
     var session = URLSession.shared
 
     func loadImage(for tmdbId: Int64?,
+                   traktId: Int64?,
                    mediaType: String,
                    with width: CGFloat,
                    imageType: ImageType = .backdrop) async -> UIImage? {
+        if let image = await loadTMDbImage(for: tmdbId, mediaType: mediaType, with: width, imageType: imageType) {
+            return image
+        }
+        return await loadTraktImage(for: traktId, mediaType: mediaType, imageType: imageType)
+    }
+
+    /// Trakt's medium variant (600px posters, 1280px fanart) fits every widget size.
+    private func loadTraktImage(for traktId: Int64?, mediaType: String, imageType: ImageType) async -> UIImage? {
+        guard let traktId = traktId else { return nil }
+        let endpoint = mediaType == "movie" ? "movies" : "shows"
+        var request = URLRequest(url: URL(string: "\(TraktAPIConfiguration.baseURL)/\(endpoint)/\(traktId)?extended=images")!)
+        request.setValue(TraktAPIConfiguration.clientId, forHTTPHeaderField: "trakt-api-key")
+        request.setValue("2", forHTTPHeaderField: "trakt-api-version")
+        do {
+            let (data, _) = try await session.data(for: request)
+            let images = try JSONDecoder().decode(TraktImages.self, from: data).images ?? [:]
+            let path = imageType == .poster ? images["poster"]?.first : images["fanart"]?.first ?? images["poster"]?.first
+            guard let path = path, let imageURL = URL(string: "https://\(path)") else { return nil }
+            let (image, _) = try await session.data(from: imageURL)
+            return UIImage(data: image)
+        } catch {
+            return nil
+        }
+    }
+
+    private func loadTMDbImage(for tmdbId: Int64?, mediaType: String, with width: CGFloat, imageType: ImageType) async -> UIImage? {
         guard let tmdbId = tmdbId, tmdbId > 0 else { return nil }
         do {
             let (configurationData, _) = try await session.data(from: URL(string: "https://api.themoviedb.org/3/configuration?api_key=\(TmdbAPIConfiguration.apiKey)")!)
@@ -1000,12 +1034,13 @@ struct TMDbImageLoader {
 func loadWidgetPosters<Item: Sendable, Identifier: Hashable & Sendable>(for items: [Item],
                                                                         identifier: @escaping @Sendable (Item) -> Identifier,
                                                                         tmdbIdentifier: @escaping @Sendable (Item) -> Int?,
+                                                                        traktIdentifier: @escaping @Sendable (Item) -> Int?,
                                                                         mediaType: @escaping @Sendable (Item) -> String) async -> [Identifier: UIImage] {
     await withTaskGroup(of: (Identifier, UIImage?).self) { group in
         for item in items {
-            guard let tmdbIdentifier = tmdbIdentifier(item) else { continue }
             group.addTask {
-                let image = await TMDbImageLoader().loadImage(for: Int64(tmdbIdentifier),
+                let image = await TMDbImageLoader().loadImage(for: tmdbIdentifier(item).map(Int64.init),
+                                                              traktId: traktIdentifier(item).map(Int64.init),
                                                               mediaType: mediaType(item),
                                                               with: 120,
                                                               imageType: .poster)

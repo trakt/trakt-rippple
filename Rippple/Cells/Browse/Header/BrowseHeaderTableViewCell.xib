@@ -36,11 +36,12 @@
                     </subviews>
                 </stackView>
             </subviews>
+            <viewLayoutGuide key="safeArea" id="Hdr-sA-gd1"/>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
                 <constraint firstAttribute="bottom" secondItem="SRY-oU-JEc" secondAttribute="bottom" constant="12" id="1wK-Cp-5Fx"/>
-                <constraint firstAttribute="trailing" secondItem="SRY-oU-JEc" secondAttribute="trailing" constant="8" id="l2C-j5-SzE"/>
-                <constraint firstItem="SRY-oU-JEc" firstAttribute="leading" secondItem="axe-wf-24v" secondAttribute="leading" constant="20" id="n8X-CA-gq8"/>
+                <constraint firstItem="Hdr-sA-gd1" firstAttribute="trailing" secondItem="SRY-oU-JEc" secondAttribute="trailing" constant="8" id="l2C-j5-SzE"/>
+                <constraint firstItem="SRY-oU-JEc" firstAttribute="leading" secondItem="Hdr-sA-gd1" secondAttribute="leading" constant="20" id="n8X-CA-gq8"/>
                 <constraint firstItem="SRY-oU-JEc" firstAttribute="top" secondItem="axe-wf-24v" secondAttribute="top" constant="18" id="r7g-1s-5rO"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>

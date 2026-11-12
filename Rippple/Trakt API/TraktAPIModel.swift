@@ -448,7 +448,7 @@ enum SmartListSource: String, Codable, CaseIterable, UnknownDecodable {
         case .popular: return "Popular"
         case .anticipated: return "Anticipated"
         case .recommendations: return "Recommended"
-        case .discover: return "Discover"
+        case .discover: return "All of Trakt"
         case .watchlist: return "Watchlist"
         case .library: return "Library"
         case .unknown: return "Unknown"
@@ -491,6 +491,15 @@ struct SmartListFilters: Codable, Hashable {
         case unknown
     }
 
+    enum PersonRole: String, Codable, CaseIterable, UnknownDecodable {
+        case any
+        case cast
+        case directing
+        case writing
+        case producing
+        case unknown
+    }
+
     var genres: [String]?
     var genresOperator: Operator?
     var subgenres: [String]?
@@ -501,8 +510,14 @@ struct SmartListFilters: Codable, Hashable {
     var networks: [String]?
     var keywords: [String]?
     var keywordsOperator: Operator?
+    var studios: [String]?
+    var people: [String]?
+    var peopleOperator: Operator?
+    var peopleRole: PersonRole?
     var watchnow: [String]?
+    var watchnowCountry: String?
     var years: [Int]?
+    var releasedWithinDays: Int?
     var ratings: [Int]?
     var runtimes: [Int]?
     var imdbRatings: [Double]?
@@ -510,6 +525,9 @@ struct SmartListFilters: Codable, Hashable {
     var rtUserMeters: [Int]?
     var letterboxdRatings: [Double]?
     var malRatings: [Double]?
+    var tmdbRatings: [Double]?
+    var votes: [Int]?
+    var imdbVotes: [Int]?
     // Parental guide filters are accepted by Trakt but not yet documented; keep them so edits do not drop them.
     var parentalNudity: [Double]?
     var parentalViolence: [Double]?
@@ -537,8 +555,14 @@ struct SmartListFilters: Codable, Hashable {
         case networks
         case keywords
         case keywordsOperator = "keywords_operator"
+        case studios
+        case people
+        case peopleOperator = "people_operator"
+        case peopleRole = "people_role"
         case watchnow
+        case watchnowCountry = "watchnow_country"
         case years
+        case releasedWithinDays = "released_within_days"
         case ratings
         case runtimes
         case imdbRatings = "imdb_ratings"
@@ -546,6 +570,9 @@ struct SmartListFilters: Codable, Hashable {
         case rtUserMeters = "rt_user_meters"
         case letterboxdRatings = "letterboxd_ratings"
         case malRatings = "mal_ratings"
+        case tmdbRatings = "tmdb_ratings"
+        case votes
+        case imdbVotes = "imdb_votes"
         case parentalNudity = "parental_nudity"
         case parentalViolence = "parental_violence"
         case parentalProfanity = "parental_profanity"
@@ -561,6 +588,35 @@ struct SmartListFilters: Codable, Hashable {
         case ignoreAiring = "ignore_airing"
         case ignoreNoReleaseDate = "ignore_no_release_date"
     }
+
+    /// The filters as query parameters, as the smart list preview reads them: lists joined by commas, ranges by dashes.
+    var queryParameters: [String: String] {
+        guard let data = try? JSONEncoder().encode(self),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return [:] }
+        return object.compactMapValues { value -> String? in
+            if let values = value as? [String] {
+                return values.isEmpty ? nil : values.joined(separator: ",")
+            }
+            // A range saved with one value, as some lists from the web are, is that value to itself.
+            if let values = value as? [NSNumber], let lower = values.first {
+                return "\(lower.stringValue)-\((values.count > 1 ? values[1] : lower).stringValue)"
+            }
+            // A false flag is the same as none.
+            if let number = value as? NSNumber {
+                guard CFGetTypeID(number) == CFBooleanGetTypeID() else { return number.stringValue }
+                return number.boolValue ? "true" : nil
+            }
+            return value as? String
+        }
+    }
+}
+
+/// The smart list conditions searched by name rather than picked from a list.
+enum SmartListFilterOptionKind: String {
+    case keywords
+    case studios
+    case networks
+    case people
 }
 
 /// A Trakt smart list definition: a source and filters that Trakt resolves into items.
@@ -579,6 +635,32 @@ struct SmartList: Codable, Hashable {
         case source
         case mediaType = "media_type"
         case filters
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        privacy = try container.decode(ListPrivacy.self, forKey: .privacy)
+        identifiers = try container.decode(Identifiers.self, forKey: .identifiers)
+        source = try container.decode(SmartListSource.self, forKey: .source)
+        mediaType = try container.decode(SmartListMediaType.self, forKey: .mediaType)
+        var filters = try container.decode(SmartListFilters.self, forKey: .filters)
+        filters.statuses = SmartListFilters.foldingContinuing(filters.statuses)
+        self.filters = filters
+    }
+}
+
+extension SmartListFilters {
+    /// Trakt doesn't match the "continuing" show status anymore: lists saved with it read and save as returning series,
+    /// whether included or excluded.
+    static func foldingContinuing(_ statuses: [String]?) -> [String]? {
+        statuses?.map { status in
+            switch status {
+            case "continuing": return "returning series"
+            case "-continuing": return "-returning series"
+            default: return status
+            }
+        }.removingDuplicates()
     }
 }
 
@@ -720,6 +802,13 @@ struct ImageSet: Codable {
 
 struct Images: Codable {
     let avatar: ImageSet
+}
+
+/// Artwork returned with `extended=images`, keyed by type (`poster`, `fanart`, `logo`, `screenshot`, `headshot`…).
+/// URLs come without a scheme. `number` identifies the season in a seasons list.
+struct TraktImages: Codable {
+    let number: Int?
+    let images: [String: [String]]?
 }
 
 // MARK: - Settings
@@ -1456,7 +1545,6 @@ struct Ratings: Codable {
     let trakt: TraktRatings
     let rottenTomatoes: RottenTomatoesRatings
     let imdb: IMDbRatings
-    let metascore: MetascoreRatings
     let tmdb: TMDbRatings
     let letterboxd: ExternalRatings?
     let mal: ExternalRatings?
@@ -1467,7 +1555,6 @@ struct Ratings: Codable {
         case mal
         case rottenTomatoes = "rotten_tomatoes"
         case imdb
-        case metascore
         case tmdb
     }
 }
@@ -1475,11 +1562,6 @@ struct Ratings: Codable {
 struct ExternalRatings: Codable {
     let rating: Float?
     let votes: Int?
-    let link: URL?
-}
-
-struct MetascoreRatings: Codable {
-    let rating: Int?
     let link: URL?
 }
 
@@ -2008,7 +2090,45 @@ struct ParentalGuide: Decodable {
     }
 }
 
-struct ParentalGuideTarget {
+struct Trivia: Decodable {
+    struct Item: Decodable, Hashable {
+        let factId: String
+        let text: String
+        let spoiler: Bool
+        let order: Int
+
+        enum CodingKeys: String, CodingKey {
+            case factId = "fact_id"
+            case text, spoiler, order
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            factId = try container.decode(String.self, forKey: .factId)
+            text = try container.decodeIfPresent(String.self, forKey: .text) ?? ""
+            spoiler = try container.decodeIfPresent(Bool.self, forKey: .spoiler) ?? false
+            order = try container.decodeIfPresent(Int.self, forKey: .order) ?? Int.max
+        }
+    }
+
+    let summary: [String]
+    let items: [Item]
+
+    enum CodingKeys: String, CodingKey {
+        case summary, items
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        summary = try container.decodeIfPresent([String].self, forKey: .summary) ?? []
+        var seen = Set<String>()
+        items = try (container.decodeIfPresent([Item].self, forKey: .items) ?? [])
+            .filter { $0.text.isEmpty == false && seen.insert($0.factId).inserted }
+            .sorted { $0.order < $1.order }
+    }
+}
+
+struct MediaInfoTarget {
     enum MediaType: String {
         case movie
         case show
@@ -3099,6 +3219,79 @@ struct ReactionType: Codable, Equatable, Hashable, Identifiable {
         hasher.combine(type)
         hasher.combine(emoji)
     }
+}
+
+extension ReactionType {
+    /// Readable reaction name, for example "mind_blown" becomes "Mind Blown".
+    var displayName: String {
+        return type.replacingOccurrences(of: "_", with: " ").capitalized
+    }
+}
+
+struct MediaReactionsTarget: Hashable {
+    enum MediaType: String {
+        case movie
+        case show
+        case season
+        case episode
+    }
+
+    let type: MediaType
+    let reference: String
+    let traktId: Int64
+
+    /// Movies and shows are referenced by slug, seasons and episodes by Trakt id.
+    init?(media: MediaModel?) {
+        let identifiers: Identifiers
+        switch media {
+        case .movie(let movie):
+            type = .movie
+            identifiers = movie.identifiers
+        case .show(let show):
+            type = .show
+            identifiers = show.identifiers
+        case .season(let season, _):
+            type = .season
+            identifiers = season.identifiers
+        case .episode(let episode, _):
+            type = .episode
+            identifiers = episode.identifiers
+        default:
+            return nil
+        }
+        guard let traktId = identifiers.trakt else { return nil }
+        self.traktId = traktId
+        if type == .movie || type == .show, let slug = identifiers.slug, !slug.isEmpty {
+            reference = slug
+        } else {
+            reference = String(traktId)
+        }
+    }
+}
+
+struct MediaReactionsSummary: Codable {
+    let reactionCount: Int
+    let distribution: [String: Int]
+
+    enum CodingKeys: String, CodingKey {
+        case reactionCount = "reaction_count"
+        case distribution
+    }
+
+    /// The most sent reactions, most sent first. The API already emits the distribution in that order, but a Swift
+    /// dictionary loses it, so the counts are sorted again; the stable sort keeps ties in the order of `reactions`.
+    func topReactions(using reactions: [ReactionType], limit: Int = 3) -> [ReactionType] {
+        return reactions
+            .filter { distribution[$0.type, default: 0] > 0 }
+            .sorted { distribution[$0.type, default: 0] > distribution[$1.type, default: 0] }
+            .prefix(limit)
+            .map { $0 }
+    }
+}
+
+struct UserMediaReaction: Codable {
+    let id: Int64
+    let reaction: ReactionType
 }
 
 // MARK: - IAP Verification

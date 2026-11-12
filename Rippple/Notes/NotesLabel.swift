@@ -31,8 +31,6 @@ final class NotesLabel: LinkEnabledLabel {
         markdownParser.displaySpoiler.color = .label
         markdownParser.mention.color = .label
         markdownParser.highlight.font = UIFont.preferredFont(forTextStyle: .callout, compatibleWith: UITraitCollection(preferredContentSizeCategory: min(UIApplication.shared.preferredContentSizeCategory, .extraExtraExtraLarge)))
-        markdownParser.link.color = UIColor(asset: .globalTint)
-        markdownParser.automaticLink.color = UIColor(asset: .globalTint)
 
         markdownParser.spoilerStrategy = .showAllSpoilers
 
@@ -68,8 +66,6 @@ final class ActivityLabel: LinkEnabledLabel {
         markdownParser.displaySpoiler.color = .label
         markdownParser.mention.color = .label
         markdownParser.highlight.font = UIFont.preferredFont(forTextStyle: .footnote, compatibleWith: UITraitCollection(preferredContentSizeCategory: min(UIApplication.shared.preferredContentSizeCategory, .extraExtraExtraLarge)))
-        markdownParser.link.color = UIColor(asset: .globalTint)
-        markdownParser.automaticLink.color = UIColor(asset: .globalTint)
 
         markdownParser.spoilerStrategy = .showAllSpoilers
 
@@ -95,11 +91,21 @@ class LinkEnabledLabel: UILabel {
         tintColor = UIColor(asset: .globalTint)
     }
 
+    /// UILabel draws `.link` ranges in the system link color and ignores their foreground color.
+    override var attributedText: NSAttributedString? {
+        get { super.attributedText }
+        set { super.attributedText = newValue.map(LinkEnabledLabel.replacingLinks) }
+    }
+
     var didTapOnURL: (URL) -> Void = { url in
         let urlString = url.absoluteString
         let urlHasHttpPrefix = urlString.hasPrefix("http://")
         let urlHasHttpsPrefix = urlString.hasPrefix("https://")
         let validURL = (urlHasHttpPrefix || urlHasHttpsPrefix) ? url : URL(string: "https://\(urlString)")!
+
+        if DeeplinkManager.shared.openInApp(validURL) {
+            return
+        }
 
         if UIApplication.shared.canOpenURL(validURL) {
             UIApplication.shared.open(validURL, options: [:], completionHandler: { success in
@@ -114,6 +120,12 @@ class LinkEnabledLabel: UILabel {
         }
     }
 
+    /// Keeps the enclosing cell from highlighting when the touch starts on a link.
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard url(at: touches) == nil else { return }
+        super.touchesBegan(touches, with: event)
+    }
+
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let url = url(at: touches) {
             didTapOnURL(url)
@@ -126,9 +138,17 @@ class LinkEnabledLabel: UILabel {
         attributedString.addAttribute(LinkEnabledLabel.tappableURLAttribute, value: url, range: range)
     }
 
+    func containsURL(at point: CGPoint) -> Bool {
+        return url(at: point) != nil
+    }
+
     private func url(at touches: Set<UITouch>) -> URL? {
+        guard let touch = touches.sorted(by: { $0.timestamp < $1.timestamp }).last else { return nil }
+        return url(at: touch.location(in: self))
+    }
+
+    private func url(at touchLocation: CGPoint) -> URL? {
         guard let attributedText = attributedText, attributedText.length > 0 else { return nil }
-        guard let touchLocation = touches.sorted(by: { $0.timestamp < $1.timestamp }).last?.location(in: self) else { return nil }
         guard let textStorage = preparedTextStorage() else { return nil }
         let layoutManager = textStorage.layoutManagers[0]
         let textContainer = layoutManager.textContainers[0]
@@ -141,12 +161,28 @@ class LinkEnabledLabel: UILabel {
         let characterRect = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer)
         guard characterRect.contains(touchLocation) else { return nil }
 
-        if let url = textStorage.attribute(.link, at: characterIndex, effectiveRange: nil) as? URL {
-            return url
-        }
         return textStorage.attribute(LinkEnabledLabel.tappableURLAttribute,
                                      at: characterIndex,
                                      effectiveRange: nil) as? URL
+    }
+
+    private static func replacingLinks(in attributedString: NSAttributedString) -> NSAttributedString {
+        var links: [(url: URL?, range: NSRange)] = []
+        attributedString.enumerateAttribute(.link,
+                                            in: NSRange(location: 0, length: attributedString.length)) { value, range, _ in
+            guard let value = value else { return }
+            links.append(((value as? URL) ?? (value as? String).flatMap { URL(string: $0) }, range))
+        }
+        guard !links.isEmpty else { return attributedString }
+
+        let mutableString = NSMutableAttributedString(attributedString: attributedString)
+        for link in links {
+            mutableString.removeAttribute(.link, range: link.range)
+            if let url = link.url {
+                mutableString.addAttribute(LinkEnabledLabel.tappableURLAttribute, value: url, range: link.range)
+            }
+        }
+        return mutableString
     }
 
     private func preparedTextStorage() -> NSTextStorage? {

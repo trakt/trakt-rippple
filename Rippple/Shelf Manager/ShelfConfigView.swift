@@ -35,7 +35,6 @@ private let shelfSortByOptions: [ShelfSortOption] = [
     ShelfSortOption(id: "tmdb_rating", label: "TMDb Rating"),
     ShelfSortOption(id: "rt_tomatometer", label: "RT Tomatometer"),
     ShelfSortOption(id: "rt_audience", label: "RT Audience"),
-    ShelfSortOption(id: "metascore", label: "Metascore"),
     ShelfSortOption(id: "votes", label: "Votes"),
     ShelfSortOption(id: "imdb_votes", label: "IMDb Votes"),
     ShelfSortOption(id: "tmdb_votes", label: "TMDb Votes")

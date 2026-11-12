@@ -76,6 +76,22 @@
                                                             </label>
                                                         </subviews>
                                                     </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="WEp-St-k01">
+                                                        <rect key="frame" x="189.5" y="34.5" width="105" height="38.5"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="2.7k" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WEp-Ct-l01" customClass="EFCountingLabel" customModule="Rippple" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="37" height="24"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="watched episodes" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WEp-Cp-l01">
+                                                                <rect key="frame" x="0.0" y="24" width="105" height="14.5"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="2ik-gH-Nfe">
                                                         <rect key="frame" x="306.5" y="34.5" width="30" height="38.5"/>
                                                         <subviews>
@@ -206,6 +222,7 @@
                 <outlet property="statsStackView" destination="aC8-ec-GjL" id="J9a-tp-Pcb"/>
                 <outlet property="watchedMovies" destination="xT2-pC-aXU" id="UbS-eq-LMr"/>
                 <outlet property="watchedShows" destination="In5-Vm-z8M" id="p5B-7W-yyb"/>
+                <outlet property="watchedEpisodes" destination="WEp-Ct-l01" id="WEp-Ou-t01"/>
                 <outlet property="watchlisted" destination="78U-Ks-9OY" id="y2y-3C-fIP"/>
             </connections>
             <point key="canvasLocation" x="132.60869565217394" y="152.34375"/>

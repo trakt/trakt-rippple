@@ -121,6 +121,8 @@ struct ToWatchWidgetMovie: Identifiable, Codable, Equatable {
 
 struct UpcomingWidgetItem: Identifiable, Codable, Equatable {
     let traktIdentifier: Int
+    /// Set for episodes, whose artwork belongs to the show.
+    let showTraktIdentifier: Int?
     let tmdbIdentifier: Int?
     let tmdbMediaType: String
     let title: String

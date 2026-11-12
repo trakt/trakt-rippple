@@ -6,9 +6,9 @@
 //  Copyright © Trakt. All rights reserved.
 //
 
+import Kingfisher
 import SwiftUI
 import UIKit
-import YouTubePlayerKit
 
 struct TrailersView: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -78,26 +78,28 @@ struct TrailersView: View {
                                             radius: 3)
                             }
                             VStack(alignment: .leading, spacing: 4) {
-                                YouTubePlayerView(YouTubePlayer(
-                                    source: .init(url: video.url),
-                                    parameters: .init(autoPlay: false),
-                                    configuration: .init(
-                                        fullscreenMode: .system,
-                                        allowsInlineMediaPlayback: true
-                                    )
-                                )) { state in
-                                    switch state {
-                                    case .idle:
-                                        ProgressView()
-                                            .tint(Color(UIColor(asset: .globalTint)))
-                                    case .ready:
-                                        EmptyView()
-                                    case .error:
-                                        EmptyView()
-                                    }
-                                }.frame(maxWidth: .infinity)
-                                    .aspectRatio(16 / 9, contentMode: .fill)
-                                    .cornerRadius(ViewRadius.large.rawValue)
+                                Button {
+                                    UIApplication.shared.open(video.url)
+                                } label: {
+                                    Color(UIColor.tertiarySystemFill)
+                                        .aspectRatio(16 / 9, contentMode: .fit)
+                                        .frame(maxWidth: .infinity)
+                                        .overlay {
+                                            KFImage(video.youTubeThumbnailURL)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                        }
+                                        .clipped()
+                                        .overlay {
+                                            Image(systemName: "play.circle.fill")
+                                                .font(.system(size: 48))
+                                                .symbolRenderingMode(.palette)
+                                                .foregroundStyle(.white, .black.opacity(0.4))
+                                                .shadow(radius: 5)
+                                        }
+                                        .clipShape(RoundedRectangle(cornerRadius: ViewRadius.large.rawValue))
+                                }.buttonStyle(.plain)
+                                    .accessibilityLabel("Play \(video.title) on YouTube")
                                     .padding([.top, .trailing, .leading], 6)
                                 VStack(alignment: .leading) {
                                     HStack {
@@ -183,6 +185,18 @@ struct TrailersView: View {
 }
 
 extension Video {
+    var youTubeThumbnailURL: URL? {
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        let videoId: String?
+        if url.host()?.hasSuffix("youtu.be") == true {
+            videoId = url.pathComponents.last
+        } else {
+            videoId = components?.queryItems?.first(where: { $0.name == "v" })?.value
+        }
+        guard let videoId = videoId, !videoId.isEmpty else { return nil }
+        return URL(string: "https://i.ytimg.com/vi/\(videoId)/hqdefault.jpg")
+    }
+
     var metaText: Text {
         if let type = type, let size = size, let publishedDate = publishedDate {
             return Text("\(type) · \(Text(size, format: .number.grouping(.never)))p · \(Text(publishedDate, style: .date))")

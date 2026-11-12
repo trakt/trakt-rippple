@@ -26,6 +26,10 @@ final class SmartListBuilderViewController: SearchResultsViewController {
     private var draft = SmartListDraft() {
         didSet {
             guard isViewLoaded else { return }
+            // The conversation tells how the request was read: once the conditions change, it no longer describes them.
+            if view.window != nil, draft.isSameDefinition(as: oldValue) == false {
+                removeConversation()
+            }
             if draft.mediaType != oldValue.mediaType {
                 clearShowOnlyConditions()
             }
@@ -38,16 +42,26 @@ final class SmartListBuilderViewController: SearchResultsViewController {
     private weak var detailsViewController: SmartListDetailsViewController?
     private var tokenMenus = [UIMenu]()
     private var laidOutSize = CGSize.zero
+    /// How a typed request was read, kept above the sentence.
+    private var conversation: SmartListConversation?
+    private var conversationController: RipppleHostingController<SmartListConversationView>?
+    private var conversationHeader: UIView?
+    /// Where the conversation was on the prompt screen, until the builder slides up from there.
+    private var conversationStart: CGFloat?
+    /// Where the request sits on the prompt screen, to go back there to change it.
+    private var restingOffset: CGFloat = 0
+    /// Room below the results without a conversation above the sentence.
+    private var baseBottomInset: CGFloat = 0
     private let disposeBag = DisposeBag()
 
     private static let tokenKey = NSAttributedString.Key("SmartListBuilderToken")
     private static let previewLimit = 25
 
     /// Presents the builder to create a smart list, or to edit one owned by the current user. New lists start from a
-    /// prompt when the on-device model can turn it into conditions.
+    /// prompt with Apple Intelligence, and from the composer without it.
     static func present(from controller: UIViewController, list: List? = nil) {
         if let list = list, list.isSmartList == false || list.user.isCurrentUser == false { return }
-        if list == nil, SmartListAssistant.isAvailable {
+        if list == nil, SmartListAssistant.isModelAvailable {
             guard canCreate() else { return }
             controller.present(UINavigationController(rootViewController: SmartListPromptViewController()), animated: true)
             return
@@ -64,6 +78,26 @@ final class SmartListBuilderViewController: SearchResultsViewController {
         present(from: controller, list: nil, draft: draft)
     }
 
+    /// Presents a new smart list of a person's movies and shows in `role`, started as if asked for: "Starring Tom Holland".
+    /// It's made from the person's slug rather than read from their name, so a namesake is never picked instead.
+    static func present(from controller: UIViewController, person: Person, role: SmartListFilters.PersonRole) {
+        guard let slug = person.ids.slug else { return }
+        var draft = SmartListDraft()
+        draft.source = .discover
+        draft.filters.people = [slug]
+        draft.filters.peopleRole = role == .any ? nil : role
+        guard SmartListAssistant.isModelAvailable else {
+            present(from: controller, list: nil, draft: draft)
+            return
+        }
+        guard canCreate() else { return }
+        let match = SmartListAssistant.Match(range: 0..<0, condition: .people([slug], role: role), titles: [person.name])
+        let heard = SmartListAssistant.sentence(mediaType: draft.mediaType, source: draft.source, matches: [match])
+        let reply = [SmartListAssistant.Line(kind: .kept, text: "Got it, \(heard).")]
+        let prompt = SmartListPromptViewController(prompt: SmartListAssistant.label(of: match), draft: draft, reply: reply)
+        controller.present(UINavigationController(rootViewController: prompt), animated: true)
+    }
+
     private static func present(from controller: UIViewController, list: List?, draft: SmartListDraft) {
         guard list != nil || canCreate(), let builder = make(list: list, draft: draft) else { return }
         controller.present(UINavigationController(rootViewController: builder), animated: true)
@@ -73,20 +107,23 @@ final class SmartListBuilderViewController: SearchResultsViewController {
     private static func canCreate() -> Bool {
         guard SessionManager.shared.isLoggedIn else { return false }
         guard ListsManager.shared.smartLists.count < UserManager.shared.currentUserSmartListLimit else {
-            UIApplication.shared.presentAccountLimitReached()
+            UIApplication.shared.presentAccountLimitReached(for: .smartLists)
             return false
         }
         return true
     }
 
-    static func make(list: List?, draft: SmartListDraft) -> SmartListBuilderViewController? {
+    static func make(list: List?, draft: SmartListDraft, conversation: SmartListConversation? = nil,
+                     conversationTop: CGFloat = 0) -> SmartListBuilderViewController? {
         guard SessionManager.shared.isLoggedIn, let owner = UserManager.shared.currentUser,
               let builder = UIStoryboard(name: "SmartSearch", bundle: nil)
-              .instantiateViewController(withIdentifier: "SmartListBuilderViewController") as? SmartListBuilderViewController else { return nil }
+                  .instantiateViewController(withIdentifier: "SmartListBuilderViewController") as? SmartListBuilderViewController else { return nil }
         builder.list = list
         builder.owner = owner
         builder.original = draft
         builder.draft = draft
+        builder.conversation = conversation
+        builder.conversationStart = conversation == nil ? nil : conversationTop
         return builder
     }
 
@@ -102,11 +139,22 @@ final class SmartListBuilderViewController: SearchResultsViewController {
         addConditionButton.showsMenuAsPrimaryAction = true
         emptyLabel.text = "Nothing matches these conditions right now.\nTry removing one."
         if let header = sentenceLabel.superview {
-            tableView.tableHeaderView = header
+            // Replacing a table's header removes the previous one from its superview: the conversation's container
+            // takes the sentence's header directly.
+            if let conversation = conversation {
+                showConversation(conversation, above: header)
+            } else {
+                tableView.tableHeaderView = header
+            }
         }
 
-        registerForTraitChanges([UITraitPreferredContentSizeCategory.self]) { (self: SmartListBuilderViewController, _) in
-            self.draftDidChange()
+        baseBottomInset = tableView.contentInset.bottom
+
+        // The dots under tappable words are drawn with resolved colors and the scaled font. Only the sentence is redrawn:
+        // the draft, and so the preview, didn't change.
+        registerForTraitChanges([UITraitPreferredContentSizeCategory.self, UITraitUserInterfaceStyle.self]) { (self: SmartListBuilderViewController, _) in
+            self.sentenceLabel.attributedText = self.sentence()
+            self.layoutHeader()
         }
 
         onUserLoggedOutReceiver.listen { [weak self] _ in
@@ -116,6 +164,24 @@ final class SmartListBuilderViewController: SearchResultsViewController {
 
         draftDidChange()
         loadWatchNowServiceNames()
+    }
+
+    override func viewIsAppearing(_ animated: Bool) {
+        super.viewIsAppearing(animated)
+        // First shown with the conversation where the prompt screen left it.
+        guard let start = conversationStart, let conversationView = conversationController?.view else { return }
+        view.layoutIfNeeded()
+        tableView.contentOffset.y = conversationView.frame.minY - start
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard conversationStart != nil else { return }
+        conversationStart = nil
+        let isReduced = UIAccessibility.isReduceMotionEnabled
+        UIView.animate(withDuration: isReduced ? 0.25 : 0.8, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: .allowUserInteraction) {
+            self.tableView.contentOffset.y = self.restingOffset
+        }
     }
 
     override func viewDidLayoutSubviews() {
@@ -150,7 +216,7 @@ final class SmartListBuilderViewController: SearchResultsViewController {
         let broadValues = SmartListChoices.watchNow.map(\.value)
         guard draft.filters.watchnow?.contains(where: { broadValues.contains($0) == false }) == true else { return }
         _Concurrency.Task { @MainActor [weak self] in
-            _ = await SmartListChoices.watchNowChoices()
+            _ = await SmartListChoices.watchNowServices()
             guard let self = self else { return }
             self.sentenceLabel.attributedText = self.sentence()
             self.layoutHeader()
@@ -214,9 +280,7 @@ final class SmartListBuilderViewController: SearchResultsViewController {
 
     private var highAttributes: [NSAttributedString.Key: Any] {
         [.foregroundColor: UIColor.label,
-         .font: UIFontMetrics(forTextStyle: .title2).scaledFont(for: .systemFont(ofSize: 22, weight: .medium), maximumPointSize: 34),
-         .underlineStyle: NSUnderlineStyle.single.union(.patternDot).rawValue,
-         .underlineColor: UIColor.secondaryLabel]
+         .font: UIFontMetrics(forTextStyle: .title2).scaledFont(for: .systemFont(ofSize: 22, weight: .medium), maximumPointSize: 34)]
     }
 
     // MARK: - Menus
@@ -229,8 +293,18 @@ final class SmartListBuilderViewController: SearchResultsViewController {
             return sourceMenu()
         case .value(let condition, let value):
             return valueMenu(value, of: condition)
+        case .negation(let condition):
+            return negationMenu(of: condition)
         case .matchOperator(let keyPath):
             return operatorMenu(keyPath)
+        case .personRole:
+            return personRoleMenu()
+        case .watchNowCountry:
+            return removeMenu(title: "Use Your Country", image: UIImage(systemName: "arrow.uturn.backward"), attributes: []) { $0.watchnowCountry = nil }
+        case .minimum(let condition, let value):
+            return minimumMenu(value, of: condition)
+        case .releasedWithin(let days):
+            return UIMenu(title: "Released Within", children: releasedWithinElements(selected: days))
         case .singleValue(let condition, let value):
             return singleValueMenu(value, of: condition)
         case .lowerBound(let condition, let lower, let upper):
@@ -259,16 +333,134 @@ final class SmartListBuilderViewController: SearchResultsViewController {
     }
 
     private func valueMenu(_ value: String, of condition: SmartListConditions.ValueCondition) -> UIMenu {
-        let title = condition.format(value)
+        let title = name(of: value, in: condition)
+        let isExcluded = SmartListConditions.isExcluded(value)
+        let exclusion = UIAction(title: isExcluded ? "Include \(title)" : "Exclude \(title)",
+                                 image: UIImage(systemName: isExcluded ? "checkmark.circle" : "nosign")) { [weak self] _ in
+            guard let self = self else { return }
+            self.setExcluded(isExcluded == false, [value], of: condition)
+        }
         let remove = UIAction(title: "Remove \(title)", image: UIImage(systemName: "minus.circle"), attributes: .destructive) { [weak self] _ in
             guard let self = self else { return }
             self.toggle(value, of: condition)
         }
-        var children: [UIMenuElement] = [remove]
-        if let load = condition.load {
-            children.insert(UIMenu(title: "Add \(condition.title)", image: UIImage(systemName: "plus.circle"), children: [choicesMenuElement(for: condition, load: load)]), at: 0)
+        var children: [UIMenuElement] = [UIMenu(options: .displayInline, children: [exclusion, remove])]
+        if condition.load != nil {
+            children.insert(UIMenu(title: "Add \(condition.title)", image: UIImage(systemName: "plus.circle"), children: pickElements(for: condition)), at: 0)
+        } else if condition.search != nil {
+            children.insert(contentsOf: pickElements(for: condition), at: 0)
         }
         return UIMenu(title: condition.title, children: children)
+    }
+
+    /// Menus name values as choices do, "For Free" rather than the sentence's "for free".
+    private func name(of value: String, in condition: SmartListConditions.ValueCondition) -> String {
+        (condition.choiceFormat ?? condition.format)(SmartListConditions.includedValue(value))
+    }
+
+    /// "not" applies to every excluded value of the condition: removing it includes them again.
+    private func negationMenu(of condition: SmartListConditions.ValueCondition) -> UIMenu {
+        let excluded = (draft.filters[keyPath: condition.keyPath] ?? []).filter(SmartListConditions.isExcluded)
+        let title = excluded.count == 1 ? "Include \(name(of: excluded[0], in: condition))" : "Include All"
+        return UIMenu(children: [UIAction(title: title, image: UIImage(systemName: "checkmark.circle")) { [weak self] _ in
+            guard let self = self else { return }
+            self.setExcluded(false, excluded, of: condition)
+        }])
+    }
+
+    /// The choices of a condition: every value of short lists. Long ones offer quick picks, then a search for any value.
+    private func pickElements(for condition: SmartListConditions.ValueCondition) -> [UIMenuElement] {
+        var elements = [UIMenuElement]()
+        if let load = condition.load {
+            elements.append(UIMenu(options: .displayInline, children: [choicesMenuElement(for: condition, load: load)]))
+        }
+        if let search = condition.search {
+            let searchAction = UIAction(title: "Search \(condition.searchTitle ?? condition.title)…", image: UIImage(systemName: "magnifyingglass")) { [weak self] _ in
+                guard let self = self else { return }
+                self.presentSearch(search, of: condition)
+            }
+            elements.append(UIMenu(options: .displayInline, children: [searchAction]))
+        }
+        return elements
+    }
+
+    private func presentSearch(_ source: SmartListConditions.Search, of condition: SmartListConditions.ValueCondition) {
+        let search: (String) async throws -> [SmartListChoice]
+        let minimumQueryLength: Int
+        switch source {
+        case .trakt(let kind):
+            search = { try await SmartListChoices.search(kind, query: $0) }
+            minimumQueryLength = 2
+        case .all(let load):
+            // Loaded once for the sheet, then filtered: names starting with the query first.
+            let mediaType = draft.mediaType
+            let all = _Concurrency.Task { try await load(mediaType) }
+            search = { query in
+                let matches = try await all.value.filter { $0.title.localizedStandardContains(query) }
+                let isPrefix = { (choice: SmartListChoice) in
+                    choice.title.range(of: query, options: [.caseInsensitive, .diacriticInsensitive, .anchored]) != nil
+                }
+                return matches.filter(isPrefix) + matches.filter { isPrefix($0) == false }
+            }
+            minimumQueryLength = 1
+        }
+        let title = condition.searchTitle ?? condition.title
+        let format = { (value: String) in (condition.choiceFormat ?? condition.format)(SmartListConditions.includedValue(value)) }
+        let searchViewController = SmartListSearchViewController(title: title, minimumQueryLength: minimumQueryLength, search: search,
+                                                                 format: format, selected: { [weak self] in
+                                                                     guard let self = self else { return [] }
+                                                                     return self.draft.filters[keyPath: condition.keyPath] ?? []
+                                                                 }, toggle: { [weak self] value in
+                                                                     guard let self = self else { return }
+                                                                     self.toggle(value, of: condition)
+                                                                 })
+        let navigation = UINavigationController(rootViewController: searchViewController)
+        navigation.sheetPresentationController?.detents = [.medium(), .large()]
+        navigation.sheetPresentationController?.prefersGrabberVisible = true
+        present(navigation, animated: true)
+    }
+
+    private func personRoleMenu() -> UIMenu {
+        let current = draft.filters.peopleRole ?? .any
+        let roles: [(SmartListFilters.PersonRole, String)] = [(.any, "Any Role"), (.cast, "Cast"), (.directing, "Directing"),
+                                                              (.writing, "Writing"), (.producing, "Producing")]
+        return UIMenu(title: "Credited For", children: roles.map { role, title in
+            UIAction(title: title, state: role == current ? .on : .off) { [weak self] _ in
+                guard let self = self else { return }
+                self.draft.filters.peopleRole = role == .any ? nil : role
+            }
+        })
+    }
+
+    private func minimumMenu(_ value: Int, of condition: SmartListConditions.MinimumCondition) -> UIMenu {
+        let steps = condition.steps.reversed().map { step in
+            UIAction(title: "\(step.formatted(.number.locale(SmartListChoices.locale)))+", state: step == value ? .on : .off) { [weak self] _ in
+                guard let self = self else { return }
+                self.draft.filters[keyPath: condition.keyPath] = [step, SmartListConditions.votesCeiling]
+            }
+        }
+        let remove = UIAction(title: "Remove Condition", image: UIImage(systemName: "minus.circle"), attributes: .destructive) { [weak self] _ in
+            guard let self = self else { return }
+            self.draft.filters[keyPath: condition.keyPath] = nil
+        }
+        return UIMenu(title: "Minimum \(condition.title)", children: [UIMenu(options: .displayInline, children: steps), remove])
+    }
+
+    private func releasedWithinElements(selected: Int?) -> [UIMenuElement] {
+        var elements: [UIMenuElement] = SmartListConditions.releaseWindows.map { days in
+            UIAction(title: "Last \(SmartListConditions.releaseWindow(days).capitalized)", state: days == selected ? .on : .off) { [weak self] _ in
+                guard let self = self else { return }
+                self.draft.filters.releasedWithinDays = days
+            }
+        }
+        if selected != nil {
+            let remove = UIAction(title: "Remove Condition", image: UIImage(systemName: "minus.circle"), attributes: .destructive) { [weak self] _ in
+                guard let self = self else { return }
+                self.draft.filters.releasedWithinDays = nil
+            }
+            elements = [UIMenu(options: .displayInline, children: elements), remove]
+        }
+        return elements
     }
 
     private func singleValueMenu(_ value: Double, of condition: SmartListConditions.RangeCondition) -> UIMenu {
@@ -318,7 +510,7 @@ final class SmartListBuilderViewController: SearchResultsViewController {
 
     private func sourceMenu() -> UIMenu {
         let charts: [SmartListSource] = [.trending, .popular, .anticipated]
-        let personal: [SmartListSource] = [.recommendations, .watchlist]
+        let personal: [SmartListSource] = [.recommendations, .watchlist, .library]
         let current = draft.source
         let action = { [weak self] (source: SmartListSource) -> UIAction in
             UIAction(title: source.title,
@@ -332,7 +524,8 @@ final class SmartListBuilderViewController: SearchResultsViewController {
             }
         }
         return UIMenu(children: [UIMenu(options: .displayInline, children: charts.map(action)),
-                                 UIMenu(options: .displayInline, children: personal.map(action))])
+                                 UIMenu(options: .displayInline, children: personal.map(action)),
+                                 UIMenu(options: .displayInline, children: [action(.discover)])])
     }
 
     private func operatorMenu(_ keyPath: WritableKeyPath<SmartListFilters, SmartListFilters.Operator?>) -> UIMenu {
@@ -349,8 +542,9 @@ final class SmartListBuilderViewController: SearchResultsViewController {
         ])
     }
 
-    private func removeMenu(title: String, remove: @escaping (inout SmartListFilters) -> Void) -> UIMenu {
-        UIMenu(children: [UIAction(title: title, image: UIImage(systemName: "minus.circle"), attributes: .destructive) { [weak self] _ in
+    private func removeMenu(title: String, image: UIImage? = UIImage(systemName: "minus.circle"), attributes: UIMenuElement.Attributes = .destructive,
+                            remove: @escaping (inout SmartListFilters) -> Void) -> UIMenu {
+        UIMenu(children: [UIAction(title: title, image: image, attributes: attributes) { [weak self] _ in
             guard let self = self else { return }
             remove(&self.draft.filters)
         }])
@@ -360,9 +554,8 @@ final class SmartListBuilderViewController: SearchResultsViewController {
     private func conditionsMenu() -> UIMenu {
         let mediaType = draft.mediaType
         var values = [UIMenuElement]()
-        for condition in SmartListConditions.values where condition.isAvailable(mediaType) {
-            guard let load = condition.load else { continue }
-            values.append(UIMenu(title: condition.title, image: UIImage(systemName: condition.symbol), children: [choicesMenuElement(for: condition, load: load)]))
+        for condition in SmartListConditions.values where condition.isAvailable(mediaType) && condition.isPickable {
+            values.append(UIMenu(title: condition.title, image: UIImage(systemName: condition.symbol), children: pickElements(for: condition)))
         }
 
         let ranges = SmartListConditions.ranges.map { condition -> UIMenuElement in
@@ -372,8 +565,16 @@ final class SmartListBuilderViewController: SearchResultsViewController {
                 condition.set(&self.draft.filters, isActive ? nil : condition.initial)
             }
         }
+        let minimums = SmartListConditions.minimums.map { condition -> UIMenuElement in
+            let isActive = draft.filters[keyPath: condition.keyPath] != nil
+            return UIAction(title: "Minimum \(condition.title)", state: isActive ? .on : .off) { [weak self] _ in
+                guard let self = self else { return }
+                self.draft.filters[keyPath: condition.keyPath] = isActive ? nil : [condition.initial, SmartListConditions.votesCeiling]
+            }
+        }
         let releaseDates = UIMenu(title: "Release Date", image: UIImage(systemName: "calendar"), children: releaseDateElements())
-        let ratings = UIMenu(title: "Runtime & Ratings", image: UIImage(systemName: "star"), children: Array(ranges.dropFirst()))
+        let ratings = UIMenu(title: "Runtime & Ratings", image: UIImage(systemName: "star"),
+                             children: Array(ranges.dropFirst()) + [UIMenu(options: .displayInline, children: minimums)])
 
         let parental = SmartListConditions.parental.map { condition -> UIMenuElement in
             let isActive = draft.filters[keyPath: condition.keyPath] != nil
@@ -421,15 +622,17 @@ final class SmartListBuilderViewController: SearchResultsViewController {
             let range = [Double(decade), Double(decade + 9)]
             return UIAction(title: "\(decade)s", state: current == range ? .on : .off, handler: set(range))
         }
-        var elements: [UIMenuElement] = [thisYear, UIMenu(title: "Decades", children: decades)]
+        var elements: [UIMenuElement] = [thisYear, UIMenu(title: "Decades", children: decades),
+                                         UIMenu(title: "Recently Released", children: releasedWithinElements(selected: draft.filters.releasedWithinDays))]
         if current != nil {
-            elements.append(UIAction(title: "Remove Condition", image: UIImage(systemName: "minus.circle"), attributes: .destructive, handler: set([])))
+            elements.append(UIAction(title: "Remove Release Years", image: UIImage(systemName: "minus.circle"), attributes: .destructive, handler: set([])))
         }
         return elements
     }
 
-    /// Loads choices when the menu opens, with the selected values checked. Long lists are grouped alphabetically.
-    private func choicesMenuElement(for condition: SmartListConditions.ValueCondition, load: @escaping (SmartListMediaType) async throws -> [SmartListChoice]) -> UIMenuElement {
+    /// Loads choices when the menu opens, with the selected values checked.
+    private func choicesMenuElement(for condition: SmartListConditions.ValueCondition,
+                                    load: @escaping (SmartListMediaType) async throws -> [SmartListChoice]) -> UIMenuElement {
         let mediaType = draft.mediaType
         return UIDeferredMenuElement.uncached { [weak self] completion in
             _Concurrency.Task { @MainActor [weak self] in
@@ -442,49 +645,79 @@ final class SmartListBuilderViewController: SearchResultsViewController {
                     return
                 }
                 let selected = self.draft.filters[keyPath: condition.keyPath] ?? []
-                let ungrouped = choices.filter { $0.group == nil }
-                var elements = self.choiceElements(for: ungrouped.filter { $0.isQuickPick == false }, selected: selected, of: condition)
-                let quickPicks = ungrouped.filter(\.isQuickPick)
-                if quickPicks.isEmpty == false {
-                    let children = self.choiceElements(for: quickPicks, selected: selected, of: condition, groupsByLetter: false)
-                    elements.append(UIMenu(options: .displayInline, children: children))
+                // Excluded values show a dash: picking one removes it, like an included one.
+                let state = { (choice: SmartListChoice) -> UIMenuElement.State in
+                    selected.contains(choice.value) ? .on : (selected.contains(SmartListConditions.excludedValue(choice.value)) ? .mixed : .off)
                 }
-                let groups = choices.compactMap(\.group).removingDuplicates()
-                for group in groups {
-                    let children = self.choiceElements(for: choices.filter { $0.group == group }, selected: selected, of: condition, groupsByLetter: group.groupsByLetter)
-                    elements.append(UIMenu(options: .displayInline, children: [UIMenu(title: group.title, children: children)]))
-                }
-                completion(elements)
+                completion(self.menuElements(for: choices, state: state) { [weak self] choice in
+                    guard let self = self else { return }
+                    self.toggle(choice.value, of: condition)
+                })
             }
         }
     }
 
-    private func choiceElements(for choices: [SmartListChoice],
-                                selected: [String],
-                                of condition: SmartListConditions.ValueCondition,
-                                groupsByLetter: Bool = true) -> [UIMenuElement] {
-        let actions = choices.map { choice in
-            UIAction(title: choice.title, subtitle: choice.subtitle, state: selected.contains(choice.value) ? .on : .off) { [weak self] _ in
-                guard let self = self else { return }
-                self.toggle(choice.value, of: condition)
+    /// Choices first, then quick picks in their own section.
+    private func menuElements(for choices: [SmartListChoice],
+                              state: (SmartListChoice) -> UIMenuElement.State,
+                              select: @escaping (SmartListChoice) -> Void) -> [UIMenuElement] {
+        let action = { (choice: SmartListChoice) in
+            UIAction(title: choice.title, subtitle: choice.subtitle, state: state(choice)) { _ in
+                select(choice)
             }
         }
-        guard groupsByLetter, actions.count > 40 else { return actions }
-        let groups = Dictionary(grouping: actions) { action -> String in
-            let letter = action.title.prefix(1).uppercased()
-            return letter.rangeOfCharacter(from: .letters) == nil ? "#" : letter
+        var elements: [UIMenuElement] = choices.filter { $0.isQuickPick == false }.map(action)
+        let quickPicks = choices.filter(\.isQuickPick)
+        if quickPicks.isEmpty == false {
+            elements.append(UIMenu(options: .displayInline, children: quickPicks.map(action)))
         }
-        return groups.keys.sorted().map { UIMenu(title: $0, children: groups[$0] ?? []) }
+        return elements
     }
 
+    /// Adds a value as included, or removes it whether it's included or excluded. The draft is set once, so the preview
+    /// refreshes once.
     private func toggle(_ value: String, of condition: SmartListConditions.ValueCondition) {
-        var values = draft.filters[keyPath: condition.keyPath] ?? []
-        if let index = values.firstIndex(of: value) {
-            values.remove(at: index)
+        var filters = draft.filters
+        var values = filters[keyPath: condition.keyPath] ?? []
+        let included = SmartListConditions.includedValue(value)
+        let forms = [included, SmartListConditions.excludedValue(included)]
+        if values.contains(where: forms.contains) {
+            values.removeAll(where: forms.contains)
         } else {
-            values.append(value)
+            values.append(included)
         }
-        draft.filters[keyPath: condition.keyPath] = values.isEmpty ? nil : values
+        filters[keyPath: condition.keyPath] = values.isEmpty ? nil : values
+        clearHiddenOperator(of: condition, in: &filters)
+        // Settings of a removed condition would be saved without showing in the sentence.
+        if values.isEmpty, condition.keyPath == \SmartListFilters.people {
+            filters.peopleRole = nil
+        }
+        if values.isEmpty, condition.keyPath == \SmartListFilters.watchnow {
+            filters.watchnowCountry = nil
+        }
+        draft.filters = filters
+    }
+
+    private func setExcluded(_ isExcluded: Bool, _ changed: [String], of condition: SmartListConditions.ValueCondition) {
+        var filters = draft.filters
+        let changed = Set(changed.map(SmartListConditions.includedValue))
+        guard let values = filters[keyPath: condition.keyPath] else { return }
+        filters[keyPath: condition.keyPath] = values.map { value in
+            let included = SmartListConditions.includedValue(value)
+            guard changed.contains(included) else { return value }
+            return isExcluded ? SmartListConditions.excludedValue(included) : included
+        }
+        clearHiddenOperator(of: condition, in: &filters)
+        draft.filters = filters
+    }
+
+    /// "And" or "or" only shows between two included values: with fewer, it would be saved without showing.
+    private func clearHiddenOperator(of condition: SmartListConditions.ValueCondition, in filters: inout SmartListFilters) {
+        guard let operatorKeyPath = condition.operatorKeyPath else { return }
+        let included = (filters[keyPath: condition.keyPath] ?? []).filter { SmartListConditions.isExcluded($0) == false }
+        if included.count < 2 {
+            filters[keyPath: operatorKeyPath] = nil
+        }
     }
 
     /// Show-only conditions are cleared when switching to movies so they are not saved silently.
@@ -505,7 +738,9 @@ final class SmartListBuilderViewController: SearchResultsViewController {
         header.layoutIfNeeded()
         // Same proportions as the Smart Search builder: the sentence fills most of the screen above the results.
         let height = max(view.bounds.height - 300, sentenceLabel.bounds.height + 300)
-        if header.frame.height != height {
+        if let conversationHeader = conversationHeader {
+            layoutConversation(in: conversationHeader, above: header, height: height)
+        } else if header.frame.height != height {
             header.frame.size.height = height
             tableView.tableHeaderView = header
             header.layoutIfNeeded()
@@ -513,7 +748,104 @@ final class SmartListBuilderViewController: SearchResultsViewController {
         placeTokenButtons()
     }
 
-    /// Places a menu button over every line fragment of each tappable word, so wrapped and repeated words work.
+    // MARK: - Conversation
+
+    /// The conversation goes above the sentence, out of sight until scrolled back to.
+    private func showConversation(_ conversation: SmartListConversation, above header: UIView) {
+        let controller = RipppleHostingController(rootView: SmartListConversationView(conversation: conversation) { [weak self] in
+            guard let self = self else { return }
+            self.editPrompt(conversation.editablePrompt)
+        })
+        controller.safeAreaRegions = []
+        addChild(controller)
+        controller.view.backgroundColor = .clear
+        let container = UIView()
+        container.addSubview(controller.view)
+        container.addSubview(header)
+        controller.didMove(toParent: self)
+        conversationController = controller
+        conversationHeader = container
+        tableView.tableHeaderView = container
+    }
+
+    /// The sentence stays where it is on screen as what's above it fades away.
+    private func removeConversation() {
+        guard let controller = conversationController, let header = sentenceLabel.superview else { return }
+        let offset = tableView.contentOffset.y - header.frame.minY
+        let visibleFrame = controller.view.convert(controller.view.bounds, to: view)
+        if visibleFrame.intersects(view.bounds), let snapshot = controller.view.snapshotView(afterScreenUpdates: false) {
+            snapshot.frame = visibleFrame
+            snapshot.isUserInteractionEnabled = false
+            view.addSubview(snapshot)
+            UIView.animate(withDuration: 0.25, animations: {
+                snapshot.alpha = 0
+            }, completion: { _ in
+                snapshot.removeFromSuperview()
+            })
+        }
+        controller.willMove(toParent: nil)
+        controller.view.removeFromSuperview()
+        controller.removeFromParent()
+        conversationController = nil
+        conversationHeader = nil
+        conversation = nil
+        header.frame.origin = .zero
+        tableView.tableHeaderView = header
+        tableView.contentInset.bottom = baseBottomInset
+        let top = -tableView.adjustedContentInset.top
+        guard offset < top else {
+            tableView.contentOffset.y = offset
+            return
+        }
+        // Read down to the sentence, nothing is left above it: room is kept there for a moment, so the sentence glides up
+        // as the conversation fades rather than jumping.
+        let room = top - offset
+        tableView.contentInset.top += room
+        tableView.contentOffset.y = offset
+        UIView.animate(withDuration: UIAccessibility.isReduceMotionEnabled ? 0.2 : 0.45, delay: 0, options: .curveEaseInOut) {
+            self.tableView.contentInset.top -= room
+            self.tableView.contentOffset.y = top
+        }
+    }
+
+    /// Back to the prompt screen, the reverse of coming here: the screen fades to the prompt screen, which moves the
+    /// request from where it is here to where it's typed, then makes it editable there, with the keyboard up.
+    private func editPrompt(_ prompt: String) {
+        guard let conversationView = conversationController?.view else { return }
+        let origin = conversationView.convert(CGPoint.zero, to: nil)
+        let transition = CATransition()
+        transition.type = .fade
+        transition.duration = 0.2
+        navigationController?.view.layer.add(transition, forKey: nil)
+        navigationController?.setViewControllers([SmartListPromptViewController(prompt: prompt, movingFrom: prompt.isEmpty ? nil : origin)],
+                                                 animated: false)
+    }
+
+    /// Laid out like on the prompt screen, 40 points in from the safe area, so it continues it in place.
+    private func layoutConversation(in container: UIView, above header: UIView, height: CGFloat) {
+        guard let controller = conversationController else { return }
+        let width = tableView.bounds.width - view.safeAreaInsets.left - view.safeAreaInsets.right - 80
+        let size = controller.sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude))
+        controller.view.frame = CGRect(x: view.safeAreaInsets.left + 40, y: 120, width: width, height: size.height)
+        // Well apart from the sentence: seen sliding up while the builder appears, it's then out of sight, a scroll away.
+        let headerFrame = CGRect(x: 0, y: controller.view.frame.maxY + 160, width: tableView.bounds.width, height: height)
+        if header.frame != headerFrame {
+            header.frame = headerFrame
+            header.layoutIfNeeded()
+        }
+        let containerSize = CGSize(width: tableView.bounds.width, height: headerFrame.maxY)
+        if container.frame.size != containerSize {
+            container.frame.size = containerSize
+            tableView.tableHeaderView = container
+        }
+        // At rest the sentence is where it always is. Room below keeps it there however few results follow.
+        restingOffset = headerFrame.minY - tableView.adjustedContentInset.top
+        let visibleHeight = tableView.bounds.height - tableView.adjustedContentInset.top - tableView.safeAreaInsets.bottom
+        tableView.contentInset.bottom = max(baseBottomInset, visibleHeight - height)
+    }
+
+    /// Places a menu button over every line fragment of each tappable word, so wrapped and repeated words work, and
+    /// dots them below: the underline's dot pattern draws dashes at this size.
     private func placeTokenButtons() {
         sentenceLabel.subviews.forEach { $0.removeFromSuperview() }
         guard let text = sentenceLabel.attributedText, sentenceLabel.bounds.width > 0 else { return }
@@ -526,51 +858,57 @@ final class SmartListBuilderViewController: SearchResultsViewController {
         layoutManager.addTextContainer(container)
         storage.addLayoutManager(layoutManager)
 
-        let lineHeight = (highAttributes[.font] as? UIFont)?.lineHeight ?? 28
+        let font = highAttributes[.font] as? UIFont
+        let lineHeight = font?.lineHeight ?? 28
+        let dotsOffset = abs(font?.descender ?? -5) * 0.8
         text.enumerateAttribute(SmartListBuilderViewController.tokenKey, in: NSRange(location: 0, length: text.length)) { value, range, _ in
             guard let index = value as? Int, tokenMenus.indices.contains(index) else { return }
             let glyphRange = layoutManager.glyphRange(forCharacterRange: range, actualCharacterRange: nil)
             let word = (text.string as NSString).substring(with: range)
-            layoutManager.enumerateEnclosingRects(forGlyphRange: glyphRange,
-                                                  withinSelectedGlyphRange: NSRange(location: NSNotFound, length: 0),
-                                                  in: container) { rect, _ in
+            // Per line, without the spaces a wrapped word ends its line with.
+            layoutManager.enumerateLineFragments(forGlyphRange: glyphRange) { lineRect, _, _, lineGlyphs, _ in
+                let lineCharacters = layoutManager.characterRange(forGlyphRange: NSIntersectionRange(lineGlyphs, glyphRange), actualGlyphRange: nil)
+                let trimmed = (text.string as NSString).substring(with: lineCharacters).replacingOccurrences(of: #"\s+$"#, with: "", options: .regularExpression)
+                guard trimmed.isEmpty == false else { return }
+                let wordGlyphs = layoutManager.glyphRange(forCharacterRange: NSRange(location: lineCharacters.location, length: (trimmed as NSString).length),
+                                                          actualCharacterRange: nil)
+                let rect = layoutManager.boundingRect(forGlyphRange: wordGlyphs, in: container)
                 let button = UIButton(frame: CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: min(rect.height, lineHeight)))
                 button.showsMenuAsPrimaryAction = true
                 button.menu = self.tokenMenus[index]
                 button.accessibilityLabel = word
                 button.accessibilityHint = "Opens options for this condition."
+                let baseline = lineRect.minY + layoutManager.location(forGlyphAt: wordGlyphs.location).y
+                button.layer.addSublayer(self.dots(width: rect.width, y: baseline + dotsOffset - rect.minY))
                 self.sentenceLabel.addSubview(button)
             }
         }
     }
 
+    private func dots(width: CGFloat, y: CGFloat) -> CAShapeLayer {
+        let path = UIBezierPath()
+        path.move(to: CGPoint(x: 1, y: y))
+        path.addLine(to: CGPoint(x: max(width - 1, 1), y: y))
+        let dots = CAShapeLayer()
+        dots.path = path.cgPath
+        dots.strokeColor = UIColor.secondaryLabel.resolvedColor(with: traitCollection).cgColor
+        dots.lineWidth = 2
+        dots.lineCap = .round
+        // Zero-length dashes with round caps draw as dots.
+        dots.lineDashPattern = [0, 4]
+        return dots
+    }
+
     // MARK: - Preview
 
-    /// The saved list shows its real items. Drafts preview the Trakt endpoint of their source with their conditions:
-    /// Trakt applies the same filters there as it does for smart lists, like trakt-web's preview.
+    /// The saved list shows its real items. Drafts use Trakt's smart list preview, which resolves them like saved lists.
     private var previewService: TraktAPIService? {
         let pageInfo = PageInfo.firstPage(with: SmartListBuilderViewController.previewLimit)
         if let slug = list?.smartListSlug, draft.isSameDefinition(as: original) {
             return .smartListItems(slug: slug, pageInfo: pageInfo)
         }
-        guard let path = previewPath else { return nil }
-        return .savedFilter(section: "smart_list_preview", path: path, query: draft.filters.previewQuery, pageInfo: pageInfo)
-    }
-
-    private var previewPath: String? {
-        guard draft.mediaType != .unknown else { return nil }
-        let mediaType = draft.mediaType.rawValue
-        switch draft.source {
-        case .trending, .popular, .anticipated, .recommendations:
-            return "/\(mediaType)/\(draft.source.rawValue)"
-        case .watchlist:
-            // Sorted like Trakt resolves watchlist smart lists.
-            let types = draft.mediaType == .movies ? "movie" : (draft.mediaType == .shows ? "show" : "movie,show")
-            return "/sync/watchlist/\(types)/added/desc"
-        case .discover, .library, .unknown:
-            // Not offered by the builder: lists created elsewhere preview their saved items until their source changes.
-            return nil
-        }
+        guard draft.source != .unknown, draft.mediaType != .unknown else { return nil }
+        return .smartListPreview(draft, pageInfo: pageInfo)
     }
 
     // MARK: - Saving
@@ -900,6 +1238,191 @@ private final class SmartListDetailsViewController: UITableViewController, UITex
     }
 }
 
+// MARK: - Search
+
+/// Picks values too many to list, such as people, keywords or languages, by searching them.
+/// Each pick updates the sentence behind the sheet right away.
+private final class SmartListSearchViewController: UITableViewController, UISearchResultsUpdating {
+    private enum State {
+        case hint
+        case loading
+        case results([SmartListChoice])
+        case failed
+    }
+
+    private let minimumQueryLength: Int
+    private let search: (String) async throws -> [SmartListChoice]
+    private let format: (String) -> String
+    private let selected: () -> [String]
+    private let toggle: (String) -> Void
+    private let searchController = UISearchController(searchResultsController: nil)
+    private var searchTask: _Concurrency.Task<Void, Never>?
+    private var query = ""
+    private var state = State.hint {
+        didSet {
+            tableView.reloadData()
+            setNeedsUpdateContentUnavailableConfiguration()
+        }
+    }
+
+    init(title: String, minimumQueryLength: Int, search: @escaping (String) async throws -> [SmartListChoice],
+         format: @escaping (String) -> String, selected: @escaping () -> [String], toggle: @escaping (String) -> Void) {
+        self.minimumQueryLength = minimumQueryLength
+        self.search = search
+        self.format = format
+        self.selected = selected
+        self.toggle = toggle
+        super.init(style: .insetGrouped)
+        self.title = title
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    deinit {
+        searchTask?.cancel()
+    }
+
+    /// Shown before a search: the values already picked, so they can be removed here too.
+    private var rows: [SmartListChoice] {
+        switch state {
+        case .results(let choices):
+            return choices
+        case .hint, .failed:
+            return selected().map { SmartListChoice(value: $0, title: format($0)) }
+        case .loading:
+            return []
+        }
+    }
+
+    override func loadView() {
+        tableView = TintedTableView(frame: .zero, style: .insetGrouped)
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.keyboardDismissMode = .onDrag
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in
+            guard let self = self else { return }
+            self.dismiss(animated: true)
+        })
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.hidesNavigationBarDuringPresentation = false
+        searchController.searchBar.placeholder = "Search \(title?.lowercased() ?? "")"
+        searchController.searchBar.autocapitalizationType = .none
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        navigationItem.preferredSearchBarPlacement = .stacked
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        searchController.isActive = true
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.searchController.searchBar.becomeFirstResponder()
+        }
+    }
+
+    func updateSearchResults(for searchController: UISearchController) {
+        let query = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard query != self.query else { return }
+        self.query = query
+        searchTask?.cancel()
+        guard query.count >= minimumQueryLength else {
+            state = .hint
+            return
+        }
+        state = .loading
+        let search = search
+        searchTask = _Concurrency.Task { @MainActor [weak self] in
+            try? await _Concurrency.Task.sleep(for: .milliseconds(300))
+            guard _Concurrency.Task.isCancelled == false else { return }
+            let choices = try? await search(query)
+            guard _Concurrency.Task.isCancelled == false, let self = self, self.query == query else { return }
+            self.state = choices.map { .results($0) } ?? .failed
+        }
+    }
+
+    override func updateContentUnavailableConfiguration(using state: UIContentUnavailableConfigurationState) {
+        var configuration: UIContentUnavailableConfiguration?
+        switch self.state {
+        case .loading:
+            configuration = .loading()
+        case .results(let choices) where choices.isEmpty:
+            configuration = .search()
+            configuration?.text = "No Matches"
+            configuration?.secondaryText = "Try another spelling."
+        // Values already picked stay listed rather than hidden behind the error.
+        case .failed where rows.isEmpty:
+            configuration = .empty()
+            configuration?.image = UIImage(systemName: "wifi.exclamationmark")
+            configuration?.text = "Couldn’t Search \(title ?? "")"
+            configuration?.secondaryText = "Check your connection and try again."
+        case .hint where rows.isEmpty:
+            configuration = .empty()
+            configuration?.image = UIImage(systemName: "magnifyingglass")
+            configuration?.text = "Search \(title ?? "")"
+            configuration?.secondaryText = minimumQueryLength > 1 ? "Type at least \(minimumQueryLength) characters." : nil
+        case .hint, .results, .failed:
+            configuration = nil
+        }
+        contentUnavailableConfiguration = configuration
+    }
+
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        rows.count
+    }
+
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if case .results = state {
+            return nil
+        }
+        return rows.isEmpty ? nil : "Selected"
+    }
+
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = TintedTableViewCell(style: .default, reuseIdentifier: nil)
+        let rows = rows
+        guard rows.indices.contains(indexPath.row) else { return cell }
+        let choice = rows[indexPath.row]
+        var content = UIListContentConfiguration.subtitleCell()
+        content.text = choice.title
+        content.secondaryText = choice.subtitle
+        content.secondaryTextProperties.color = .secondaryLabel
+        cell.contentConfiguration = content
+        // Excluded values, picked from the sentence, show as such and are removed here like included ones.
+        let selected = selected()
+        let included = SmartListConditions.includedValue(choice.value)
+        cell.accessoryType = selected.contains(included) ? .checkmark : .none
+        if selected.contains(SmartListConditions.excludedValue(included)) {
+            let excluded = UIImageView(image: UIImage(systemName: "nosign"))
+            excluded.tintColor = .secondaryLabel
+            cell.accessoryView = excluded
+        }
+        return cell
+    }
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let rows = rows
+        guard rows.indices.contains(indexPath.row) else { return }
+        toggle(rows[indexPath.row].value)
+        if case .results = state {
+            tableView.reloadRows(at: [indexPath], with: .none)
+        } else {
+            // Removed values leave the list of selected ones.
+            tableView.reloadData()
+            setNeedsUpdateContentUnavailableConfiguration()
+        }
+    }
+}
+
 /// Suggests smart list names with the on-device Apple Intelligence model, when it is available.
 private enum SmartListNameSuggestion {
     @Generable
@@ -942,17 +1465,23 @@ private enum SmartListNameSuggestion {
         // than given as sentences, which get their names copied as they are.
         let session = LanguageModelSession(instructions: """
         You name smart lists in a movie and TV show tracking app. A smart list is a saved set of conditions, described by a sentence. \
-        Give names a person would use for the whole list, combining its most distinctive conditions. \
-        Never reply with titles of movies or shows. Write "TV" in capitals.
+        Give names a person would use for the whole list, combining its most distinctive conditions, \
+        such as people, studios, themes, genres or periods, and nothing the sentence doesn't say. \
+        Never reply with titles of movies or shows, and never use the word Trakt. Write "TV" in capitals, and years spanning a decade as that decade, such as 90s.
         For example, popular horror movies from the 80s could be named 80s Horror Favorites, \
-        and unwatched shows on HBO could be named Unwatched HBO Shows.
+        unwatched shows on HBO could be named Unwatched HBO Shows, \
+        and movies directed by Greta Gerwig could be named Gerwig Directed.
         """)
+        // "All of Trakt" only says that no chart narrows the list: names would repeat it. Decades are named as such,
+        // which the model doesn't do from years.
+        let conditions = sentence.replacingOccurrences(of: " from \(SmartListSource.discover.title)", with: "")
+            .replacingOccurrences(of: #"between (\d{3})0 and \19"#, with: "in the $10s", options: .regularExpression)
         // Default sampling: greedy sampling repeats the same names.
-        guard let response = try? await session.respond(to: sentence, generating: Suggestions.self) else { return [] }
+        guard let response = try? await session.respond(to: conditions, generating: Suggestions.self) else { return [] }
         return response.content.names
             .map { $0.trimmingCharacters(in: CharacterSet(charactersIn: "\"“”.").union(.whitespacesAndNewlines)) }
-            // List names are at most 10 words long.
-            .filter { $0.isEmpty == false && $0.split(whereSeparator: \.isWhitespace).count <= 10 }
+            // List names are at most 10 words long. A single word, such as a first name, doesn't name the list.
+            .filter { (2...10).contains($0.split(whereSeparator: \.isWhitespace).count) && $0.localizedCaseInsensitiveContains("trakt") == false }
             .removingDuplicates()
     }
 }
@@ -964,7 +1493,7 @@ private extension SmartListSource {
         case .popular: return "The most popular titles on Trakt"
         case .anticipated: return "The most awaited upcoming titles"
         case .recommendations: return "Titles recommended for you"
-        case .discover: return ""
+        case .discover: return "Every title on Trakt, narrowed by your conditions"
         case .watchlist: return "Titles on your watchlist"
         case .library: return "Titles in your library"
         case .unknown: return ""
@@ -976,60 +1505,5 @@ private extension SmartListDraft {
     /// Whether the saved list's items still reflect this draft. Names and privacy do not change items.
     func isSameDefinition(as other: SmartListDraft) -> Bool {
         source == other.source && mediaType == other.mediaType && filters == other.filters
-    }
-}
-
-private extension SmartListFilters {
-    /// Trakt chart filters matching this definition. Every change produces a new request, so previews are never
-    /// served from the cache of a previous definition. Charts take the smart list `ignore_*` options as `hide_*`,
-    /// apart from watched and watchlisted.
-    var previewQuery: String {
-        func range<Value: Numeric>(_ values: [Value]?, format: (Value) -> String) -> String? {
-            guard let values = values, let lower = values.first else { return nil }
-            return "\(format(lower))-\(format(values.count > 1 ? values[1] : lower))"
-        }
-        let list = { (values: [String]?) -> String? in
-            // The saved filter request splits its query on "&" and "=".
-            let values = (values ?? []).filter { !$0.contains("&") && !$0.contains("=") }
-            return values.isEmpty ? nil : values.joined(separator: ",")
-        }
-        let decimal = { (value: Double) in String(format: "%.1f", value) }
-        let integer = { (value: Double) in "\(Int(value))" }
-        let parameters: [(String, String?)] = [
-            ("genres", list(genres)),
-            ("genres_operator", genresOperator == .and ? "and" : nil),
-            ("subgenres", list(subgenres)),
-            ("keywords", list(keywords)),
-            ("keywords_operator", keywordsOperator == .and ? "and" : nil),
-            ("certifications", list(certifications)),
-            ("languages", list(languages)),
-            ("countries", list(countries)),
-            ("networks", list(networks)),
-            ("statuses", list(statuses)),
-            ("watchnow", list(watchnow)),
-            ("years", range(years) { "\($0)" }),
-            ("runtimes", range(runtimes) { "\($0)" }),
-            ("ratings", range(ratings) { "\($0)" }),
-            ("imdb_ratings", range(imdbRatings, format: decimal)),
-            ("rt_meters", range(rtMeters) { "\($0)" }),
-            ("rt_user_meters", range(rtUserMeters) { "\($0)" }),
-            ("letterboxd_ratings", range(letterboxdRatings, format: decimal)),
-            ("mal_ratings", range(malRatings, format: decimal)),
-            ("parental_nudity", range(parentalNudity, format: integer)),
-            ("parental_violence", range(parentalViolence, format: integer)),
-            ("parental_profanity", range(parentalProfanity, format: integer)),
-            ("parental_alcohol", range(parentalAlcohol, format: integer)),
-            ("parental_frightening", range(parentalFrightening, format: integer)),
-            ("parental_include_unrated", parentalIncludeUnrated == true ? "true" : nil),
-            ("ignore_watched", ignoreWatched == true ? "true" : nil),
-            ("ignore_watchlisted", ignoreWatchlisted == true ? "true" : nil),
-            ("hide_watching", ignoreWatching == true ? "true" : nil),
-            ("hide_unreleased", ignoreUnreleased == true ? "true" : nil),
-            ("hide_released", ignoreReleased == true ? "true" : nil),
-            ("hide_ended", ignoreEnded == true ? "true" : nil),
-            ("hide_airing", ignoreAiring == true ? "true" : nil),
-            ("hide_no_release_date", ignoreNoReleaseDate == true ? "true" : nil)
-        ]
-        return parameters.compactMap { key, value in value.map { "\(key)=\($0)" } }.joined(separator: "&")
     }
 }

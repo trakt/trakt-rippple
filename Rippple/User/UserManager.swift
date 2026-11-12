@@ -156,7 +156,7 @@ final class UserManager {
 
     private func promptShowSettingsError(error: Error) {
         let alert = UIAlertController(title: "Unable to Restore Session",
-                                      message: "An error occurred when restoring your session with Trakt.\nYou can ‘Retry‘ now, ‘Sign Out‘ or get more information on Trakt's Status page or on the Forums.\n\n\(error.localizedDescription)",
+                                      message: "An error occurred when restoring your session with Trakt.\nYou can ‘Retry‘ now, ‘Sign Out‘ or get more information on Trakt's Status page or from Trakt Support.\n\n\(error.localizedDescription)",
                                       preferredStyle: .alert)
 
         alert.addAction(UIAlertAction(title: "Trakt Status", style: .default, handler: { _ in
@@ -166,8 +166,8 @@ final class UserManager {
             }
         }))
 
-        alert.addAction(UIAlertAction(title: "Trakt Forums", style: .default, handler: { _ in
-            if let url = URL(string: "https://forums.trakt.tv"),
+        alert.addAction(UIAlertAction(title: "Trakt Support", style: .default, handler: { _ in
+            if let url = URL(string: "https://support.trakt.tv"),
                UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
             }

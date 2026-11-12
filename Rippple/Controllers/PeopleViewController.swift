@@ -28,6 +28,7 @@ final class PeopleViewController: UITableViewController {
     private let job: Job?
 
     private var socials = 0
+    private var didRecordView = false
 
     /// fetched for full info
     private var person: Person? {
@@ -253,7 +254,30 @@ final class PeopleViewController: UITableViewController {
                 NotesManager.shared.showNotes(for: person!)
             }
         }
-        return UIMenu(children: [UIMenu(options: .displayInline, children: [privateNotes]), UIMenu(options: .displayInline, children: [share])])
+        var sections = [UIMenu(options: .displayInline, children: [privateNotes])]
+        if SessionManager.shared.isLoggedIn {
+            let smartList = UIAction(title: "New Smart List", image: UIImage(systemName: "sparkles")) { [weak self] _ in
+                guard let self = self, let person = self.person else { return }
+                SmartListBuilderViewController.present(from: self, person: person, role: self.smartListRole(for: person))
+            }
+            sections.append(UIMenu(options: .displayInline, children: [smartList]))
+        }
+        sections.append(UIMenu(options: .displayInline, children: [share]))
+        return UIMenu(children: sections)
+    }
+
+    /// Actors start with starring and directors with directed by; anyone else gets every role, as writing and producing
+    /// credits match too few titles. Trakt can say directing for a writer who directed a few of their films, so a
+    /// director with three times as many writing credits gets every role too.
+    private func smartListRole(for person: Person) -> SmartListFilters.PersonRole {
+        let crews = [movies?.crew, shows?.crew]
+        let directing = crews.reduce(0) { $0 + ($1?.directing?.count ?? 0) }
+        let writing = crews.reduce(0) { $0 + ($1?.writing?.count ?? 0) + ($1?.createdBy?.count ?? 0) }
+        switch person.knownForDepartment?.lowercased() {
+        case "acting" where (movies?.cast.count ?? 0) + (shows?.cast.count ?? 0) > 0: return .cast
+        case "directing" where directing > 0 && writing < 3 * directing: return .directing
+        default: return .any
+        }
     }
 
     override func viewDidLoad() {
@@ -317,6 +341,13 @@ final class PeopleViewController: UITableViewController {
         loadingView.removeFromSuperview()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard didRecordView == false, let viewedPerson = person ?? cast?.person ?? job?.person else { return }
+        didRecordView = true
+        RecentlyViewedManager.shared.record(viewedPerson)
+    }
+
     @objc func refresh(_ sender: Any) {
         fetchPerson()
     }
@@ -339,7 +370,7 @@ final class PeopleViewController: UITableViewController {
     }
 
     private func fetchPerson() {
-        TraktAPIProvider.provider.request(TraktAPIService.people(id: identifier),
+        TraktAPIProvider.provider.request(TraktAPIService.people(id: identifier, extended: .fullMarkdown),
                                           callbackQueue: DispatchQueue.global(qos: .userInitiated)) { [weak self] result in
             guard let self = self else { return }
 
@@ -352,6 +383,9 @@ final class PeopleViewController: UITableViewController {
 
                     DispatchQueue.main.async {
                         self.person = person
+                        if self.didRecordView, self.viewIfLoaded?.window != nil {
+                            RecentlyViewedManager.shared.record(person)
+                        }
                     }
                 } catch {
                     DispatchQueue.main.async {

@@ -72,15 +72,17 @@ struct CommentDraft: Codable, Hashable {
         identifier = mediaModel.key
         updated = Date()
         self.comment = comment.body
+        gif = comment.gif
     }
 
     static func == (lhs: CommentDraft, rhs: CommentDraft) -> Bool {
-        return lhs.identifier == rhs.identifier && lhs.comment == rhs.comment
+        return lhs.identifier == rhs.identifier && lhs.comment == rhs.comment && lhs.gif == rhs.gif
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(identifier)
         hasher.combine(comment)
+        hasher.combine(gif)
     }
 
     let identifier: String
@@ -95,6 +97,8 @@ struct CommentDraft: Codable, Hashable {
     let list: List?
 
     let comment: String
+    /// Drafts saved before GIFs could be attached have none.
+    let gif: CommentGIF?
 }
 
 let (onCommentsDraftsChangedTransmitter, onCommentsDraftsChangedReceiver) = Receiver<Int>.make(with: .hot)
@@ -145,6 +149,10 @@ final class CommentDraftManager {
             return draft.comment
         }
         return nil
+    }
+
+    func gif(for mediaModel: MediaModel) -> CommentGIF? {
+        draft(for: mediaModel)?.gif
     }
 
     func saveDraft(for comment: Comment, with mediaModel: MediaModel) {

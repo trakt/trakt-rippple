@@ -30,6 +30,7 @@ final class AboutViewController: UITableViewController {
         case general
         case spoilers
         case notifications
+        case emojiReactions
         case appearance
         case tabBar
         case appIcon
@@ -221,6 +222,11 @@ final class AboutViewController: UITableViewController {
             } else if indexPath.row == SettingsSection.appIconBadge.rawValue {
                 performSegue(withIdentifier: "badge", sender: nil)
                 tableView.deselectRow(at: indexPath, animated: true)
+            } else if indexPath.row == SettingsSection.emojiReactions.rawValue {
+                let controller = RipppleHostingController(rootView: EmojiReactionsSettingsView())
+                controller.title = "Emoji Reactions"
+                navigationController?.pushViewController(controller, animated: true)
+                tableView.deselectRow(at: indexPath, animated: true)
             } else if indexPath.row == SettingsSection.openIn.rawValue {
                 let view = OpenInSettingsView(presentationStyle: .pushed)
                 let controller = RipppleHostingController(rootView: view)
@@ -361,6 +367,10 @@ final class AboutViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        // Custom symbol, shared with the title card reactions.
+        if AboutSection(rawValue: indexPath.section) == .settings, indexPath.row == SettingsSection.emojiReactions.rawValue {
+            cell.imageView?.image = UIImage(named: CommunityReactionsView.reactSymbolName)
+        }
         #if targetEnvironment(macCatalyst)
         if AboutSection(rawValue: indexPath.section) == .settings, indexPath.row == SettingsSection.tabBar.rawValue {
             cell.isHidden = true

@@ -119,7 +119,13 @@ final class ListProgressContext {
 }
 
 final class ListProgressViewController: UITableViewController {
-    private let list: List
+    enum Source {
+        case list(List)
+        /// The Library's items, given to the progress context as list items.
+        case library(title: String)
+    }
+
+    private let source: Source
     private let user: User?
     private let progressContext: ListProgressContext
     private let sorting: Sort
@@ -129,7 +135,7 @@ final class ListProgressViewController: UITableViewController {
     private let searchController = UISearchController(searchResultsController: nil)
     private let contextMenu = ContextMenuHelper()
 
-    private enum Sort: Int {
+    enum Sort: Int {
         case rank
         case listed
         case title
@@ -145,8 +151,8 @@ final class ListProgressViewController: UITableViewController {
         case content
     }
 
-    init(list: List, user: User?, progressContext: ListProgressContext, sorting: Int) {
-        self.list = list
+    init(source: Source, user: User?, progressContext: ListProgressContext, sorting: Int) {
+        self.source = source
         self.user = user
         self.progressContext = progressContext
         self.sorting = Sort(rawValue: sorting) ?? .rank
@@ -223,7 +229,12 @@ final class ListProgressViewController: UITableViewController {
         super.viewDidLoad()
 
         navigationItem.style = .browser
-        navigationItem.title = list.name.emojiUnescapedString
+        switch source {
+        case .list(let list):
+            navigationItem.title = list.name.emojiUnescapedString
+        case .library(let title):
+            navigationItem.title = title
+        }
         navigationItem.subtitle = "To Watch"
 
         tableView.backgroundColor = .ripppleViewBackground
@@ -261,7 +272,7 @@ final class ListProgressViewController: UITableViewController {
     private func update(with status: ListProgressContext.Status) {
         switch status {
         case .idle:
-            tableView.backgroundView = emptyView(text: "Progress will appear when the list has loaded.")
+            tableView.backgroundView = emptyView(text: "Progress will appear when the \(sourceName) has loaded.")
             updateDatasource(items: [])
             refreshControl?.endRefreshing()
         case .loading:
@@ -270,7 +281,7 @@ final class ListProgressViewController: UITableViewController {
         case .content(let result):
             let items = sortedItems
             if result.notWatchedItems.isEmpty {
-                tableView.backgroundView = emptyView(text: "Everything in this list is watched.")
+                tableView.backgroundView = emptyView(text: "Everything in this \(sourceName) is watched.")
             } else if items.isEmpty {
                 tableView.backgroundView = emptyView(text: "Trying to search for something that's not there?\nTry something else...")
             } else {
@@ -278,6 +289,15 @@ final class ListProgressViewController: UITableViewController {
             }
             updateDatasource(items: items)
             refreshControl?.endRefreshing()
+        }
+    }
+
+    private var sourceName: String {
+        switch source {
+        case .list:
+            return "list"
+        case .library:
+            return "Library"
         }
     }
 
@@ -364,13 +384,22 @@ extension ListProgressViewController {
     }
 
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        if !list.user.isCurrentUser, CollaborationsManager.shared.collaborations.contains(list) == false { return nil }
-
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
+
+        switch source {
+        case .list(let list):
+            return listSwipeActions(for: item, in: list)
+        case .library:
+            return librarySwipeActions(for: item)
+        }
+    }
+
+    private func listSwipeActions(for item: WatchlistItem, in list: List) -> UISwipeActionsConfiguration? {
+        if !list.user.isCurrentUser, CollaborationsManager.shared.collaborations.contains(list) == false { return nil }
 
         let remove = UIContextualAction(style: .normal,
                                         title: "Remove") { _, _, boolValue in
-            self.remove(item: item, from: self.list)
+            self.remove(item: item, from: list)
             boolValue(true)
         }
         remove.image = UIImage(systemName: "minus.circle.fill")
@@ -386,7 +415,7 @@ extension ListProgressViewController {
             let note = UIContextualAction(style: .normal,
                                           title: "Notes") { [weak self] _, _, boolValue in
                 guard let self = self else { return }
-                self.promptForNote(on: item)
+                self.promptForNote(on: item, in: list)
                 boolValue(true)
             }
             note.image = UIImage(systemName: "note.text.badge.plus")
@@ -400,7 +429,36 @@ extension ListProgressViewController {
         return configuration
     }
 
+    private func librarySwipeActions(for item: WatchlistItem) -> UISwipeActionsConfiguration? {
+        guard user?.isCurrentUser == true else { return nil }
+        let media = MediaModel(item: item)
+
+        let remove = UIContextualAction(style: .normal,
+                                        title: "Remove") { _, _, boolValue in
+            media.removeFromCollection()
+            boolValue(true)
+        }
+        remove.image = UIImage(systemName: "minus.circle.fill")
+        remove.backgroundColor = .systemRed
+
+        let notes = UIContextualAction(style: .normal, title: "Notes") { _, _, boolValue in
+            NotesManager.shared.showCollectionNotes(for: media)
+            boolValue(true)
+        }
+        notes.backgroundColor = UIColor(resource: .ripppleGray)
+        notes.image = UIImage(systemName: "note.text")
+
+        let supportsNotes = item.type == .movie || item.type == .show
+        let configuration = UISwipeActionsConfiguration(actions: supportsNotes ? [notes, remove] : [remove])
+        configuration.performsFirstActionWithFullSwipe = false
+        return configuration
+    }
+
     private func displayNotes(for item: WatchlistItem) {
+        guard case .list(let list) = source else {
+            NotesManager.shared.showCollectionNotes(for: MediaModel(item: item))
+            return
+        }
         NotesManager.shared.showNotes(for: WatchlistType.listItem(note: item.notes ?? "",
                                                                   userId: list.user.identifiers.slug ?? user?.slug ?? "me",
                                                                   listId: list.identifiers.trakt!,
@@ -410,7 +468,7 @@ extension ListProgressViewController {
                                                                   listItem: item))
     }
 
-    private func promptForNote(on item: WatchlistItem) {
+    private func promptForNote(on item: WatchlistItem, in list: List) {
         NotesManager.shared.showNotes(for: WatchlistType.listItem(note: item.notes ?? "",
                                                                   userId: list.user.identifiers.slug ?? user?.slug ?? "me",
                                                                   listId: list.identifiers.trakt!,

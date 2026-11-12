@@ -69,9 +69,7 @@ extension WatchlistItem {
     var releaseDate: Date {
         switch type {
         case .movie:
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            return dateFormatter.date(from: movie!.released ?? "1900-01-01") ?? Date.distantPast
+            return movie!.releaseSortDate
         case .show:
             return show!.firstAired ?? Date.distantPast
         case .season:
@@ -225,6 +223,14 @@ final class ListViewController: UITableViewController {
     private var fetchGeneration = 0
     private let progressContext = ListProgressContext()
 
+    private var featuredPeopleTask: Task<Void, Never>?
+    private var featuredPeople = [Person]() {
+        didSet {
+            guard featuredPeople != oldValue else { return }
+            updateFeaturedPeopleRow()
+        }
+    }
+
     private var watchlistItems: [WatchlistItem]? {
         didSet {
             if let watchlistItems = watchlistItems {
@@ -325,6 +331,7 @@ final class ListViewController: UITableViewController {
 
     private enum Wrapper: Hashable {
         case header
+        case featuredPeople([Person])
         case item(WatchlistItem)
         case stats([MediaModel])
 
@@ -335,6 +342,8 @@ final class ListViewController: UITableViewController {
             case (.item(let lhs), .item(let rhs)):
                 return lhs.id == rhs.id
             case (.stats(let lhs), .stats(let rhs)):
+                return lhs == rhs
+            case (.featuredPeople(let lhs), .featuredPeople(let rhs)):
                 return lhs == rhs
             default:
                 return false
@@ -351,6 +360,9 @@ final class ListViewController: UITableViewController {
             case .stats(let mediaModels):
                 hasher.combine(2)
                 hasher.combine(mediaModels)
+            case .featuredPeople(let people):
+                hasher.combine(3)
+                hasher.combine(people)
             }
         }
     }
@@ -419,6 +431,9 @@ final class ListViewController: UITableViewController {
         snapshot.appendSections([.header])
         if searchQuery.isEmpty {
             snapshot.appendItems([Wrapper.header])
+            if featuredPeople.isEmpty == false {
+                snapshot.appendItems([.featuredPeople(featuredPeople)])
+            }
         }
         if watchlistItems == nil {
             snapshot.appendSections([.loading])
@@ -428,6 +443,24 @@ final class ListViewController: UITableViewController {
         snapshot.appendSections([.content])
         snapshot.appendItems(watchlistedItems.map { Wrapper.item($0) })
         DispatchQueue.main.async {
+            self.dataSource.apply(snapshot, animatingDifferences: false)
+        }
+    }
+
+    /// Swaps only the featured people row: rebuilding the snapshot would sort the items again and reshuffle a random order.
+    private func updateFeaturedPeopleRow() {
+        // Queued like `updateDatasource()` so a pending item snapshot lands first and keeps the row.
+        DispatchQueue.main.async {
+            var snapshot = self.dataSource.snapshot()
+            let staleRows = snapshot.itemIdentifiers.filter { item in
+                guard case .featuredPeople = item else { return false }
+                return true
+            }
+            snapshot.deleteItems(staleRows)
+            // The header is missing while searching or showing an error, and the row follows it.
+            if self.featuredPeople.isEmpty == false, snapshot.indexOfItem(.header) != nil {
+                snapshot.insertItems([.featuredPeople(self.featuredPeople)], afterItem: .header)
+            }
             self.dataSource.apply(snapshot, animatingDifferences: false)
         }
     }
@@ -494,6 +527,14 @@ final class ListViewController: UITableViewController {
             cell.delegate = self
 
             return cell
+        case .featuredPeople(let people):
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: "featured people") as? ListFeaturedPeopleTableViewCell else {
+                fatalError("Could not dequeue a featured people cell")
+            }
+
+            cell.people = people
+
+            return cell
         case .stats(let mediaModels):
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "stats") as? ListStatsTableViewCell else {
                 fatalError("Could not dequeue a list stat cell")
@@ -539,6 +580,7 @@ final class ListViewController: UITableViewController {
         tableView.register(UINib(nibName: "MediaTableViewCell", bundle: nil), forCellReuseIdentifier: "media")
         tableView.register(UINib(nibName: "LightListTableViewCell", bundle: nil), forCellReuseIdentifier: "light list")
         tableView.register(UINib(nibName: "ListStatsTableViewCell", bundle: nil), forCellReuseIdentifier: "stats")
+        tableView.register(ListFeaturedPeopleTableViewCell.self, forCellReuseIdentifier: "featured people")
         tableView.dragInteractionEnabled = UserDefaults.standard.bool(forKey: "GeneralSettings.dragging")
         tableView.dragDelegate = tableView as? CustomTableView
         tableView.dropDelegate = mediaDropDelegate
@@ -710,6 +752,18 @@ final class ListViewController: UITableViewController {
             }
         }
 
+        let collaborators = UIAction(title: "Collaborators", image: UIImage(systemName: "person.2")) { [weak self] _ in
+            guard let self = self else { return }
+            let navigation = UINavigationController(rootViewController: ListCollaboratorsViewController(list: self.list))
+            navigation.modalPresentationStyle = .pageSheet
+            self.present(navigation, animated: true)
+        }
+
+        let leave = UIAction(title: "Leave Collaboration", image: UIImage(systemName: "rectangle.portrait.and.arrow.right"), attributes: .destructive) { [weak self] _ in
+            guard let self = self else { return }
+            self.confirmLeave()
+        }
+
         let duplicate = UIAction(title: "Duplicate", image: UIImage(systemName: "plus.square.on.square")) { [weak self] _ in
             guard let self = self else { return }
             SmartListBuilderViewController.present(from: self, duplicating: self.list)
@@ -814,16 +868,17 @@ final class ListViewController: UITableViewController {
                 if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") {
                     return UIMenu(children: reorderMenu + [UIMenu(options: .displayInline, children: [couchMoney]), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
                 } else {
-                    return UIMenu(children: reorderMenu + [UIMenu(options: .displayInline, children: [edit, delete]), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
+                    return UIMenu(children: reorderMenu + [UIMenu(options: .displayInline, children: [edit, collaborators, delete]), shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
                 }
             } else {
                 if list.name.localizedCaseInsensitiveContains("[couchmoney.tv]") {
                     return UIMenu(children: reorderMenu + [couchMoney, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
                 } else {
-                    return UIMenu(children: reorderMenu + [edit, delete, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
+                    return UIMenu(children: reorderMenu + [edit, collaborators, delete, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
                 }
             }
         } else {
+            let leaveMenu = CollaborationsManager.shared.collaborations.contains(list) ? [UIMenu(options: .displayInline, children: [leave])] : []
             if let shareLink = list.shareLink, list.privacy == .all {
                 let share = UIAction(title: "Share",
                                      image: UIImage(systemName: "square.and.arrow.up")) { _ in
@@ -831,15 +886,44 @@ final class ListViewController: UITableViewController {
                     let activityViewController = UIActivityViewController(activityItems: [sharedURL], applicationActivities: nil)
                     UIApplication.shared.present(activityViewController)
                 }
-                return UIMenu(children: reorderMenu + [list.liked ? unlike : like, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
+                return UIMenu(children: reorderMenu + [list.liked ? unlike : like] + leaveMenu + [shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid]), share])
             } else {
-                return UIMenu(children: reorderMenu + [list.liked ? unlike : like, shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
+                return UIMenu(children: reorderMenu + [list.liked ? unlike : like] + leaveMenu + [shelfActions, UIMenu(options: .displayInline, children: [browseAsGrid])])
             }
         }
     }
 
+    private func confirmLeave() {
+        let name = list.name.emojiUnescapedString
+        let alert = UIAlertController(title: "Leave Collaboration?",
+                                      message: "You’ll no longer be able to add or remove items on \(name).",
+                                      preferredStyle: .alert)
+
+        let leave = UIAlertAction(title: "Leave", style: .destructive) { [weak self] _ in
+            guard let self = self else { return }
+            SwiftMessages.show(message: "Leaving Collaboration...", style: .loading)
+
+            CollaborationsManager.shared.leave(self.list) { [weak self] result in
+                // Always replace the loading message, even if this screen is gone.
+                switch result {
+                case .success:
+                    SwiftMessages.show(message: "👋 You left the collaboration on \(name)")
+                    guard let self = self else { return }
+                    self.navigationController?.popViewController(animated: true)
+                case .failure(let error):
+                    SwiftMessages.show(message: "😓 Error leaving collaboration", style: .error(error))
+                }
+            }
+        }
+        alert.addAction(leave)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        present(alert, animated: true)
+    }
+
     deinit {
         fetchTask?.cancel()
+        featuredPeopleTask?.cancel()
     }
 
     @objc func refresh(_ sender: Any) {
@@ -892,6 +976,8 @@ final class ListViewController: UITableViewController {
             }
         }
 
+        fetchFeaturedPeople()
+
         fetchTask?.cancel()
         fetchGeneration += 1
         let generation = fetchGeneration
@@ -911,6 +997,32 @@ final class ListViewController: UITableViewController {
                     self.dataSource.apply(snapshot, animatingDifferences: false)
                 }
             }
+        }
+    }
+
+    /// Featured people are optional: a failure only hides the facepile.
+    private func fetchFeaturedPeople() {
+        featuredPeopleTask?.cancel()
+        let requestedList: List = list
+        featuredPeopleTask = Task { [weak self] in
+            let people = (try? await TraktAPIProvider.fetchFeaturedPeople(list: requestedList)) ?? []
+            await MainActor.run { [weak self] in
+                guard let self = self, Task.isCancelled == false, self.list == requestedList else { return }
+                self.featuredPeople = people
+            }
+        }
+    }
+
+    private func showFeaturedPeople() {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if featuredPeople.count == 1, let person = featuredPeople.first {
+            let controller = storyboard.instantiateViewController(identifier: "PeopleViewController") { coder in
+                PeopleViewController(coder: coder, cast: nil, job: nil, person: person)
+            }
+            navigationController?.show(controller, sender: self)
+        } else if let controller = storyboard.instantiateViewController(withIdentifier: "PeoplesTableViewController") as? PeoplesTableViewController {
+            controller.media = .list(list)
+            navigationController?.show(controller, sender: self)
         }
     }
 
@@ -1085,7 +1197,7 @@ final class ListViewController: UITableViewController {
     }
 
     private func showProgress() {
-        let progressViewController = ListProgressViewController(list: list,
+        let progressViewController = ListProgressViewController(source: .list(list),
                                                                 user: user,
                                                                 progressContext: progressContext,
                                                                 sorting: currentSorting.rawValue)
@@ -1109,6 +1221,8 @@ extension ListViewController {
         case .item(let watchlistItem):
             performSegue(withIdentifier: ViewControllerSegue.details.rawValue,
                          sender: MediaModel(item: watchlistItem))
+        case .featuredPeople:
+            showFeaturedPeople()
         default:
             return
         }

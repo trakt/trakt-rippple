@@ -137,7 +137,7 @@ final class SmartSearchViewController: UITableViewController {
 
     private func editSearch(_ search: SmartSearch) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .smartLists)
             return
         }
         guard let navigation = UIStoryboard(name: "SmartSearch", bundle: nil).instantiateInitialViewController() as? UINavigationController,
@@ -152,7 +152,7 @@ final class SmartSearchViewController: UITableViewController {
 
     override func setEditing(_ editing: Bool, animated: Bool) {
         guard !editing || PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .smartLists)
             return
         }
         // UIKit queries the displayed rows while changing editing mode; keep their section mapping until it finishes.

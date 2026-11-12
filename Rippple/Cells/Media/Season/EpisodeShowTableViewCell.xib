@@ -43,9 +43,46 @@
                                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="DKb-N4-oZb">
                                                                 <rect key="frame" x="0.0" y="0.0" width="283" height="20.5"/>
                                                                 <subviews>
-                                                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="uYH-bZ-RfC">
+                                                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="uYH-bZ-RfC">
                                                                         <rect key="frame" x="0.0" y="0.0" width="169" height="20.5"/>
                                                                         <subviews>
+                                                                            <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" distribution="fillEqually" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="EPI-st-k01">
+                                                                                <rect key="frame" x="0.0" y="0.0" width="84.5" height="20.5"/>
+                                                                                <subviews>
+                                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EPI-ra-t01" customClass="RatingImageView" customModule="Rippple" customModuleProvider="target">
+                                                                                        <rect key="frame" x="0.0" y="0.0" width="19.5" height="19.5"/>
+                                                                                        <color key="tintColor" systemColor="labelColor"/>
+                                                                                        <imageReference key="image" image="10.circle" catalog="system" renderingMode="template"/>
+                                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="regular">
+                                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                                                        </preferredSymbolConfiguration>
+                                                                                    </imageView>
+                                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EPI-co-m01" customClass="CommentedImageView" customModule="Rippple" customModuleProvider="target">
+                                                                                        <rect key="frame" x="21.5" y="0.0" width="19.5" height="19.5"/>
+                                                                                        <color key="tintColor" systemColor="labelColor"/>
+                                                                                        <imageReference key="image" image="pencil.circle" catalog="system" renderingMode="template"/>
+                                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="regular">
+                                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                                                        </preferredSymbolConfiguration>
+                                                                                    </imageView>
+                                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EPI-wl-s01" customClass="WatchlistImageView" customModule="Rippple" customModuleProvider="target">
+                                                                                        <rect key="frame" x="43.0" y="0.0" width="19.5" height="19.5"/>
+                                                                                        <color key="tintColor" systemColor="labelColor"/>
+                                                                                        <imageReference key="image" image="bookmark.circle" catalog="system" renderingMode="template"/>
+                                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="regular">
+                                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                                                        </preferredSymbolConfiguration>
+                                                                                    </imageView>
+                                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EPI-cl-l01" customClass="CollectedImageView" customModule="Rippple" customModuleProvider="target">
+                                                                                        <rect key="frame" x="64.5" y="0.0" width="19.5" height="19.5"/>
+                                                                                        <color key="tintColor" systemColor="labelColor"/>
+                                                                                        <imageReference key="image" image="book.circle" catalog="system" renderingMode="template"/>
+                                                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="medium" weight="regular">
+                                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                                                        </preferredSymbolConfiguration>
+                                                                                    </imageView>
+                                                                                </subviews>
+                                                                            </stackView>
                                                                             <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Next to Watch" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Msb-Wp-VO8">
                                                                                 <rect key="frame" x="0.0" y="0.0" width="108" height="20.5"/>
                                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -125,6 +162,11 @@
                 <outlet property="menuButton" destination="Ja9-sr-EYp" id="rWG-R2-jZc"/>
                 <outlet property="subtitle" destination="ksN-fF-ZPC" id="0PU-pW-IiK"/>
                 <outlet property="title" destination="iyj-Q4-XJ0" id="BMz-Ku-H6b"/>
+                <outlet property="indicators" destination="EPI-st-k01" id="EPI-ou-t01"/>
+                <outlet property="ratedStatus" destination="EPI-ra-t01" id="EPI-ou-t02"/>
+                <outlet property="commentedStatus" destination="EPI-co-m01" id="EPI-ou-t03"/>
+                <outlet property="watchlistedStatus" destination="EPI-wl-s01" id="EPI-ou-t04"/>
+                <outlet property="collectedStatus" destination="EPI-cl-l01" id="EPI-ou-t05"/>
                 <outlet property="watched" destination="kNG-z9-QWn" id="GMg-XT-bLj"/>
             </connections>
             <point key="canvasLocation" x="-77.599999999999994" y="51.724137931034484"/>
@@ -132,9 +174,16 @@
     </objects>
     <resources>
         <image name="ellipsis" catalog="system" width="128" height="37"/>
+        <image name="10.circle" catalog="system" width="128" height="123"/>
+        <image name="pencil.circle" catalog="system" width="128" height="123"/>
+        <image name="bookmark.circle" catalog="system" width="128" height="123"/>
+        <image name="book.circle" catalog="system" width="128" height="123"/>
         <namedColor name="Global Tint">
             <color red="0.68235294117647061" green="0.32156862745098042" blue="0.87058823529411766" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
         <systemColor name="secondaryLabelColor">
             <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>

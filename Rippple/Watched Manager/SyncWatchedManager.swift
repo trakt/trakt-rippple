@@ -50,7 +50,9 @@ final class SyncWatchedManager {
     private(set) var movieWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:]) {
         didSet {
             watchedMovies = Set(movieWatchedItems.watchedDatesByTraktId.keys)
-            TinyStorage.cache.store(movieWatchedItems, forKey: CacheKey.movies)
+            if !isRestoringFromCache {
+                TinyStorage.cache.store(movieWatchedItems, forKey: CacheKey.movies)
+            }
             onSyncWatchedMoviesChangedTransmitter.broadcast(watchedMovies)
         }
     }
@@ -59,7 +61,9 @@ final class SyncWatchedManager {
         didSet {
             watchedShows = Set(showWatchedItems.watchedDatesByTraktId.keys)
             watchedSeasons = showWatchedItems.watchedSeasonIds
-            TinyStorage.cache.store(showWatchedItems, forKey: CacheKey.shows)
+            if !isRestoringFromCache {
+                TinyStorage.cache.store(showWatchedItems, forKey: CacheKey.shows)
+            }
             onSyncWatchedShowsChangedTransmitter.broadcast(watchedShows)
         }
     }
@@ -67,7 +71,9 @@ final class SyncWatchedManager {
     private(set) var episodeWatchedItems = SyncWatchedItems(watchedDatesByTraktId: [:]) {
         didSet {
             watchedEpisodes = Set(episodeWatchedItems.watchedDatesByTraktId.keys)
-            TinyStorage.cache.store(episodeWatchedItems, forKey: CacheKey.episodes)
+            if !isRestoringFromCache {
+                TinyStorage.cache.store(episodeWatchedItems, forKey: CacheKey.episodes)
+            }
             onSyncWatchedEpisodesChangedTransmitter.broadcast(watchedEpisodes)
         }
     }
@@ -76,6 +82,9 @@ final class SyncWatchedManager {
     private(set) var watchedShows = Set<Int64>()
     private(set) var watchedSeasons = Set<Int64>()
     private(set) var watchedEpisodes = Set<Int64>()
+
+    /// Values restored at launch already match the cache, so they skip re-storing it.
+    private var isRestoringFromCache = false
 
     func setup() {
         loadCachedItems()
@@ -180,6 +189,9 @@ final class SyncWatchedManager {
 
 private extension SyncWatchedManager {
     func loadCachedItems() {
+        isRestoringFromCache = true
+        defer { isRestoringFromCache = false }
+
         if let items = TinyStorage.cache.retrieve(type: SyncWatchedItems.self, forKey: CacheKey.movies) {
             movieWatchedItems = items
         }

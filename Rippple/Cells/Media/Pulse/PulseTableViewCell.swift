@@ -115,6 +115,15 @@ final class PulseTableViewCell: TintedCanvasTableViewCell {
         notes.tintColor = .label
     }
 
+    /// The note button covers the note, so taps on its links are routed to the label instead.
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let hitView = super.hitTest(point, with: event)
+        guard hitView != nil,
+              notes.isHidden == false,
+              notes.containsURL(at: convert(point, to: notes)) else { return hitView }
+        return notes
+    }
+
     @IBAction private func didTapNoteButton(_ sender: UIButton) {
         onTapNoteButton?()
     }

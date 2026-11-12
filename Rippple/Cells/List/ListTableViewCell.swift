@@ -235,15 +235,15 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
                 if let images = user.images {
                     avatarButton.kf.setBackgroundImage(with: images.avatar.full,
                                                        for: .normal,
-                                                       placeholder: #imageLiteral(resourceName: "bg_placeholder_avatar_tiny"),
+                                                       placeholder: #imageLiteral(resourceName: "ic_trakt_logo"),
                                                        options: [.scaleFactor(traitCollection.displayScale), .processor(ListTableViewCell.userFilter)])
                 } else if user.isCurrentUser {
                     avatarButton.kf.setBackgroundImage(with: UserManager.shared.currentUser!.images!.avatar.full,
                                                        for: .normal,
-                                                       placeholder: #imageLiteral(resourceName: "bg_placeholder_avatar_tiny"),
+                                                       placeholder: #imageLiteral(resourceName: "ic_trakt_logo"),
                                                        options: [.scaleFactor(traitCollection.displayScale), .processor(ListTableViewCell.userFilter)])
                 } else {
-                    avatarButton.setBackgroundImage(#imageLiteral(resourceName: "bg_placeholder_avatar_tiny"), for: .normal)
+                    avatarButton.setBackgroundImage(#imageLiteral(resourceName: "ic_trakt_logo"), for: .normal)
                 }
             }
 
@@ -295,8 +295,6 @@ final class ListTableViewCell: TintedCanvasTableViewCell {
         markdownParser.displaySpoiler.color = .label
         markdownParser.mention.color = .label
         markdownParser.highlight.font = UIFont.preferredFont(forTextStyle: .callout, compatibleWith: UITraitCollection(preferredContentSizeCategory: min(UIApplication.shared.preferredContentSizeCategory, .extraExtraExtraLarge)))
-        markdownParser.link.color = UIColor(asset: .globalTint)
-        markdownParser.automaticLink.color = UIColor(asset: .globalTint)
 
         markdownParser.spoilerStrategy = .showAllSpoilers
 

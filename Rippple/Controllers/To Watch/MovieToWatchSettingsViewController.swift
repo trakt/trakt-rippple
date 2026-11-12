@@ -268,7 +268,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
 
     func setHideDuplicates(_ newValue: Bool) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         hideDuplicates = newValue
@@ -278,7 +278,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
 
     func setUpcomingEnabled(_ newValue: Bool) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         upcomingEnabled = newValue
@@ -289,7 +289,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
 
     func setGroupMode(_ newValue: MovieToWatchGroupMode) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         groupMode = newValue
@@ -429,7 +429,7 @@ final class MovieToWatchSettingsViewModel: ObservableObject {
 
     private func applyChange(_ updates: () -> Void) {
         guard PurchaseManager.shared.purchased else {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .toWatch)
             return
         }
         updates()
@@ -516,6 +516,10 @@ struct MovieToWatchSettingsView: View {
                     Button(editMode == .active ? "Done" : "Edit") {
                         editMode = editMode == .active ? .inactive : .active
                     }
+                }
+            } footer: {
+                if viewModel.otherListItems.contains(where: { $0.enabled && $0.list?.isSmartList == true }) {
+                    Text("Each Smart List adds up to \(TraktAPIProvider.smartListToWatchItemsLimit) items to To Watch.")
                 }
             }
 

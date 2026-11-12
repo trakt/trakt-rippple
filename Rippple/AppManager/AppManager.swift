@@ -10,14 +10,13 @@ import AuthenticationServices
 import BackgroundTasks
 import Foundation
 import SafariServices
+import StoreKit
 import Toast
 import UIKit
+import WidgetKit
 #if !targetEnvironment(macCatalyst)
 import ActivityKit
 #endif
-
-import StoreKit
-import WidgetKit
 
 final class AppManager: NSObject, ASWebAuthenticationPresentationContextProviding {
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
@@ -269,10 +268,14 @@ final class AppManager: NSObject, ASWebAuthenticationPresentationContextProvidin
     }
 
     func emitEmoji(emoji: String) {
+        emitEmojis([emoji, emoji])
+    }
+
+    func emitEmojis(_ emojis: [String]) {
         DispatchQueue.main.async {
             let confettiView = ConfettiView()
             self.confettiWindow?.addSubview(confettiView)
-            confettiView.emit(with: [.text(emoji), .text(emoji)])
+            confettiView.emit(with: emojis.map { .text($0) })
             Timer.scheduledTimer(withTimeInterval: 2.0,
                                  repeats: false) { _ in
                 UIView.animate(withDuration: 0.5,
@@ -523,11 +526,11 @@ public extension UIApplication {
         guard let login = showLoginInAllWindows() else { return }
 
         let alertController = UIAlertController(title: "Locked User Account",
-                                                message: "Please contact Trakt support (forums.trakt.tv) so they can unlock your account.",
+                                                message: "Please contact Trakt support (support.trakt.tv) so they can unlock your account.",
                                                 preferredStyle: .alert)
         alertController.addAction(UIAlertAction(title: "Okay", style: .cancel))
         alertController.addAction(UIAlertAction(title: "Trakt Support", style: .default, handler: { _ in
-            UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://forums.trakt.tv")!))
+            UIApplication.shared.present(SFSafariViewController(url: URL(string: "https://support.trakt.tv")!))
         }))
 
         login.present(alertController, animated: true)
@@ -551,11 +554,11 @@ public extension UIApplication {
     }
 
     /// Offers Trakt VIP to free accounts. VIP accounts see their limits instead.
-    func presentAccountLimitReached() {
+    internal func presentAccountLimitReached(for benefit: VIPBenefit) {
         if UserManager.shared.isCurrentVIP {
             presentTraktLimits(limitReached: true)
         } else {
-            switchToPurchase()
+            switchToPurchase(for: benefit)
         }
     }
 
@@ -639,12 +642,15 @@ public extension UIApplication {
         present(main)
     }
 
-    func switchToPurchase() {
+    internal func switchToPurchase(for benefit: VIPBenefit) {
         if UserManager.shared.currentUser == nil {
             onNeedsToShowLoginTransmitter.broadcast(true)
             return
         }
         let main = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "subscribe modal")
+        if let modal = (main as? UINavigationController)?.viewControllers.first as? PurchaseModalViewController {
+            modal.benefit = benefit
+        }
         present(main)
     }
 

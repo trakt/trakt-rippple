@@ -742,6 +742,8 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                         "CustomListsViewController.customList",
                                         "CustomListsViewController.displayList",
                                         "CustomListsViewController.standardList",
+                                        "EmojiReactionsSettings.enabled",
+                                        "EmojiReactionsSettings.shower",
                                         "EpisodeNotificationsManager.groupEpisodes",
                                         "EpisodeNotificationsManager.toWatchEpisodeRelease",
                                         "EpisodeNotificationsManager.toWatchSeasonPremiere",
@@ -795,8 +797,6 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                         "MovieToWatchSettings.sort",
                                         "MovieToWatchSettings.upcoming",
                                         "MovieToWatchSettings.watchlist",
-                                        "RecommendedNotificationsManager.recommendedMovies",
-                                        "RecommendedNotificationsManager.recommendedShows",
                                         "RecommendedViewController.currentFilter",
                                         "RecommendedViewController.currentSorting",
                                         "SeasonsRatingsViewController.currentFilter",
@@ -830,7 +830,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                    "MovieToWatchManager.pinnedMovies",
                                    "SmartSearch.movies",
                                    "SmartSearch.shows",
-                                   "RecentSearchManager.recentSearches",
+                                   "RecentlyViewedManager.items",
                                    "CommentDraftManager.drafts"]
 
         let dataUserDefaultsKeys: Set = ["CustomListsViewController.customList",
@@ -846,7 +846,7 @@ final class DeeplinkLoadingViewController: UIViewController, UINavigationControl
                                        "MovieToWatchManager.pinnedMovies",
                                        "SmartSearch.movies",
                                        "SmartSearch.shows",
-                                       "RecentSearchManager.recentSearches",
+                                       "RecentlyViewedManager.items",
                                        "CommentDraftManager.drafts"]
 
         // Combine all allowed keys

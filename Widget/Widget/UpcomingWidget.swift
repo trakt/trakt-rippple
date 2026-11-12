@@ -92,6 +92,7 @@ struct UpcomingWidgetProvider: AppIntentTimelineProvider {
         return await loadWidgetPosters(for: Array(uniqueItems),
                                        identifier: \UpcomingWidgetItem.id,
                                        tmdbIdentifier: \UpcomingWidgetItem.tmdbIdentifier,
+                                       traktIdentifier: { $0.tmdbMediaType == "movie" ? $0.traktIdentifier : $0.showTraktIdentifier },
                                        mediaType: \UpcomingWidgetItem.tmdbMediaType)
     }
 }

@@ -6,11 +6,13 @@ This file applies to the whole repository. Keep changes simple, focused, and con
 
 - Rippple is a native Trakt client for iPhone, iPad, and Mac Catalyst. The deployment target is iOS 26 and the project uses Swift 5 language mode without strict concurrency checking.
 - Open and build `Rippple.xcodeproj` (`*.xcworkspace` is gitignored). Dependencies are managed with Swift Package Manager through the project.
-- Targets and their folders: `Rippple/` (app), `Widget/` (`WidgetExtension`), `WidgetIntent/`, and `NotificationService/`. The app target embeds the three extensions, and shared schemes exist for all four.
+- Targets and their folders: `Rippple/` (app), `Widget/` (`WidgetExtension`), `WidgetIntent/`, and `NotificationService/`. The app target embeds the three extensions, and shared schemes exist for all four. `SmartListAssistantTests/` holds the smart list assistant's tests, described below.
 - The codebase is UIKit-first and still uses storyboards and XIBs. SwiftUI is used for suitable standalone, configuration, widget, and live-activity views, and is hosted in UIKit through `RipppleHostingController`.
 - `Rippple/MCP` is a Mac Catalyst-only local MCP server (`#if targetEnvironment(macCatalyst)`) that exposes Trakt tools over the Network framework and talks to Trakt through `mcpProvider`.
 - Every build runs three script phases: a lenient SwiftFormat lint on changed files, `Scripts/check-secrets.sh`, and a version script. The build fails if `Rippple/Secrets.swift` is missing or still contains template placeholders.
-- There is no test target and no CI workflow. Validate focused changes with SwiftFormat, a relevant build, and a manual smoke test.
+- There is no app test suite and no CI workflow. Validate focused changes with SwiftFormat, a relevant build, and a manual smoke test.
+- The only test target, `SmartListAssistantTests`, tests the smart list assistant alone: how `SmartListAssistant` reads a typed request into a smart list. Each case of `SmartListAssistantTestCases` runs as its own Swift Testing test, hosted in the app, from the `SmartListAssistantTests` scheme. It isn't the place for other features' tests, and new features don't add test targets.
+- Before changing how smart list requests are read, add the requests involved, with their near misses, to `SmartListAssistantTestCases`, then run the scheme. A failing case prints its reading as a case to paste once it's reviewed as right. The tests need a network connection, `Secrets.swift` and Apple Intelligence where they run.
 
 ## Branches and releases
 
@@ -77,7 +79,7 @@ Use each dependency through its established boundary:
 - **Kingfisher** and **KingfisherWebP**: remote image loading and caching; **LRUCache** and **TinyStorage** cover other memory and disk caches.
 - **Haring**: Markdown rendering through the parsers in `Rippple/Markdown`.
 - **NVActivityIndicatorView**: legacy loading UI; reuse the project animation in `Rippple/RippleLoader` or a nearby cell/controller pattern.
-- **YouTubePlayerKit**, **SFSymbols**, **Emoji**, **HTMLEntities**, and **Toast**: specialized uses already isolated to trailers, symbol picking, text utilities, and app messages. Extend those call sites instead of duplicating their behavior.
+- **SFSymbols**, **Emoji**, **HTMLEntities**, and **Toast**: specialized uses already isolated to symbol picking, text utilities, and app messages. Extend those call sites instead of duplicating their behavior.
 - **ReactiveSwift**, **RxSwift**, and **libwebp** are resolved transitively; the app does not use them directly.
 
 When dependencies change, update the Xcode package references, `Rippple.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`, and `THIRD_PARTY_NOTICES.md`. CocoaPods has been removed; do not reintroduce it.

@@ -121,6 +121,7 @@ struct WatchingControlWidgetProvider: AppIntentTimelineProvider {
         let posters = await loadWidgetPosters(for: item.map { [$0] } ?? [],
                                               identifier: \WatchingControlWidgetItem.id,
                                               tmdbIdentifier: \WatchingControlWidgetItem.tmdbIdentifier,
+                                              traktIdentifier: { $0.showTraktIdentifier ?? $0.traktIdentifier },
                                               mediaType: \WatchingControlWidgetItem.tmdbMediaType)
         let profileAvatar = await loadProfileAvatar(for: configuration.action)
         return WatchingControlWidgetEntry(date: .now,

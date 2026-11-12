@@ -571,6 +571,18 @@ extension Movie {
     var mediaModel: MediaModel {
         return MediaModel(item: MediaItem(movie: self, show: nil, episode: nil, season: nil, list: nil, watchers: nil, listedAt: nil, collectedAt: nil, lastCollectedAt: nil, hiddenAt: nil, notes: nil))
     }
+
+    private static let releaseSortDateFormatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        return dateFormatter
+    }()
+
+    /// Release date for sorting; a movie without one sorts as released on 1900-01-01.
+    var releaseSortDate: Date {
+        return Movie.releaseSortDateFormatter.date(from: released ?? "1900-01-01") ?? Date.distantPast
+    }
 }
 
 extension Show {
@@ -1289,10 +1301,7 @@ extension MediaModel {
 
 extension MediaModel {
     private func writeComment(media: MediaModel) {
-        let composer = UIStoryboard(name: "Compose", bundle: nil).instantiateInitialViewController() as! ComposeNavigationController
-
-        composer.mediaModel = media
-
+        guard let composer = CommentComposerSession.makeViewController(media: media) else { return }
         UIApplication.shared.present(composer)
     }
 
@@ -1615,7 +1624,7 @@ extension MediaModel {
 
     func stopRewatchingShow() {
         if !PurchaseManager.shared.purchased {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .rewatching)
             return
         }
 
@@ -1652,7 +1661,7 @@ extension MediaModel {
 
     func startRewatchingShow() {
         if !PurchaseManager.shared.purchased {
-            UIApplication.shared.switchToPurchase()
+            UIApplication.shared.switchToPurchase(for: .rewatching)
             return
         }
 

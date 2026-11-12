@@ -42,16 +42,10 @@ extension WatchedItem {
         }
     }
 
-    private static let dateFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        return dateFormatter
-    }()
-
     var releaseDate: Date {
         switch type {
         case .movie:
-            return WatchedItem.dateFormatter.date(from: movie!.released ?? "1900-01-01") ?? Date.distantPast
+            return movie!.releaseSortDate
         case .show:
             return show!.firstAired ?? Date.distantPast
         case .season:
@@ -841,9 +835,9 @@ extension WatchedViewController {
         let comment = UIContextualAction(style: .normal,
                                          title: "Write") { [weak self] _, _, boolValue in
             guard let self = self else { return }
-            let composer = UIStoryboard(name: "Compose", bundle: nil).instantiateInitialViewController() as! ComposeNavigationController
-            composer.mediaModel = MediaModel(item: watchedItem)
-            self.present(composer, animated: true)
+            if let composer = CommentComposerSession.makeViewController(media: MediaModel(item: watchedItem)) {
+                self.present(composer, animated: true)
+            }
             boolValue(true)
         }
         comment.backgroundColor = UIColor(resource: .ripppleGray)

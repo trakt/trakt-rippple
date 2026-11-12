@@ -46,7 +46,7 @@ final class SearchViewController: UITableViewController {
     private var shouldOpenKeyboard = false
 
     private enum Section: Int {
-        case recents
+        case recentlyViewed
         case trending
         case suggestions
         case search
@@ -67,7 +67,7 @@ final class SearchViewController: UITableViewController {
         case search(CellConfig, TraktAPIService)
         case suggestion(CellConfig, TraktSearchResult)
         case user(CellConfig)
-        case recents
+        case recentlyViewed
         case smartSearches
         case status(String, retry: Bool)
 
@@ -79,7 +79,7 @@ final class SearchViewController: UITableViewController {
                 return lhsConfig.identifier == rhsConfig.identifier
             case (.user(let lhsConfig), .user(let rhsConfig)):
                 return lhsConfig.identifier == rhsConfig.identifier
-            case (.recents, .recents), (.smartSearches, .smartSearches):
+            case (.recentlyViewed, .recentlyViewed), (.smartSearches, .smartSearches):
                 return true
             case (.status(let lhsTitle, let lhsRetry), .status(let rhsTitle, let rhsRetry)):
                 return lhsTitle == rhsTitle && lhsRetry == rhsRetry
@@ -96,8 +96,8 @@ final class SearchViewController: UITableViewController {
                 hasher.combine(config.identifier)
             case .user(let config):
                 hasher.combine(config.identifier)
-            case .recents:
-                hasher.combine("recents")
+            case .recentlyViewed:
+                hasher.combine("recentlyViewed")
             case .smartSearches:
                 hasher.combine("smartSearches")
             case .status(let title, let retry):
@@ -114,19 +114,6 @@ final class SearchViewController: UITableViewController {
         return .middle
     }
 
-    private func recentSearchPath(for service: TraktAPIService?) -> String {
-        if let service = service,
-           case .search(let type, _) = service {
-            return "/search/\(type.rawValue)"
-        }
-
-        return "/search/\(SearchType.moviesAndShow.rawValue)"
-    }
-
-    private func recentSearchPath(for item: TraktSearchResult) -> String {
-        return "/search/\(item.type.rawValue)"
-    }
-
     private func suggestionItems(_ items: [TraktSearchResult], query: String? = nil) -> [Wrapper] {
         items.map { item in
             .suggestion(CellConfig(identifier: "\(item.key):\(query ?? "")",
@@ -135,64 +122,6 @@ final class SearchViewController: UITableViewController {
                                    subtitle: " · \(item.subtitle)",
                                    query: query,
                                    segue: "details"), item)
-        }
-    }
-
-    private func saveRecentSearch(title: String, query: String, path: String = "/search/\(SearchType.moviesAndShow.rawValue)") {
-        RecentSearchManager.shared.save(title: title, query: query, path: path)
-    }
-
-    private func saveRecentSearch(config: CellConfig, service: TraktAPIService? = nil) {
-        let query = config.query ?? config.title
-        saveRecentSearch(title: query,
-                         query: query,
-                         path: recentSearchPath(for: service))
-    }
-
-    private func recentSearchQuery(for recentSearch: RecentSearch) -> String {
-        let query = recentSearch.searchFieldQuery.trimmingCharacters(in: .whitespacesAndNewlines)
-        if recentSearch.name.hasPrefix("@"), query.hasPrefix("@") == false {
-            return "@\(query)"
-        }
-        return query
-    }
-
-    private func recentSearchType(for recentSearch: RecentSearch) -> SearchType {
-        switch recentSearch.path {
-        case "/search/\(SearchType.movie.rawValue)":
-            return .movie
-        case "/search/\(SearchType.show.rawValue)":
-            return .show
-        case "/search/\(SearchType.person.rawValue)":
-            return .person
-        case "/search/\(SearchType.list.rawValue)":
-            return .list
-        default:
-            return .moviesAndShow
-        }
-    }
-
-    private func applyRecentSearch(_ recentSearch: RecentSearch) {
-        let query = recentSearchQuery(for: recentSearch)
-        guard query.isEmpty == false else { return }
-
-        searchController.searchBar.resignFirstResponder()
-        RecentSearchManager.shared.recentSearches.insert(recentSearch, at: 0)
-
-        if recentSearch.name.hasPrefix("@") {
-            fetchUser(with: String(query.dropFirst()).lowercased())
-            return
-        }
-
-        let searchType = recentSearchType(for: recentSearch)
-        let service = TraktAPIService.search(type: searchType, query: query)
-        switch searchType {
-        case .person:
-            performSegue(withIdentifier: "people", sender: service)
-        case .list:
-            performSegue(withIdentifier: "lists", sender: service)
-        case .movie, .show, .moviesAndShow:
-            performSegue(withIdentifier: "results", sender: service)
         }
     }
 
@@ -274,9 +203,9 @@ final class SearchViewController: UITableViewController {
             return
         }
 
-        snapshot.appendSections([.recents])
-        if RecentSearchManager.shared.recentSearches.isEmpty == false {
-            snapshot.appendItems([.recents])
+        snapshot.appendSections([.recentlyViewed])
+        if RecentlyViewedManager.shared.items.isEmpty == false {
+            snapshot.appendItems([.recentlyViewed])
         }
         snapshot.appendItems([.smartSearches])
         if dataSource.snapshot().itemIdentifiers.contains(.smartSearches) {
@@ -296,7 +225,7 @@ final class SearchViewController: UITableViewController {
     private final class SearchDataSource: UITableViewDiffableDataSource<Section, Wrapper> {
         override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
             switch itemIdentifier(for: indexPath) {
-            case .recents:
+            case .recentlyViewed:
                 return true
             case .suggestion(_, let result):
                 return result.media != nil
@@ -309,16 +238,16 @@ final class SearchViewController: UITableViewController {
     private lazy var dataSource = SearchDataSource(tableView: tableView) { [weak self] tableView, _, item in
         guard let self = self else { return nil }
         switch item {
-        case .recents, .smartSearches:
+        case .recentlyViewed, .smartSearches:
             let cell = tableView.dequeueReusableCell(withIdentifier: "search") as! SearchTableViewCell
             cell.shouldShowActivityIndicator = false
             cell.card.alpha = 1
             cell.chevron.alpha = 1
-            if item == .recents {
+            if item == .recentlyViewed {
                 cell.card.cardType = .top
-                cell.setup(with: "Recent Searches")
+                cell.setup(with: "Recently Viewed")
             } else {
-                cell.card.cardType = RecentSearchManager.shared.recentSearches.isEmpty ? .alone : .bottom
+                cell.card.cardType = RecentlyViewedManager.shared.items.isEmpty ? .alone : .bottom
                 cell.setup(with: "Smart Searches")
             }
             return cell
@@ -411,7 +340,7 @@ final class SearchViewController: UITableViewController {
             }
         }.disposed(by: disposeBag)
 
-        onRecentSearchChangedReceiver.listen { [weak self] _ in
+        onRecentlyViewedChangedReceiver.listen { [weak self] _ in
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.updateDatasource()
@@ -565,10 +494,10 @@ final class SearchViewController: UITableViewController {
         if case .suggestion(_, let result) = item {
             return result.media?.trailingSwipeActions(for: self)
         }
-        guard item == .recents else { return nil }
+        guard item == .recentlyViewed else { return nil }
         let clear = UIContextualAction(style: .destructive, title: "Clear All") { _, _, completion in
             completion(true)
-            RecentSearchManager.shared.removeAll()
+            RecentlyViewedManager.shared.removeAll()
             UISelectionFeedbackGenerator().selectionChanged()
         }
         clear.image = UIImage(systemName: "trash.circle.fill")
@@ -588,7 +517,6 @@ final class SearchViewController: UITableViewController {
         switch item {
         case .search(let config, let service):
             searchController.searchBar.resignFirstResponder()
-            saveRecentSearch(config: config, service: service)
             performSegue(withIdentifier: config.segue, sender: service)
         case .user(let config):
             let username = (config.query ?? userSearchQuery).lowercased()
@@ -597,7 +525,6 @@ final class SearchViewController: UITableViewController {
                 return
             }
             searchController.searchBar.resignFirstResponder()
-            saveRecentSearch(title: "@\(username)", query: username)
             fetchUser(with: username)
             return // don't deselectRow to show loading indicator
         case .suggestion(let config, let result):
@@ -607,14 +534,9 @@ final class SearchViewController: UITableViewController {
         case .smartSearches:
             searchController.searchBar.resignFirstResponder()
             navigationController?.show(SmartSearchViewController(style: .grouped), sender: self)
-        case .recents:
+        case .recentlyViewed:
             searchController.searchBar.resignFirstResponder()
-            let controller = RecentSearchViewController(style: .grouped)
-            controller.onSelect = { [weak self] recent in
-                guard let self = self else { return }
-                self.applyRecentSearch(recent)
-            }
-            navigationController?.show(controller, sender: self)
+            navigationController?.show(RecentlyViewedViewController(style: .grouped), sender: self)
         }
 
         tableView.deselectRow(at: indexPath, animated: true)
@@ -623,7 +545,6 @@ final class SearchViewController: UITableViewController {
     private func recordSelection(_ result: TraktSearchResult, query: String) {
         searchController.searchBar.resignFirstResponder()
         TraktAPIProvider.recordSearchSelection(query: query, type: result.type, id: result.id)
-        saveRecentSearch(title: result.title, query: result.title, path: recentSearchPath(for: result))
     }
 
     private func openSuggestion(_ result: TraktSearchResult, query: String) {
@@ -803,7 +724,6 @@ extension SearchViewController: UISearchBarDelegate {
         if isExplicitUserSearch {
             searchController.searchBar.resignFirstResponder()
             guard userSearchQuery.isEmpty == false else { return }
-            saveRecentSearch(title: "@\(userSearchQuery)", query: userSearchQuery)
             fetchUser(with: userSearchQuery.lowercased())
             return
         }
@@ -812,10 +732,6 @@ extension SearchViewController: UISearchBarDelegate {
         let service: TraktAPIService = .search(type: searchType, query: searchQuery)
 
         searchController.searchBar.resignFirstResponder()
-        saveRecentSearch(title: searchQuery,
-                         query: searchQuery,
-                         path: "/search/\(searchType.rawValue)")
-
         performSegue(withIdentifier: "results", sender: service)
     }
 }

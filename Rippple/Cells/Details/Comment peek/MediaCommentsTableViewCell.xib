@@ -23,7 +23,7 @@
                                 <rect key="frame" x="0.0" y="26" width="356" height="210"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="210" id="Ml4-0t-Y2p"/>
+                                    <constraint firstAttribute="height" priority="999" constant="210" id="Ml4-0t-Y2p"/>
                                 </constraints>
                                 <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="e9N-me-cYZ">
                                     <size key="itemSize" width="300" height="210"/>

@@ -18,6 +18,18 @@ final class SpoilerMarkdownParser: MarkdownParser {
     let allSpoiler = MarkdownAllSpoiler(font: UIFont.preferredFont(forTextStyle: .body), color: .label)
     let displaySpoiler = MarkdownDisplaySpoiler(font: UIFont.preferredFont(forTextStyle: .body), color: .label)
 
+    override init(font: UIFont = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize),
+                  color: UIColor = UIColor.black,
+                  automaticLinkDetectionEnabled: Bool = true,
+                  customElements: [MarkdownElement] = []) {
+        super.init(font: font,
+                   color: color,
+                   automaticLinkDetectionEnabled: automaticLinkDetectionEnabled,
+                   customElements: customElements)
+        link.color = UIColor(asset: .globalTint)
+        automaticLink.color = UIColor(asset: .globalTint)
+    }
+
     var spoilerStrategy: SpoilerStrategy? {
         didSet {
             guard let spoilerStrategy = spoilerStrategy else {
@@ -33,6 +45,24 @@ final class SpoilerMarkdownParser: MarkdownParser {
                 _elements = [displaySpoiler, header, link, automaticLink, list, quote, bold, italic, highlight, mention, strike]
             }
         }
+    }
+
+    /// Elements parsed after a spoiler (links, mentions, highlights) restyle its text, so hidden ranges are cleaned up at the end.
+    override func parse(_ markdown: NSAttributedString) -> NSAttributedString {
+        let attributedString = NSMutableAttributedString(attributedString: super.parse(markdown))
+        let fullRange = NSRange(location: 0, length: attributedString.length)
+        attributedString.enumerateAttribute(MarkdownSpoiler.hiddenAttribute, in: fullRange) { value, range, _ in
+            guard value != nil else { return }
+            self.hideSpoiler(in: attributedString, range: range)
+        }
+        return attributedString
+    }
+
+    func hideSpoiler(in attributedString: NSMutableAttributedString, range: NSRange) {
+        attributedString.addAttributes(allSpoiler.attributes, range: range)
+        attributedString.removeAttribute(.link, range: range)
+        attributedString.removeAttribute(.underlineStyle, range: range)
+        attributedString.removeAttribute(.backgroundColor, range: range)
     }
 
     private lazy var _elements: [MarkdownElement] = [header, list, quote, bold, italic, highlight, mention, strike]

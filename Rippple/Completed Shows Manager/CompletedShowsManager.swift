@@ -41,7 +41,7 @@ final class CompletedShowsManager {
         }
 
         if let array = TinyStorage.cache.retrieve(type: [CompletedShow].self, forKey: "CompletedShowsManager.completedShows") {
-            updateCompletedShows { completedShows in
+            updateCompletedShows(storesInCache: false) { completedShows in
                 completedShows = array
             }
         }
@@ -112,7 +112,7 @@ final class CompletedShowsManager {
         return work()
     }
 
-    private func updateCompletedShows(_ update: (inout [CompletedShow]) -> Void) {
+    private func updateCompletedShows(storesInCache: Bool = true, _ update: (inout [CompletedShow]) -> Void) {
         let updatedShows: [CompletedShow]? = withStateLock {
             let oldShows = completedShows
             update(&completedShows)
@@ -123,6 +123,7 @@ final class CompletedShowsManager {
 
         guard let updatedShows else { return }
         debouncedTransmit.call()
+        guard storesInCache else { return }
         TinyStorage.cache.store(updatedShows, forKey: "CompletedShowsManager.completedShows")
     }
 

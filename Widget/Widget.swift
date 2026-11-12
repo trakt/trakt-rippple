@@ -38,7 +38,20 @@ enum WidgetTint {
             .systemIndigo,
             .systemPink,
             .systemBrown,
-            .label
+            .label,
+            UIColor { traits in
+                let isHighContrast = traits.accessibilityContrast == .high
+                switch (traits.userInterfaceStyle, isHighContrast) {
+                case (.dark, false):
+                    return UIColor(red: 133 / 255, green: 89 / 255, blue: 245 / 255, alpha: 1)
+                case (.dark, true):
+                    return UIColor(red: 179 / 255, green: 157 / 255, blue: 255 / 255, alpha: 1)
+                case (_, true):
+                    return UIColor(red: 76 / 255, green: 38 / 255, blue: 173 / 255, alpha: 1)
+                default:
+                    return UIColor(red: 100 / 255, green: 56 / 255, blue: 208 / 255, alpha: 1)
+                }
+            }
         ]
         return colors.indices.contains(selectedIndex) ? colors[selectedIndex] : .systemPurple
     }

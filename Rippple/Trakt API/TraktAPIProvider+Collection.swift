@@ -10,11 +10,13 @@ import Foundation
 import Moya
 
 extension TraktAPIProvider {
+    /// Pages come newest first, so `collectedSince` stops at the first page that reaches older items.
     static func fetchAllCollectionItems(slug: String,
                                         type: ListMediaType?,
                                         extended: Extended?,
                                         sort: WatchlistSort?,
-                                        limit: Int = 1000,
+                                        limit: Int = 250,
+                                        collectedSince: Date? = nil,
                                         completion: @escaping (Result<[CollectionItem], Error>) -> Void) {
         _Concurrency.Task {
             do {
@@ -22,9 +24,45 @@ extension TraktAPIProvider {
                                                                    type: type,
                                                                    extended: extended,
                                                                    sort: sort,
-                                                                   limit: limit)
+                                                                   limit: limit,
+                                                                   collectedSince: collectedSince)
                 completion(.success(items))
             } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+
+    static func fetchMinimalMovieCollection(completion: @escaping (Result<[Int64: Date], Error>) -> Void) {
+        fetchMinimalCollection(type: .movies, as: [String: Date].self) { result in
+            completion(result.map { movies in
+                Dictionary(uniqueKeysWithValues: movies.compactMap { key, collectedAt in
+                    Int64(key).map { ($0, collectedAt) }
+                })
+            })
+        }
+    }
+
+    /// Keyed by show id, then season id, then episode id.
+    static func fetchMinimalShowCollection(completion: @escaping (Result<[String: [String: [String: Date]]], Error>) -> Void) {
+        fetchMinimalCollection(type: .shows, as: [String: [String: [String: Date]]].self, completion: completion)
+    }
+
+    private static func fetchMinimalCollection<T: Decodable>(type: ListMediaType,
+                                                             as decodedType: T.Type,
+                                                             completion: @escaping (Result<T, Error>) -> Void) {
+        TraktAPIProvider.provider.request(.collectionMinimal(type: type),
+                                          callbackQueue: DispatchQueue.global(qos: .utility)) { result in
+            switch result {
+            case .success(let moyaResponse):
+                do {
+                    let response = try moyaResponse.filterSuccessfulStatusCodes()
+                    let collection = try response.map(decodedType, using: TraktAPIProvider.decoder)
+                    completion(.success(collection))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
                 completion(.failure(error))
             }
         }
@@ -34,7 +72,8 @@ extension TraktAPIProvider {
                                                      type: ListMediaType?,
                                                      extended: Extended?,
                                                      sort: WatchlistSort?,
-                                                     limit: Int) async throws -> [CollectionItem] {
+                                                     limit: Int,
+                                                     collectedSince: Date?) async throws -> [CollectionItem] {
         var pageInfo = PageInfo.firstPage(with: limit)
         var collectionItems = [CollectionItem]()
 
@@ -47,6 +86,10 @@ extension TraktAPIProvider {
             collectionItems.append(contentsOf: items)
 
             guard let nextPage = nextPage, nextPage.page <= nextPage.pageCount else {
+                return collectionItems
+            }
+
+            if let collectedSince = collectedSince, let oldestItem = items.last, oldestItem.listedAt < collectedSince {
                 return collectionItems
             }
 

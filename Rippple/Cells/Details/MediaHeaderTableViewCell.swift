@@ -204,6 +204,8 @@ final class MediaHeaderTableViewCell: TintedCanvasTableViewCell {
 
         copyButton.tintColor = .secondaryLabel
         listButton.tintColor = .secondaryLabel
+        copyButton.preferredBehavioralStyle = .pad
+        listButton.preferredBehavioralStyle = .pad
     }
 
     @IBAction func listButtonTouchedUpInside(_ sender: Any) {

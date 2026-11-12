@@ -178,8 +178,11 @@ enum SearchType: String {
 enum Extended: String {
     case guestStars = "guest_stars"
     case full
+    case fullMarkdown = "full,markdown"
     case noseasons
     case fullnoseasons = "full,noseasons"
+    case fullEpisodes = "episodes,full"
+    case images
     case min
 }
 
@@ -301,8 +304,8 @@ enum TraktAPIService {
     case seasonSocial(id: String, season: Int, pageInfo: PageInfo)
     case episodeSocial(id: String, season: Int, episode: Int, pageInfo: PageInfo)
 
-    case postComment(type: PostType, traktId: Int64, body: String, spoilers: Bool)
-    case postReply(id: Int64, body: String, spoilers: Bool)
+    case postComment(type: PostType, traktId: Int64, body: String, spoilers: Bool, gif: CommentGIF?)
+    case postReply(id: Int64, body: String, spoilers: Bool, gif: CommentGIF?)
 
     case deleteComment(id: Int64)
     case updateComment(id: Int64, body: String, spoilers: Bool)
@@ -323,7 +326,7 @@ enum TraktAPIService {
     case showRelatedSmart(id: String, pageInfo: PageInfo)
     case movieRelatedSmart(id: String, pageInfo: PageInfo)
     case comment(id: Int64)
-    case episode(id: String, season: Int, episode: Int)
+    case episode(id: String, season: Int, episode: Int, extended: Extended = .full)
     case user(id: String)
 
     case commentMediaItem(id: Int64)
@@ -342,7 +345,7 @@ enum TraktAPIService {
     case trendingLists(type: ListType?)
     case popularLists(type: ListType?)
 
-    case seasons(id: Int64)
+    case seasons(id: Int64, extended: Extended = .fullEpisodes)
     case episodes(id: Int64, season: Int)
 
     case ratings(type: TraktObjectType)
@@ -367,6 +370,7 @@ enum TraktAPIService {
     case watchlist(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
     case recommended(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
     case collection(slug: String = "me", type: ListMediaType?, extended: Extended?, sort: WatchlistSort?, pageInfo: PageInfo)
+    case collectionMinimal(type: ListMediaType)
 
     case addToWatchlist(item: WatchlistedItem)
     case removeFromWatchlist(item: WatchlistedItem)
@@ -382,7 +386,7 @@ enum TraktAPIService {
     case peopleEpisode(id: Int64, season: Int, episode: Int, extended: Extended?)
     case peopleSeason(id: Int64, season: Int, extended: Extended?)
 
-    case people(id: Int64)
+    case people(id: Int64, extended: Extended = .full)
     case peopleSlug(slug: String)
 
     case peopleMovies(id: Int64)
@@ -393,10 +397,14 @@ enum TraktAPIService {
     case customList(userSlug: String, listSlug: String)
     case collaborations(slug: String = "me")
     case listItems(slug: String?, id: Int64, type: ListMediaType?, extended: Extended?, pageInfo: PageInfo)
+    case listFeaturedPeople(id: Int64)
     case createList(name: String, description: String, privacy: ListPrivacy, displayNumbers: Bool, allowComments: Bool)
     case deleteList(id: Int64)
     case reorderLists(ids: [Int64])
     case updateList(id: Int64, name: String, description: String, privacy: ListPrivacy, displayNumbers: Bool, allowComments: Bool)
+    case listCollaborators(id: Int64)
+    case addListCollaborator(id: Int64, userSlug: String)
+    case removeListCollaborator(id: Int64, userSlug: String)
 
     case smartLists(slug: String = "me")
     case smartList(userSlug: String = "me", slug: String)
@@ -404,6 +412,8 @@ enum TraktAPIService {
     case createSmartList(SmartListDraft)
     case updateSmartList(slug: String, SmartListDraft)
     case deleteSmartList(slug: String)
+    case smartListPreview(SmartListDraft, pageInfo: PageInfo)
+    case smartListFilterOptions(kind: SmartListFilterOptionKind, query: String)
 
     case addToList(slug: String? = "me", id: Int64, item: WatchlistedItem)
     case removeFromList(slug: String? = "me", id: Int64, item: WatchlistedItem)
@@ -495,7 +505,8 @@ enum TraktAPIService {
     case deleteNotes(id: Int64)
 
     case certifications(type: CertificationType)
-    case parentalGuide(target: ParentalGuideTarget)
+    case parentalGuide(target: MediaInfoTarget)
+    case trivia(target: MediaInfoTarget)
 
     case lastActivities
 
@@ -525,12 +536,37 @@ enum TraktAPIService {
     case commentReactions(id: Int64, pageInfo: PageInfo)
     case commentReactionsSummary(id: Int64)
     case userCommentsReactions
+    case mediaReactionTypes
+    case mediaReactionsSummary(target: MediaReactionsTarget)
+    case userMediaReactions(target: MediaReactionsTarget)
+    case addMediaReaction(target: MediaReactionsTarget, reaction: String)
+    case removeMediaReactions(target: MediaReactionsTarget, ids: [Int64])
 
     case verifyIAP(transactionId: UInt64, userId: Int64)
     case verifySandboxIAP(transactionId: UInt64, userId: Int64)
 }
 
+private extension MediaReactionsTarget {
+    var reactionsPath: String {
+        let reference = reference.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) ?? reference
+        return "/v3/\(type.rawValue)s/\(reference)/reactions"
+    }
+}
+
 // MARK: - TargetType Protocol Implementation
+
+private extension TraktAPIService {
+    static func commentParameters(body: String, spoilers: Bool, gif: CommentGIF?) -> [String: Any] {
+        var parameters: [String: Any] = ["comment": body, "spoiler": spoilers]
+        if let gif = gif {
+            var object: [String: Any] = ["url": gif.url]
+            object["width"] = gif.width.map { Int($0.rounded()) }
+            object["height"] = gif.height.map { Int($0.rounded()) }
+            parameters["gif"] = object
+        }
+        return parameters
+    }
+}
 
 extension TraktAPIService: AuthorizedTargetType {
     var validationType: ValidationType {
@@ -547,10 +583,12 @@ extension TraktAPIService: AuthorizedTargetType {
 //            return .successCodes
 //        }
 
-        if case .parentalGuide = self {
+        switch self {
+        case .parentalGuide, .trivia:
             return .customCodes([200, 204, 401, 404])
+        default:
+            return .customCodes([200, 201, 204, 401, 409])
         }
-        return .customCodes([200, 201, 204, 401, 409])
     }
 
     var baseURL: URL {
@@ -679,7 +717,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/shows/\(id)/seasons/\(season)/episodes/\(episode)/social"
         case .postComment:
             return "/comments"
-        case .postReply(let id, _, _):
+        case .postReply(let id, _, _, _):
             return "/comments/\(id)/replies"
         case .deleteComment(let id):
             return "/comments/\(id)"
@@ -726,7 +764,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/movies/\(id)/related/smart"
         case .comment(let id):
             return "/comments/\(id)"
-        case .episode(let id, let season, let episode):
+        case .episode(let id, let season, let episode, _):
             return "/shows/\(id)/seasons/\(season)/episodes/\(episode)"
         case .user(let id):
             return "/users/\(id)"
@@ -768,7 +806,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/movies/anticipated"
         case .anticipatedShows:
             return "/shows/anticipated"
-        case .seasons(let id):
+        case .seasons(let id, _):
             return "/shows/\(id)/seasons"
         case .episodes(let id, let season):
             return "/shows/\(id)/seasons/\(season)"
@@ -834,6 +872,8 @@ extension TraktAPIService: AuthorizedTargetType {
             default:
                 return "/users/\(slug)/collection"
             }
+        case .collectionMinimal(let type):
+            return "/sync/collection/minimal/\(type)"
         case .addToWatchlist:
             return "/sync/watchlist"
         case .removeFromWatchlist:
@@ -860,7 +900,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/shows/\(showId)/seasons/\(season)/episodes/\(episode)/people"
         case .peopleSeason(let showId, let season, _):
             return "/shows/\(showId)/seasons/\(season)/people"
-        case .people(let peopleId):
+        case .people(let peopleId, _):
             return "/people/\(peopleId)"
         case .peopleSlug(let slug):
             return "/people/\(slug)"
@@ -890,6 +930,8 @@ extension TraktAPIService: AuthorizedTargetType {
                     return "/lists/\(listId)/items/movie,show,season,episode"
                 }
             }
+        case .listFeaturedPeople(let listId):
+            return "/lists/\(listId)"
         case .createList:
             return "/users/me/lists"
         case .smartLists(let slug):
@@ -903,12 +945,20 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/users/me/smart-lists"
         case .updateSmartList(let slug, _), .deleteSmartList(let slug):
             return "/users/me/smart-lists/\(slug)"
+        case .smartListPreview:
+            return "/smart-lists/preview/items"
+        case .smartListFilterOptions(let kind, _):
+            return kind == .people ? "/search/person" : "/smart-lists/filter-options/\(kind.rawValue)"
         case .deleteList(let listId):
             return "/users/me/lists/\(listId)"
         case .reorderLists:
             return "/users/me/lists/reorder"
         case .updateList(let listId, _, _, _, _, _):
             return "/users/me/lists/\(listId)"
+        case .listCollaborators(let listId):
+            return "/lists/\(listId)/collaborators"
+        case .addListCollaborator(let listId, let userSlug), .removeListCollaborator(let listId, let userSlug):
+            return "/lists/\(listId)/collaborators/\(userSlug)"
         case .updateListItem(_, let userId, let listId, let itemId):
             return "/users/\(userId)/lists/\(listId)/items/\(itemId)"
         case .updateWatchlistItem(_, let itemId):
@@ -1033,6 +1083,9 @@ extension TraktAPIService: AuthorizedTargetType {
         case .parentalGuide(let target):
             let slug = target.slug.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) ?? target.slug
             return "/v3/media/\(target.type.rawValue)/\(slug)/info/16/version/1"
+        case .trivia(let target):
+            let slug = target.slug.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) ?? target.slug
+            return "/v3/media/\(target.type.rawValue)/\(slug)/info/5/version/2"
         case .certifications(let type):
             return "/certifications/\(type)"
         case .lastActivities:
@@ -1090,6 +1143,16 @@ extension TraktAPIService: AuthorizedTargetType {
             return "/comments/\(id)/reactions"
         case .commentReactionsSummary(let id):
             return "/comments/\(id)/reactions/summary"
+        case .mediaReactionTypes:
+            return "/v3/reactions/media"
+        case .mediaReactionsSummary(let target):
+            return "\(target.reactionsPath)/summary"
+        case .userMediaReactions(let target):
+            return "/v3/users/me/\(target.type.rawValue)/\(target.traktId)"
+        case .addMediaReaction(let target, let reaction):
+            return "\(target.reactionsPath)/\(reaction)"
+        case .removeMediaReactions(let target, let ids):
+            return "\(target.reactionsPath)/\(ids.map { String($0) }.joined(separator: ","))"
         case .verifyIAP:
             return "/vip/apple/v2/verify"
         case .verifySandboxIAP:
@@ -1223,11 +1286,11 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .customLists, .customList, .collaborations:
             return .get
-        case .listItems:
+        case .listItems, .listFeaturedPeople:
             return .get
         case .createList:
             return .post
-        case .smartLists, .smartList, .smartListItems:
+        case .smartLists, .smartList, .smartListItems, .smartListPreview, .smartListFilterOptions:
             return .get
         case .createSmartList:
             return .post
@@ -1241,6 +1304,12 @@ extension TraktAPIService: AuthorizedTargetType {
             return .post
         case .updateList:
             return .put
+        case .listCollaborators:
+            return .get
+        case .addListCollaborator:
+            return .post
+        case .removeListCollaborator:
+            return .delete
         case .addToList, .removeFromList, .addToListWithNotes:
             return .post
         case .reorderListItems, .reorderWatchlistItems, .reorderFavoriteItems:
@@ -1263,7 +1332,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .post
         case .recommended:
             return .get
-        case .collection:
+        case .collection, .collectionMinimal:
             return .get
         case .resetProgress:
             return .post
@@ -1289,7 +1358,7 @@ extension TraktAPIService: AuthorizedTargetType {
             return .put
         case .deleteNotes:
             return .delete
-        case .certifications, .parentalGuide:
+        case .certifications, .parentalGuide, .trivia:
             return .get
         case .lastActivities:
             return .get
@@ -1329,6 +1398,12 @@ extension TraktAPIService: AuthorizedTargetType {
             return .get
         case .userCommentsReactions:
             return .get
+        case .mediaReactionTypes, .mediaReactionsSummary, .userMediaReactions:
+            return .get
+        case .addMediaReaction:
+            return .put
+        case .removeMediaReactions:
+            return .delete
         case .verifyIAP, .verifySandboxIAP:
             return .post
         }
@@ -1422,7 +1497,7 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: URLEncoding.default)
         case .likeComment, .unlikeComment, .likeList, .unlikeList:
             return .requestPlain
-        case .stats:
+        case .stats, .collectionMinimal:
             return .requestPlain
         case .movieSocial(_, let pageInfo),
              .showSocial(_, let pageInfo),
@@ -1452,13 +1527,13 @@ extension TraktAPIService: AuthorizedTargetType {
             return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
         case .commentCount, .commentLikesCount:
             return .requestPlain
-        case .postComment(let type, let traktId, let body, let spoilers):
-            return .requestParameters(parameters: [type.rawValue: ["ids": ["trakt": traktId]],
-                                                   "comment": body,
-                                                   "spoiler": spoilers],
+        case .postComment(let type, let traktId, let body, let spoilers, let gif):
+            var parameters = TraktAPIService.commentParameters(body: body, spoilers: spoilers, gif: gif)
+            parameters[type.rawValue] = ["ids": ["trakt": traktId]]
+            return .requestParameters(parameters: parameters,
                                       encoding: JSONEncoding.default)
-        case .postReply(_, let body, let spoilers):
-            return .requestParameters(parameters: ["comment": body, "spoiler": spoilers],
+        case .postReply(_, let body, let spoilers, let gif):
+            return .requestParameters(parameters: TraktAPIService.commentParameters(body: body, spoilers: spoilers, gif: gif),
                                       encoding: JSONEncoding.default)
         case .deleteComment:
             return .requestPlain
@@ -1518,8 +1593,8 @@ extension TraktAPIService: AuthorizedTargetType {
         case .comment:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
-        case .episode:
-            return .requestParameters(parameters: ["extended": "full"],
+        case .episode(_, _, _, let extended):
+            return .requestParameters(parameters: ["extended": extended.rawValue],
                                       encoding: URLEncoding.default)
         case .user:
             return .requestParameters(parameters: ["extended": "full,vip"],
@@ -1591,8 +1666,8 @@ extension TraktAPIService: AuthorizedTargetType {
             }
             return .requestParameters(parameters: params,
                                       encoding: URLEncoding.default)
-        case .seasons:
-            return .requestParameters(parameters: ["extended": "episodes,full"],
+        case .seasons(_, let extended):
+            return .requestParameters(parameters: ["extended": extended.rawValue],
                                       encoding: URLEncoding.default)
         case .episodes:
             return .requestParameters(parameters: ["extended": "full"],
@@ -1757,7 +1832,10 @@ extension TraktAPIService: AuthorizedTargetType {
             } else {
                 return .requestPlain
             }
-        case .people, .peopleSlug, .peopleShows, .peopleMovies:
+        case .people(_, let extended):
+            return .requestParameters(parameters: ["extended": extended.rawValue],
+                                      encoding: URLEncoding.default)
+        case .peopleSlug, .peopleShows, .peopleMovies:
             return .requestParameters(parameters: ["extended": "full"],
                                       encoding: URLEncoding.default)
         case .customLists(_, let pageInfo):
@@ -1781,6 +1859,9 @@ extension TraktAPIService: AuthorizedTargetType {
                                                        "limit": "\(pageInfo.limit)"],
                                           encoding: URLEncoding.default)
             }
+        case .listFeaturedPeople:
+            return .requestParameters(parameters: ["extended": "featured"],
+                                      encoding: URLEncoding.default)
         case .smartLists, .smartList, .deleteSmartList:
             return .requestPlain
         case .smartListItems(_, let pageInfo):
@@ -1790,6 +1871,20 @@ extension TraktAPIService: AuthorizedTargetType {
                                       encoding: URLEncoding.default)
         case .createSmartList(let draft), .updateSmartList(_, let draft):
             return .requestJSONEncodable(draft)
+        case .smartListPreview(let draft, let pageInfo):
+            var parameters = draft.filters.queryParameters
+            parameters["source"] = draft.source.rawValue
+            parameters["media_type"] = draft.mediaType.rawValue
+            parameters["extended"] = "full"
+            parameters["page"] = "\(pageInfo.page)"
+            parameters["limit"] = "\(pageInfo.limit)"
+            return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
+        case .smartListFilterOptions(let kind, let query):
+            var parameters = ["query": query, "limit": "20"]
+            if kind == .people {
+                parameters["fields"] = "name"
+            }
+            return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
         case .createList(let name, let description, let privacy, let displayNumbers, let allowComments):
             return .requestParameters(parameters: ["name": name,
                                                    "description": description,
@@ -1809,6 +1904,11 @@ extension TraktAPIService: AuthorizedTargetType {
                                                    "display_numbers": displayNumbers,
                                                    "allow_comments": allowComments],
                                       encoding: JSONEncoding.default)
+        case .listCollaborators:
+            return .requestParameters(parameters: ["extended": "full"],
+                                      encoding: URLEncoding.default)
+        case .addListCollaborator, .removeListCollaborator:
+            return .requestPlain
         case .addToList(_, _, let item), .removeFromList(_, _, let item):
             return .requestJSONEncodable(item)
         case .reorderListItems(_, _, let ids), .reorderWatchlistItems(let ids), .reorderFavoriteItems(let ids):
@@ -2074,7 +2174,7 @@ extension TraktAPIService: AuthorizedTargetType {
         case .parentalGuide:
             return .requestParameters(parameters: ["locale": Locale.preferredLanguages.first ?? "en"],
                                       encoding: URLEncoding.default)
-        case .certifications:
+        case .certifications, .trivia:
             return .requestPlain
         case .lastActivities:
             return .requestPlain
@@ -2119,6 +2219,8 @@ extension TraktAPIService: AuthorizedTargetType {
         case .userCommentsReactions:
             return .requestParameters(parameters: ["extended": "min", "limit": "all"],
                                       encoding: URLEncoding.default)
+        case .mediaReactionTypes, .mediaReactionsSummary, .userMediaReactions, .addMediaReaction, .removeMediaReactions:
+            return .requestPlain
         case .verifyIAP(let transactionId, let userId), .verifySandboxIAP(let transactionId, let userId):
             return .requestParameters(parameters: ["transaction_id": transactionId,
                                                    "user_id": userId],
@@ -2163,7 +2265,7 @@ extension TraktAPIService: AuthorizedTargetType {
                 return true
             }
             return false
-        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .searchExact, .searchTrending, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .watchNowSources, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary:
+        case .token, .refresh, .revoke, .commentLikesCount, .show, .movie, .comment, .episode, .commentMediaItem, .search, .searchExact, .searchTrending, .trendingLists, .popularLists, .seasons, .episodes, .ratings, .peopleMovie, .peopleShow, .peopleEpisode, .peopleSeason, .people, .peopleSlug, .peopleShows, .peopleMovies, .showsCalendar, .moviesCalendar, .dvdMoviesCalendar, .streamingMoviesCalendar, .tvGenres, .movieGenres, .movieLanguages, .tvLanguages, .movieCountries, .tvCountries, .movieCertifications, .tvCertifications, .networks, .watchNowSources, .movieLists, .showLists, .premiereCalendar, .certifications, .movieReleases, .lastEpisode, .nextEpisode, .showSentiments, .movieSentiments, .seasonSentiments, .episodeSentiments, .videos, .showTranslations, .movieTranslations, .seasonTranslations, .episodeTranslations, .knownFor, .reactions, .commentReactionsSummary, .mediaReactionTypes, .mediaReactionsSummary:
             return false
         case .stats(let type):
             switch type {

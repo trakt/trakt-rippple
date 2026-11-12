@@ -351,7 +351,7 @@ final class WhereToWatchTableViewCell: TintedCanvasTableViewCell, UICollectionVi
                 if let rent = providerInCountry.rent {
                     for provider in rent {
                         if let index = data.firstIndex(where: { type -> Bool in
-                            return type.identifier == provider.identifier
+                            type.identifier == provider.identifier
                         }) {
                             data[index].priority = min(data[index].priority ?? Int.max, provider.priority ?? Int.max)
                             data[index].type?.append("Rent")
@@ -367,7 +367,7 @@ final class WhereToWatchTableViewCell: TintedCanvasTableViewCell, UICollectionVi
                 if let buy = providerInCountry.buy {
                     for provider in buy {
                         if let index = data.firstIndex(where: { type -> Bool in
-                            return type.identifier == provider.identifier
+                            type.identifier == provider.identifier
                         }) {
                             data[index].priority = min(data[index].priority ?? Int.max, provider.priority ?? Int.max)
                             data[index].type?.append("Buy")
@@ -383,7 +383,7 @@ final class WhereToWatchTableViewCell: TintedCanvasTableViewCell, UICollectionVi
                 if let flatrate = providerInCountry.flatrate {
                     for provider in flatrate {
                         if let index = data.firstIndex(where: { type -> Bool in
-                            return type.identifier == provider.identifier
+                            type.identifier == provider.identifier
                         }) {
                             data[index].priority = min(data[index].priority ?? Int.max, provider.priority ?? Int.max)
                             data[index].type?.append("Stream")
@@ -399,7 +399,7 @@ final class WhereToWatchTableViewCell: TintedCanvasTableViewCell, UICollectionVi
                 if let free = providerInCountry.free {
                     for provider in free {
                         if let index = data.firstIndex(where: { type -> Bool in
-                            return type.identifier == provider.identifier
+                            type.identifier == provider.identifier
                         }) {
                             data[index].priority = min(data[index].priority ?? Int.max, provider.priority ?? Int.max)
                             data[index].type?.append("Free")
@@ -415,7 +415,7 @@ final class WhereToWatchTableViewCell: TintedCanvasTableViewCell, UICollectionVi
                 if let ads = providerInCountry.ads {
                     for provider in ads {
                         if let index = data.firstIndex(where: { type -> Bool in
-                            return type.identifier == provider.identifier
+                            type.identifier == provider.identifier
                         }) {
                             data[index].priority = min(data[index].priority ?? Int.max, provider.priority ?? Int.max)
                             data[index].type?.append("Ads")
@@ -431,7 +431,7 @@ final class WhereToWatchTableViewCell: TintedCanvasTableViewCell, UICollectionVi
                 if let none = providerInCountry.none {
                     for provider in none {
                         if let index = data.firstIndex(where: { type -> Bool in
-                            return type.identifier == provider.identifier
+                            type.identifier == provider.identifier
                         }) {
                             data[index].priority = min(data[index].priority ?? Int.max, provider.priority ?? Int.max)
                             data[index].type?.append("Unknown")

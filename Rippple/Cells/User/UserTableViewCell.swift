@@ -28,6 +28,8 @@ final class UserTableViewCell: TintedCanvasTableViewCell {
 
     @IBOutlet var privateStatus: UIImageView?
 
+    @IBOutlet private var contentStackView: UIStackView?
+
     private let disposeBag = DisposeBag()
 
     @IBOutlet var cardView: CardView?
@@ -86,6 +88,28 @@ final class UserTableViewCell: TintedCanvasTableViewCell {
             VIPLabel.layer.cornerCurve = .circular
             VIPLabel.layer.cornerRadius = VIPLabel.bounds.height / 2.0
             VIPLabel.clipsToBounds = true
+            // The badge carries white text, so it keeps the darker light-mode purple in every appearance.
+            VIPLabel.backgroundColor = UIColor { traitCollection in
+                RipppleTintColor.purple.color.resolvedColor(with: traitCollection.modifyingTraits { traits in
+                    traits.userInterfaceStyle = .light
+                })
+            }
+        }
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        accessoryControl = nil
+    }
+
+    /// A trailing control shown inside the card, such as an add or remove button.
+    var accessoryControl: UIView? {
+        didSet {
+            guard accessoryControl !== oldValue else { return }
+            oldValue?.removeFromSuperview()
+            if let accessoryControl = accessoryControl {
+                contentStackView?.addArrangedSubview(accessoryControl)
+            }
         }
     }
 

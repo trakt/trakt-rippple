@@ -73,7 +73,13 @@ final class WatchedManager {
     private var lastShowsAndEpisodesCheck: Date = .now
     private var lastMoviesCheck: Date = .now
 
-    func setup() {
+    /// Values restored at launch already match the cache, so they skip re-storing it.
+    private var isRestoringFromCache = false
+
+    private func loadCachedItems() {
+        isRestoringFromCache = true
+        defer { isRestoringFromCache = false }
+
         if let array = TinyStorage.cache.retrieve(type: [WatchedItem].self, forKey: "WatchedManager.showsHistoryItems") {
             showsHistoryItems = array
         }
@@ -87,6 +93,10 @@ final class WatchedManager {
             let episodeIds = episodeHistoryItems.map { $0.episode!.identifiers.trakt! }
             watchedEpisodes = episodeIds
         }
+    }
+
+    func setup() {
+        loadCachedItems()
 
         onUserLoggedOutReceiver.listen { [weak self] _ in
             guard let self = self else { return }
@@ -253,7 +263,9 @@ final class WatchedManager {
                 }
             }
 
-            TinyStorage.cache.store(showsHistoryItems, forKey: "WatchedManager.showsHistoryItems")
+            if !isRestoringFromCache {
+                TinyStorage.cache.store(showsHistoryItems, forKey: "WatchedManager.showsHistoryItems")
+            }
             onWatchedShowsChangedTransmitter.broadcast(watchedShows)
             transmitSearchableDataSource()
         }
@@ -262,7 +274,9 @@ final class WatchedManager {
     private var moviesHistoryItems = [WatchedItem]() {
         didSet {
             watchedMovies = Set(moviesHistoryItems.compactMap { $0.movie?.identifiers.trakt })
-            TinyStorage.cache.store(moviesHistoryItems, forKey: "WatchedManager.moviesHistoryItems")
+            if !isRestoringFromCache {
+                TinyStorage.cache.store(moviesHistoryItems, forKey: "WatchedManager.moviesHistoryItems")
+            }
             onWatchedMoviesChangedTransmitter.broadcast(watchedMovies)
             transmitSearchableDataSource()
         }
@@ -270,6 +284,7 @@ final class WatchedManager {
 
     fileprivate var episodeHistoryItems = [HistoryItem]() {
         didSet {
+            guard !isRestoringFromCache else { return }
             TinyStorage.cache.store(episodeHistoryItems, forKey: "WatchedManager.episodeHistoryItems")
         }
     }
